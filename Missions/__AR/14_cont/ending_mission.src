@@ -1,0 +1,136 @@
+
+//Loosing conditions
+every 0$1 trigger (filterallunits([[f_side,2],[f_type,unit_human],[f_or,[f_class,class_soldier],[f_class,class_engineer],[f_class,class_mechanic],[f_class,class_scientistic],[f_class,class_mortar],[f_class,class_bazooker]]]) diff Heike) < PlayerMinimumPeople marked 3 do
+YouLost('TooManyCasualties');
+
+
+
+
+every 0$1 trigger MissionEnd do
+var i,destruction,un_list,name_list;
+begin
+     repeat
+           wait(0$1);
+           if not HeikeSent or enable_transport<2 then
+              FinalCountdown=FinalCountdown-0$1;
+ 
+           if FinalCountdown<0$1 then
+              if PlayerConvoySent=0 then
+                 YouLost('NotGatheredResources')
+              else
+                  begin
+                       Say(Heike,'End_He4');
+                       SavePlayerAnyway;
+                       break;
+                  end;
+     until PlayerConvoySent and HeikeSent;
+
+
+     Savevariable(FinalCountdown,'extra_time_14_cont');
+
+
+
+     if unitfilter(RussianPeople,[f_lives,250])<=RussianPeople*0.2 and destruction_status=1 then
+        destruction=1
+     else
+         if destruction_status=1 then
+            destruction=-1
+         else
+             if unitfilter(RussianPeople,[f_lives,250])<=RussianPeople*0.2 then
+                destruction=-2
+             else
+                 destruction=-3;
+               
+
+     SaveVariable(Destruction,'Destruction_14_cont');
+
+     ChangeMap('%2','%2');
+end;
+
+
+Function SavePlayerAnyway;
+var i,j,temp,temp_list,playerhumans,playerapes,vehicles,un_list,name_list;
+begin
+     vehicles=[];
+     playerapes=filterallunits([[f_placed],[f_side,2],[f_type,unit_human],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze]]]);
+     playerhumans=filterallunits([[f_placed],[f_side,2],[f_type,unit_human]]);
+     playerhumans=playerhumans diff playerapes;
+
+     for i in playerhumans do
+         if GetType(isinunit(i))=unit_vehicle then
+            vehicles=vehicles^isinunit(i);
+
+     for i in filterunitsinarea(exit_heike, [ [f_side,2],[f_or,[f_control,control_remote],[f_control,control_apeman]] ]) do
+         if getcontrol(i)=control_apeman then
+            vehicles=vehicles^i
+         else
+             if IsControledBy(i) in playerhumans then
+                vehicles=vehicles^i;
+
+     temp=[];
+     for i in Vehicles do
+         temp=temp^[[GetNation(i),GetWeapon(i),GetChassis(i),GetControl(i),GetEngine(i)]];
+
+     SaveVariable(temp,'Rescue_Vehicles_14');
+
+    
+     un_list = [Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Makise];
+     name_list = ['Heike', 'Oswald', 'Olaf', 'Sonya', 'Ralph', 'Kowalski', 'Aviradze', 'Swansson', 'Dwayne', 'Khattam', 'Evelyn', 'Makise'];
+     for i = 1 to un_list do
+         if IsPlaced(un_list[i]) or IsPlaced(isinunit(un_list[i])) then
+            SaveCharacters(un_list[i],name_list[i] & '_Rescue_14_cont');
+
+     SaveCharacters(playerhumans diff un_list,'Others_Rescue_14_cont');
+
+     if GetLives(Gonzo)>0 then
+        SaveCharacters(Gonzo,'Gonzo_Rescue_14_cont');
+
+     temp=[];
+     for i in unitfilter(playerapes,[f_inarea,exit_heike]) do
+         if not i=Gonzo then
+            temp=temp^i;
+
+     if temp>0 then
+        SaveCharacters(temp,'Apes_Rescue_14_cont');
+
+     //memorising who drives what vehicle
+     temp=[Heike,Olaf,Sonya,Oswald,Ralph,Kowalski,Aviradze,Swansson,Dwayne,Khattam,Evelyn,Makise] ^ (playerhumans diff un_list);
+     temp_list=[];
+
+     for i=1 to Vehicles do
+         for j=1 to temp do
+             if getcontrol(Vehicles[i])=control_manual then
+                if IsDrivenBy(Vehicles[i])=temp[j] then
+                begin
+                     temp=replace(temp,j,i);
+                     temp_list=temp_list^j;
+                end;
+     for i=1 to temp do
+         if not i in temp_list then
+            temp=replace(temp,i,0);
+
+     SaveVariable(temp,'Rescue_drivers_14');
+end;
+
+
+
+
+
+{
+ Variables saved got scattred across modules:
+          SaveVariable([CratesPrepared,OilPrepared,SiberitePrepared],'Resources_gathered_14_cont');
+
+          SaveVariable(1,'Transport_Teleported_14_cont');
+
+          SaveVariable(Destruction,'Destruction_14_cont');
+
+          SaveCharacters(un_list[i],name_list[i] & '_Escort_14_cont');
+          SaveCharacters(EscortPrepared diff (Heike ^ un_list),'Others_Escort_14_cont');
+
+          SaveCharacters(un_list[i],name_list[i] & '_Rescue_14_cont');
+          SaveCharacters(EscortPrepared diff (Heike ^ un_list),'Others_Rescue_14_cont');
+          SaveVariable(TeamVehicles,'Rescue_Vehicles_14');
+
+          Savevariable(FinalCountdown,'extra_time_14_cont');
+
+}

@@ -1,0 +1,28 @@
+// MISSION 1 ARABIAN CAMPAIGN
+
+// Mission Started
+Starting
+begin
+  RandomizeAll;
+  ResetFog;
+  Joan_flee = false;
+  joan_escaped = false;
+  music_class=music_recon;
+  
+  InGameOn;
+
+  SetAttitude(1,2,att_neutral,true);
+
+  prepare_units;
+  prepare_american;
+
+  
+  Mission_Started;
+end;
+
+
+
+
+
+
+

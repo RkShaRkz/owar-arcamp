@@ -1,0 +1,28 @@
+begin
+? type grass
+ ! hue 17
+ ! all 77
+ ! contr 84
+ ! sat 45
+new
+? inident keriky
+ ! contr 105
+new
+? inident smrcky
+ ! hue -40
+ ! sat 122
+ ! contr 95
+new
+? inident flowers
+ ! hue -40
+ ! all 110
+ ! contr 120
+ ! sat 113
+new
+? inident list-akatojerab
+ ! sat 85
+new
+? inident list-dvoupatr-maly
+ ! all 85
+ ! sat 90
+end

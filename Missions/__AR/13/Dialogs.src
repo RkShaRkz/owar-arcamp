@@ -1,0 +1,1024 @@
+//Starting cutscene
+every 0$1 do
+var temp,temp_list,temp_list2,placed_characters,other,temp_val,temp_val2,temp_hex,i,un_list,line_list,time,id_end;
+begin
+     Randomize;
+
+     SayRadio(Abdul,'In_Ab2');                                      //Intro radio dialogue with Abdul
+     Say(Heike,'In_He2');
+     SayRadio(Abdul,'In_Ab3');        
+     SayRadio(Abdul,'In_Ab4');
+     SayRadio(Abdul,'In_Ab5');
+     Say(Heike,'In_He3');
+     SayRadio(Abdul,'In_Ab6');
+     SayRadio(Abdul,'In_Ab7');
+     SayRadio(Abdul,'In_Ab8');
+     Say(Heike,'In_He4');
+     Dwait(0$2);
+     SayRadio(Abdul,'In_Ab9');
+
+     time=tick;
+     repeat
+           wait(0$0.5);
+     until unitfilter(player_forces,[[f_side,2],[f_not,[f_placed]]])=0 or tick>time+1$30;     //A fixed time to prevent some accidental infinite loop
+
+
+     //Random characters
+     temp=0;
+     for i in filterallunits([[f_side,2],[f_placed]]) diff [Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy, Gonzo, Heike]  do
+         if getskill(i,skill_combat)>temp then
+         begin
+              Soldier=i;                                            //Determine who is the best random soldier (applicable in other blocks)
+              temp=getskill(i,skill_combat);
+         end;
+     temp=0;
+     for i in filterallunits([[f_side,2],[f_placed]]) diff [Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy, Gonzo, Heike] do
+         if getskill(i,skill_scientistic)>temp then
+         begin
+              Scientist=i;
+              temp=getskill(i,skill_scientistic);                   //Determine who is the best random scientist. A scientist is necessary for artifact measurement. If others turn out as 0 only few dialogue lines would be skipped
+         end;
+     if Scientist=0 then
+        for i in filterallunits([[f_side,2],[f_placed]]) diff Gonzo do
+            if getskill(i,skill_scientistic)>temp then
+            begin
+                 Scientist=i;
+                 temp=getskill(i,skill_scientistic);
+            end;
+
+     temp=0;
+     for i in filterallunits([[f_side,2],[f_placed]]) diff [Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy, Gonzo, Heike] do
+         if getskill(i,skill_mechanical)>temp then
+         begin
+              Mechanic=i;
+              temp=getskill(i,skill_mechanical);                     //Determine who is the best random mechanic
+         end;
+
+
+
+     dwait(0$1);
+
+     //A bit of disorder
+         //random line 1
+     case rand(1,3) of
+          1: other=Soldier;
+          2: other=Scientist;
+          3: other=Mechanic;
+     end;
+
+     un_list=[Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy, Other];
+     line_list=['Os', 'Olaf', 'So', 'Ra', 'Ko', 'Av', 'Sw', 'Dw', 'Kh', 'Ev', 'Ch', 'Some'];
+     temp=0;
+     for i=1 to 10 do
+     begin
+          temp_val=rand(1,un_list);
+          if isplaced(un_list[temp_val]) then
+             begin
+                temp=temp+1;
+
+                id_end='1';
+                 if un_list[temp_val]=other then
+                    if getsex(un_list[temp_val])=sex_male then
+                       id_end='M1'
+                    else id_end='F1';
+
+                async;
+                 Say(un_list[temp_val], 'In_' & line_list[temp_val] & id_end);     //Say 3 of the random lines 1
+                sync;
+
+                wait(rand(0$0.8,0$1.8)*(0.3*game_speed));
+             end;
+
+          un_list=delete(un_list,temp_val);
+          line_list=delete(line_list,temp_val);
+
+          if temp=3 then
+             break;
+     end;
+
+
+         //random line 2
+     un_list=[Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy, other];
+     line_list=['Os', 'Olaf', 'So', 'Ra', 'Ko', 'Av', 'Sw', 'Dw', 'Kh', 'Ev', 'Ch', 'Some'];
+     temp=0;
+     for i=1 to 10 do
+     begin
+          temp_val=rand(1,un_list);
+          if isplaced(un_list[temp_val]) then
+          begin
+               temp=temp+1;
+
+               id_end='2';
+                 if un_list[temp_val]=other then
+                    if getsex(un_list[temp_val])=sex_male then
+                       id_end='M2'
+                    else id_end='F2';
+
+               async;
+                Say(un_list[temp_val], 'In_' & line_list[temp_val] & id_end);     //Say 2 of the random lines 2
+               sync;
+
+               wait(rand(0$1,0$2)*(0.3*game_speed));
+          end;
+
+          un_list=delete(un_list,temp_val);
+          line_list=delete(line_list,temp_val);
+
+          if temp=2 then
+             break;
+     end;
+
+     //Briefing
+     say(Heike,'br_He1');
+     if isplaced(Oswald)>0 then
+     begin
+          if isplaced(Ralph)>0 then
+             say(Ralph,'br_Ra1');
+          say(Oswald,'br_Os1');                 //Oswald answering
+     end
+     else
+         begin
+              temp_list = UnitFilter([Kowalski,Swansson,Ralph,Soldier],[f_placed]);
+              if temp_list > 0 then
+                 begin
+                    i = Rand(1,temp_list+0);
+                    case temp_list[i] of
+                       Kowalski: say(temp_list[i],'br_Ko1');
+                       Swansson: say(temp_list[i],'br_Sw1');
+                       Ralph: say(temp_list[i],'br_Ra2');
+                       Soldier: begin
+                          if GetSex(temp_list[i]) = sex_male then
+                             say(temp_list[i],'br_SomeSolM1')
+                          else
+                             say(temp_list[i],'br_SomeSolF1');
+                       end;
+                    end;
+                 end;
+         end;
+
+
+     say(Heike,'br_He5');              //Do we still have that sniper rifle we found?
+     temp_list = UnitFilter([Swansson,Oswald,Soldier],[f_placed]);
+     if temp_list > 0 then
+        begin
+           i = Rand(1,temp_list+0);
+           case temp_list[i] of
+              Swansson: say(temp_list[i],'br_Sw2');
+              Oswald: say(temp_list[i],'br_Os3');
+              Soldier: begin
+                 if GetSex(temp_list[i]) = sex_male then
+                    say(temp_list[i],'br_SomeSolM2')
+                 else
+                    say(temp_list[i],'br_SomeSolF2');
+              end;
+           end;
+        end;
+
+     //mentioning apes
+     temp_list = UnitFilter([Aviradze,Sonya,Khattam,Chrissy,scientist],[f_placed]);
+     if temp_list > 0 then
+        begin
+           i = Rand(1,temp_list+0);
+           case temp_list[i] of
+              Aviradze: say(temp_list[i],'br_Av1');
+              Sonya: say(temp_list[i],'br_So1');
+              Khattam: say(temp_list[i],'br_Kh1');
+              Chrissy: say(temp_list[i],'br_Ch1');
+              scientist: begin
+                 if GetSex(temp_list[i]) = sex_male then
+                    say(temp_list[i],'br_SomeSciM1')
+                 else
+                    say(temp_list[i],'br_SomeSciF1');
+              end;
+           end;
+        end;
+
+     say(Heike,'br_He7');              //Do we have any cameras?
+
+     temp_list = UnitFilter([Evelyn,Sonya,Chrissy,scientist],[f_placed]);
+     if temp_list > 0 then
+        begin
+           i = Rand(1,temp_list+0);
+           case temp_list[i] of
+              Evelyn: say(temp_list[i],'br_Ev1');
+              Sonya: say(temp_list[i],'br_So2');
+              Chrissy: say(temp_list[i],'br_Ch2');
+              scientist: begin
+                 if GetSex(temp_list[i]) = sex_male then
+                    say(temp_list[i],'br_SomeSciM2')
+                 else
+                    say(temp_list[i],'br_SomeSciF2');
+              end;
+           end;
+        end;
+
+     say(Heike,'br_He8');              //How many?
+     //temp_list=[Evelyn,Sonya,Chrissy,Olaf,Dwayne,Mechanic,Scientist]diff 0;
+     //temp_list2=unitfilter(temp_list,[f_placed]);
+     //temp=temp_list2[1];                                            //pick a mechanic to look in cargo trunk
+     temp = temp_list[i];
+
+     //get a hex relative to the cargo (behind it)
+     temp_val=[ [GetX(artifact_cargo),GetY(artifact_cargo)+2], [GetX(artifact_cargo)-2,GetY(artifact_cargo)], [GetX(artifact_cargo)-2,GetY(artifact_cargo)-2], [GetX(artifact_cargo),GetY(artifact_cargo)-2], [GetX(artifact_cargo)+2,GetY(artifact_cargo)], [GetX(artifact_cargo)+2,GetY(artifact_cargo)+2] ];
+     temp_hex=temp_val[Getdir(artifact_cargo)+1];
+     setclass(temp,class_mechanic);
+
+     Wait(0$0.5);
+     comhold(artifact_cargo);
+     if not GetWeapon(IsInUnit(temp))=ar_cargo_bay then   //if the picked driver is in the cargo, moving it breaks the animation
+        moveclosetounit(temp,artifact_cargo,4);
+     Wait(0$1);
+     comexitvehicle(temp);
+     Wait(0$1);                                        //the waits are necessary or the game will freeze on the following loop
+     comagressivemove(temp,temp_hex[1],temp_hex[2]);
+
+     case temp of
+        Evelyn: Say(temp,'br_Ev2');
+        Sonya: say(temp,'br_So3');
+        Chrissy: say(temp,'br_Ch3');
+        scientist: begin
+           if GetSex(temp) = sex_male then
+              say(temp,'br_SomeSciM3')
+           else
+              say(temp,'br_SomeSciF3');
+        end;
+     end;
+     time=tick;
+     repeat
+           comagressivemove(temp,temp_hex[1],temp_hex[2]);
+           wait(0$1);
+     until GetX(temp)=temp_hex[1] and GetY(temp)=temp_hex[2] or tick>time+0$15;
+
+     setlives(artifact_cargo,800);             //take a look in the trunk
+     DWait(0$3);
+     i = [10,8,6][difficulty];
+     case temp of
+        Evelyn: Say(temp,'br_Ev' & i);
+        Sonya: say(temp,'br_So' & i);
+        Chrissy: say(temp,'br_Ch' & i);
+        scientist: begin
+           if GetSex(temp) = sex_male then
+              say(temp,'br_SomeSciM' & i)
+           else
+              say(temp,'br_SomeSciF' & i);
+        end;
+     end;
+
+     setlives(artifact_cargo,1000);
+     say(Heike,'br_He9');
+     say(Heike,'br_He10');
+
+     Ingameoff;
+
+     wait(0$0.2);
+     ChangeMissionObjectives('maingoals');
+     wait(0$0.2);
+     Query('brieffing_message1');
+     wait(0$0.2);
+     Query('brieffing_message2');
+     wait(0$0.2);
+     Query('brieffing_message3');
+     wait(0$0.2);
+     Query('brieffing_message4');
+
+     wait(0$0.2);
+     characterselection('',0,20,[sel_hired,sel_changeable,sel_change_class]^filterallunits([[f_side,2],[f_type,unit_human]])diff Gonzo,[class_soldier,class_engineer,class_mechanic,class_scientistic,[class_sniper,0,1],class_mortar]);
+
+     saveforquickrestart;
+
+     enable(1);
+end;
+
+//Dialogue initiating the secondary objective of artifact measurements
+every 0$1 trigger tick>11$0 and IsLive(Chrissy) marked 1 do                     //won't trigger without Christina
+var i,temp;
+begin
+     dialogueon;
+
+     say(Chrissy,'art_Ch1');
+     say(heike,'art_He1');
+     say(Chrissy,'art_Ch2');
+     say(heike,'art_He2');
+     say(Chrissy,'art_Ch3');
+     say(heike,'art_He3');
+     say(Chrissy,'art_Ch4');
+     say(heike,'art_He4');
+     say(Chrissy,'art_Ch5');
+     say(heike,'art_He5');
+     say(Chrissy,'art_Ch6');
+     say(heike,'art_He6');
+     say(Chrissy,'art_Ch7');
+     say(heike,'art_He7');
+
+     dialogueoff;
+     wait(0$0.2);
+     ChangeMissionObjectives('measurement1');
+     artifactOn=1;
+     SetAreaMapShow(artifact_left,1);
+     SetAreaMapShow(artifact_right,1);
+     SetAreaMapShow(artifact_centre,1);
+     SetAreaMapShow(artifact_south_line,1);
+     enable(2);
+end;
+
+
+
+//Preparation for the measurement
+on artifactunloaded(artifact_cargo,Artifact) do
+var cargo_pos,i,j,list,X,Y,temp,scientists,start,sci;
+begin
+     if artifacton>0 then
+     begin                                                                //list all hexes 3 hex aeway from the cargo just to be sure
+          cargo_pos=[getx(artifact_cargo),gety(artifact_cargo)];
+          list=[];
+          Y=cargo_pos[2]+4;
+
+          for i=1 to 7 do
+          begin
+               Y=Y-1;
+               X=cargo_pos[1]+4;
+               for j=1 to 7 do
+               begin
+                    X=X-1;
+                    temp=[x,y];
+                    list=list^[temp];
+               end;
+          end;
+
+          for i in list do
+              if GetResourceTypeXY(i[1],i[2])=mat_artifact then           //and find the one with artifact on it
+                 temp=[i[1],i[2]];
+
+
+          if artifacton=1 then
+          begin
+               start=0;
+               if InArea(temp[1],temp[2],Artifact_left) and art_leftdone=0 then     start=1;
+               if InArea(temp[1],temp[2],Artifact_right) and art_rightdone=0 then     start=1;
+               if InArea(temp[1],temp[2],Artifact_centre) and art_centredone=0 then     start=1;
+               if temp[2]>167                             and art_southdone=0 then     start=1;
+
+               if start=1 then
+               begin
+                    artifact_ready=1;
+                    artifact_hex=temp;
+                    if Filterallunits([[f_side,2],[f_class,class_scientistic],[f_minskill,skill_scientistic,7],[f_distxy,temp[1],temp[2],10]])=0 then
+                       say(Chrissy,'art2_Ch3')
+                    else say(Chrissy,'art2_Ch4');
+               end
+               else
+                   begin
+                        if temp[2]<79 then
+                           say(Chrissy,'art2_Ch1')
+                        else
+                            say(Chrissy,'art2_Ch2');
+                   end;
+          end;
+     end;
+
+end;    
+
+On Artifactloaded(artifact_cargo,Artifact) do
+begin
+     artifact_ready=0;
+     artifact_hex=0;
+     Measurement_ani=0;
+end;
+
+
+//scout contacts heike
+every 0$1 marked 1 do
+begin
+     wait(rand(0$30,1$0));
+     dialogueon;
+     sayradio(scout,'sc1_sc1');
+     say(heike,'sc1_he1');
+     sayradio(scout,'sc1_sc2');
+     say(heike,'sc1_he2');
+     sayradio(scout,'sc1_sc3');
+     say(heike,'sc1_he3');
+     sayradio(scout,'sc1_sc4');
+     sayradio(scout,'sc1_sc5');
+     say(heike,'sc1_he4');
+     sayradio(scout,'sc1_sc6');
+     dialogueoff;
+     wait(0$0.2);
+     ChangeMissionObjectives('maingoals2');
+end;
+
+//second scout contact
+every 0$1 trigger tick>13$0 do
+begin
+     scout_gone=1;
+     sayradio(scout,'sc2_sc1');
+     scout_gone=0;
+end;
+
+//warning of seek groups and scouts
+every 0$1 trigger tick>15$30 do
+begin
+     repeat
+           wait(0$1);
+     until not 1 in ru_grouptypes;
+
+     scout_gone=1;
+     sayradio(scout,'sc2_sc2');
+     sayradio(scout,'sc2_sc3');
+     scout_gone=0;
+end;
+
+//snake sabotaged communications
+every 0$1 trigger tick>[30$0,31$0,32$0][difficulty] do
+begin
+     scout_gone=1;
+     sayradio(scout,'sc2_sc4');
+     No_seek_groups=1;
+     scout_gone=0;
+end;
+
+//snake's in trouble, elite groups incomming
+every 0$1 trigger tick>[35$0,36$0,37$0][difficulty] do
+begin
+     scout_gone=1;
+     sayradio(scout,'sc3_sc1');
+     sayradio(scout,'sc3_sc2');
+     Say(Heike,'sc3_He1');
+     sayradio(scout,'sc3_sc3');
+     Say(Heike,'sc3_He2');
+end;
+
+//snake calls back
+every 0$1 trigger tick>[36$0,37$0,38$0][difficulty] do
+begin
+     Say(Heike,'sc3_He3');
+     wait(0$15);
+     sayradio(scout,'sc3_sc4');
+     Say(Heike,'sc3_He4');
+     sayradio(scout,'sc3_sc5');
+     sayradio(scout,'sc3_sc6');
+     Say(Heike,'sc3_He5');
+     sayradio(scout,'sc3_sc7');
+     Say(Heike,'sc3_He6');
+     sayradio(scout,'sc3_sc8');
+     Say(Heike,'sc3_He7');
+     scout_gone=0;
+end;
+
+//scout warns heike of approaching heavies                                                                           
+every 0$1 trigger tick>10$30 do                                               //   11-15min  19-23min               33-35min  43min
+sayradio(scout,'sc4_sc1');                                                    //   11-15min  21min-25min            36-39min  48min
+every 0$1 trigger tick>20$30 do                     //   11-15min  21min-25min  30-33min  41-44min  51min
+sayradio(scout,'sc4_sc2');
+every 0$1 trigger tick>[27$30,28$30,29$30][difficulty] do
+sayradio(scout,'sc4_sc3');
+every 0$1 trigger tick>[41$30,42$30,43$30][difficulty]  do
+sayradio(scout,'sc4_sc4');
+every 0$1 trigger tick>[52$30,53$30,54$30][difficulty] do
+sayradio(scout,'sc4_sc5');
+
+
+//Vehicles captured by snake appear
+every 0$1 trigger tick>clear_spawn_location[2] do
+var area,i,temp,temp_list,time,said;
+begin
+     Randomize;
+     case area of
+          enter1: area=1;
+          enter2: area=2;
+          enter3: area=3;
+     end;
+     repeat
+           wait(0$1);
+     until filterallunits([[f_or,[f_side,3],[f_side,6]],[f_distxy,[173,102,215][area],193,20]])=0  or tick>clear_spawn_location[2] + 0$20;   //173,193   102,193    215,193
+
+     uc_side=2;
+     uc_nation=nation_russian;
+
+     temp_list=[];
+
+     for i=1 to [3,2,2][difficulty] do
+     begin
+          if difficulty=1 then
+             vc_weapon=[ru_gun,ru_rocket_launcher][rand(1,2)]
+          else
+              vc_weapon=[ru_gun,ru_rocket_launcher,ru_gatling_gun][rand(1,3)];
+
+          if difficulty=2 then
+             vc_engine=[engine_siberite,engine_combustion][rand(1,2)]
+          else
+              vc_engine=[engine_siberite,0,engine_combustion][difficulty];
+
+          vc_chassis=[ru_medium_tracked,ru_medium_wheeled][rand(1,2)];
+          vc_control=control_manual;
+
+          temp=CreateVehicle;
+          SetFuel(temp,rand(60,80));
+          temp_list=temp_list^temp;
+     end;
+
+     if difficulty<3 then
+     begin
+          vc_weapon=ru_heavy_gun;
+          vc_chassis=ru_heavy_tracked;
+          vc_engine=engine_combustion;
+
+          temp=CreateVehicle;
+          SetFuel(temp,rand(40,60));
+          SetLives(temp,rand(750,900));
+          temp_list=temp_list^temp;
+     end;
+
+     
+     uc_side=5;
+     uc_nation=nation_arabian;
+     for i in temp_list do
+     begin
+          placeunitarea(i,clear_spawn_location[1],false);
+
+          case rand(1,4) of
+               1: PrepareClassSkills(class_soldier,8);
+               2: PrepareClassSkills(class_engineer,8);
+               3: PrepareClassSkills(class_mechanic,8);
+               4: PrepareClassSkills(class_scientistic,8);
+          end;
+
+          temp=CreateHuman;
+          PlaceHumanInUnit(temp,i);
+          esc_drivers=esc_drivers^temp;
+
+          //SetSide(i,2);
+     end;
+
+
+     DialogueOn;
+     CenterOnUnits(temp_list[1]);
+     if GetSex(esc_drivers[1])=sex_male then
+        Say(esc_drivers[1],'snake_aid1_M')
+     else Say(esc_drivers[1],'snake_aid1_F');
+     DialogueOff;
+
+
+     time=tick+3$0;
+     repeat
+           wait(0$1);
+
+           if tick>time-1$30 and said=0 then
+           begin
+                if GetSex(esc_drivers[1])=sex_male then
+                   Say(esc_drivers[1],'snake_aid2_M')
+                else Say(esc_drivers[1],'snake_aid2_F');
+                said=1;
+           end;
+                
+
+     until unitfilter(esc_drivers,[f_driving])=0 or tick>time;
+
+     comexitvehicle(esc_drivers);
+
+     ar_paths=ar_paths^0;
+     ar_grouptypes=ar_grouptypes^[5];
+     ar_groupstatus=ar_groupstatus^[0];
+     ar_grouphexcount=ar_grouphexcount^[0];
+     ar_groupfollowing=ar_groupfollowing^[0];
+     ar_targetlist=ar_targetlist^[[0,0]];
+     ar_dlg=ar_dlg^[0];
+
+     temp_list=[];
+     for i in esc_drivers do
+         temp_list=temp_list^GetLives(i);
+
+     ar_liveslist=ar_liveslist^[temp_list];
+
+     escaping_arabians=escaping_arabians^[esc_drivers];
+
+     if GetSex(esc_drivers[1])=sex_male then
+        Say(esc_drivers[1],'snake_aid3_M')
+     else Say(esc_drivers[1],'snake_aid3_F');
+end;
+
+
+//Escapees joining
+Export Function EscDialogue(esc);
+var v,g;
+begin
+     Randomize;
+
+     case rand(1,3) of
+          1: v='esc_join1_';
+          2: v='esc_join2_';
+          3: v='esc_join3_';
+     end;
+
+     case GetSex(esc) of
+          sex_male: g='M';
+          sex_female: g='F';
+     end;
+
+     DialogueOn;
+     CenterOnUnits(esc);
+
+     Say(esc, v & g & '1');
+
+     if esc_dlg=0 then                              //Make the dialogue shorter after the first time
+     begin
+          Say(Heike,'esc_join_He1');
+          Say(esc, v & g & '2');
+          esc_dlg=1;
+     end;
+
+     Say(Heike,'esc_join_He2');
+     if GetSex(esc)=sex_male then
+        Say(esc,'esc_join_M')
+     else Say(esc,'esc_join_F');
+
+     DialogueOff;
+     SetSide(esc,2);
+
+     if getlives(esc)<250 then
+        setlives(esc,251);
+end;
+
+//one of the escapees is a main character
+every 0$1 trigger tick>22$0 do
+var i,temp,character,un_list,line_list,veh;
+begin
+     Randomize;
+
+     un_list=[Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy];
+     line_list=['Os', 'Olaf', 'So', 'Ra', 'Ko', 'Av', 'Sw', 'Dw', 'Kh', 'Ev', 'Ch'];
+     for i=1 to un_list do
+         if un_list[i]=joining_main then
+            character=line_list[i];
+
+     uc_side=2;
+     uc_nation=nation_arabian;
+
+     vc_weapon=[ar_gun,ar_rocket_launcher][rand(1,2)];
+     vc_chassis=ar_half_tracked;
+     vc_engine=engine_siberite;
+     vc_control=control_manual;
+
+     veh=CreateVehicle;
+     SetLives(veh,rand(300,450));
+     PlaceUnitArea(veh,esc_main,false);
+     PlaceHumanInUnit(joining_main,veh);
+
+     DialogueOn;
+     CenterOnUnits(veh);
+
+     Say(joining_main,'esc_main_' & character & '1');
+     Say(Heike,'esc_main_He1');
+     Say(joining_main,'esc_main_' & character & '2');
+     Say(joining_main,'esc_main_' & character & '3');
+     Say(Heike,'esc_main_He2');
+     Say(joining_main,'esc_main_' & character & '4');
+
+     DialogueOff;
+end;
+
+
+//A notification that the second stage of the game is about to begin
+every 0$1 trigger number_of_Ar5_groups_to_go<1 and escaping_arabians=0 do    //For some reason the amount of escapees groups can sometimes go over 30, making number_of_Ar5_groups_to_go less than 0
+var temp;
+begin
+     DialogueOn;
+     sayradio(scout,'res_sc1');
+
+     if escapees_dead=0 then
+     begin
+          say(Heike,'res_He1');
+          RescueStatus=2;              //Defining the medal status here, in case something goes wrong and more side 5 units spawn afterwards, so they wouldn't count
+     end
+     else
+         if escapees_dead<[11,7,3][difficulty] then
+         begin
+              say(Heike,'res_He1');        //different line depending on wether there were casualties in escapees or not (wether the player gets the medal or not)
+              RescueStatus=1;
+         end
+         else
+             if escapees_dead<[21,14,5][difficulty] then
+             begin
+                  say(Heike,'res_He2');
+                  RescueStatus=-1;
+             end
+             else
+                 begin
+                      say(Heike,'res_He2');
+                      RescueStatus=-2;
+                 end;
+
+     sayradio(Abdul,'res_Ab1');
+
+     say(Heike,'res_He3');
+     sayradio(scout,'res_sc2');
+     DialogueOff;
+
+     wait(0$0.2);
+     ChangeMissionObjectives('maingoals3');
+end;
+
+//Meeting Omar
+every 0$1 trigger isplaced(omar) and getside(omar)=2 marked 1 do
+begin
+     centeronunits(mastodon);
+
+     music_nat = 4;
+
+     say(omar,'om_om1');
+     say(heike,'om_he1');
+     say(omar,'om_om2');
+     say(heike,'om_he2');
+     if IsLive(Aviradze) then
+        say(Aviradze,'Om_Av1');
+     say(heike,'om_he3');
+     say(omar,'om_om3');
+end;
+
+//Dialogue when Legion first appears
+every 0$1 trigger Legion>0 do
+var temp,temp_list,temp_list2,placed_characters,i,temp_val,un_list,line_list;
+begin
+     repeat
+           wait(0$1);
+           if difficulty=1 then
+           begin
+                for i in Legion do
+                    if see(2,i) then            //Spotted automatically on easy, otherwise when they start shooting
+                    begin
+                         temp=i;
+                         break;
+                    end;
+           end
+           else
+               for i in filterallunits([f_side,2]) do
+                   if getside(unitshoot(i))=8 then
+                   begin
+                        temp=i;
+                        break;
+                   end;
+     until temp>0;
+
+     
+     dialogueon;
+     centeronunits(i);             
+     say(Heike,'Le1_He1');
+     dialogueoff;
+
+     //Random line
+     Wait(0$3);
+     un_list=[Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy, Soldier];
+     if getsex(soldier)=sex_male then
+        line_list=['Os', 'Olaf', 'So', 'Ra', 'Ko', 'Av', 'Sw', 'Dw', 'Kh', 'Ev', 'Ch', 'SomeM']
+     else line_list=['Os', 'Olaf', 'So', 'Ra', 'Ko', 'Av', 'Sw', 'Dw', 'Kh', 'Ev', 'Ch', 'SomeF'];
+     temp=0;
+
+     repeat
+          temp_val=rand(1,un_list);
+          if isplaced(un_list[temp_val]) then
+             if Say(un_list[temp_val], 'Le1_' & line_list[temp_val] & '1')>0 then     //Say 2 of the random lines
+                temp=temp+1;
+
+          un_list=delete(un_list,temp_val);
+          line_list=delete(line_list,temp_val);
+
+     until temp = 2 or un_list = 0;
+     
+
+
+     repeat
+           wait(0$1);
+     until Legion=0;           //Wait until all are destroyed
+
+     dialogueon;
+     say(Heike,'Le1_He2');
+     sayradio(Gensher,'Le1_Ge1');
+     say(Heike,'Le1_He3');
+     sayradio(Gensher,'Le1_Ge2');
+     say(Heike,'Le1_He4');
+     sayradio(Gensher,'Le1_Ge3');
+     say(Heike,'Le1_He5');
+     say(Heike,'Le1_He6');
+     dialogueoff;
+end;
+
+//Dialogue on second Legion attack
+every 0$1 trigger prisonersattacked=1 do
+var temp,temp_list,temp_list2,temp_val,un_list,line_list,i;
+begin
+     dialogueon;
+     centernowonunits(prisoners);
+     say(heike,'Le2_He1');
+     dialogueoff;
+
+     //Random line
+     Wait(0$3);
+     un_list=[Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy, Soldier];
+     if getsex(soldier)=sex_male then
+        line_list=['Os', 'Olaf', 'So', 'Ra', 'Ko', 'Av', 'Sw', 'Dw', 'Kh', 'Ev', 'Ch', 'SomeM']
+     else line_list=['Os', 'Olaf', 'So', 'Ra', 'Ko', 'Av', 'Sw', 'Dw', 'Kh', 'Ev', 'Ch', 'SomeF'];
+     temp=0;
+
+     repeat
+          temp_val=rand(1,un_list);
+          if isplaced(un_list[temp_val]) then
+             if Say(un_list[temp_val], 'Le2_' & line_list[temp_val] & '1')>0 then     //Say 2 of the random lines
+                temp=temp+1;
+
+          un_list=delete(un_list,temp_val);
+          line_list=delete(line_list,temp_val);
+
+     until temp = 2 or un_list = 0;
+
+end;
+
+//A notification of sorts when nearing the limit of causalties
+every 0$1 trigger escapees_dead>[24,14,5][difficulty] do
+var temp_sol;
+begin
+     InitHc;
+     uc_side=5;
+     uc_nation=nation_arabian;
+     hc_sex=sex_female;      //there's no guarantee there will be an escapee alive at this very moment
+
+     temp_sol=createhuman;
+     SayRadioNoName(temp_sol,'loss_SomeF1');
+     Say(Heike,'loss_H1');
+
+     destroyunit(temp_sol);
+end;
+
+
+//Friendly fire. Just the spoken lines, loosing conditions are elsewhere
+every 0$0.02 trigger escaping_arabians>0 do
+var i,j,temp_list1,temp_list2;
+begin
+     temp_list1=[];
+     temp_list2=[];
+     for i=1 to escaping_arabians do
+     begin
+          for j=1 to escaping_arabians[i] do
+              temp_list2=temp_list2^getlives(escaping_arabians[i][j]);
+
+          temp_list1=temp_list1^[temp_list2];
+     end;
+
+     ar_liveslist=temp_list1;
+     wait(0$0.1);
+
+     for i=1 to escaping_arabians do
+         for j=1 to escaping_arabians[i] do
+             if getside(unitshoot(escaping_arabians[i][j]))=2 and getlives(escaping_arabians[i][j])<ar_liveslist[i][j] then
+             begin
+                  if friendlyfire=3 then
+                     friendlyfire=0;
+
+                  if friendlyfire=1 or friendlyfire=2 then
+                  begin
+                       centeronunits(j);
+                       forcesay(heike,'ff_heike');
+                       wait(0$5);
+                       if friendlyfire=1 then
+                          friendlyfire=2
+                       else friendlyfire=3;
+                       break;
+                  end;
+
+                  if friendlyfire=0 then                                     
+                  begin
+                       centeronunits(j);
+                       if GetSex(escaping_arabians[i][j]) = sex_male then
+                          forcesay(escaping_arabians[i][j],'ff_all_solM1')
+                       else
+                          forcesay(escaping_arabians[i][j],'ff_all_solF1');
+                       wait(0$5);
+                       friendlyfire=1;
+                       break;
+                  end;
+             end;
+     enable;
+end;
+
+//Loose when attack side 5 intentionally, or directly cause a death of an escapee, like by a mine explosion.
+every 0$1 trigger escaping_arabians>0 do
+var i,j;
+begin
+     if friendlyfire=5 or intentional_ff_count>5 then
+        youlost('friendlyfire');
+
+     for i in filterallunits([f_side,2]) do
+         if hastask(i)>0 then
+            if gettasklist(i)[1][1]='A' and getside(gettasklist(i)[1][4])=5 then   //If the player gives the order to attack an ally, the order will simply be canceled and a friendly fire dialogue line displayed
+            begin
+                 settasklist(i,[]);                                       //The player will still lose if he hapens to kill an ally or does it repeatedly
+                 //youlost('friendlyfire');
+                 intentional_ff_count=intentional_ff_count+1;
+            end;
+enable;
+end;
+
+//A line spoken when a character is near a tiger
+every 0$1 trigger isplaced(kitty) and isplaced(cat) and getside(omar)=2 marked 1 do
+var temp,temp_list,cats,i;
+begin
+     cats=[kitty,cat];
+
+     repeat
+          wait(0$1);
+
+          cats = UnitFilter(cats,[f_alive]);
+          if cats = 0 then
+               exit;
+
+          temp_list=UnitFilter([Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy],[[f_ok],[f_not,[f_driving]]]);
+          if temp_list = 0 then
+               continue;
+
+          for i in UnitFilter(cats,[f_ok]) do
+               begin
+                    temp = NearestUnitToUnit(temp_list,i);
+                    if GetDistUnits(temp,i) <= 3 then
+                         begin
+                              case temp of
+                                   Heike: Say(temp,'cat_He1');
+                                   Oswald: Say(temp,'cat_Os1');
+                                   Olaf: Say(temp,'cat_Olaf1');
+                                   Sonya: Say(temp,'cat_So1');
+                                   Ralph: Say(temp,'cat_Ra1');
+                                   Kowalski: Say(temp,'cat_Ko1');
+                                   Aviradze: Say(temp,'cat_Av1');
+                                   Swansson: Say(temp,'cat_Sw1');
+                                   Dwayne: Say(temp,'cat_Dw1');
+                                   Khattam: Say(temp,'cat_Kh1');
+                                   Evelyn: Say(temp,'cat_Ev1');
+                                   Chrissy: Say(temp,'cat_Ch1');
+                              end;
+
+                              exit;
+                         end;
+               end;
+
+     until false;
+end;
+
+//End cutscesne
+every 0$1 trigger ru_heavy_times=0 do
+var i,temp,guy;
+begin
+     temp=0;
+     for i in ru_grouptypes do
+         if i=1 then
+            temp=1;
+     if temp=0 then
+     begin
+          Randomize;
+          inithc;
+          uc_nation=nation_arabian; uc_side=2;
+          hc_class=class_soldier; hc_sex=1; hc_name='Arthur Turner';
+          guy=createhuman;
+
+          IngameOn;
+
+          temp=filterunitsinarea(SeekArea9,[f_side,2]);         //Move all units out of harms way
+          commovexy(temp,140,120);
+          temp=filterunitsinarea(SeekArea8,[f_side,2]);
+          commovexy(temp,76,125);
+          temp=filterunitsinarea(SeekArea2,[f_side,2]);
+          commovexy(temp,228,155);
+
+          DisableAttacking=1;                                   //Make sure there isn't any fighting during the last dialogue
+          Setattitude(2,6,att_friend,true);
+
+          sayradio(guy,'end_guy1');
+          sayradio(Gensher,'end_ge1');
+          sayradio(guy,'end_guy2');
+          sayradio(Gensher,'end_ge2');
+          sayradio(guy,'end_guy3');
+          sayradio(Gensher,'end_ge3');
+          sayradio(Gensher,'end_ge4');
+          forcesay(Omar,'end_om1');
+          sayradio(Gensher,'end_ge5');
+          sayradio(Gensher,'end_ge6');
+          sayradio(guy,'end_guy4');
+          forcesay(Omar,'end_om2');
+
+          ru_limit=5;                                           //Spawn new heavy groups
+          ru_heavy_times=[tick,tick+0$20,tick+0$40];
+          setattitude(2,6,att_friend,true);
+          ExclusiveOff;
+          placeseeing(165,177,2,25);
+          centernowonxy(165,177);
+
+          wait(0$8);
+
+          forcesay(Heike,'End_He1');
+          wait(0$2);
+          forcesay(Heike,'End_He2');
+          wait(0$2);
+          forcesay(Heike,'End_He3');
+
+          wait(0$0.2);
+          EndMission;
+     end;
+enable;
+end;
+

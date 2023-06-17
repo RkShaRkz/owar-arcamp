@@ -1,0 +1,13 @@
+begin
+? type grass
+ ! all 70
+ ! rgb 96 106 71
+ ! sat 75
+new
+? type terrain
+ ! all 80
+ ! contr 115
+new
+? type boulder
+ ! all 80
+end

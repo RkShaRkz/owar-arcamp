@@ -1,0 +1,292 @@
+Export testing;
+Export Heike, Omar, Gensher, Abdul;
+Export apes;
+
+
+Starting
+begin
+     ResetFog;
+     RandomizeAll;
+
+     testing = false;  //Just testing or playing for real?
+
+     disable(1);
+
+     PlaceUnits;
+     Action;
+end;
+
+Function PlaceUnits;
+     var val;
+     begin
+          InitUc;
+          InitHc;
+          uc_side = 2;
+          uc_nation = nation_arabian;
+
+          for val in FilterAllUnits([[f_side,2],[f_type,unit_building]]) do
+               begin
+                    case GetBType(val) of
+                         b_depot,b_warehouse: begin
+                              PrepareEngineer(false,0);
+                              PlaceHumanInUnit(CreateHuman,val);
+
+                              SetBName(val,'kaaba');
+                         end;
+                         b_workshop,b_factory,b_lab,b_lab_half,b_lab_full,b_armoury,b_barracks,b_breastwork,b_bunker: begin
+                              case GetBType(val) of
+                                   b_workshop,b_factory: begin
+                                        PrepareMechanic(false,0);
+                                        SetSpecResearch(val,100,false);
+                                   end;
+                                   b_lab,b_lab_half,b_lab_full: begin
+                                        PrepareScientist(false,0);
+                                        SetSpecResearch(val,100,false);
+                                   end;
+                                   b_breastwork,b_bunker: begin
+                                        PrepareSoldier(false,0);
+                                   end;
+                              end;
+
+                              PlaceHumanInUnit(CreateHuman,val);
+                         end;
+                    end;
+               end;
+
+          //Create Heike and Omar and place them near the depot.
+          if testing then
+               begin
+                    preparesoldier(sex_female,0);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+               end
+          else
+               begin
+                    Heike = CreateCharacter('Heike_11_cont');
+                    SetClass(Heike,class_soldier);
+               end;
+
+          Omar = NewCharacter('Omar');
+
+          PlaceUnitXY(Omar,138,63,false);
+          PlaceUnitXY(Heike,138,77,false);
+
+          ComTurnUnit(Omar,Heike);
+
+          //Gensher and Abdul
+          if testing then
+               begin
+                    PrepareSoldier(sex_male,0);
+                    hc_name = 'Dietrich';
+                    Gensher = CreateHuman;
+               end
+          else
+               begin
+                    Gensher = CreateCharacter('Gensher_11_cont');
+                    SetClass(Gensher,class_soldier);
+               end;
+
+          Abdul = NewCharacter('Abdul');
+
+          //PlaceHumanInUnit(Gensher,ar_depot);
+          //PlaceHumanInUnit(Abdul,ar_depot);
+
+          //Some apes for little event
+          InitUc;
+          InitHc;
+          uc_nation = nation_nature;
+          uc_side = 2;
+          hc_class = class_apeman_soldier;
+          apes = [CreateHuman,CreateHuman,CreateHuman];
+
+          PlaceUnitXY(apes[1],125,63,false);
+          ComTurnXY(apes[1],126,64);
+          PlaceUnitXY(apes[2],127,64,false);
+          ComTurnXY(apes[2],126,64);
+          PlaceUnitXY(apes[3],126,65,false);
+          ComTurnXY(apes[3],126,64);
+     end;
+
+Function Action;
+     var Sonya, Oswald, Ralph, Kowalski, Evelyn, Olaf, Dwayne, Aviradze, Swansson, Khattam, Makise, others_list, Gonzo;
+     var units_list, un, un_list, name_list, temp_list, num, i, sel_list;
+     begin
+          InGameOn;
+          ExclusiveOff;
+          
+          ComMoveUnit(Heike,Omar);
+
+          wait(2);
+          CenterNowOnUnits(Heike);
+          ClearAllFogForSide(2);
+
+          i = 0;
+          repeat
+          i = i + 1;
+          ComMoveXY(Heike,138,65);
+          AddComTurnUnit(Heike,Omar);
+
+          if (i mod 3) = 0 then
+               CenterOnUnits(Heike);
+          
+          wait(0$1);
+          until IsAt(Heike,138,65) or i > 10;
+
+          CenterOnUnits([Heike,Omar]);
+
+          Say(Omar,'D1-Om-1');
+          Say(Heike,'D1-H-1');
+          Say(Omar,'D1-Om-2');
+          Say(Heike,'D1-H-2');
+          Say(Omar,'D1-Om-3');
+          Say(Heike,'D1-H-3');
+          Say(Omar,'D1-Om-4');
+          Say(Heike,'D1-H-4');
+
+          i = 0;
+          repeat
+          ComEnterUnit([Heike,Omar],ar_depot);
+          i = i + 1;
+          wait(0$0.5);
+          until ( IsInUnit(Heike) = ar_depot and IsInUnit(Omar) = ar_depot ) or i > 20;
+
+          enable(1);
+
+          Say(Abdul,'D1-Ab-1');
+          Say(Abdul,'D1-Ab-2');
+          Say(Abdul,'D1-Ab-3');
+          Say(Heike,'D1-H-5');
+          Say(Heike,'D1-H-6');
+          Say(Omar,'D1-Om-5');
+          Say(Abdul,'D1-Ab-4');
+          wait(0$1);
+          Say(Heike,'D1-H-7');
+          Say(Gensher,'D1-Ge-1');
+          Say(Abdul,'D1-Ab-5');
+
+          wait(0$0.2);
+
+
+          //Load characters
+          uc_nation = nation_arabian;
+          uc_side = 2;
+
+          Sonya = LoadPlayerChar('Sonya');
+          Oswald = LoadPlayerChar('Oswald');
+          Ralph = LoadPlayerChar('Ralph');
+          Kowalski = LoadPlayerChar('Kowalski');
+          Evelyn = LoadPlayerChar('Evelyn');
+          Olaf = LoadPlayerChar('Olaf');
+          Dwayne = LoadPlayerChar('Dwayne');
+          Aviradze = LoadPlayerChar('Aviradze');
+          Swansson = LoadPlayerChar('Swansson');
+          Gonzo = LoadPlayerChar('Gonzo');
+          Khattam = LoadPlayerChar('Khattam');
+
+          Makise = NewCharacter('Makise');
+
+          if LoadVariable('Oswald_is_substitute_11_generic',false) then
+               Oswald = 0;
+
+          if not LoadVariable('Khattam_accepted_11_cont',true) then
+               Khattam = 0;
+
+          others_list = (CreateCharacterSet('Others_11_cont') ^ CreateCharacterSet('Others_11_not_sel')) diff 0;
+
+          units_list = ([Sonya, Oswald, Ralph, Kowalski, Evelyn, Olaf, Dwayne, Swansson, Khattam] diff 0) ^ others_list;
+
+          //Create extra units
+          InitUc;
+          InitHc;
+          uc_side = 2;
+          uc_nation = nation_arabian;
+
+          num = 7+Rand(0,2);
+          if 14 - units_list > 0 then
+               num = num + (14 - units_list);
+
+          for i = 1 to num do
+               begin
+                    PrepareHuman(false,[class_soldier,class_engineer,class_mechanic,class_scientistic][Rand(1,4)],Rand(4,5));
+                    un = CreateHuman;
+                    units_list = units_list ^ un;
+                    others_list = others_list ^ un;
+               end;
+
+          //Pick units
+          num = [5,4,3][difficulty];
+          sel_list = CharacterSelection('',num,num,[sel_change_class,sel_hired,sel_not_changeable,Makise] ^ ([Aviradze] diff 0) ^ [Heike,sel_not_hired,sel_changeable] ^ units_list,[class_soldier,[class_engineer,1],class_mechanic,class_scientistic,class_mortar]);
+
+          //Save units and change map
+          SaveCharacters(Heike,'Heike_12_sel');
+          SaveCharacters(Makise,'Makise_12_sel');
+          if Aviradze > 0 then
+               SaveCharacters(Aviradze,'Aviradze_12_sel');
+
+          un_list = [Sonya, Oswald, Ralph, Kowalski, Evelyn, Olaf, Dwayne, Swansson, Khattam];
+          name_list = ['Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Evelyn', 'Olaf', 'Dwayne', 'Swansson', 'Khattam'];
+          for un = 1 to un_list do
+               if un_list[un] in sel_list then
+                    SaveCharacters(un_list[un],name_list[un] & '_12_sel')
+               else
+                    if un_list[un] > 0 then
+                         begin
+                              SetLastMission(un_list[un],11);  //For correct xp bonus later on
+                              SaveCharacters(un_list[un],name_list[un] & '_12_not_sel');
+                         end;
+
+          if Gonzo > 0 then
+               SaveCharacters(Gonzo,'Gonzo_12_sel');
+
+          SaveCharacters(sel_list diff (un_list ^ Heike ^ Aviradze ^ Makise),'Others_12_sel');
+          temp_list = others_list diff sel_list;
+          SetLastMission(temp_list,11);  //for correct xp bonus later on
+          SaveCharacters(temp_list,'Others_12_not_sel');
+
+
+          ChangeMap('%_cont','%_cont');
+
+          InGameOff;
+     end;
+Function LoadPlayerChar(c_name);
+     begin
+          if TestCharacters(c_name&'_11_cont') then
+               result = CreateCharacter(c_name&'_11_cont')
+          else
+               if TestCharacters(c_name&'_11_not_sel') then
+                    result = CreateCharacter(c_name&'_11_not_sel')
+               else
+                    result = 0;
+     end;
+
+//Little event - some apes talk and a kamikaze ape joins
+Every 0$1 marked 1 do
+     var kami;
+     begin
+          InitUc;
+          InitHc;
+          uc_nation = nation_nature;
+          uc_side = 2;
+          hc_class = class_apeman_kamikaze;
+
+          kami = CreateHuman;
+          PlaceHumanInUnit(kami,arbarr);
+
+          ComExitBuilding(kami);
+          wait(0$0.5);
+
+          repeat
+          ComMoveXY(kami,126,64);
+          AddComTurnXY(kami,119,55);
+          wait(0$0.5);
+          until GetDistUnitXY(kami,126,64) <= 7;
+
+          ComTurnUnit(apes,kami);
+          wait(0$1.5);
+
+          //KAMIKAZE! RUN AWAY!
+          ComMoveXY(apes,98,14);
+
+          wait(0$15);
+          ComEnterUnit(kami,arbarr);  //*sob* "then I just go back to the barracks"
+     end;

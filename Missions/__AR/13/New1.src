@@ -1,0 +1,1001 @@
+//Writes hexes marked on editor map into usable list of hexes
+Export Function MakeAList(path);
+var i,list;
+begin
+list=areatolist(path,0);
+path=[];
+    for i=1 to list[1] do
+    begin
+         path=[[list[1][i],list[2][i]]]^path;  //Adding them backwards because AreaToList starts from the top
+    end;
+result=path;
+end;
+
+
+every 0$1 marked 1 do
+var i,j,strings;
+begin
+     if testing=true then
+     begin                                          //display some strings for testing
+          if exclamation>0 then
+          begin
+               case exclamation of
+                    1:
+                      strings=strings^'No area for group heavy!';
+                    2:
+                      strings=strings^'No area for group scout!';
+                    3:
+                      strings=strings^'No area for group seek normal!';
+                    4:
+                      strings=strings^'No area for group hunt!';
+                    5:
+                      strings=strings^'No area for group escapees!';
+                    6:
+                      strings=strings^'No area for group seek triggered!';
+             end;
+             exclamation=0;
+          end;
+
+          i=[['Ar groups count:',st_argroupscount],['Total escapees dead:',st_arunitsdead],['Escapees dead',escapees_dead],['cameras left:',cameracount]];
+          if st_measurementtime>0 then
+            i=i^[['#Ar13-ArtTime',st_measurementtime]];
+
+          if strings>0 then
+             i=i^strings;
+
+
+          i=i^['prisoners',prisoners,'prisoners_status',prisoners_status,'prisoners_escaping',prisoners_escaping,'prisoner_lives',prisoner_lives];
+          //i=i^[['time:',tick],['Ru_spawning_time:',Ru_spawning_time]];
+
+          display_strings=['#Am15-1', tick]^i;
+     end
+     else
+         if Measurement_timecount>0 then
+         begin
+              display_strings=['#Ar13-CCount',cameracount, '#Ar13-ArtTime',[3$0,4$0,5$0][difficulty]-Measurement_timecount];    //in normal game display camera count and time of artifact measurement only
+         end
+         else display_strings=['#Ar13-CCount',cameracount];
+     enable;
+end;
+
+//A little update and Technologies during different stages of the mission
+every 0$1 marked 1 do
+var temp,i;
+begin
+     Randomize;
+
+     temp=filterallunits([[f_side,2],[f_weapon,ar_cargo_bay]]);   //keep track of which cargo has the artifact
+     for i in temp do
+         if getcargo(i,mat_artifact) then
+            artifact_cargo=i;
+
+     if isdead(mastodon) then                                     //update mastodon
+     begin
+          mastodon_list=delete(mastodon_list,1);
+          mastodon=mastodon_list[1];
+          mastodon_tick=tick;
+     end;
+
+     if not intentional_ff_count=ff_count2 then
+     begin
+          say(heike,'ff_heike2');                         //moved it here to prevent lagging the count
+          ff_count2=intentional_ff_count;
+     end;
+
+     if measurement_ani=0 then
+        for i in filterallunits([[f_side,2],[f_class,class_scientistic]]) do     //moved here to ensure the order to stop contaminating is given few times over if nesesary
+            if hastask(i) then
+               if gettasklist(i)[1][1]='G' and measurement_ani=0 then
+                  comstop(i);
+
+     if clear_spawn_location[2]>0 then
+        if tick-0$30>clear_spawn_location[2] then
+           if clear_spawn_location[2]=16$0 then
+              clear_spawn_location=[rand(1,3),18$0]
+           else clear_spawn_location=[0,0];
+
+
+     if tick>[3$0,3$0,2$0][difficulty] and gamestage<1 then                   //All techs are initially set as researched in editor
+     begin                                                                    //local tau field disabled because it makes dying humans bulletproof. Annoying and not needed.
+          gamestage=1;
+                                                                         
+          Ru_prep_red=tag(Ru_prep_red,1,PrepareAreaAndPath(4,0));            //first two russian groups
+          Ru_prep_red=tag(Ru_prep_red,2,PrepareAreaAndPath(4,0));
+
+
+          settech(tech_weap1,3,state_researched);                            //Medium and Hard: side 3 (red):
+          settech(tech_weap2,3,state_enabled);                               //      gamestage1: weap1 researched  weap2-3 enabled
+          settech(tech_weap3,3,state_enabled);                               //                  comp1 researched  comp2-3 enabled
+                                                                             //                  sib1  researched  sib2-3  enabled
+          settech(tech_comp1,3,state_researched);                            //                  ST1   researched  ST 2-3  enabled
+          settech(tech_comp2,3,state_enabled);                               //                 tech1-2researched  tech 3  enabled (to make them slow)
+          settech(tech_comp3,3,state_enabled);                               //
+                                                                             //
+          settech(tech_tech3,3,state_enabled);                               //
+          settech(tech_sib2,3,state_enabled);                                //easy: side 3 (red):
+          settech(tech_sib3,3,state_enabled);                                //      gamestage1: all weap enabled
+          settech(tech_ST1,3,state_researched);                              //                  all comp enabled
+          settech(tech_ST2,3,state_enabled);                                 //                  sib 1 researched    sib 2-3 enabled
+          settech(tech_ST3,3,state_enabled);                                 //                  ST1 researched      ST2-3 enabled
+                                                                             //                  Tech1-2 researced   Tech 3 enabled
+
+          if difficulty=1 then
+          begin
+               settech(tech_weap1,3,state_enabled);
+               settech(tech_comp1,3,state_enabled);
+          end;
+     end;                                                                    
+
+     if tick>15$30 and gamestage<2 then
+     begin
+          gamestage=2;
+
+          ru_spawning_time=tag(ru_spawning_time,3,0);      //triggering more timers depending on difficulty
+          if difficulty>1 then
+             ru_spawning_time=tag(ru_spawning_time,4,0);
+          //if difficulty=3 then
+          //   ru_spawning_time=tag(ru_spawning_time,5,tick+rand(0$30,1$0));
+
+          if difficulty=1 then
+             ru_spawning_time=tag(ru_spawning_time,5,0);     //the lower tech and group limits on easy make it necessary to actually send more enemy vehicles. on harder difficulties this is just too much
+
+          if difficulty>1 then
+             settech(tech_weap2,3,state_researched);                         //tech: Russians side 3 (red);
+          if difficulty=3 then                                               //      gamestage2:
+             settech(tech_weap3,3,state_researched);                         //                 weap2 researched on medium, both weap2-3 researched on hard
+                                                                             //                 comp2 researched on medium and hard
+          if difficulty>1 then                                               //
+             settech(tech_comp2,3,state_researched);                         //
+                                                                             //      Legion:
+          if difficulty<3 then                                               //                 all researched on hard  weap1-2 researched on medium and hard
+          begin                                                              //                 all except weap3 researched on medium
+               settech(tech_weap3,8,state_enabled);                          //                 none researched on easy
+               if difficulty=1 then                                          //                 
+               begin
+                    settech(tech_weap1,8,state_enabled);
+                    settech(tech_weap2,8,state_enabled);
+                    settech(tech_bio1,8,state_enabled);
+                    settech(tech_bio2,8,state_enabled);
+                    settech(tech_bio3,8,state_enabled);
+               end;
+          end;
+     end;
+
+     if tick>[36$30,37$30,38$30][difficulty] and gamestage<3 then
+     begin
+          gamestage=3;                                                       //gamestage3:
+
+          No_seek_groups=0;
+
+          if difficulty < 3 then
+             ru_spawning_time=tag(ru_spawning_time,5,999$0);
+
+          ru_spawning_time=tag(ru_spawning_time,6,0);      //starting the two magenta timers on all levels
+          ru_spawning_time=tag(ru_spawning_time,7,0);
+          //ru_spawning_time=tag(ru_spawning_time,7,tick+rand(0$30,3$0));
+      {    if difficulty=3 then
+             ru_spawning_time=tag(ru_spawning_time,5,999$0);                 //switch off the timer 5
+          if difficulty<3 then                                               //four red timers left on, on hard
+          begin
+               ru_spawning_time=tag(ru_spawning_time,4,999$0);               //switch off timers 5 and 4
+               ru_spawning_time=tag(ru_spawning_time,5,999$0);               //three red timers left on, on medium and easy
+          end;
+      }
+          if difficulty=1 then                                               //tech: red: comp all enabled (downgraded)
+          begin                                                              //           ST2 researched
+               settech(tech_comp1,3,state_enabled);                          //
+               settech(tech_comp2,3,state_enabled);                          //  magenta:
+               settech(tech_comp3,3,state_enabled);                          //           tech1-2 researched  tech3 enabled (to make them slow)
+          end;                                                               //           sib1    researched  sib2-3enabled
+                                                                             //           ST1-2   researched  
+          settech(tech_ST2,3,state_researched);                              //           ST3 researched on hard else enabled
+                                                                             //           everything else researched on hard and medium
+                                                                             //           comp1-2 and weap1-2 on easy
+          settech(tech_tech3,6,state_enabled);                               //   
+          settech(tech_sib2,6,state_enabled);                                //           
+          settech(tech_sib3,6,state_enabled);                                //   legion: has everything researched on medium and hard
+                                                                             //           weap1-2 and bio1-2 researched on easy
+          if difficulty<3 then
+             settech(tech_ST3,6,state_enabled)
+          else
+              settech(tech_ST3,6,state_researched);
+
+          if difficulty=1 then
+          begin
+               settech(tech_weap3,6,state_enabled);
+               settech(tech_comp3,6,state_enabled);
+          end;
+
+          if difficulty=1 then
+          begin
+               settech(tech_weap1,8,state_researched);
+               settech(tech_weap2,8,state_researched);
+               settech(tech_bio1,8,state_researched);
+               settech(tech_bio2,8,state_researched);
+          end
+          else
+              begin
+                   settech(tech_weap3,8,state_researched);
+                   settech(tech_bio3,8,state_researched);
+              end;
+     end;
+enable;
+end;
+
+//creates list of random 1-4 numbers for choosing entering areas, because rand function turned out to be too repetitive
+every 0$1 do
+var randomsetof1000,previous_number,previous_number2,final_list,count,i;
+begin
+     Randomize;
+                   //1000 "random" numbers   //creating or reading such big lists all at once generates lag so it's done slowly
+
+     randomsetof1000=[];
+     for i=1 to 20 do
+     begin
+          randomsetof1000=randomsetof1000^[rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4),rand(1,4)];
+          wait(0$1);
+     end;
+
+
+     previous_number=randomsetof1000[1];
+     previous_number2=0;
+     final_list=randomsetof1000[1];
+     for i=1 to randomsetof1000 do      //Rewrite the list skipping repetitions. Same number twice in a row allowed only once per at least 8 numbers, not allowed to repeat previous number (to avoid patterns like 1,2,1,2,1,2...)
+     begin
+          if i>1 then
+             if not randomsetof1000[i]=previous_number2 then
+             begin
+                  count=count+1;
+                  if not randomsetof1000[i]=previous_number then
+                  begin
+                       final_list=final_list^randomsetof1000[i];
+                       previous_number2=previous_number;
+                       previous_number=randomsetof1000[i];
+                  end
+                  else
+                      if count>8 then
+                      begin
+                           final_list=final_list^randomsetof1000[i];
+                           previous_number2=previous_number;
+                           previous_number=randomsetof1000[i];
+                           count=0;
+                      end;
+             end;
+
+          //take a break every now and then, to minimalise the lag
+          if i=25 or i=50 or i=75 or i=100 or i=125 or i=150 or i=175 or i=200 or i=225 or i=250 or i=275 or i=300 or i=325 or i=350 or i=375 or i=400 or i=425 or i=450 or i=475 or i=500 or i=525 or i=550 or i=575 or i=600 or i=625 or i=650 or i=675 or i=700 or i=725 or i=750 or i=775 then
+             wait(0$1);
+     end;
+
+     Randomized_1_4_list=final_list;
+end;
+                                                   
+//Change the class of a unit when approaching a cargo
+every 0$0.5 marked 1 do
+var i,j,temp,temp1,temp2,un,name,un_list,name_list;
+begin
+     temp=filterallunits([[f_side,2],[f_weapon,ar_cargo_bay],[f_empty]]);       //Check how many empty cargos there are
+
+     if temp<EmptyCargos and EmptyCargos=filterallunits([[f_side,2],[f_weapon,ar_cargo_bay],[f_control,control_manual]]) then    //If it's less than what was before and the total still agrees (meaning a cargo was entered and not destroyed)
+     begin
+          for i in EmptyCargos do
+              if IsDrivenBy(i)>0 then                     //find which cargo has a new driver
+              begin
+                   temp1=0;
+                   if ClassChangedList>0 then
+                      for j in ClassChangedList do           //check if the driver has just been asked the query
+                          if j[1]=IsDrivenBy(i) then
+                             temp1=1;
+
+                   if temp1=0 then
+                      cargo_UnitList=cargo_UnitList^IsDrivenBy(i);   //if not add the driver to the list
+              end;
+          EmptyCargos=temp;                                          //update the list of empty cargos
+     end
+     else
+         EmptyCargos=temp;
+
+
+     temp1=0;
+     if ClassChangedList>0 then                                      //Update the list of units that have just changed class - if the tick that goes with the unit is 5 sec old, delete from list
+        for i=1 to ClassChangedList do
+            if tick>ClassChangedList[i][2] + 0$5 then
+            begin
+                 temp1=i;
+                 break;
+            end;
+     if temp1>0 then
+        ClassChangedList=delete(ClassChangedList,temp1);
+
+     temp1=filterallunits([[f_side,2],[f_weapon,ar_cargo_bay]]);
+     for i in temp1 do
+     begin
+          temp2=filterallunits([[f_dist,i,5],[f_side,2],[f_type,unit_human],[f_not,[class_desert_warior]],[f_not,[class_tiger]]]);
+
+          for j in ClassChangedList do
+              if j[1] in temp2 then
+                 temp2=temp2 diff j[1];
+
+          if temp2>0 then
+             for j in temp2 do
+                 if hastask(j) then
+                    if gettasklist(j)[1][2]=getX(i) and gettasklist(j)[1][3]=getY(i) then     //if a unit has a task aimed at the cargo, and is near
+                       cargo_UnitList=cargo_UnitList^j;
+     end;
+
+
+     if cargo_UnitList>0 then                            //different choices depending on units current class, note that 6 is the biggest number of choices allowed
+        for i in cargo_UnitList do
+        begin
+             case getclass(i) of
+                  class_soldier:                 temp1=[2,3,4,5,6,7];
+                  class_engineer:                temp1=[1,3,4,5,6,7];
+                  class_mechanic:                temp1=[1,2,4,5,6,7];
+                  class_scientistic:             temp1=[1,2,3,5,6,7];
+                  class_mortar:                  temp1=[1,2,3,4,6,7];
+                  class_sniper:                  temp1=[1,2,3,4,5,7];
+                  class_apeman:                  temp1=[1,2,3];
+                  class_apeman_soldier:          temp1=[1,3];
+                  class_apeman_kamikaze:         temp1=[2,3];
+             end;
+              
+             if filterallunits([f_class,class_sniper])>0 then            //only one sniper allowed
+                temp1=temp1 diff 6;
+                 
+             if getnation(i)=nation_arabian then
+             begin
+                  case SelectiveQuery('q_change_class',temp1) of
+                       1: setclass(i,class_soldier);
+                       2: setclass(i,class_engineer);
+                       3: setclass(i,class_mechanic);
+                       4: setclass(i,class_scientistic);
+                       5: setclass(i,class_mortar);
+                       6: setclass(i,class_sniper);
+                  end;
+             end
+             else
+                 case SelectiveQuery('q_change_class_ape',temp1) of
+                      1: setclass(i,class_apeman_kamikaze);
+                      2: setclass(i,class_apeman_soldier);
+                 end;
+               
+             if GetTaskList(i)=1 then
+                if not GetTaskList(i)[1][1]='E' then    //do not cancel the order to enter the cargo, or if the unit is has some further plans
+                   comstop(i);
+
+             ClassChangedList=ClassChangedList^[[i,tick]];    //remember who and when has just been asked the query
+        end;
+
+     cargo_UnitList=[];
+
+     enable;
+end;
+
+
+//Camera placing
+every 0$0.1 trigger filterallunits([[f_side,2],[f_class,class_engineer]])>0 do       //timing is important, every 0$0.02 almost eliminates the possibility of placing an "illegal" camera, but also causes slight but noticeable lag
+var i,j,k,temp,env,count;            
+begin
+     for i in filterallunits([[f_side,2],[f_class,class_engineer]]) do
+     begin
+          if hastask(i)>0 then
+             if Gettasklist(i)[1][1]='g' and getdistunitxy(i,Gettasklist(i)[1][2],Gettasklist(i)[1][3])<2 then
+             begin                                 //if an engineer is given the command to place camera and is 1 hex away from it's target tree (1 hex away means standing just beside the tree, not having 1 hex space between them)
+                  temp=0;
+                  if camerasplaced>0 then           //check if the target tree (hex) is already in camerasplaced list
+                     for j in camerasplaced do
+                         if j[1]=Gettasklist(i)[1][2] and j[2]=Gettasklist(i)[1][3] then
+                            temp=1;
+        
+                     if temp=0 then                   //if not, consider the camera placed and place one by sail just to be sure
+                     begin
+                          hiddencamera(Gettasklist(i)[1][2],Gettasklist(i)[1][3],2);  //hiddencamera is the same as placing one with engineer
+                          cameracount=cameracount-1;
+                          camerasplaced=camerasplaced^[ [Gettasklist(i)[1][2],Gettasklist(i)[1][3]] ];
+                          //Mark
+                          MoveAreaXY(CameraMarkList[1],Gettasklist(i)[1][2],Gettasklist(i)[1][3]);
+                          SetAreaMapShow(CameraMarkList[1],3);
+                          CameraMarkListUsed=CameraMarkListUsed^CameraMarkList[1];
+                          CameraMarkList=delete(CameraMarkList,1);
+                     end;
+            end;
+
+          if hastask(i)>0 then
+             if Gettasklist(i)[1][1]='M' and getdistunitxy(i,Gettasklist(i)[1][2],Gettasklist(i)[1][3])<2 then   //if an enginner has a task of moving and is 1 hex away from its target
+                if camerasplaced>0 then
+                   for j=1 to camerasplaced do
+                       if Gettasklist(i)[1][2]=camerasplaced[j][1] and Gettasklist(i)[1][3]=camerasplaced[j][2] then    //if that target is in camerasplaced list
+                       begin
+                            case Query('q_remove_camera') of
+                                 1:begin
+                                        removeseeing(Gettasklist(i)[1][2],Gettasklist(i)[1][3],2);    //apparently hiddencamera and placeseeing can be removed the same way/are the same thing
+                                        camerasplaced=delete(camerasplaced,j);
+                                        cameracount=cameracount+1;
+                                        //Unmark
+                                        for k=1 to CameraMarklistused do
+                                            if InArea(Gettasklist(i)[1][2],Gettasklist(i)[1][3],CameraMarklistused[k]) then
+                                            begin
+                                                 SetAreaMapShow(CameraMarklistused[k],0);
+                                                 CameraMarkList=CameraMarkList^CameraMarklistused[k];
+                                                 CameraMarklistused=delete(CameraMarklistused,k);
+                                                 break;
+                                            end;
+                                        break;
+
+                                   end;
+                                 2:begin comstop(i);
+                                   end;
+                            end;
+                       end;
+
+     end;
+
+     //Sometimes the above can fail if the eng is given the order while standng next to the tree already - meaning the task of placing camera is executed before this code "spots" it, and a camera is placed without being added to the list or changing camera count
+     //The following should eliminate it, but it also means the camera placing can simply fail in such case
+     env=[];
+     temp=[Seekarea1,Seekarea2,Seekarea3,Seekarea4,Seekarea5,Seekarea6,Seekarea7,Seekarea8,Seekarea9,Seekarea10];
+     for i in temp do
+         env=env^listenvironmentarea(i);   //create a list of all trees on map
+     for i in env do
+     begin
+          temp=0;
+          for j in camerasplaced do
+              if i[1]=j[1] and i[2]=j[2] then
+                 temp=1;
+          if temp=0 then
+             removeseeing(i[1],i[2],2);     //constantly be removing seeings (cameras) from all trees unless it happens to be in the camerasplaced list
+     end;
+
+     if cameracount=0 then
+        settech(tech_hidcam,2,state_disabled)    //disable the tech once cameracount hits zero
+     else settech(tech_hidcam,2,state_researched);
+
+     enable;
+end;
+
+
+//Taming of tigers Omar will bring with him occurs on the map during intro
+every 0$0.1 trigger getside(Omar)=5 do
+begin
+     placeunitxy(omar,155,9,0);
+     comtamexy(omar,155,8);
+     wait(0$1);
+     repeat
+           comtamexy(omar,155,8);
+           commovexy(kitty,157,3);
+           commovexy(cat,159,5);
+           wait(0$1);
+     until istamedby(kitty) and istamedby(cat);
+     removeunit(omar);                            //After removing and relpacing the tigers stay tamed
+     removeunit(kitty);
+     removeunit(cat);                             //The tigers do not join the player side but are marked with a collar of the same side
+     setside(omar,2);                             //Apparently the color gets updated on removing and placing the tiger - it changes color to yellow along with Omar
+
+
+     if difficulty=1 then
+        ChangeSideFog(5,2);
+     ResetFog;
+end;
+
+
+//Artifact measurement taking. It requires a real scientist to carry it out. In the unlikely event that there is no such character on map, the 'Scientist' picked at the beginning is the only one who can do it (so it could be someone like Heike). It should ensure the player has always at least one person to do the measurement.
+every 0$0.1 trigger artifact_ready=1 do
+var i,j,starttime,timeup,finished,scientists,closest_sci,temp;
+begin
+     temp=filterallunits([[f_side,2],[f_class,class_scientistic],[f_distxy,artifact_hex[1],artifact_hex[2],5],[f_not,[f_driving]]]);
+
+     if temp>0 then
+     begin
+          scientists=unitfilter(temp,[f_minskill,skill_scientistic,7]);  //Has to be an actual scientist, min level 7, or dedicated scientist characters
+          if Chrissy in temp then
+               scientists = scientists union Chrissy;
+          if Sonya in temp then
+               scientists = scientists union Sonya;
+          if Aviradze in temp then
+               scientists = scientists union Aviradze;
+          if Khattam in temp then
+               scientists = scientists union Khattam;
+
+          closest_sci=NearestUnitToXY(scientists,artifact_hex[1],artifact_hex[2]);
+          if closest_sci=0 then
+             if scientist in temp then
+                closest_sci=scientist;                                             //The 'Scientist' picked an the beginning of Dialogs module can be the one to do it if no better scientist is around.
+
+          if closest_sci=0 then
+          begin
+               closest_sci=NearestUnitToXY(temp,artifact_hex[1],artifact_hex[2]);
+
+                                                          //Say 'This is beyond me' when the only person's around skill is too low
+               i = false;
+               if art_checktime < closest_sci then
+                    i = true
+               else
+                    if tick > art_checktime[closest_sci] then
+                         i = true;
+
+               if i then
+                  begin
+                     if closest_sci in [Heike,Olaf,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Dwayne,Khattam] then
+                        begin
+                           case closest_sci of
+                              Heike:    say(Heike,'art_not_sci_He');
+                              Olaf:     say(Olaf,'art_not_sci_Olaf');
+                              Oswald:   say(Oswald,'art_not_sci_Os');
+                              Ralph:    say(Ralph,'art_not_sci_Ra');
+                              Kowalski: say(Kowalski,'art_not_sci_Ko');
+                              Evelyn:   say(Evelyn,'art_not_sci_Ev');
+                              Swansson: say(Swansson,'art_not_sci_Sw');
+                              Dwayne:   say(Dwayne,'art_not_sci_Dw');
+                           end;
+                        end
+                     else
+                        begin
+                           if getsex(closest_sci)=sex_male then
+                              say(closest_sci,'art_not_sci_SomeM')
+                           else say(closest_sci,'art_not_sci_SomeF');
+                           
+                        end;
+
+                     art_checktime=Replace(art_checktime,closest_sci,tick+0$15);
+                  end;
+              { repeat
+                     wait(0$1);
+                     closest_sci=filterallunits([[f_side,2],[f_class,class_scientistic],[f_distxy,artifact_hex[1],artifact_hex[2],10],[f_minskill,skill_scientistic,7],[f_not,[f_driving]]]);
+                     if closest_sci=0 and getdistunitxy(Scientist,artifact_hex[1],artifact_hex[2])<11 and IsInUnit(Scientist)=0 then
+                        closest_sci=Scientist;
+               until closest_sci>0;    }                                           //Wait for a suitable person
+          end
+          else
+          begin
+               if Measurement_ani = 0 then
+                    begin
+                         if difficulty=3 then
+                              Measurement_timecount=0;                        //Reset the timer when interrupted on hard difficulty
+                         Measurement_start=0;                               //Reset the start timer
+                    end;
+
+               if GetDistUnitXY(closest_sci,artifact_hex[1],artifact_hex[2])<8 and hastask(closest_sci)=0 and Measurement_ani = 0 then     //idle scientist near the artifact will move to it
+                  comagressivemove(closest_sci,artifact_hex[1],artifact_hex[2]);
+
+               if GetDistUnitXY(closest_sci,artifact_hex[1],artifact_hex[2])<=2 and Measurement_ani = 0 then                 //and will start working on it when near it
+               begin
+                    createdepositxy(artifact_hex[1],artifact_hex[2],mat_siberit);      //The "animation" is actually contaminating a deposit placed on hex where the artifact is
+
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_left)   and not Measurement_loc=1 then Measurement_timecount=0;      //check if the measurement is resumed in the same area as before the interruption. Reset the timer otherwise
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_centre) and not Measurement_loc=2 then Measurement_timecount=0;
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_right)  and not Measurement_loc=3 then Measurement_timecount=0;
+                    if Artifact_hex[2]>167                                     and not Measurement_loc=4 then Measurement_timecount=0;
+
+                    if Measurement_start=0 then
+                       Measurement_start=tick-Measurement_timecount;          //Set the timer taking into account a possible previous progress
+
+                    Measurement_sci=closest_sci;
+                    Measurement_ani=1;                                        //Start the animation
+
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_left)   then Measurement_loc=1;    //remember what area it is in. has to be done here because the artifact hex is set to 0 immediately when loaded
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_centre) then Measurement_loc=2;
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_right)  then Measurement_loc=3;
+                    if Artifact_hex[2]>167                                     then Measurement_loc=4;
+               end;
+
+               if Measurement_ani=1 then
+                  Measurement_timecount=tick-Measurement_start;             //Keep updating the timer during the animation
+
+               if Measurement_timecount>[3$0,4$0,5$0][difficulty] and Measurement_ani=1 then   //time to finish the procedure, may be changed according to difficulty
+               begin
+                    Measurement_start=0;                                                       //reset all the variables
+                    Measurement_timecount=0;
+                    Measurement_ani=0;
+                    Measurement_loc=0;
+                    Measurement_sci=0;
+                    Measurement_delay=0;
+                    artifact_ready=0;
+
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_left) then              //note which area is done
+                    begin
+                         SetAreaMapShow(artifact_left,0);
+                         art_leftdone=1;
+                    end;
+
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_right) then
+                    begin
+                         SetAreaMapShow(artifact_right,0);
+                         art_rightdone=1;
+                    end;
+
+                    if InArea(Artifact_hex[1],Artifact_hex[2],artifact_centre) then
+                    begin
+                         SetAreaMapShow(artifact_centre,0);
+                         art_centredone=1;
+                    end;
+
+                    if Artifact_hex[2]>167 then
+                    begin
+                         SetAreaMapShow(artifact_south_line,0);
+                         art_southdone=1;
+                    end;
+
+                    if art_leftdone=1 and art_rightdone=1 and art_centredone=1 and art_southdone=1 then
+                    begin
+                         say(Chrissy,'art2_Ch6');
+                         ChangeMissionObjectives('measurement3');
+                         artifacton=3;
+                    end
+                    else
+                        say(Chrissy,'art2_Ch5')
+               end;
+          end;
+     end;
+    enable;
+end;
+
+
+every 0$0.1 trigger Measurement_ani=1 do        //The animation itself
+var hex;
+begin
+     if artifact_hex=0 then
+        Measurement_ani=0                           //break the measurement if the artifact was taken
+     else
+         if IsDead(Measurement_sci) or GetDistUnitXY(Measurement_sci,artifact_hex[1],artifact_hex[2])>3 then           //break the measurement if the scientst gets over 3 hexes away
+            Measurement_ani=0;
+
+     if hastask(Measurement_sci) then                    //break the measurement if the scientist was given an order to move away from the artifact
+        if artifact_hex>0 then
+           if getdistxy(artifact_hex[1],artifact_hex[2],gettasklist(Measurement_sci)[1][2],gettasklist(Measurement_sci)[1][3])>1 then
+              Measurement_ani=0;
+
+     if Measurement_ani = 0 then
+          begin
+               enable;
+               exit;
+          end;
+
+     if tick>Measurement_delay then
+     begin
+          Measurement_delay=tick+rand(100,250);      //successfull contamination takes approximately 300 ticks and can't be interrupted so this can be repeated indefinitely
+          hex=RandValidHexXYR(artifact_hex[1],artifact_hex[2],1);
+
+          if hex>0 then
+          begin
+               commovexy(Measurement_sci,hex[1],hex[2]);         //move to interrupt the contamination
+               addcomcontaminate(Measurement_sci,artifact_hex[1],artifact_hex[2]);
+          end
+          else
+              begin
+                   commovexy(Measurement_sci,artifact_hex[1],artifact_hex[2]);                                     //in case all hexes around the artifact were puropsefully occupied
+                   addcomcontaminate(Measurement_sci,artifact_hex[1],artifact_hex[2]);
+              end;
+     end;
+
+enable;
+end;
+
+On UnitDestroyed(un) do
+     begin
+          if un in prisoners then
+               prisoners = prisoners diff un;
+     end;
+
+
+////Control prisoners
+//
+//Initially they follow one of the cargos, can be switched to any other player unit
+//If they are left alone (no combat units around) for a specified time they attempt escape
+//If there is an unattended cargo nearby they go it and arm themselves
+//When they are considered armed they need to be made dying before they give up, otherwise just wounding them is egnough to retreive them
+//During Legion attacks they are considered armed
+every 0$1 trigger prisoners>0 marked 1 do
+var temp,cargo,hex,i,j,count,go_for_cargo;
+begin
+     if isplaced(prisoners[1]) then
+        prisoner_lastposition=[getx(prisoners[1]),gety(prisoners[1])];    //keep track of their last position, used to center the screen on them when they die or leave the map
+
+     for i in filterallunits([f_side,2]) do
+         if isselected(i) then
+            LastSelectedPlayerUnit=i;       //Remember which unit was the last selected one
+
+     if isselected(prisoners) and NearestDistFromGroupToUnit(prisoners,LastSelectedPlayerUnit)<11 then
+        prisoner_cargo=LastSelectedPlayerUnit;                                                          //follow the lastselectedunit if nearby
+
+     if isdead(prisoner_cargo) then
+        prisoner_cargo=nearestunittounit(filterallunits([[f_side,2],[f_not,[f_empty]]]),prisoners[1]);
+
+     if prisoners_status=0 then                    //keep following the cargo
+     begin
+          for i in prisoners do
+          begin                   
+               prisoners_armed=0;    //zero out just to be sure
+               if not getclass(i)=class_engineer and not isdying(i) then
+                  setclass(i,class_engineer);                             //disarming them after an escape attempt
+
+               if carry(i) then
+                  settasklist(i,[[5,0,0,prisoner_cargo,0,0,0]])      //if they happen to pick something up they will return it to the cargo they follow, if it's some other unit they will just follow
+               else
+                   if getdistunits(i,prisoner_cargo)>5 then
+                      moveclosetounit(i,prisoner_cargo,3)      //MoveCloseToUnit instead commoveunit keeps them from pushing the unit
+                   else comhold(i);
+          end;
+
+          //if there is at least one combat unit (not an eng, mech or sci) nearby the timer is reset
+          if filterallunits([[f_dist,prisoners[1],10],[f_side,2], [f_or,[f_weapon,ar_multimissile_ballista],[f_weapon,ar_light_gun],[f_weapon,ar_double_machine_gun],[f_weapon,ar_gatling_gun],[f_weapon,ar_flame_thrower],[f_weapon,ar_gun],[f_weapon,ar_rocket_launcher],[f_weapon,ar_selfpropelled_bomb],
+                          [f_class,class_soldier],[f_class,class_mortar],[f_class,class_sniper],[f_class,class_desert_warior],[f_class,class_apeman_kamikaze],[f_class,class_apeman_soldier] ] ])>0 then
+             prisoners_delay=tick;
+
+          if tick>prisoners_delay+3$0 then     //if the timer hasn't been reset in 3min (could be altered by difficulty) the prisoners make a run for it
+          begin
+               prisoners_status=1;             //mark the status as escaping
+               prisoners_escaping=prisoners_escaping^prisoners;
+               setside(prisoners_escaping,8);            //they turn to legion side
+               for i in prisoners do
+                   prisoner_lives=prisoner_lives^getlives(i);   //remember what hp each unit had at the beginning of the escape attempt
+          end;
+
+
+          //same condition as above, only during legion attack the prisoners brake free as soon as there is no player unit nearby, no timer daley
+          if filterallunits([[f_dist,prisoners[1],15],[f_side,2], [f_or,[f_weapon,ar_multimissile_ballista],[f_weapon,ar_light_gun],[f_weapon,ar_double_machine_gun],[f_weapon,ar_gatling_gun],[f_weapon,ar_flame_thrower],[f_weapon,ar_gun],[f_weapon,ar_rocket_launcher],[f_weapon,ar_selfpropelled_bomb],
+                          [f_class,class_soldier],[f_class,class_mortar],[f_class,class_sniper],[f_class,class_desert_warior],[f_class,class_apeman_kamikaze],[f_class,class_apeman_soldier] ] ])=0 and legion_attack=1 then
+          begin
+               prisoners_status=1;                                     //mark the status as escaping
+               prisoners_escaping=prisoners_escaping^prisoners;
+               setside(prisoners_escaping,8);                          //they turn to legion side
+               prisoners_armed=1;                                      //consider them armed when
+               Legion_attack=2;       //switching Legion_attack to 2 means only one escape attempt is made
+               prisoner_lives=[];
+               for i in prisoners do
+                   prisoner_lives=prisoner_lives^getlives(i);    //remember what hp each unit had at the beginning of the escape attempt
+          end;
+
+          if legion_attack=3 then
+          begin
+               prisoner_lives=[];
+               for i in prisoners do
+                   if getside(unitshoot(i))=8 and legion_attack<4 then     //once they realise legion has come to kill them they panic and run south, meaning they can get killed by Russians too
+                   begin
+                        prisoners_status=1;
+                        prisoners_escaping=prisoners_escaping^prisoners;
+                        setside(prisoners_escaping,8);
+                        prisoners_armed=1;
+                        legion_attack=4;              //switching Legion_attack to 4 means only one escape attempt is made
+                        prisoner_escapehexes=[[101,193],[174,195],[223,197],[253,192]];  //modify their escape hexes for the ones Russian scouts use (enter1-4 areas)
+
+                        prisonersattacked=1;
+                        for j in prisoners do
+                            prisoner_lives=prisoner_lives^getlives(j);      //remember what hp each unit had at the beginning of the escape attempt
+                   end;
+          end;
+
+          //after last legion attack reset their escape hexes so if another attempt is made they will run north as before
+          if legion_attack=4 and filterallunits([[f_side,8],[f_ok]])=0 then
+             prisoner_escapehexes=[ [2,1],[6,1],[10,1],[14,1],[18,1],[22,1],[26,1],[30,1],[34,1],[38,1],[42,1],[46,1],[50,1],[54,1],[58,1],[62,1],[66,1],[70,1],[74,1],[78,1],[82,1],[86,1],[90,1],[94,1],[98,1],[102,1],[106,1],[110,1],[114,1],[118,1],[122,1],[126,1],[130,1],[134,1],[138,1],[142,1],[146,1],[150,1],[154,1],[158,1] ];
+
+          //set the legion_attack to 2 even if they failed to reach the prisoners
+          if legion_attack=1 and filterallunits([[f_side,8],[f_ok]])=0 then
+             legion_attack=2;
+     end;
+
+
+
+     if prisoners_status=1 then
+     begin
+          if prisoners_armed=0 then
+          begin
+               //check for unguarded cargo
+               temp=filterallunits([[f_weapon,ar_cargo_bay],[f_or,[f_control,control_remote],[f_and,[f_control,control_manual],[f_empty]]]]);  //if a cargo is closer than 10 hexes  , consider only remote or empty manuals
+               cargo=nearestunittounit(temp,prisoners[1]);
+               if getdistunits(cargo,prisoners_escaping[1])<10 then
+                  //if there are no combat units in 10 hex radius from the cargo
+                  if filterallunits([[f_dist,cargo,10],[f_side,2], [f_or,[f_weapon,ar_multimissile_ballista],[f_weapon,ar_light_gun],[f_weapon,ar_double_machine_gun],[f_weapon,ar_gatling_gun],[f_weapon,ar_flame_thrower],[f_weapon,ar_gun],[f_weapon,ar_rocket_launcher],[f_weapon,ar_selfpropelled_bomb],
+                          [f_class,class_soldier],[f_class,class_mortar],[f_class,class_sniper],[f_class,class_desert_warior],[f_class,class_apeman_kamikaze],[f_class,class_apeman_soldier] ] ])=0        then
+
+                        if IsControledBy(cargo)=0 then    //and if the cargo is unattended (manual empty or remote unlinked)
+                        begin
+                             go_for_cargo=1;
+                             count=0;
+                             for i in prisoners_escaping do                           //run for it, seize the equipment
+                             begin
+                                  if getclass(i)=class_engineer then
+                                  begin
+                                       commovexy(i,getx(cargo),gety(cargo));   //commovexy instead of commoveunit prevents them from entering the car
+                                       count=1;
+                  
+                                       if getdistunits(i,cargo)<3 then
+                                       begin
+                                            comstop(i);
+                                            setclass(i,class_soldier);   //get armed
+                                            comexitvehicle(i);           //just in case they enter the vehicle
+                                       end;
+                                  end;
+                             end;
+
+                             if count=0 then
+                                prisoners_armed=1;      //note they are now armed
+                        end;
+          end;
+
+          if go_for_cargo=0 then
+          begin
+               temp=getdistunitxy(prisoners_escaping[1],prisoner_escapehexes[1][1],prisoner_escapehexes[1][2]);   //find the closest escape hex, NOTE: because of the nature of ow grid the closest hex is not what common sense would indicate. For example: a unit in the centre of the map would find all of the escapehexes equally far away, and thus choose the first one, the one in left corner instead of one in top middle of the map. Might need to be corrected.
+               hex=prisoner_escapehexes[1];
+               for i in prisoner_escapehexes do
+                   if getdistunitxy(prisoners_escaping[1],i[1],i[2])<temp then
+                   begin
+                        temp=getdistunitxy(prisoners_escaping[1],i[1],i[2]);
+                        hex=i;
+                   end;
+          
+               for i in prisoners_escaping do
+                   if getside(i)=8 then
+                      commovexy(i,hex[1],hex[2]);      //run for the choosen hex
+          end;
+
+          for i=1 to prisoners_escaping do
+          begin
+               if prisoners_armed=0 and getlives(prisoners_escaping[i])+200<prisoner_lives[i] then    //if prisoners are not armed and get wounded
+               begin
+                    commovexy(prisoners_escaping[i],getx(prisoner_cargo),gety(prisoner_cargo));
+
+                    setside(prisoners_escaping[i],7);                                              //they go back to being prisoners
+                    prisoners_delay=tick;
+               end;
+
+               if prisoners_armed=1 and getlives(prisoners_escaping[i])<250 {isdying(prisoners_escaping[i])} then          //if the prisoners are armed and dying
+               begin
+                    setside(prisoners_escaping[i],7);
+                    prisoners_delay=tick;                                         //they go back to being prisoners
+               end;
+          end;
+
+          count=0;
+          for i in prisoners_escaping do
+          begin
+               if hex>0 then
+                  if getdistunitxy(i,hex[1],hex[2])<4 then
+                     removeunit(i);                                            //remove the prisoners from map by proximity to their hex, same as Russians and escapees
+
+               if getside(i)=7 and getlives(i)>250 then                       //when the get picked up from the ground they get disarmed
+               begin
+                    commovexy(i,getx(prisoner_cargo),gety(prisoner_cargo));
+                    setclass(i,class_engineer);
+               end;
+
+               if isplaced (i)and getside(i)=8 then
+                  count=1;
+          end;
+          if count=0 then
+          begin
+               prisoners_status=0;                                         //reset the status if all are captured
+               prisoner_lives=[];
+               prisoners_escaping=[];
+          end;
+     end;
+     enable;
+end;
+
+
+//Sometimes the units were removed from their lists and not from the map, which left them hanging on the top of the map. A simple fix to that.
+every 0$1 trigger filterallunits([[f_inarea,exit1],[f_or,[f_side,3],[f_side,5]]]) do
+var i,j,k,temp;
+begin
+     for i in filterallunits([[f_inarea,exit1],[f_side,5]]) do
+     begin
+          temp=0;
+          for j in escaping_arabians do
+              for k in j do
+                  if i=k then
+                     temp=1;
+          if temp=0 then
+             removeunit(i);
+     end;
+
+     for i in filterallunits([[f_inarea,exit1],[f_or,[f_side,3],[f_side,6]]]) do
+     begin
+          temp=0;
+          for j in russians do
+              for k in j do
+                  if i=k then
+                     temp=1;
+          if temp=0 then
+             removeunit(i);
+     end;
+     enable;
+end;
+
+
+//Replacing Apes
+every 0$1 marked 1 do
+var i,j,temp,temp_list,roll,areas;
+begin
+     temp_list=filterallunits([f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze]]) diff Gonzo;
+
+     if temp_list<5 and not Apes=0 then
+     repeat
+           Randomize;
+           wait([4$0,5$0,6$0][difficulty]);
+
+           roll=rand(1,Apes);
+           temp=[ape_spawn_map1, ape_spawn_map2, ape_spawn_map3, ape_spawn_map4, ape_spawn_map5, ape_spawn_map6];
+           areas=[];
+           for i in temp do
+               if SeeArea(2,i)=0 then
+                  areas=areas^i;
+       
+           if areas=0 or rand(1,3)=1 then
+              placeunitarea(Apes[roll],ape_spawn_border,0)
+           else
+               placeunitarea(Apes[roll],areas[rand(1,areas)],0);
+
+           Apes=delete(Apes,roll);
+           temp_list=filterallunits([f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze]]) diff Gonzo;
+     until temp_list>4;
+
+     enable;
+end;
+
+
+//Replacing tigers
+every 0$1 trigger filterallunits([f_class,class_tiger])<2 and gamestage=3 do
+var i,j,temp,tiger,areas;
+begin
+     if filterallunits([f_class,class_tiger])<2 then
+     begin
+          Randomize;
+          wait([4$0,5$0,6$0][difficulty]);
+
+          repeat
+               uc_nation=nation_nature; uc_side=0;
+               hc_class=class_tiger; hc_attr=[16,11]; hc_skills=[5,5,5,5]; hc_gallery='nature_foreg'; hc_face_number=3;  tiger=CreateHuman; 
+
+               temp=[ape_spawn_map1, ape_spawn_map2, ape_spawn_map3, ape_spawn_map4, ape_spawn_map5, ape_spawn_map6];
+               areas=[];
+               for i in temp do
+                   if SeeArea(2,i)=0 then
+                      areas=areas^i;
+
+               if areas=0 or rand(1,3)=1 then
+                  placeunitarea(tiger,ape_spawn_border,0)
+               else
+                   if areas=1 then
+                      placeunitarea(tiger,areas[1],0)
+                   else placeunitarea(tiger,areas[rand(1,areas)],0);
+
+          until filterallunits([f_class,class_tiger])>1;
+     end;
+
+     enable;
+end;
+
+
+//Replacing mastodnts
+every 0$1 trigger tick>mastodon_tick+5$0 do
+var i,temp;
+begin
+     mastodon_tick=999$0;
+
+     setside(mastodon,0);
+     placeunitarea(mastodon,ape_spawn_border,0);
+
+enable;
+end;
+
+//Behaviour of the horse-like animals. Just keeping them from happily strolling among a crowd of player units.
+every 0$1 do
+var i,j,temp_list,temp_list2,temp_un,temp_hex,X,Y;
+begin
+     for i in [Eh1,Eh2] do
+         if filterallunits([[f_not,[f_side,0]],[f_dist,i,10]])>0 then
+         begin                                                                      
+              temp_list=[ [GetX(i),GetY(i)+3], [GetX(i)-3,GetY(i)], [GetX(i)-3,GetY(i)-3], [GetX(i),GetY(i)-3], [GetX(i)+3,GetY(i)], [GetX(i)+3,GetY(i)+3] ];
+              temp_list2=[];
+              for j in temp_list do
+                  if ValidHex(j[1],j[2]) then
+                     temp_list2=temp_list2^[j];
+
+              temp_un=NearestUnitToUnit(filterallunits([[f_not,[f_side,0]],[f_dist,i,10]]),i);
+              temp_hex=FarthestHex(temp_list2,temp_un);
+
+              ComMoveXY(i,temp_hex[1],temp_hex[2]);
+         end;
+enable;
+end;
+
+

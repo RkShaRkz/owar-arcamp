@@ -1,0 +1,1911 @@
+
+Export Function GetApes(side);
+     begin
+          result = FilterAllUnits([[f_side,side],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+     end;
+
+Export Function GetMainPlayerCharacters;
+     begin
+          result = [Heike,Olaf,Sonya,Oswald,Ralph,Kowalski,Suze,MarkB,Kurt,Martin,Louis,Khattam,upf_deserter,Willard,freelancers_leader];
+     end;
+
+Export Function GetNonmainPlayerCharacters;
+     begin
+          result = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff (GetApes(you) ^ GetMainPlayerCharacters);
+     end;
+
+
+//Americans researching and building siberite bomb.
+//Siberite Fission technology takes 8-15 min to research depending on the number and skills
+//of the scientists.
+//Building the bomb takes approximately 17 * 1500 / [number of mechanics with skill 10] ticks.
+//With 3 lvl 10 mecs that is ca. 4 min.
+Every 0$1.6 do
+     var i, lab, base;
+     begin
+          base = 1;
+
+          //prerequisites to siberite fission.
+          SetTech(tech_sibdet,americans,state_researched);
+          SetTech(tech_sibpow,americans,state_researched);
+          SetTech(tech_sibeng,americans,state_researched);
+          SetTech(tech_gun,americans,state_researched);
+          SetTech(tech_rocket,americans,state_researched);
+
+          //Wait for it...
+          wait([70$0,60$0,55$0][difficulty]);
+          
+          //Start researching
+          while not Researched(americans,tech_sibfiss) do
+               begin
+                    wait(0$3);
+
+                    if sib_lab = 0 then
+                         begin
+                              for i in UnitFilter(ai_all_buildings[base],[f_or,[f_btype,b_lab],[f_btype,b_lab_half],[f_btype,b_lab_full]]) do
+                                   if b_lab_siberium in [GetLabKind(i,1),GetLabKind(i,2)] then
+                                        begin
+                                             sib_lab = i;
+                                             break;
+                                        end;
+                         end;
+
+                    if IsOk(sib_lab) and IsIdle(sib_lab) then
+                         ComResearch(sib_lab,tech_sibfiss);
+               end;
+
+          //Build it!
+          while FilterAllUnits([[f_side,americans],[f_weapon,us_siberium_rocket]]) = 0 do
+               begin
+                    wait(0$3);
+
+                    if IsOk(sib_rocket_factory) and GetBType(sib_rocket_factory) = b_factory and IsIdle(sib_rocket_factory) then
+                         ComConstruct(sib_rocket_factory,us_heavy_tracked,engine_siberite,control_manual,us_siberium_rocket);
+               end;  
+     end;
+
+
+//Biodetection researched
+On ResearchComplete(technology, lab) do
+     begin
+          if GetSide(lab) = you and technology = tech_biodet and IsOk(MarkB) then
+               begin
+                    DialogueOn;
+
+                    ForceSay(Heike,'D6-H-1');
+                    Say(MarkB,'D6-Ma-1');
+                    ForceSay(Heike,'D6-H-2');
+                    Say(MarkB,'D6-Ma-2');
+                    ForceSay(Heike,'D6-H-3');
+                    Say(MarkB,'D6-Ma-3');
+                    ForceSay(Heike,'D6-H-4');
+                    Say(MarkB,'D6-Ma-4');
+                    ForceSay(Heike,'D6-H-5');
+                    Say(MarkB,'D6-Ma-5');
+
+                    DialogueOff;
+               end;
+
+          if GetSide(lab) = you and technology = tech_stimdrugs then
+               SetTech(tech_stimdrugs,you_alt,state_researched);
+     end;
+
+
+//Event controller. To ensure events occur in a certain order.
+//If the player is fast enough the American reinforcements never spawn but UPF always appear.
+//If the player is very fast and defeats the Americans before UPF should appear normally they appear
+//shortly after the Americans' defeat.
+Every 0$1.4 do
+     var i, temp_list, un, time, extra_time;
+     var louis_speaker, gordon_speaker;
+     begin                  
+          extra_time = [1$30,0$45,0$0][difficulty];
+               
+          //American conversation intercepted. The player finds out they are building
+          //the siberite bomb.
+          wait(Rand(6$0,7$0));
+
+          DialogueOn;
+
+          temp_list = UnitFilter([Sonya,MarkB,Khattam],[f_ok]);
+          if temp_list > 0 then
+               begin
+                    un = temp_list[Rand(1,temp_list)];
+
+                    case un of
+                         Sonya: Say(un,'D3-So-1');
+                         MarkB: begin
+                              Say(un,'D3-Ma-1');
+
+                              if IsOk(Ralph) then
+                                   Say(Ralph,'D3-Ra-1')
+                              else
+                                   Say(Heike,'D3-H-1');
+
+                              Say(un,'D3-Ma-2');
+                         end;
+                         Khattam: Say(un,'D3-Kh-1');
+                    end;
+               end;
+
+          SayRadio(Hugh,'D3-Hu-1');
+          SayRadio(Powell,'D3-Po-1');
+          SayRadio(Hugh,'D3-Hu-2');
+          SayRadio(Powell,'D3-Po-2');
+
+          Say(Heike,'D3-H-2');
+
+          if IsOk(Khattam) then
+               Say(Khattam,'D3-Kh-2')
+          else
+               if IsOk(Sonya) then
+                    Say(Sonya,'D3-So-2')
+               else
+                    if IsOk(MarkB) then
+                         Say(MarkB,'D3-Ma-3');
+
+          Say(Heike,'D3-H-3');
+          Say(Heike,'D3-H-4');
+
+          if IsOk(MarkB) then
+               begin
+                    Say(MarkB,'D3-Ma-4');
+                    Say(Heike,'D3-H-5');
+               end;
+
+          Say(Heike,'D3-H-6');
+
+          DialogueOff;
+
+          buildup_objective_can_be_completed = true;
+          if player_base_b_types = 0 then
+               ChangeMissionObjectives('Moutbuildup');
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M2');
+
+
+          //If Khattam is present some are worried he might be a spy.
+          time = Rand(1$0,2$0);
+          while time > 0$0 and am_scientists_escape_status <> 2 do
+               begin
+                    wait(0$1);
+                    time = time - 0$1;
+               end;
+
+          if IsLive(Khattam) and am_scientists_escape_status <> 2 then
+               begin
+                    un = 0;
+                    DialogueOn;
+
+                    if IsOk(Sonya) then
+                         begin
+                              un = Sonya;
+                              Say(Sonya,'D4-So-1');
+                              Say(Sonya,'D4-So-2');
+                              Say(Sonya,'D4-So-3');
+                         end
+                    else
+                         if IsOk(MarkB) then
+                              begin
+                                   un = MarkB;
+                                   Say(MarkB,'D4-Ma-1');
+                                   Say(MarkB,'D4-Ma-2');
+                                   Say(MarkB,'D4-Ma-3');
+                              end
+                         else
+                              begin
+                                   temp_list = GetNonmainPlayerCharacters;
+                                   if temp_list > 0 then
+                                        begin
+                                             un = temp_list[Rand(1,temp_list)];
+                                             if GetSex(un) = sex_male then
+                                                  Say(un,'D4-SomeM-1')
+                                             else
+                                                  Say(un,'D4-SomeF-1');
+                                        end;
+                              end;
+
+                    if un > 0 then
+                         begin
+                              dwait(0$0.2);
+                              khattam_choice = Query('QKhattamWorry');
+                              case khattam_choice of
+                                   1: begin  //Kill Khattam
+                                       Say(Heike,'D4-1,2-H-1');
+                                       Say(Khattam,'D4-1-Kh-1');
+                                   end;
+                                   2: begin  //Expel Khattam
+                                        Say(Heike,'D4-1,2-H-1');
+                                        Say(Khattam,'D4-2-Kh-1');
+                                   end;
+                                   3: begin  //Keep Khattam
+                                        Say(Heike,'D4-3-H-1');
+
+                                        case un of
+                                             Sonya: Say(un,'D4-3-So-1');
+                                             MarkB: Say(un,'D4-3-Ma-1');
+                                             else
+                                                  if GetSex(un) = sex_male then
+                                                       Say(un,'D4-3-SomeM-1')
+                                                  else
+                                                       Say(un,'D4-3-SomeF-1');
+                                        end;
+                                   end;
+                              end;
+                         end;
+
+                    DialogueOff;
+               end;
+              
+              
+          //If the UPF deserter is present some fear he may still work for UPF undercover
+          time = Rand(6$0,7$0) + extra_time;
+          while time > 0$0 and am_scientists_escape_status <> 2 do
+               begin
+                    wait(0$1);
+                    time = time - 0$1;
+               end;
+
+          if IsLive(upf_deserter) and am_scientists_escape_status <> 2 then
+               begin
+                    temp_list = UnitFilter([Kowalski,Suze],[f_ok]);
+                    if temp_list = 0 then
+                         temp_list = GetNonmainPlayerCharacters diff other_freelancers;
+
+                    if temp_list > 0 then
+                         begin
+                              DialogueOn;
+
+                              un = temp_list[Rand(1,temp_list)];
+                              upf_speaker = un;
+
+                              if un = Kowalski then
+                                   begin
+                                        Say(Kowalski,'D9-Ko-1');
+                                        Say(Kowalski,'D9-Ko-2');
+                                        Say(Kowalski,'D9-Ko-3');
+                                        Say(Heike,'D9-H-1');
+                                        Say(Kowalski,'D9-Ko-4');
+                                   end
+                              else
+                                   begin
+                                        if un = Suze then
+                                             Say(Suze,'D9-Su-1')
+                                        else
+                                             if GetSex(un) = sex_male then
+                                                  Say(un,'D9-SomeM-1')
+                                             else
+                                                  Say(un,'D9-SomeF-1');
+
+                                        Say(Heike,'D9-H-2');
+
+                                        if un = Suze then
+                                             Say(Suze,'D9-Su-2')
+                                        else
+                                             if GetSex(un) = sex_male then
+                                                  Say(un,'D9-SomeM-2')
+                                             else
+                                                  Say(un,'D9-SomeF-2');
+                                   end;
+
+                              dwait(0$0.2);
+                              upf_deserter_choice = Query('QRolfWorry');
+                              case upf_deserter_choice of
+                                   1: begin  //Kill Rolf
+                                        if un = Kowalski then
+                                             Say(Heike,'D9-1,2-H-1');
+
+                                        Say(upf_deserter,'D9-1-Ro-1');
+                                   end;
+                                   2: begin  //Expel Rolf
+                                        if un = Kowalski then
+                                             Say(Heike,'D9-1,2-H-1');
+
+                                        Say(Heike,'D9-2-H-2');
+                                        Say(upf_deserter,'D9-2-Ro-1');
+                                   end;
+                                   3: begin  //Keep Rolf
+                                        if un = Kowalski then
+                                             begin
+                                                  Say(Heike,'D9-3-H-1a');
+                                                  Say(Kowalski,'D9-3-Ko-1a');
+                                             end
+                                        else
+                                             begin
+                                                  Say(Heike,'D9-3-H-1b');
+
+                                                  if un = Suze then
+                                                       Say(Suze,'D9-3-Su-1b')
+                                                  else
+                                                       if GetSex(un) = sex_male then
+                                                            Say(un,'D9-3-SomeM-1b')
+                                                       else
+                                                            Say(un,'D9-3-SomeF-1b');
+
+                                                  Say(Heike,'D9-3-H-2b');
+
+                                                  if un = Suze then
+                                                       Say(Suze,'D9-3-Su-2b')
+                                                  else
+                                                       if GetSex(un) = sex_male then
+                                                            Say(un,'D9-3-SomeM-2b')
+                                                       else
+                                                            Say(un,'D9-3-SomeF-2b');
+                                             end;
+                                   end;
+                              end;
+
+                              DialogueOff;
+                         end;
+               end;
+
+                    
+          //The player gains siberite implosion tech
+          time = Rand(4$0,5$0) + extra_time;
+          while time > 0$0 and am_scientists_escape_status <> 2 do
+               begin
+                    wait(0$1);
+                    time = time - 0$1;
+               end;
+
+          if IsOk(Louis) then
+               un = Louis
+          else
+               begin
+                    temp_list = UnitFilter([MarkB,Sonya],[f_ok]);
+                    if temp_list > 0 then
+                         un = temp_list[Rand(1,temp_list)]
+                    else
+                         un = 0;
+               end;
+
+          if un > 0 and am_scientists_escape_status <> 2 then
+               begin
+                    DialogueOn;
+
+                    case un of
+                         Louis: begin
+                              Say(un,'D5-Lo-1');
+                              Say(Heike,'D5-H-1a');
+                              Say(un,'D5-Lo-2');
+                              Say(Heike,'D5-H-2');
+                              Say(un,'D5-Lo-3');
+                              Say(Heike,'D5-H-3');
+                         end;
+                         MarkB: begin
+                              Say(un,'D5-Ma-1');
+                              Say(Heike,'D5-H-1b');
+                              Say(un,'D5-Ma-2');
+                              Say(Heike,'D5-H-2');
+                              Say(un,'D5-Ma-3');
+                              Say(Heike,'D5-H-3');
+                         end;
+                         Sonya: begin
+                              Say(un,'D5-So-1');
+                              Say(Heike,'D5-H-1c');
+                              Say(un,'D5-So-2');
+                              Say(Heike,'D5-H-2');
+                              Say(un,'D5-So-3');
+                              Say(Heike,'D5-H-3');
+                         end;
+                    end;
+
+                    DialogueOff;
+               end;
+
+          SetTech(72,you,state_enabled);
+
+                                          
+          //The Independent Union of Freelancers appear (from mission 10).
+          time = Rand(6$0,7$0) + extra_time;
+          while time > 0$0 and am_scientists_escape_status <> 2 do
+               begin
+                    wait(0$1);
+                    time = time - 0$1;
+               end;     
+
+          if not freelancers_are_dead then
+               begin
+                    freelancers_may_appear = true;
+
+                    repeat
+                    wait(0$1);
+                    until freelancers_choice > 0;
+               end;
+
+
+          //Louis's men and the freelancers don't seem to get along...
+          time = Rand(6$0,7$0) + extra_time;
+          while time > 0$0 and am_scientists_escape_status <> 2 do
+               begin
+                    wait(0$1);
+                    time = time - 0$1;
+               end;
+
+          if freelancers_choice = 1 and am_scientists_escape_status <> 2 then
+          begin
+
+          if IsOk(Louis) then
+               louis_speaker = Louis
+          else
+               begin
+                    temp_list = UnitFilter(other_louis_folks,[f_ok]);
+                    if temp_list > 0 then
+                         louis_speaker = temp_list[1]
+                    else
+                         louis_speaker = 0;
+               end;
+
+          if IsOk(freelancers_leader) then
+               gordon_speaker = freelancers_leader
+          else
+               if IsOk(Willard) then
+                    gordon_speaker = Willard
+               else
+                    begin
+                         temp_list = UnitFilter(other_freelancers,[f_ok]);
+                         if temp_list > 0 then
+                              gordon_speaker = temp_list[1]
+                         else
+                              gordon_speaker = 0;
+                    end;
+
+          if louis_speaker > 0 and gordon_speaker > 0 then
+               begin
+                    DialogueOn;
+
+                    case louis_speaker of
+                         Louis: Say(louis_speaker,'D7-Lo-1');
+                         else
+                              if GetSex(louis_speaker) = sex_male then
+                                   Say(louis_speaker,'D7-LoM-1')
+                              else
+                                   Say(louis_speaker,'D7-LoF-1');
+                    end;
+
+                    case gordon_speaker of
+                         Gordon: Say(gordon_speaker,'D7-Go-1');
+                         freelancers_leader: Say(gordon_speaker,'D7-FLea-1');
+                         Willard: Say(gordon_speaker,'D7-Wi-1');
+                         else
+                              if GetSex(gordon_speaker) = sex_male then
+                                   Say(gordon_speaker,'D7-GoM-1')
+                              else
+                                   Say(gordon_speaker,'D7-GoF-1');
+                    end;
+
+                    case louis_speaker of
+                         Louis: Say(louis_speaker,'D7-Lo-2');
+                         else
+                              if GetSex(louis_speaker) = sex_male then
+                                   Say(louis_speaker,'D7-LoM-2')
+                              else
+                                   Say(louis_speaker,'D7-LoF-2');
+                    end;
+
+                    case gordon_speaker of
+                         Gordon: Say(gordon_speaker,'D7-Go-2');
+                         freelancers_leader: Say(gordon_speaker,'D7-FLea-2');
+                         Willard: Say(gordon_speaker,'D7-Wi-2');
+                         else
+                              if GetSex(gordon_speaker) = sex_male then
+                                   Say(gordon_speaker,'D7-GoM-2')
+                              else
+                                   Say(gordon_speaker,'D7-GoF-2');
+                    end;
+
+                    Say(Heike,'D7-H-1');
+
+                    case louis_speaker of
+                         Louis: Say(louis_speaker,'D7-Lo-3');
+                         else
+                              if GetSex(louis_speaker) = sex_male then
+                                   Say(louis_speaker,'D7-LoM-3')
+                              else
+                                   Say(louis_speaker,'D7-LoF-3');
+                    end;
+
+                    case gordon_speaker of
+                         Gordon: Say(gordon_speaker,'D7-Go-3');
+                         freelancers_leader: Say(gordon_speaker,'D7-FLea-3');
+                         Willard: Say(gordon_speaker,'D7-Wi-3');
+                         else
+                              if GetSex(gordon_speaker) = sex_male then
+                                   Say(gordon_speaker,'D7-GoM-3')
+                              else
+                                   Say(gordon_speaker,'D7-GoF-3');
+                    end;
+
+                    case louis_speaker of
+                         Louis: Say(louis_speaker,'D7-Lo-4');
+                         else
+                              if GetSex(louis_speaker) = sex_male then
+                                   Say(louis_speaker,'D7-LoM-4')
+                              else
+                                   Say(louis_speaker,'D7-LoF-4');
+                    end;
+
+                    Say(Heike,'D7-H-2');
+
+                    case louis_speaker of
+                         Louis: Say(louis_speaker,'D7-Lo-5');
+                         else
+                              if GetSex(louis_speaker) = sex_male then
+                                   Say(louis_speaker,'D7-LoM-5')
+                              else
+                                   Say(louis_speaker,'D7-LoF-5');
+                    end;
+
+                    case gordon_speaker of
+                         Gordon: Say(gordon_speaker,'D7-Go-4');
+                         freelancers_leader: Say(gordon_speaker,'D7-FLea-4');
+                         Willard: Say(gordon_speaker,'D7-Wi-4');
+                         else
+                              if GetSex(gordon_speaker) = sex_male then
+                                   Say(gordon_speaker,'D7-GoM-4')
+                              else
+                                   Say(gordon_speaker,'D7-GoF-4');
+                    end;
+
+                    dwait(0$0.2);
+                    louis_gordon_dispute_choice = Query('QGordonLouisDispute');
+                    case louis_gordon_dispute_choice of
+                         1: begin  //Expel freelancers
+                              Say(Heike,'D7-1-H-1');
+
+                              case gordon_speaker of
+                                   Gordon: Say(gordon_speaker,'D7-1-Go-1');
+                                   freelancers_leader: Say(gordon_speaker,'D7-1-FLea-1');
+                                   Willard: Say(gordon_speaker,'D7-1-Wi-1');
+                                   else
+                                        if GetSex(gordon_speaker) = sex_male then
+                                             Say(gordon_speaker,'D7-1-GoM-1')
+                                        else
+                                             Say(gordon_speaker,'D7-1-GoF-1');
+                              end;
+                         end;
+                         2: begin  //Expel Louis's people
+                              if louis_speaker = Louis then
+                                   Say(Heike,'D7-2-H-1a')
+                              else
+                                   Say(Heike,'D7-2-H-1b');
+
+                              case louis_speaker of
+                                   Louis: Say(louis_speaker,'D7-2-Lo-1');
+                                   else
+                                        if GetSex(louis_speaker) = sex_male then
+                                             Say(louis_speaker,'D7-2-LoM-1')
+                                        else
+                                             Say(louis_speaker,'D7-2-LoF-1');
+                              end;
+
+                              Say(Heike,'D7-2-H-2');
+
+                              case louis_speaker of
+                                   Louis: Say(louis_speaker,'D7-2-Lo-2');
+                                   else
+                                        if GetSex(louis_speaker) = sex_male then
+                                             Say(louis_speaker,'D7-2-LoM-2')
+                                        else
+                                             Say(louis_speaker,'D7-2-LoF-2');
+                              end;
+                         end;
+                         3: begin  //Mediate
+                              Say(Heike,'D7-3-H-1');
+
+                              case gordon_speaker of
+                                   Gordon: Say(gordon_speaker,'D7-3-Go-1');
+                                   freelancers_leader: Say(gordon_speaker,'D7-3-FLea-1');
+                                   Willard: Say(gordon_speaker,'D7-3-Wi-1');
+                                   else
+                                        if GetSex(gordon_speaker) = sex_male then
+                                             Say(gordon_speaker,'D7-3-GoM-1')
+                                        else
+                                             Say(gordon_speaker,'D7-3-GoF-1');
+                              end;
+
+                              Say(Heike,'D7-3-H-2');
+                         end;
+                    end;
+
+                    DialogueOff;
+               end;
+
+          end;
+
+                            
+          //Scouts spot American reinforcements
+          time = Rand(6$0,7$0) + extra_time;
+          while time > 0$0 and am_scientists_escape_status <> 2 do
+               begin
+                    wait(0$1);
+                    time = time - 0$1;
+               end;
+
+          if am_scientists_escape_status <> 2 then
+               begin
+                    DialogueOn;
+
+                    SayRadio(Heinz,'D10-He-1');
+                    ForceSay(Heike,'D10-H-1');
+                    SayRadio(Heinz,'D10-He-2');
+                    ForceSay(Heike,'D10-H-2');
+                    SayRadio(Heinz,'D10-He-3');
+
+                    dwait(0$0.2);
+                    ChangeMissionObjectives('MStopreinforcements');
+
+                    DialogueOff;
+
+                    am_reinforcements_time = 7$0 + Rand(0$0,1$0);
+                    am_reinforcements_start = true;
+               end;
+                              
+                               
+          //UPF first attack.
+          //If the player has accepted the Freelancers but betrayed them in mission 10 they take revenge now.
+          time = Rand(2$30,3$0);
+          while time > 0$0 and am_scientists_escape_status <> 2 do
+               begin
+                    wait(0$1);
+                    time = time - 0$1;
+               end;
+
+          if am_scientists_escape_status = 2 then
+               wait(Rand(0$8,0$12));
+
+          upf_attack_status = 1;
+              
+          repeat
+          wait(0$1);
+          until upf_attack_status in [2,6];
+
+          if freelancers_choice = 1 and louis_gordon_dispute_choice <> 1 and UnitFilter(freelancers_leader ^ other_freelancers ^ Willard,[f_alive]) > 0 and LoadVariable('Cooperates_with_UPF_10',false) and upf_attack_status <> 6 then
+               begin
+                    wait(Rand(0$2,0$4));
+
+                    freelancers_bombing_start = true;
+               end;
+
+          repeat
+          wait(0$1);
+          until upf_attack_status in [3,6];
+
+
+          //Before attacking Gensher implied that the upf deserter / the freelancers are working for UPF.
+          //The player has to decide if he/they should stay.
+          wait(Rand(0$15,0$20));
+
+          if gensher_accused_deserter and kill_gensher_objective_status <> 2 then
+               begin
+                    if IsLive(upf_deserter) then
+                         begin
+                              if not IsLive(upf_speaker) then
+                                   begin
+                                        temp_list = GetNonmainPlayerCharacters diff other_freelancers;
+                                        if temp_list > 0 then
+                                             upf_speaker = temp_list[Rand(1,temp_list)];
+                                   end;
+
+                              if IsLive(upf_speaker) then
+                                   begin
+                                        DialogueOn;
+
+                                        case upf_speaker of
+                                             Kowalski: ForceSay(upf_speaker,'D14-Ko-1');
+                                             Suze: ForceSay(upf_speaker,'D14-Su-1');
+                                             else
+                                                  if GetSex(upf_speaker) = sex_male then
+                                                       ForceSay(upf_speaker,'D14-SomeM-1')
+                                                  else
+                                                       ForceSay(upf_speaker,'D14-SomeF-1');
+                                        end;
+
+                                        dwait(0$0.2);
+                                        upf_deserter_choice = Query('QRolfWorryAgain');
+                                        case upf_deserter_choice of
+                                             1: begin  //Kill him
+                                                  ForceSay(upf_deserter,'D9-1-Ro-1');
+                                             end;
+                                             2: begin  //Expel him
+                                                  ForceSay(Heike,'D9-2-H-2');
+                                                  ForceSay(upf_deserter,'D9-2-Ro-1');
+                                             end;
+                                             3: begin  //Let him stay
+                                                  ForceSay(Heike,'D14-3-H-1');
+
+                                                  if upf_speaker = Suze then
+                                                       Say(upf_speaker,'D14-3-Su-1');
+                                             end;
+                                        end;
+
+                                        DialogueOff;
+                                   end;
+                         end;
+               end
+          else
+               if gensher_accused_freelancers and kill_gensher_objective_status <> 2 then
+                    begin
+                         if UnitFilter(freelancers_leader ^ other_freelancers ^ Willard,[f_alive]) > 0 and UnitFilter(Louis ^ other_louis_folks,[f_alive]) > 0 then
+                              begin
+                                   if IsLive(Louis) then
+                                        louis_speaker = Louis
+                                   else
+                                        begin
+                                             temp_list = UnitFilter(other_louis_folks,[f_alive]);
+                                             if temp_list > 0 then
+                                                  louis_speaker = temp_list[1]
+                                             else
+                                                  louis_speaker = 0;
+                                        end;
+                                 
+                                   if IsLive(freelancers_leader) then
+                                        gordon_speaker = freelancers_leader
+                                   else
+                                        if IsLive(Willard) then
+                                             gordon_speaker = Willard
+                                        else
+                                             begin
+                                                  temp_list = UnitFilter(other_freelancers,[f_alive]);
+                                                  if temp_list > 0 then
+                                                       gordon_speaker = temp_list[1]
+                                                  else
+                                                       gordon_speaker = 0;
+                                             end;
+
+                                   if louis_speaker > 0 and gordon_speaker > 0 then
+                                        begin
+                                             DialogueOn;
+
+                                             case louis_speaker of
+                                                  Louis: ForceSay(louis_speaker,'D15-Lo-1');
+                                                  else
+                                                       if GetSex(louis_speaker) = sex_male then
+                                                            ForceSay(louis_speaker,'D15-LoM-1')
+                                                       else
+                                                            ForceSay(louis_speaker,'D15-LoF-1');
+                                             end;
+
+                                             dwait(0$0.2);
+                                             freelancers_second_choice = Query('QFreelancersWorryAgain');
+                                             case freelancers_second_choice of
+                                                  1: begin  //Kill them
+                                                       case gordon_speaker of
+                                                            Gordon: ForceSay(gordon_speaker,'D15-1-Go-1');
+                                                            freelancers_leader: ForceSay(gordon_speaker,'D15-1-FLea-1');
+                                                            Willard: ForceSay(gordon_speaker,'D15-1-Wi-1');
+                                                            else
+                                                                 if GetSex(gordon_speaker) = sex_male then
+                                                                      ForceSay(gordon_speaker,'D15-1-GoM-1')
+                                                                 else
+                                                                      ForceSay(gordon_speaker,'D15-1-GoF-1');
+                                                       end;
+                                                  end;
+                                                  2: begin  //Expel them
+                                                       ForceSay(Heike,'D7-1-H-1');
+
+                                                       case gordon_speaker of
+                                                            Gordon: ForceSay(gordon_speaker,'D7-1-Go-1');
+                                                            freelancers_leader: ForceSay(gordon_speaker,'D7-1-FLea-1');
+                                                            Willard: ForceSay(gordon_speaker,'D7-1-Wi-1');
+                                                            else
+                                                                 if GetSex(gordon_speaker) = sex_male then
+                                                                      ForceSay(gordon_speaker,'D7-1-GoM-1')
+                                                                 else
+                                                                      ForceSay(gordon_speaker,'D7-1-GoF-1');
+                                                       end;
+                                                  end;
+                                                  3: begin  //Let them stay
+                                                       ForceSay(Heike,'D15-3-H-1');
+
+                                                       case louis_speaker of
+                                                            Louis: ForceSay(louis_speaker,'D15-3-Lo-1');
+                                                            else
+                                                                 if GetSex(louis_speaker) = sex_male then
+                                                                      ForceSay(louis_speaker,'D15-3-LoM-1')
+                                                                 else
+                                                                      ForceSay(louis_speaker,'D15-3-LoF-1');
+                                                       end;
+
+                                                       ForceSay(Heike,'D15-3-H-2');
+                                                  end;
+                                             end;
+
+                                             DialogueOff;
+                                        end;
+                              end;
+                    end;
+
+
+          //Objective to kill Gensher
+          wait(Rand(0$20,0$30));
+
+          if kill_gensher_objective_status <> 2 then  //IsLive(Gensher)
+               begin
+                    DialogueOn;
+
+                    ForceSay(Heike,'D16-H-1');
+                    ForceSay(Heike,'D16-H-2');
+                    SayEffect('D16-All-1');
+
+                    if IsLive(upf_deserter) and not upf_deserter_choice in [1,2] then
+                         begin
+                              ForceSay(Heike,'D16-H-3');
+                              ForceSay(upf_deserter,'D16-Ro-1');
+                         end;
+
+                    dwait(0$0.2);
+                    ChangeMissionObjectives('MKillGensher');
+
+                    DialogueOff;
+
+                    kill_gensher_objective_status = 1;
+               end;
+
+
+          //If both the freelancers and Louis's group are present at this time, Louis's group walk away
+          //by themselves.
+          wait(Rand(0$5,0$10));
+
+          if freelancers_choice = 1 and not louis_gordon_dispute_choice in [1,2] and not freelancers_second_choice in [1,2] and am_scientists_escape_status = 0 and kill_gensher_objective_status <> 2 and UnitFilter(freelancers_leader ^ other_freelancers ^ Willard,[f_alive]) > 0 and UnitFilter(Louis ^ other_louis_folks,[f_alive]) > 0 then
+               begin
+                    louis_walks_away_himself = true;
+
+                    wait(0$5);
+
+                    if IsLive(Louis) then
+                         louis_speaker = Louis
+                    else
+                         begin
+                              temp_list = UnitFilter(other_louis_folks,[f_alive]);
+                              if temp_list > 0 then
+                                   louis_speaker = temp_list[1]
+                              else
+                                   louis_speaker = 0;
+                         end;
+
+                    if louis_speaker > 0 then
+                         begin
+                              CenterOnUnits(louis_speaker);
+                              DialogueOn;
+
+                              if louis_speaker = Louis then
+                                   ForceSay(Heike,'D17-H-1a')
+                              else
+                                   ForceSay(Heike,'D17-H-1b');
+
+                              case louis_speaker of
+                                   Louis: ForceSay(louis_speaker,'D17-Lo-1');
+                                   else
+                                        if GetSex(louis_speaker) = sex_male then
+                                             ForceSay(louis_speaker,'D17-LoM-1')
+                                        else
+                                             ForceSay(louis_speaker,'D17-LoF-1');
+                              end;
+
+                              ForceSay(Heike,'D17-H-2');
+
+                              case louis_speaker of
+                                   Louis: ForceSay(louis_speaker,'D17-Lo-2');
+                                   else
+                                        if GetSex(louis_speaker) = sex_male then
+                                             ForceSay(louis_speaker,'D17-LoM-2')
+                                        else
+                                             ForceSay(louis_speaker,'D17-LoF-2');
+                              end;
+
+                              ForceSay(Heike,'D17-H-3');
+
+                              DialogueOff;
+                         end;
+               end;
+
+           
+          //UPF second (and last) attack.
+          wait(Rand(7$0,7$30) + [2$0,1$0,0$0][difficulty]);
+
+          if upf_attack_status = 3 then
+               begin
+                    upf_attack_status = 4;
+
+                    repeat
+                    wait(0$1);
+                    until upf_attack_status = 6;
+               end;
+     end;
+
+//If Khattam is sent away or marked for kill.
+Every 0$0.7+0$0.5 trigger khattam_choice in [1,2] do
+     var i, hex, temp_list, temp_list_2;
+     begin
+          temp_list = [[57,1],[96,1],[134,31]];
+          temp_list_2 = [];
+          for i in temp_list do
+               temp_list_2 = temp_list_2 ^ GetDistUnitXY(Khattam,i[1],i[2]);
+          hex = WorstFromListByList(temp_list,temp_list_2);
+
+          SetSide(Khattam,you_alt);
+          if khattam_choice = 1 then
+               begin
+                    SetAttitude(you,you_alt,att_enemy,false);
+                    SetAttitude(you_alt,you,att_neutral,false);
+               end;
+
+          repeat
+
+          case GetType(IsInUnit(Khattam)) of
+               unit_building: ComExitBuilding(Khattam);
+               unit_vehicle: ComexitVehicle(Khattam);
+               else
+                    begin
+                         if GetDistUnitXY(Khattam,hex[1],hex[2]) > 2 then
+                              ComMoveXY(Khattam,hex[1],hex[2])
+                         else
+                              RemoveUnit(Khattam);
+                    end;
+          end;
+
+          wait(0$0.7);
+
+          until not IsPlaced(Khattam);
+     end;
+
+//The Independent Union of Freelancers enter the scene
+Every 0$1+0$0.9 trigger freelancers_may_appear do
+     var vehicles, humans, temp_list, i, hex, un, everyone;
+     begin
+          SetAttitude(you,you_alt,att_friend,true);
+
+          //Create some vehicles for them. One American, one Russian and one Arabian.
+          InitUc;
+          InitVc;
+
+          vehicles = [];
+
+          uc_side = you_alt;
+          uc_nation = nation_american;
+          vc_control = control_manual;
+          vc_engine = [engine_siberite,engine_combustion][Rand(1,2)];
+          vc_chassis = us_medium_tracked;
+          vc_weapon = [us_machine_gun,us_gatling_gun,us_light_gun,us_double_gun,us_laser][Rand(1,5)];
+
+          vehicles = vehicles ^ CreateVehicle;
+
+          uc_nation = nation_russian;
+          vc_control = control_manual;
+          vc_engine = [engine_siberite,engine_combustion][Rand(1,2)];
+          vc_chassis = ru_medium_tracked;
+          vc_weapon = [ru_heavy_machine_gun,ru_gatling_gun,ru_gun][Rand(1,3)];
+
+          vehicles = vehicles ^ CreateVehicle;
+
+          uc_nation = nation_arabian;
+          vc_control = control_manual;
+          vc_engine = [engine_siberite,engine_combustion][Rand(1,2)];
+          vc_chassis = ar_half_tracked;
+          vc_weapon = [ar_double_machine_gun,ar_gatling_gun,ar_gun,ar_flame_thrower,ar_multimissile_ballista][Rand(1,3)];
+
+          vehicles = vehicles ^ CreateVehicle;
+
+          //Drivers. Preferably mechanics. Always the leader.
+          humans = other_freelancers;
+          if Willard > 0 then
+               humans = humans ^ Willard;
+
+          everyone = humans ^ freelancers_leader ^ vehicles;
+
+          temp_list = [];
+          for i in humans do
+               if GetClass(i) = class_mechanic then
+                    temp_list = temp_list ^ 1
+               else
+                    temp_list = temp_list ^ 0;
+
+          humans = SortListByListDesc(humans,temp_list);
+
+          PlaceHumanInUnit(freelancers_leader,vehicles[1]);
+          if humans > 0 then
+               begin
+                    PlaceHumanInUnit(humans[1],vehicles[2]);
+                    humans = Delete(humans,1);
+               end;
+          if humans > 0 then
+               begin
+                    PlaceHumanInUnit(humans[1],vehicles[3]);
+                    humans = Delete(humans,1);
+               end;
+
+
+          //Place and move.
+          //Move to the player's depot. Else Heike.
+          repeat
+          wait(0$0.7);
+
+          temp_list = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]);
+          if temp_list > 0 then
+               hex = [GetX(temp_list[1]),GetY(temp_list[1])]
+          else
+               hex = [GetX(Heike),GetY(Heike)];
+
+          temp_list = [];
+          for i in vehicles ^ humans do
+               if not IsPlaced(i) then
+                    PlaceUnitArea(i,enter_area_south,false)
+               else
+                    temp_list = temp_list ^ i;
+          
+          MoveUnits(temp_list,hex);
+
+          until UnitFilter(everyone,[f_see,you]) > 0;
+
+          //Dialogue
+          ChangeSideFog(you_alt,you);
+          CenterOnUnits([freelancers_leader,IsInUnit(freelancers_leader)] diff 0);
+
+          DialogueOn;
+
+          if freelancers_leader = Gordon then
+               begin
+                    Say(freelancers_leader,'D8-Go-1');
+                    Say(Heike,'D8-H-1a');
+                    Say(freelancers_leader,'D8-Go-2');
+               end
+          else
+               begin
+                    Say(freelancers_leader,'D8-FLea-1');
+                    Say(Heike,'D8-H-1b');
+                    Say(freelancers_leader,'D8-FLea-2');
+               end;
+
+          temp_list = UnitFilter([Olaf,Kowalski],[f_ok]);
+          if temp_list = 0 then
+               temp_list = GetNonmainPlayerCharacters;
+
+          if temp_list > 0 then
+               begin
+                    un = temp_list[Rand(1,temp_list)];
+
+                    case un of
+                         Olaf: Say(un,'D8-Ola-1');
+                         Kowalski: Say(un,'D8-Ko-1');
+                         else
+                              if GetSex(un) = sex_male then
+                                   Say(un,'D8-SomeM-1')
+                              else
+                                   Say(un,'D8-SomeF-1');
+                    end;
+               end;
+
+          if freelancers_leader = Gordon then
+               begin
+                    Say(freelancers_leader,'D8-Go-3');
+
+                    if LoadVariable('Cooperates_with_UPF_10',false) then
+                         Say(freelancers_leader,'D8-Go-4a')
+                    else
+                         Say(freelancers_leader,'D8-Go-4b');
+               end
+          else
+               begin
+                    Say(freelancers_leader,'D8-FLea-3');
+
+                    if LoadVariable('Cooperates_with_UPF_10',false) then
+                         Say(freelancers_leader,'D8-FLea-4a')
+                    else
+                         Say(freelancers_leader,'D8-FLea-4b');
+               end;
+
+          temp_list = UnitFilter([Oswald,Suze],[f_ok]);
+          if temp_list = 0 then
+               temp_list = GetNonmainPlayerCharacters;
+
+          if temp_list > 0 then
+               begin
+                    un = temp_list[Rand(1,temp_list)];
+
+                    case un of
+                         Oswald: Say(un,'D8-Os-1');
+                         Suze: Say(un,'D8-Su-1');
+                         else
+                              if GetSex(un) = sex_male then
+                                   Say(un,'D8-SomeM-2')
+                              else
+                                   Say(un,'D8-SomeF-2');
+                    end;
+               end;
+
+          dwait(0$0.2);
+          freelancers_choice = Query('QFreelancersArrive');
+          case freelancers_choice of
+               1: begin  //accept
+                    Say(Heike,'D8-1-H-1');
+
+                    SetSide(everyone,you);
+                    ComStop(everyone);
+               end;
+               2: begin  //decline
+                    Say(Heike,'D8-2-H-1');
+
+                    if freelancers_leader = Gordon then
+                         begin
+                              if LoadVariable('Cooperates_with_UPF_10',false) then
+                                   Say(freelancers_leader,'D8-2-Go-1a')
+                              else
+                                   Say(freelancers_leader,'D8-2-Go-1b');
+                         end
+                    else
+                         if LoadVariable('Cooperates_with_UPF_10',false) then
+                              Say(freelancers_leader,'D8-2-FLea-1a')
+                         else
+                              Say(freelancers_leader,'D8-2-FLea-1b');
+
+                    Say(Heike,'D8-2-H-2');
+
+                    if freelancers_leader = Gordon then
+                         begin
+                              Say(freelancers_leader,'D8-2-Go-2');
+                              Say(Heike,'D8-2-H-3a');
+                         end
+                    else
+                         begin
+                              Say(freelancers_leader,'D8-2-FLea-2');
+                              Say(Heike,'D8-2-H-3b');
+                         end;
+               end;
+          end;
+
+          DialogueOff;
+
+          ChangeSideFog(you_alt,you_alt);
+
+          if freelancers_choice = 1 then
+               exit;
+
+
+          //Move back to where you came from and exit the map.
+          hex = [162,118];
+
+          repeat
+          wait(0$1);
+
+          temp_list = [];
+          for i in UnitFilter(vehicles ^ humans,[f_placed]) do
+               if IsInArea(i,enter_area_south) then
+                    RemoveUnit(i)
+               else
+                    temp_list = temp_list ^ i;
+
+          MoveUnits(temp_list,hex);
+
+          until UnitFilter(everyone,[f_placed]) = 0;
+     end;
+//Makes sure the group doesn't split up too much (because units move at different speeds).
+Function MoveUnits(un_list,hex);
+     var i, temp_list, most_behind_un, max_dist, dist;
+     begin
+          if un_list = 0 then
+               exit;
+
+          temp_list = [];
+          for i in un_list do
+               temp_list = temp_list ^ GetDistUnitXY(i,hex[1],hex[2]);
+
+          most_behind_un = BestFromlistByList(un_list,temp_list);
+          max_dist = GetDistUnitXY(most_behind_un,hex[1],hex[2]);
+
+          for i in un_list do
+               begin
+                    dist = GetDistUnitXY(i,hex[1],hex[2]);
+
+                    if max_dist - dist >= 5 then
+                         ComStop(i)
+                    else
+                         ComMoveXY(i,hex[1],hex[2]);
+               end;
+     end;
+
+//If the upf deserter is sent away or marked for kill.
+Every 0$0.7+0$0.4 trigger upf_deserter_choice in [1,2] do
+     var i, hex, temp_list, temp_list_2;
+     begin
+          temp_list = [[57,1],[96,1],[134,31]];
+          temp_list_2 = [];
+          for i in temp_list do
+               temp_list_2 = temp_list_2 ^ GetDistUnitXY(upf_deserter,i[1],i[2]);
+          hex = WorstFromListByList(temp_list,temp_list_2);
+
+          SetSide(upf_deserter,you_alt);
+          if upf_deserter_choice = 1 then
+               begin
+                    SetAttitude(you,you_alt,att_enemy,false);
+                    SetAttitude(you_alt,you,att_neutral,false);
+               end;
+
+          repeat
+
+          case GetType(IsInUnit(upf_deserter)) of
+               unit_building: ComExitBuilding(upf_deserter);
+               unit_vehicle: ComexitVehicle(upf_deserter);
+               else
+                    begin
+                         if GetDistUnitXY(upf_deserter,hex[1],hex[2]) > 2 then
+                              ComMoveXY(upf_deserter,hex[1],hex[2])
+                         else
+                              RemoveUnit(upf_deserter);
+                    end;
+          end;
+
+          wait(0$0.7);
+
+          until not IsPlaced(upf_deserter);
+     end;
+
+//If Gordon's or Louis's people are sent away or marked for kill.
+Every 0$0.7+0$0.4 trigger louis_gordon_dispute_choice in [1,2] or freelancers_second_choice in [1,2] or louis_walks_away_himself do
+     var i, hex, temp_list, temp_list_2, people_list;
+     begin
+          if louis_gordon_dispute_choice = 1 or freelancers_second_choice in [1,2] then
+               people_list = UnitFilter(other_freelancers ^ freelancers_leader ^ Willard,[f_alive])
+          else
+               begin
+                    people_list = UnitFilter(other_louis_folks ^ Louis ^ Martin,[f_alive]);
+                    louis_gone = true;
+               end;
+
+          if people_list = 0 then  //should never happen
+               exit;
+
+          temp_list = [[57,1],[96,1],[134,31]];
+          temp_list_2 = [];
+          for i in temp_list do
+               temp_list_2 = temp_list_2 ^ GetDistUnitXY(people_list[1],i[1],i[2]);
+          hex = WorstFromListByList(temp_list,temp_list_2);
+
+          SetSide(people_list,you_alt);
+
+          if freelancers_second_choice = 1 then
+               begin
+                    SetAttitude(you,you_alt,att_enemy,true);
+               end
+          else
+               SetAttitude(you,you_alt,att_friend,true);
+
+          repeat
+
+          for i in people_list do
+               case GetType(IsInUnit(i)) of
+                    unit_building: ComExitBuilding(i);
+                    unit_vehicle: ComexitVehicle(i);
+                    else
+                         begin
+                              if GetDistUnitXY(i,hex[1],hex[2]) > 2 then
+                                   ComMoveXY(i,hex[1],hex[2])
+                              else
+                                   RemoveUnit(i);
+                         end;
+               end;
+
+          wait(0$0.7);
+
+          until UnitFilter(people_list,[f_placed]) = 0;
+     end;
+
+//Show countdown to American reinforcements.
+Every 0$1+0$0.1 trigger am_reinforcements_time > 0$0 do
+     var counter, disp;
+     begin
+          counter = 0$0;
+
+          disp = am_reinforcements_time div 1$0;
+          if am_reinforcements_time mod 1$0 > 0$30 then
+               disp = disp + 1;
+
+          display_strings = ['#Ar13a-AmReinforcements',disp];
+
+          repeat
+          wait(0$1);
+
+          if am_scientists_escape_status = 2 and am_reinforcements_time > 0$0 then  //If the player has defeated the Americans (the reinforcements never arrive)
+               begin
+                    DialogueOn;
+                    SayRadio(Heinz,'D10-He-4');
+                    DialogueOff;
+
+                    ChangeMissionObjectives('MOutStopreinforcements');
+
+                    break;
+               end;
+
+          am_reinforcements_time = am_reinforcements_time - 0$1;
+          counter = counter + 0$1;
+
+          if counter = 1$0 then
+               begin
+                    counter = 0$0;
+                    disp = disp - 1;
+                    display_strings = ['#Ar13a-AmReinforcements',disp];
+               end;
+
+          until disp = 0;
+
+          display_strings = [];
+
+          while am_reinforcements_time > 0$0 do
+               begin
+                    wait(0$1);
+                    am_reinforcements_time = am_reinforcements_time - 0$1;
+               end;
+     end;
+//Spawn and control American reinforcements.
+Every 0$1+0$0.2 trigger am_reinforcements_start and am_reinforcements_time <= 0$0 do
+     var num_uns, i, humans_list, vehicles_list, un, fact, temp_list;
+     begin
+          num_uns = [2,3,4][difficulty];
+
+          //Humans
+          InitHc;
+          
+          humans_list = [];
+          for i = 1 to num_uns do
+               begin
+                    humans_list = humans_list ^ CreateUnitsWithClass(1,[class_sniper,class_engineer,class_mechanic][(i mod 3) + 1],americans);
+               end;
+
+          //Vehicles
+          InitUc;
+          InitVc;
+
+          uc_side = americans;
+          uc_nation = nation_american;
+          uc_direction = 0;
+
+          vc_chassis = us_light_wheeled;
+          vc_control = control_manual;
+          vc_engine = engine_combustion;
+
+          for i = 1 to num_uns do
+               begin
+                    vc_weapon = [us_machine_gun, us_light_gun][Rand(1,2)];
+                    un = CreateVehicle;
+                    vehicles_list = vehicles_list ^ un;
+                    PlaceHumanInUnit(humans_list[i],un);
+               end;
+
+          //Place and command units.
+          //Vehicles will be reycled in the weapon factory.
+          //If you lose your vehicle then continue on foot.
+          repeat
+          wait(0$1);
+
+          fact = 0;
+          temp_list = ai_facts[1] diff sib_rocket_factory;
+          if temp_list > 0 then
+               if IsOk(temp_list[1]) and BuildingStatus(temp_list[1]) = bs_idle then
+                    fact = temp_list[1];
+
+          vehicles_list = UnitFilter(vehicles_list,[f_lives,1]);
+          humans_list = UnitFilter(humans_list,[f_lives,1]);
+
+          for i in vehicles_list do
+               begin
+                    if not IsPlaced(i) then
+                         PlaceUnitArea(i,am_enter_exit_south,false);
+
+                    if fact > 0 then
+                         ComRecycle(i,fact)
+                    else
+                         if GetDistUnitXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) > 13 then
+                              ComMoveXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+               end;
+
+          for i in humans_list do
+               if GetType(IsInUnit(i)) <> unit_vehicle then
+                    if not IsInArea(i,Am_base) then
+                         ComMoveXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2])
+                    else
+                         begin
+                              case GetClass(i) of
+                                   class_sniper: begin
+                                        temp_list = ai_soldiers[1] ^ i;
+                                        ai_soldiers = Replace(ai_soldiers,1,temp_list);
+                                   end;
+                                   class_mechanic: begin
+                                        temp_list = ai_mechanics_defend[1] ^ i;
+                                        ai_mechanics_defend = Replace(ai_mechanics_defend,1,temp_list);
+                                   end;
+                                   class_engineer: begin
+                                        temp_list = ai_engineers[1] ^ i;
+                                        ai_engineers = Replace(ai_engineers,1,temp_list);
+                                   end;
+                              end;
+
+                              humans_list = humans_list diff i;
+                              am_reinforcements_got_through = true;
+                         end;
+
+          until humans_list = 0;
+
+          ChangeMissionObjectives('MOutStopreinforcements');
+     end;
+
+//If the player has accepted the Freelancers but betrayed them in mission 10 they take revenge
+//as UPF attacks. They blow mines they have planted within the player's base and then run for it.
+Every 0$1+0$0.6 trigger freelancers_bombing_start do
+     var human_list, countdown, i, temp_list, temp_list_2, buildings_list, temp_list_3, b, x, y, dir;
+     var hex_list, unit_hex_index;
+     begin
+          human_list = UnitFilter(freelancers_leader ^ other_freelancers ^ Willard,[f_alive]);
+
+          if human_list = 0 then
+               exit;
+
+          SetSide(human_list,you_alt);
+          SetAttitude(you_alt,you,att_friend,true);
+
+          countdown = 0$5;
+
+          hex_list = [[75,47],[60,35],[50,25],[44,16],[39,7],[33,1]];
+          unit_hex_index = [];
+          for i in human_list do
+               unit_hex_index = Replace(unit_hex_index,i,1);
+
+          repeat
+          wait(0$1);
+
+          human_list = UnitFilter(human_list,[f_alive]);
+
+          countdown = countdown - 0$1;
+
+          if countdown = 0$0 then
+               begin
+                    //Blow the mines!
+                    //Blowing mines at the center of buildings causes massive damage which almost no building
+                    //can withstand. Therefore blow mines at the edges of buildings.
+                    //Choose some defensive and nondefensive buildings.
+                    temp_list = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_armoury],[f_btype,b_barracks]]]);
+                    temp_list_2 = FilterAllUnits([[f_side,you],[f_type,unit_building]]) diff temp_list;
+                    buildings_list = [];
+
+                    for i = 1 to [1,2,3][difficulty] do
+                         begin
+                              if temp_list = 0 then
+                                   break;
+
+                              temp_list_3 = temp_list;
+                              b = temp_list_3[Rand(1,temp_list_3)];
+                              buildings_list = buildings_list ^ b;
+                              temp_list = temp_list diff b;
+                         end;
+
+                    for i = 1 to [1,2,3][difficulty] do
+                         begin
+                              if temp_list_2 = 0 then
+                                   break;
+
+                              temp_list_3 = temp_list_2;
+                              b = temp_list_3[Rand(1,temp_list_3)];
+                              buildings_list = buildings_list ^ b;
+                              temp_list_2 = temp_list_2 diff b;
+                         end;
+
+                    //Find an edge of each building and blow the mine.
+                    temp_list = [];
+                    for b in buildings_list do
+                         begin
+                              dir = Rand(0,5);
+                              x = GetX(b);
+                              y = GetY(b);
+
+                              while HexInfo(x,y) = b do
+                                   begin
+                                        x = ShiftX(x,dir,1);
+                                        y = Shifty(y,dir,1);
+                                   end;
+
+                              temp_list = temp_list ^ [[x,y]];
+                         end;
+
+                    //Blow the mines a little asynchronously.
+                    for i in temp_list do
+                         begin
+                              wait(Rand(0$0.3,0$0.8));
+                              MineExplosion(i[1],i[2],1);
+                         end;
+
+                    wait(0$0.5);
+
+                    if freelancers_leader in human_list then
+                         i = freelancers_leader
+                    else
+                         if Willard in human_list then
+                              i = Willard
+                         else
+                              begin
+                                   temp_list = human_list;
+
+                                   if temp_list > 0 then
+                                        i = temp_list[Rand(1,temp_list)]
+                                   else
+                                        i = 0;
+                              end;
+
+                    if i > 0 then
+                         begin
+                              DialogueOn;
+
+                              case i of
+                                   Gordon: ForceSay(i,'D12-Go-1');
+                                   freelancers_leader: ForceSay(i,'D12-FLea-1');
+                                   Willard: ForceSay(i,'D12-Wi-1');
+                                   else
+                                        if GetSex(i) = sex_male then
+                                             ForceSay(i,'D12-SomeM-1')
+                                        else
+                                             ForceSay(i,'D12-SomeM-1');
+                              end;
+
+                              DialogueOff;
+                         end;
+
+                    SetAttitude(you_alt,you,att_neutral,true);
+               end;
+
+          //Run away!
+          temp_list = GetHumansOutOfUnits(human_list);
+          for i in temp_list do
+               begin
+                    if GetDistUnitXY(i,hex_list[unit_hex_index[i]][1],hex_list[unit_hex_index[i]][2]) > 2 then
+                         ComMoveXY(i,hex_list[unit_hex_index[i]][1],hex_list[unit_hex_index[i]][2])
+                    else
+                         if unit_hex_index[i] < hex_list then
+                              begin
+                                   unit_hex_index = Replace(unit_hex_index,i,unit_hex_index[i]+1);
+                              end
+                         else
+                              RemoveUnit(i);
+               end;
+
+          until human_list = 0;
+     end;
+
+//Every which checks if the player has completed the objective of killing Gensher.
+Every 0$1+0$0.5 trigger kill_gensher_objective_status = 1 do
+     begin
+          repeat
+          wait(0$1);
+          until kill_gensher_objective_status = 2;
+
+          ChangeMissionObjectives('MOutKillGensher');
+     end;
+
+
+//If the Americans feel the battle is lost the scientists try to escape either north or south.
+//The other American personnel stay until all scientists are gone.
+//Then they also retreat.
+Every 0$1+0$0.1 do
+     var temp_list, temp_list_2, i, num;
+     var north_defences, east_defences, south_defences, initial_people, group_1, group_2, hexes_group_1, hexes_group_2;
+     var unit_hex_index, base, small_base_people, hexes_small_base_people;
+     begin
+          base = 1;
+
+          //Determine the intial number of defensive buildings and American personnel.
+          north_defences = FilterAllUnits([[f_side,americans],[f_inarea,am_base_north],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_turret],[f_btype,b_armoury],[f_btype,b_barracks],[f_btype,b_fort]]])+0;
+          east_defences = FilterAllUnits([[f_side,americans],[f_inarea,am_base_east],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_turret],[f_btype,b_armoury],[f_btype,b_barracks],[f_btype,b_fort]]])+0;
+          south_defences = FilterAllUnits([[f_side,americans],[f_inarea,am_base_south],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_turret],[f_btype,b_armoury],[f_btype,b_barracks],[f_btype,b_fort]]])+0;
+
+          initial_people = FilterAllUnits([[f_side,americans],[f_type,unit_human]])+0;
+
+
+          //Determine when it's time to run for it.
+          repeat
+          wait(0$1);
+
+          if sib_rocket_fired then
+               exit;
+
+          if not BaseUnderAttack(base,-1) then
+               continue;
+
+          if FilterAllUnits([[f_side,you],[f_inarea,Am_base]]) = 0 then
+               continue;
+
+          temp_list = FilterAllUnits([[f_side,americans],[f_ok],[f_inarea,am_base_north],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_turret],[f_btype,b_armoury],[f_btype,b_barracks],[f_btype,b_fort]]]);
+          if temp_list <= 1 or temp_list <= RoundToNearestInteger(north_defences * 0.25) and FilterAllUnits([[f_side,you],[f_inarea,am_base_north]]) > 0 then
+               begin
+                    am_scientists_escape_status = 1;
+                    break;
+               end;
+
+          temp_list = FilterAllUnits([[f_side,americans],[f_ok],[f_inarea,am_base_east],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_turret],[f_btype,b_armoury],[f_btype,b_barracks],[f_btype,b_fort]]]);
+          if temp_list <= 1 or temp_list <= RoundToNearestInteger(east_defences * 0.25) and FilterAllUnits([[f_side,you],[f_inarea,am_base_east_near]]) > 0 then
+               begin
+                    am_scientists_escape_status = 1;
+                    break;
+               end;
+
+          temp_list = FilterAllUnits([[f_side,americans],[f_ok],[f_inarea,am_base_south],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_turret],[f_btype,b_armoury],[f_btype,b_barracks],[f_btype,b_fort]]]);
+          if ( temp_list <= 1 or temp_list <= RoundToNearestInteger(south_defences * 0.25) ) and FilterAllUnits([[f_side,you],[f_inarea,am_base_south]]) > 0 then
+               begin
+                    am_scientists_escape_status = 1;
+                    break;
+               end;
+
+          if FilterAllUnits([[f_side,americans],[f_ok],[f_type,unit_human]]) <= RoundToNearestInteger(initial_people * 0.6) then
+               begin
+                    am_scientists_escape_status = 1;
+                    break;
+               end;
+
+          if not IsOk(ai_depot[base]) or UnitFilter(ai_facts[base],[f_ok]) <= 1 then
+               begin
+                    am_scientists_escape_status = 1;
+                    break;
+               end;
+
+          until false;
+
+
+          //Time to get those legs moving. Determine escape route.
+          //If possible we want to split up so one group escapes north and the other south.
+          //Else both go for south. If south is blocked then get out
+          //through the main entrance to the east. Then split up here and escape
+          //both north and south. Although both south and north are safer routes they can easily
+          //be blocked by the player so the main entrance is the final option.
+          temp_list = FilterAllUnits([[f_side,you],[f_inarea,am_base_north]]);
+          temp_list_2 = FilterAllUnits([[f_side,you],[f_inarea,am_base_south]]);
+
+          hexes_group_1 = [];  //north if possible
+          hexes_group_2 = [];  //south if possible
+
+          if temp_list = 0 and temp_list_2 = 0 then
+               begin
+                    hexes_group_1 = [[29,41],[18,18],[5,1]];
+                    hexes_group_2 = [[50,88],[55,106],[65,106],[74,118]];
+               end
+          else
+               if temp_list_2 = 0 then
+                    begin
+                         hexes_group_1 = [[50,88],[55,106],[65,106],[74,118]];
+                         hexes_group_2 = [[50,88],[55,106],[65,106],[74,118]];
+                    end
+               else
+                    begin
+                         hexes_group_1 = [[66,76],[74,68],[69,56],[59,43],[51,30],[42,19],[32,10],[5,1]];
+                         hexes_group_2 = [[66,76],[74,118]];
+                    end;
+
+          //Create the two groups.
+          group_1 = [];
+          group_2 = [];
+
+          temp_list = [];
+          for i in ai_scientists[base] do
+               temp_list = temp_list ^ GetY(i);
+
+          if temp_list > 0 then
+               temp_list_2 = SortListByListAsc(ai_scientists[base],temp_list)
+          else
+               temp_list_2 = [];
+
+          unit_hex_index = [];
+          for i in temp_list_2 do
+               unit_hex_index = Replace(unit_hex_index,i,1);
+
+          num = temp_list_2 div 2;
+          for i = 1 to num do
+               begin
+                    group_1 = group_1 ^ temp_list_2[1];
+                    temp_list_2 = Delete(temp_list_2,1);
+               end;
+
+          group_2 = temp_list_2;
+
+          temp_list = ai_heal_these_humans[base] diff ai_scientists[base];
+          ai_heal_these_humans = Replace(ai_heal_these_humans,base,temp_list);
+          ai_scientists = Replace(ai_scientists,base,[]);
+
+          //Run away!
+          repeat
+          wait(0$1);
+
+          group_1 = UnitFilter(group_1,[f_alive]);
+          group_2 = UnitFilter(group_2,[f_alive]);
+
+          if group_1 = 0 and group_2 = 0 then
+               break;
+
+          temp_list = GetHumansOutOfUnits(group_1 ^ group_2);
+          for i in temp_list do
+               begin
+                    if i in group_1 then
+                         temp_list_2 = hexes_group_1
+                    else
+                         temp_list_2 = hexes_group_2;
+
+                    if GetDistUnitXY(i,temp_list_2[unit_hex_index[i]][1],temp_list_2[unit_hex_index[i]][2]) > 3 then
+                         ComMoveXY(i,temp_list_2[unit_hex_index[i]][1],temp_list_2[unit_hex_index[i]][2])
+                    else
+                         if unit_hex_index[i] < temp_list_2 then
+                              begin
+                                   unit_hex_index = Replace(unit_hex_index,i,unit_hex_index[i]+1);
+                              end
+                         else
+                              begin
+                                   if i = Hugh then
+                                        RemoveUnit(i)
+                                   else
+                                        DestroyUnit(i);
+
+                                   scientist_escaped = true;
+                              end;
+               end;
+
+          until false;
+
+          am_scientists_escape_status = 2;
+          ChangeMissionObjectives('MOutscikill');
+
+
+          //All other Americans also run for it.
+          repeat
+          wait(0$1);
+
+          if sib_rocket_fired then
+               exit;
+
+          until not BaseUnderAttack(base,-1) or (FilterAllUnits([[f_side,americans],[f_type,unit_human],[f_ok]]) diff GetApes(americans)) = 0;
+
+          hexes_group_1 = [[29,41],[18,18],[5,1]];  //north
+          hexes_group_2 = [[50,88],[55,106],[65,106],[74,118]];  //south
+          hexes_small_base_people = [[78,118]];  //south
+
+          //Create the two groups.
+          group_1 = [];
+          group_2 = [];
+          small_base_people = FilterAllUnits([[f_side,americans],[f_type,unit_human],[f_inarea,Am_small_base]]);
+
+          temp_list_2 = FilterAllUnits([[f_side,americans],[f_type,unit_human]]) diff small_base_people;
+
+          temp_list = [];
+          for i in temp_list_2 do
+               temp_list = temp_list ^ GetY(i);
+
+          temp_list_2 = SortListByListAsc(temp_list_2,temp_list);
+
+          unit_hex_index = [];
+          for i in temp_list_2 do
+               unit_hex_index = Replace(unit_hex_index,i,1);
+
+          num = temp_list_2 div 2;
+          for i = 1 to num do
+               begin
+                    group_1 = group_1 ^ temp_list_2[1];
+                    temp_list_2 = Delete(temp_list_2,1);
+               end;
+
+          group_2 = temp_list_2;
+
+          ai_bases = [];  //Disable AI completely
+
+          //Run away!
+          temp_list_2 = UnitFilter((group_1 ^ group_2 ^ small_base_people) diff GetApes(americans),[f_ok]);
+          if temp_list_2 > 0 then
+               begin
+                    i = temp_list_2[Rand(1,temp_list_2)];
+
+                    DialogueOn;
+
+                    if GetSex(i) = sex_male then
+                         SayRadio(i,'D19-SomeM-1')
+                    else
+                         SayRadio(i,'D19-SomeF-1');
+
+                    DialogueOff;
+               end;
+
+          americans_retreat = true;
+          ChangeMissionObjectives('MOutsibbombdeny');
+
+          repeat
+          wait(0$1);
+
+          group_1 = UnitFilter(group_1,[f_alive]);
+          group_2 = UnitFilter(group_2,[f_alive]);
+          small_base_people = UnitFilter(small_base_people,[f_alive]);
+
+          temp_list = GetHumansOutOfUnits(group_1 ^ group_2 ^ small_base_people);
+          for i in temp_list do
+               begin
+                    if i in group_1 then
+                         temp_list_2 = hexes_group_1
+                    else
+                         if i in group_2 then
+                              temp_list_2 = hexes_group_2
+                         else
+                              temp_list_2 = hexes_small_base_people;
+
+                    if GetDistUnitXY(i,temp_list_2[unit_hex_index[i]][1],temp_list_2[unit_hex_index[i]][2]) > 3 then
+                         ComMoveXY(i,temp_list_2[unit_hex_index[i]][1],temp_list_2[unit_hex_index[i]][2])
+                    else
+                         if unit_hex_index[i] < temp_list_2 then
+                              begin
+                                   unit_hex_index = Replace(unit_hex_index,i,unit_hex_index[i]+1);
+                              end
+                         else
+                              begin
+                                   DestroyUnit(i);
+                              end;
+               end;
+
+          until group_1 = 0 and group_2 = 0 and small_base_people = 0;
+     end;
+Function RoundToNearestInteger(double);
+     begin
+          result = double div 1;
+
+          if (double * 10) mod 10 = 5 then
+               result = result + 1;
+     end;
+
+//As the American scientists escape they blow up their labs.
+Every 0$1+0$0.2 trigger am_scientists_escape_status = 1 do
+     var base, lab, hex_list, x, y, dir, i, temp_list;
+     begin
+          base = 1;
+
+          //Wait until the scientists have gotten a little away from the labs.
+          wait(0$5);
+
+          repeat
+          wait(0$0.5);
+          until UnitFilter(ai_labs[base],[f_see,you]) > 0 or ai_labs[base] = 0;
+
+          //Don't rebuild the labs
+          for i in ai_buildings_locations[base] do
+               if i[4] in [b_lab,b_lab_half,b_lab_full] then
+                    begin
+                         temp_list = ai_buildings_locations[base] diff [i];
+                         ai_buildings_locations = Replace(ai_buildings_locations,base,temp_list);
+                    end;
+
+          hex_list = [];
+          for lab in ai_labs[base] do
+               begin
+                    x = GetX(lab);
+                    y = GetY(lab);
+
+                    hex_list = hex_list ^ [[x,y]];
+
+                    dir = Rand(0,5);
+                    hex_list = hex_list ^ [[ShiftX(x,dir,2),ShiftY(y,dir,2)]];
+
+                    dir = Rand(0,5);
+                    hex_list = hex_list ^ [[ShiftX(x,dir,2),ShiftY(y,dir,2)]];
+               end;
+
+          //Blow the mines a little asynchronously
+          for i in hex_list do
+               begin
+                    wait(Rand(0$0.3,0$0.6));
+                    MineExplosion(i[1],i[2],1);
+               end;
+
+          //Make sure the labs are dead
+          for i in ai_labs[base] do
+               KillUnit(i);
+
+          wait(0$0.5);
+          if hex_list > 0 then
+               begin
+                    CenterOnXY(hex_list[1][1],hex_list[1][2]);
+
+                    DialogueOn;
+                    ForceSay(Heike,'D18-H-1');
+                    DialogueOff;
+               end;
+
+          player_has_seen_am_labs_explode = true;
+          ChangeMissionObjectives('MOutlabcapture');
+     end;

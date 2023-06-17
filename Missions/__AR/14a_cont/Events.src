@@ -1,0 +1,342 @@
+
+//When the Russians on the hill spot the player (or the opposite).
+Every 0$1+0$0.1 do
+     var temp_list, temp_list_2, hex_list, i;
+     begin
+          repeat
+          wait(0$0.5);
+
+          if assault_deployed then
+               exit;
+
+          if spared_russian_answer > 0 then  //Met spared Russians
+               exit;
+
+          temp_list = FilterAllUnits([[f_side,you],[f_see,russians],[f_inarea,ravine_area]]);
+          temp_list_2 = FilterAllUnits([[f_side,russians],[f_see,you]]);
+
+          until temp_list > 0 or temp_list_2 > 0;
+
+          russians_on_hill_seen = true;
+
+          //Reveal some fog
+          hex_list = [];
+          if temp_list_2 > 0 then
+               begin
+                    for i in temp_list_2 do
+                         begin
+                              hex_list = Insert(hex_list,1,[GetX(i),GetY(i)]);
+                              PlaceSeeing(GetX(i),GetY(i),you,-3);
+                         end;
+               end;
+
+
+          //Center camera on the Russians.
+          temp_list = FilterAllUnits([[f_side,russians],[f_see,you]]);
+          CenterOnUnits(temp_list);
+
+
+          //Aaaaand, action!
+          DialogueOn;
+
+          temp_list = UnitFilter([Heike,Suze,Ralph],[f_ok]);
+          if temp_list = 0 then
+               temp_list = [Heike];
+
+          case temp_list[Rand(1,temp_list)] of
+               Heike: ForceSay(Heike,'D3-H-1');
+               Suze: Say(Suze,'D3-Su-1');
+               Ralph: begin
+                    Say(Ralph,'D3-Ra-1');
+
+                    if IsOk(Sonya) then
+                         Say(Sonya,'D3-So-1');
+               end;
+          end;
+
+          DialogueOff;
+
+          //Remove revealing.
+          for i in hex_list do
+               RemoveSeeing(i[1],i[2],you);
+     end;
+
+
+//The spared Russians from Ar10. Meet the player.
+Every 0$1+0$0.3 do
+     var speaker, s, temp_list, i;
+     begin
+          if spared_russians = 0 then
+               exit;
+
+          repeat
+          wait(0$0.5);
+          until FilterAllUnits([[f_side,you],[f_inarea,ru_deserter_activate_area]]) > 0 or tick - time_start >= 1$0;
+
+          //Move to meet the player.
+          repeat
+          for i in spared_russians_all_units do
+               begin
+                    case SparedRussiansMoveCalc(i,GetX(Heike),GetY(Heike)) of
+                         0: ComStop(i);
+                         1: ComMoveXY(i,GetX(Heike),GetY(Heike));
+                         2: begin end;  //Do nothing
+                    end;
+               end;
+
+          wait(0$0.5);
+          until UnitFilter(spared_russians_all_units,[f_see,you]) > 0;
+
+          ChangeSideFog(russians_alt,you);  //Temporary to grant vision
+          CenterOnUnits(spared_russians_all_units);
+
+          if UnitFilter(spared_russians,[f_ok]) > 0 then
+               speaker = UnitFilter(spared_russians,[f_ok])[1]
+          else
+               speaker = 0;  //Should never happen
+
+          spared_russian_speaker = speaker;
+
+          if GetSex(speaker) = sex_male then
+               s = 'M'
+          else s = 'F';
+
+          DialogueOn;
+
+          ForceSay(Heike,'D4-H-1');
+          Say(speaker,'D4-Some'&s&'-1');
+          ForceSay(Heike,'D4-H-2');
+          Say(speaker,'D4-Some'&s&'-2');
+          ForceSay(Heike,'D4-H-3');
+          Say(speaker,'D4-Some'&s&'-3');
+          ForceSay(Heike,'D4-H-4');
+          Say(speaker,'D4-Some'&s&'-4');
+
+          if russians_on_hill_seen then
+               ForceSay(Heike,'D4-H-5a')
+          else
+               ForceSay(Heike,'D4-H-5b');
+
+          Say(speaker,'D4-Some'&s&'-5');
+          ForceSay(Heike,'D4-H-6');
+
+          temp_list = UnitFilter([Oswald,Kurt],[f_ok]);
+          if temp_list = 0 then
+               temp_list = [speaker];
+
+          i = temp_list[Rand(1,temp_list+0)];
+          case i of
+               Oswald: Say(i,'D4-Os-1');
+               Kurt: begin
+                    if GetSex(speaker) = sex_male then
+                         Say(i,'D4-Ku-1a')
+                    else
+                         Say(i,'D4-Ku-1b');
+               end;
+               speaker: Say(i,'D4-Some'&s&'-6');
+          end;
+
+          Say(speaker,'D4-Some'&s&'-7');
+
+          dwait(0$0.2);
+          spared_russian_answer = Query('QRussianPassJoin');
+          case spared_russian_answer of
+               1: begin  //Accept
+                    ForceSay(Heike,'D4-1-H-1');
+
+                    SetSide(spared_russians_all_units,you);
+                    ComStop(spared_russians_all_units);
+               end;
+               2: begin  //Decline
+                    ForceSay(Heike,'D4-2-H-1');
+
+                    SetAttitude(you,russians_alt,att_neutral,true);
+               end;
+          end;
+
+          DialogueOff;
+
+          ChangeSideFog(russians_alt,russians_alt);
+
+          //If rejected, move out of the map.
+          if spared_russian_answer = 1 then
+               exit;
+
+          repeat
+          temp_list = UnitFilter(spared_russians_all_units,[f_placed]);
+          if temp_list = 0 then
+               break;
+
+          for i in temp_list do
+               begin
+                    if GetDistUnitXY(i,189,117) <= 2 then
+                         begin
+                              RemoveUnit(i);
+                              continue;
+                         end;
+
+                    case SparedRussiansMoveCalc(i,189,117) of
+                         0: ComStop(i);
+                         1: ComMoveXY(i,189,117);
+                         2: begin end;  //Do nothing
+                    end;
+               end;
+
+          wait(0$1);
+          until false;
+     end;
+Function SparedRussiansMoveCalc(un,x,y);
+     var dir, bol, i;
+     begin
+          if GetType(un) = unit_human then
+               begin
+                    if IsInUnit(un) = 0 then
+                         result = 1
+                    else
+                         result = 2;
+               end
+          else  //vehicle
+               begin
+                    //Don't stray too far from the humans.
+                    dir = AI_GetTurnDirection(GetX(un),GetY(un),x,y);
+                    bol = true;
+                    for i in UnitFilter(spared_russians_all_units,[[f_ok],[f_type,unit_human],[f_not,[f_driving]]]) do
+                         if BehindLine(i,GetX(un),GetY(un),dir,5) then
+                              begin
+                                   bol = false;
+                                   break;
+                              end;
+
+                    if bol then
+                         result = 1
+                    else
+                         result = 0;
+               end;
+     end;
+//Function which returns the direction in which the unit one the specified hex ([x1,y1]) would turn if it was asked to face
+//the other specified hex ([x,y]) (ComTurnXY)
+Function AI_GetTurnDirection(x1,y1,x,y);
+     var dist_1, dist_2, b, temp_dist, dir;
+     begin
+          if not ValidHex(x1,y1) or not ValidHex(x,y) then
+               begin
+                    result = -1;
+                    exit;
+               end;
+
+          dist_1 = GetDistXY(x1,y1,x,y);
+          dist_2 = 99999;
+
+          //this is the algorithm
+          for b = 0 to 5 do
+               begin
+                    temp_dist = GetDistXY(ShiftX(x1,b,dist_1),ShiftY(y1,b,dist_1),x,y);
+                    if temp_dist < dist_2 then
+                         begin
+                              dist_2 = temp_dist;
+                              dir = b;
+                         end;
+               end;
+
+          result = dir;
+     end;
+//Function which checks if unit un is distance dist behind the line drawn through hex [x,y] in the
+//given direction. E.g. if direction is 1 the line will be completely vertical and the
+//unit will be behind it if the unit is to the left of the line.
+Function BehindLine(un,x,y,dir,dist);
+     var c;
+     begin
+          case dir of
+               0: begin
+                    c = GetX(un) - x;
+                    if c > 0 then
+                         c = c + 1;
+
+                    y = y + (c div 2);
+                    result := GetY(un) >= y + dist;
+               end;
+               1: begin
+                    c = GetY(un) - y;
+                    if c < 0 then
+                         c = c - 1;
+
+                    x = x + (c div 2);
+                    result := GetX(un) <= x - dist;
+               end;
+               2: begin
+                    result := GetX(un) + GetY(un) <= x + y - 2*dist;
+               end;
+               3: begin
+                    c = GetX(un) - x;
+                    if c < 0 then
+                         c = c - 1;
+
+                    y = y + (c div 2);
+                    result := GetY(un) <= y - dist;
+               end;
+               4: begin
+                    c = GetY(un) - y;
+                    if c > 0 then
+                         c = c + 1;
+
+                    x = x + (c div 2);
+                    result := GetX(un) >= x + dist;
+               end;
+               5: begin
+                    result := GetX(un) + GetY(un) >= x + y + 2*dist;
+               end;
+          end;
+     end;
+
+
+//If the player takes too long to break through the Russian blockade some Russians
+//will assault the player.
+Every 0$1+0$0.2 do
+     var i;
+     begin
+          repeat
+          wait(0$1);
+          until tick - time_start > [17$0,13$0,9$0][difficulty];  //Time should be synchronized with the time giving the worst time determined situation (function "EndMission" module "EndOfMission")
+
+          assault_deployed = true;
+
+          //Create the assault units. Only manual vehicles.
+          InitUc;
+          InitHc;
+          InitVc;
+
+          uc_side = russians;
+          uc_nation = nation_russian;
+
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          vc_chassis = ru_medium_tracked;
+
+          for i = 1 to 3 do
+               CreateAndPlaceVehicleWithDriver(assault_enter_west,1);
+
+          for i = 1 to 3 do
+               CreateAndPlaceVehicleWithDriver(assault_enter_east,4);
+
+          for i = 1 to 3 do
+               CreateAndPlaceVehicleWithDriver(assault_enter_south,[0,5][Rand(1,2)]);
+     end;
+Function CreateAndPlaceVehicleWithDriver(area,dir);
+     var veh, hum;
+     begin
+          vc_weapon = [ru_gun, ru_gatling_gun, ru_heavy_machine_gun][Rand(1,3)];
+
+          veh = CreateVehicle;
+          hum = CreateUnitsWithClass(1,class_mechanic,russians)[1];
+
+          PlaceHumanInUnit(hum,veh);
+          SetDir(veh,dir);
+          PlaceUnitArea(veh,area,false);
+
+          SetFuel(veh,Rand(40,60));
+
+          assault_ai_vehicles = assault_ai_vehicles ^ veh;
+          assault_ai_mechanics = assault_ai_mechanics ^ hum;
+
+          assault_ai_mechanic_vehicle_map = Replace(assault_ai_mechanic_vehicle_map,hum,veh);
+     end;

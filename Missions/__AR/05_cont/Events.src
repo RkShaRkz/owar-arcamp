@@ -1,0 +1,357 @@
+
+//If the player attacks the Russians before Heike is supposed to there's gonna be trouble...
+Every 0$1 do
+     var soft_count, hard_count, un;
+     begin
+          soft_count = 0;
+          hard_count = 0;
+
+          repeat
+               Wait(0$1);
+
+               if attack_has_begun then
+                    exit;
+
+               if ContactTime([you,russians]) < 0$1.5 then
+                    begin
+                         for un in FilterAllUnits([f_side,you]) do
+                              if GetSide(Attacks(un)) = russians then
+                                   begin
+                                        soft_count = soft_count + 1;
+                                        break;
+                                   end;
+                    end
+               else
+                    if soft_count > 0 then
+                         begin
+                              soft_count = 0;
+                              hard_count = hard_count + 1;
+                         end;
+
+          until soft_count >= 7 or hard_count >= 3;
+
+          DialogueOn;
+
+          SayRadio(Abdul,'DXAb1');
+          SayRadio(Abdul,'DXGAb1');
+
+          dwait(0$0.2);
+          YouLost('CommandFail');
+
+          DialogueOff;
+     end;     
+
+// A messenger arrives from behind enemy borders and tells there are people trapped behind.
+Every 7$0 do
+     var str;
+     begin
+          PlaceUnitXY(mes_veh,67,60,false);
+          ComMoveXY(mes_veh,108,49);
+
+          while not See(you,mes_veh) do
+               wait(0$0.5);
+
+          CenterOnUnits(mes_veh);
+          ComStop(mes_veh);
+          DialogueOn;
+
+          if mes_is_olaf then
+               str = 'Ola'
+          else str = 'MesM';
+
+          Say(Messenger,'D3'&str&'1');
+
+          if mes_is_olaf then
+               Say(Heike,'D3H1a')
+          else Say(Heike,'D3H1b');
+
+          Say(Messenger,'D3'&str&'2');
+          Say(Heike,'D3H2');
+          Say(Messenger,'D3'&str&'3');
+          Say(Heike,'D3H3');
+          Say(Messenger,'D3'&str&'4');
+          Say(Heike,'D3H4');
+          Say(Heike,'D3H5');
+          SayRadio(Abdul,'D3Ab1');
+          Say(Heike,'D3H6');
+          SayRadio(Abdul,'D3Ab2');
+          Say(Heike,'D3H7');
+          SayRadio(Abdul,'D3Ab3');
+          Say(Heike,'D3H8');
+          SayRadio(Abdul,'D3Ab4');
+          Say(Heike,'D3H9');
+          SayRadio(Abdul,'D3Ab5');
+          Say(Heike,'D3H10');
+
+          DialogueOff;
+
+          SetSide([mes_veh,Messenger],you);
+     end;
+
+// Omar and Farmer calls to ask if Heike is ready to attack
+Every 0$0.2 do
+     begin
+          wait(buildup_time[difficulty+1]);
+
+          DialogueOn;
+
+          SayRadio(Omar,'D4Om1');
+          SayRadio(Farmer,'D4Fa1');
+          SayRadio(Omar,'D4Om2');
+
+          dwait(0$0.2);
+          case Query('Ready') of  //yes|no
+               1: begin
+                    quick_buildup = 1;
+                    AttackBegin;
+                    exit;
+               end;
+               2: begin
+                    Say(Heike,'D42H1');
+                    SayRadio(Farmer,'D42Fa1');
+               end;
+          end;
+
+          DialogueOff;
+
+          wait(buildup_time[difficulty] - buildup_time[difficulty+1]);
+
+          DialogueOn;
+
+          SayRadio(Omar,'D4Om3');
+
+          dwait(0$0.2);
+          case Query('Ready') of  //yes|no
+               1: begin
+                    AttackBegin;
+                    exit;
+               end;
+               2: begin
+                    Say(Heike,'D42H2');
+                    SayRadio(Farmer,'D42Fa2');
+                    SayRadio(Farmer,'D42Fa3');
+                    SayRadio(Abdul,'D42Ab1');
+                    SayRadio(Abdul,'DXGAb1');
+
+                    dwait(0$0.2);
+                    YouLost('CommandFail');
+               end;
+          end;
+
+          DialogueOff;
+     end;
+Function AttackBegin;
+     begin
+          Say(Heike,'D41H1');
+          attack_has_begun = true;
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M3');
+     end;
+
+// Every which checks how long the player has taken to defeat the Russians (that is: Make them run away). If too long, the player loses.
+Every 0$1 trigger attack_has_begun do
+     begin
+          repeat
+               wait(0$1);
+
+               if russians_are_running then
+                    exit;
+
+               attack_timer = attack_timer + 0$1;
+
+          until attack_timer > blitzkrieg_time * (blitzkrieg_multiplier / 10);
+
+          DialogueOn;
+
+          SayRadio(Abdul,'DXAb2');
+          Say(Heike,'DXH1');
+          SayRadio(Abdul,'DXAb3');
+          SayRadio(Abdul,'DXGAb1');
+
+          dwait(0$0.2);
+          YouLost('CommandFail');
+
+          DialogueOff;
+     end;       
+
+// When someone spots an automatic turret the first time - little dialogue about them
+Every 0$1 do
+     var temp_list;
+     begin
+          repeat
+               wait(0$0.7);
+
+               temp_list = UnitFilter(ai_turrets[russians],[f_see,you]);
+               if temp_list > 0 then
+                    begin
+                         CenterOnUnits(temp_list[1]);
+                         DialogueOn;
+
+                         Say(Heike,'D5H1');
+                         Say(Suze,'D5Su1');
+
+                         if Ralph > 0 then
+                              Say(Ralph,'D5Ra1')
+                         else Say(Gordon,'D5Go1');
+
+                         DialogueOff;
+
+                         exit;
+                    end;
+
+          until false;
+     end;
+
+//Dialogue when the player starts attacking the Russians
+Every 0$1+0$0.2 trigger attack_has_begun do
+     var count;
+     begin
+          count = 0;
+
+          repeat
+               Wait(0$1);
+
+               if ContactTime([you,russians]) < 0$1.5 then
+                    count = count + 1
+               else
+                    if count > 0 then
+                         count = count - 1;
+ 
+          until count >= 5;
+
+          DialogueOn;
+
+          SayRadio(Grishko,'D7Gri1');
+
+          DialogueOff;
+     end;
+
+// When damaged sufficiently the Russians will try to run away
+On UnitGoesToRed(un) do
+     begin
+          if russians_are_running or GetSide(un) <> russians then
+               exit;
+
+          //The Russians try to run away
+          if UnitFilter(ai_soldiers[russians] ^ ai_engineers[russians] ^ ai_scientists[russians],[f_ok]) <= 2 + (difficulty = 3) then  //If only the original number of soldiers are left
+               russians_are_running = true;
+
+          if russians_are_running then
+               begin
+                    Wait(0$1);
+
+                    DialogueOn;
+                    if IsOk(Gordon) then
+                         Say(Gordon,'D6Go1')
+                    else Say(Heike,'D6H1');
+                    DialogueOff;
+               end;
+     end;
+
+// When there are no Russian units on the map with more than 250 HP, the player may move on to the next mission.
+Every 0$2 trigger attack_has_begun do
+     var temp_list, max_pick, val;
+     begin
+          if FilterAllUnits([[f_side,russians],[f_ok]]) > 0 then
+               begin
+                    enable;
+                    exit;
+               end;
+
+          DialogueOn;
+          ForceSay(Heike,'D6H2');
+          DialogueOff;
+
+          wait(0$0.2);
+          SetAreaMapShow(move_on_area,1);
+          max_pick = (FilterAllUnits([[f_side,you],[f_type,unit_human]]) - 1) div 2;  //Don't count in Heike herself
+          Query('MoveOnInfo');
+          wait(0$0.2);
+          Query('MoveOnInfo' & max_pick);
+
+          repeat
+               wait(0$1);
+
+               temp_list = FilterAllUnits([[f_side,you],[f_inarea,move_on_area],[f_type,unit_human],[f_ok]]);
+               if Heike in temp_list then
+                    if (temp_list - 1) <= max_pick then  //Don't count in Heike herself
+                         begin
+                              if (temp_list - 1) < max_pick then
+                                   val = 'MoveOnMoveNotFull'  //Informs the player that more people can be brought
+                              else  // (temp_list - 1) = max_pick
+                                   val = 'MoveOnMoveFull';  
+
+                              case Query(val) of  //yes|no
+                                   1: break;
+                                   2: wait(0$5);
+                              end;
+                         end;
+
+          until false;
+
+          EndMission(temp_list, max_pick - (temp_list - 1) );
+     end;
+
+// If too much time expires, the survivors die and the player loses.
+// Cf. comments in module "MAIN" at variables "blitzkrieg_time" and "buildup_time".
+{
+Every 0$0.4 do
+     begin
+          Wait(buildup_time[difficulty+1]);
+          Wait( (buildup_time[difficulty] - buildup_time[difficulty+1]) * 2 );
+          Wait(blitzkrieg_time * blitzkrieg_multiplier);
+
+          YouLost('TooSlow');
+     end;
+}
+
+// If the Flamethrower Technology has been discovered, a few dialogues are spoken.
+On ResearchComplete(tech,lab) do
+      var temp_unit, temp_list, val;
+      begin
+           if tech = tech_flame then
+                begin
+                     DialogueOn;
+                                     
+                     temp_list = UnitsInside(lab) diff [Heike,Gordon,Ralph,Oswald,Kowalski];
+                     if temp_list = 0 then
+                          temp_list = UnitFilter([Suze,Sonya,Willard,Evelyn] diff 0,[f_ok]);
+                     if temp_list = 0 then
+                          exit;  //should never happen
+
+                     temp_unit = temp_list[Rand(1,temp_list)];
+                     case temp_unit of
+                          Sonya: val = 'So';
+                          Suze: val = 'Su';
+                          Willard: val = 'Wi';
+                          Evelyn: val = 'Ev';
+                          else
+                               if GetSex(temp_unit) = sex_male then
+                                    val = 'SomeM'
+                               else val = 'SomeF';
+                     end;
+
+                     Say(temp_unit,'DF' & val & '1');
+                     Say(Heike,'DFH1');
+                     Say(temp_unit,'DF' & val & '2');
+                     Say(Heike,'DFH2');
+                     Say(temp_unit,'DF' & val & '3');
+                     Say(Heike,'DFH3');
+                     Say(temp_unit,'DF' & val & '4');
+                     Say(Heike,'DFH4');
+
+                     DialogueOff;
+                end;
+      end;
+
+//Flamethrower is constructed
+On VehicleConstructed(vehicle, factory) do
+     begin
+          if GetSide(vehicle) = you and GetWeapon(vehicle) = ar_flame_thrower then
+               begin
+                    flamethrower_constructed = true;
+                    ChangeMissionObjectives('MOutFlame');
+               end;
+     end;

@@ -1,0 +1,2214 @@
+//Module layout
+//
+//Function Determine_group
+//Function Attack
+//
+//Function Create_player_forces
+//Function MoveCloseTounit
+//Function SpaceRocketTargeting
+//Function RandHexXYRminRmax
+//Function PrepareNature;
+//Function GetTopSkill
+//Function Tag
+//Function Biggest_distance
+//Function SmallestDistance
+//Function UnitsInRange
+//Function NearestDistFromGroupToUnit
+//Function ClosestUnit
+//Function FarthestHex
+//Function AverageGroupPos
+//Function Seek_n_destroy
+//Function SortByValueAsc
+
+//Determine the composition of a group
+//groups: 1-heavy, 2-scout, 3-seek, 4-hunt, 5-escapees, 6-Legion, 7-Omar.
+Export Function Determine_group(group);
+var veh_type1,veh_type2,veh_type3,veh_type4,vehicles_list,configuration;
+var temp, temp_list, temp_list2, escapee, roll, n, sol_1, sol_2, sol_3, mech, sci;
+var i,j;
+begin
+randomize;
+group_heavy=[];
+group_scout=[];
+group_seek=[];
+group_hunt=[];
+
+group_escapees=[];
+Group_Leg=[];                                                            //generates the units for a given group, randomizing to some extent
+Group_Omar=[];
+             case group of
+                  1: begin     //Heavy
+                               uc_nation = nation_russian;
+                               uc_side = 3;
+                               if magenta=1 then uc_side = 6;
+
+
+                               vc_control = control_computer;
+                               vc_engine = engine_combustion;
+                               vc_chassis = ru_heavy_tracked;
+
+
+                               {if ru_heavy_times=5 then
+                               begin
+                                    vc_weapon = ru_heavy_gun;
+                                    repeat
+                                          veh_type1 = createvehicle;
+                                          Group_Heavy = Group_Heavy^veh_type1;
+                                    until Group_Heavy=4;
+                                    vc_weapon = ru_rocket;
+                                    repeat
+                                          veh_type2 = createvehicle;
+                                          Group_Heavy = Group_Heavy^veh_type2;
+                                    until Group_Heavy=6;
+                               end;  }
+
+                               if ru_heavy_times=4 or ru_heavy_times=5 then                              //first 2 groups
+                               begin                                                                     //5 heavy guns
+                                    vc_weapon = ru_heavy_gun;                                            //3 rockets
+                                    repeat
+                                          veh_type1 = createvehicle;
+                                          Group_Heavy = Group_Heavy^veh_type1;
+                                    until Group_Heavy=5;
+                                    vc_weapon = ru_rocket;
+                                    repeat
+                                          veh_type2 = createvehicle;
+                                          Group_Heavy = Group_Heavy^veh_type2;
+                                    until Group_Heavy=8;
+                               end;
+
+
+                               if ru_heavy_times=3 then
+                               begin
+                                    vc_weapon = ru_heavy_gun;                                        //3rd group
+                                    repeat                                                           //5 heavy guns
+                                          veh_type1 = createvehicle;                                 //3 rockets
+                                          Group_Heavy = Group_Heavy^veh_type1;                       //2 time lapsers
+                                    until Group_Heavy=5;
+                                    vc_weapon = ru_rocket;
+                                    repeat
+                                          veh_type2 = createvehicle;
+                                          Group_Heavy = Group_Heavy^veh_type2;
+                                    until Group_Heavy=8;
+                                    vc_weapon = ru_time_lapser;
+                                    repeat
+                                          veh_type3 = createvehicle;
+                                          Group_Heavy = Group_Heavy^veh_type3;
+                                    until Group_Heavy=10;
+
+                                    {temp=0;
+
+                                    hc_class=class_bazooker;
+                                    hc_attr=[10,10];
+                                    repeat
+                                          hc_skills=[rand(7,10),rand(4,7),rand(4,7),rand(4,7)];
+                                          hc_sex=rand(1,2);
+                                          sol1=createhuman;
+                                          temp=temp^sol1;
+                                          Group_Heavy = Group_Heavy^sol1;
+                                    until Group_Heavy=12;
+
+                                    vc_control = control_manual;
+                                    vc_weapon = ru_heavy_machine_gun;
+                                    vc_chassis = ru_medium_wheeled;
+                                    for i=1 to 2 do
+                                    begin
+                                         veh_type4=createvehicle;
+                                         Group_Heavy=Group_Heavy ^veh_type4;
+                                         for j in temp do
+                                             if not isinunit(j) then
+                                                placehumaninunit(j,veh_type4);
+                                    end;                                         }
+
+                               end;
+
+                               if ru_heavy_times=2 then
+                               begin                                                           //4th group
+                                    vc_weapon = ru_heavy_gun;                                  //6 heavy guns
+                                    repeat                                                     //3 rockets
+                                          veh_type1 = createvehicle;                           //2 time lapsers
+                                          Group_Heavy = Group_Heavy^veh_type1;                 //2 bazookers (on foot)
+                                    until Group_Heavy=6;
+                                    vc_weapon = ru_rocket;
+                                    repeat
+                                          veh_type2 = createvehicle;
+                                          Group_Heavy = Group_Heavy^veh_type2;
+                                    until Group_Heavy=9;
+                                    vc_weapon = ru_time_lapser;
+                                    repeat
+                                          veh_type3 = createvehicle;
+                                          Group_Heavy = Group_Heavy^veh_type3;
+                                    until Group_Heavy=11;
+
+                                    hc_class=class_bazooker;
+                                    hc_attr=[10,10];
+                                    repeat
+                                          hc_skills=[rand(7,10),rand(4,7),rand(4,7),rand(4,7)];
+                                          hc_sex=rand(1,2);
+                                          sol_1=createhuman;
+                                          Group_Heavy = Group_Heavy^sol_1;
+                                    until Group_Heavy=13;
+                               end;
+
+                               if ru_heavy_times=1 or ru_heavy_times=0 then                    //last groups
+                               begin                                                           //6 heavy guns
+                                    vc_weapon = ru_heavy_gun;                                  //4 rockets                                                                                                                                   
+                                    for i = 1 to 6 do                                          //3 timelapsers (only in the first group)  
+                                    begin                                                      //3 bazookers (on foot)
+                                         veh_type1 = createvehicle;
+                                         Group_Heavy = Group_Heavy^veh_type1;
+                                    end;
+
+                                    vc_weapon = ru_rocket;
+                                    for i = 1 to 4 do                                          
+                                    begin
+                                         veh_type2 = createvehicle;
+                                         Group_Heavy = Group_Heavy^veh_type2;
+                                    end;
+
+                                    vc_weapon = ru_time_lapser;
+                                    if ru_limit = [0,1,2][difficulty] then
+                                       for i = 1 to 3 do
+                                       begin
+                                            veh_type3 = createvehicle;
+                                            Group_Heavy = Group_Heavy^veh_type3;
+                                       end;
+
+                                    hc_class=class_bazooker;
+                                    hc_attr=[10,10];
+                                    for i = 1 to 3 do
+                                    begin
+                                         hc_skills=[rand(7,10),rand(4,7),rand(4,7),rand(4,7)];
+                                         hc_sex=rand(1,2);
+                                         sol_1=createhuman;
+                                         Group_Heavy = Group_Heavy^sol_1;
+                                    end;
+                               end;
+
+                               result=Group_Heavy;
+                               end;
+
+                  2: begin     //Scout
+                               uc_nation = nation_russian;
+                               uc_side = 3;
+                               if magenta=1 then uc_side = 6;
+
+                               vc_control = control_computer;
+                               vc_engine = engine_siberite;
+
+                               if gamestage>0 then
+                                  n=[rand(1,2),rand(2,3),rand(2,4)][difficulty];    //amount varies with difficulty
+
+                               temp=[];                                           
+                               for i=1 to n do
+                               begin
+                                    roll=rand(1,3);                                      //only weapons that rotate
+                                    if roll=1 then
+                                       temp=temp^ru_heavy_machine_gun;
+                                    if roll=2 then
+                                       temp=temp^ru_gun;
+                                    if roll=3 then
+                                       temp=temp^ru_rocket_launcher;
+                               end;
+
+                               repeat
+                                     vc_weapon = temp[1];
+                                     temp=delete(temp,1);
+                                     if rand(1,2)=1 then                                  //on wheels as well as on tracks
+                                        vc_chassis = ru_medium_tracked
+                                     else vc_chassis = ru_medium_wheeled;
+
+                                     veh_type1 = createvehicle;
+                                     Group_scout = Group_scout^veh_type1;
+                               until temp=0;
+
+                               result=Group_scout;
+                               end;
+
+                  3: begin     //Seek (n' destroy)
+                               uc_nation = nation_russian;                         
+                               uc_side = 3;
+                               if magenta=1 then uc_side = 6;
+
+                               vc_control = control_computer;
+                               vc_engine = engine_combustion;
+
+                               if gamestage=2 then                                 //on gamsestage 2:
+                               begin                                               //easy:              medium:       hard:
+                                    vc_weapon = ru_heavy_gun;                      //1 heavygun         2 heavyguns   2 heavyguns
+                                    vc_chassis = ru_heavy_tracked;                 //1 rocket launcher  2 rockets     2 rockets
+                                    repeat                                         //1 gun              2 guns        2 guns
+                                          veh_type1 = createvehicle;
+                                          Group_seek = Group_seek^veh_type1;
+                                    until Group_seek=[1,2,2][difficulty];
+
+                                    vc_weapon = ru_rocket_launcher;
+                                    vc_chassis = ru_medium_tracked;
+                                    repeat
+                                          veh_type2 = createvehicle;
+                                          Group_seek = Group_seek^veh_type2;
+                                    until Group_seek=[2,4,4][difficulty];
+
+                                    vc_weapon = ru_gun;
+                                    vc_chassis = ru_medium_tracked;
+                                    repeat
+                                          veh_type3 = createvehicle;
+                                          Group_seek = Group_seek^veh_type3;
+                                    until Group_seek=[3,6,6][difficulty];
+                               end;
+
+                               if gamestage=3 or gamestage=4 then                          //from gamestage 3:
+                               begin                                                         //2 heavyguns
+                                    vc_weapon = ru_heavy_gun;                                //2 rockets
+                                    vc_chassis = ru_heavy_tracked;                           //2 guns
+                                    repeat                                                   //1 to 3 bazookers [difficulty] driving simple vehicles
+                                          veh_type1 = createvehicle;
+                                          Group_seek = Group_seek^veh_type1;
+                                    until Group_seek=2;
+
+                                    vc_weapon = ru_rocket_launcher;
+                                    vc_chassis = ru_medium_tracked;
+                                    repeat
+                                          veh_type2 = createvehicle;
+                                          Group_seek = Group_seek^veh_type2;
+                                    until Group_seek=4;
+
+                                    vc_weapon = ru_gun;
+                                    vc_chassis = ru_medium_tracked;
+                                    repeat
+                                          veh_type3 = createvehicle;
+                                          Group_seek = Group_seek^veh_type3;
+                                    until Group_seek=6;
+
+                                    roll=[1,rand(1,2),rand(1,3)][difficulty];                               //on hard: 1 to 3 bazookers
+
+                                    temp=[];
+                                    hc_class=class_bazooker;
+                                    for i=1 to roll do
+                                    begin
+                                         hc_sex=rand(1,2);
+                                         hc_skills=[rand(7,10),rand(2,8),rand(2,8),rand(2,8)];
+                                         sol_1=createhuman;
+                                         temp=temp^sol_1;
+                                    end;
+                                    Group_seek=Group_seek^temp;
+
+                                    vc_control = control_manual;
+                                    vc_weapon = ru_heavy_machine_gun;
+                                    vc_chassis = ru_medium_wheeled;
+                                    for i=1 to roll do
+                                    begin
+                                         veh_type4=createvehicle;
+                                         Group_seek=Group_seek^veh_type4;
+                                         for j in temp do
+                                             if not isinunit(j) then
+                                                placehumaninunit(j,veh_type4);
+                                    end;
+
+                            
+                               end;
+
+                               result=Group_seek;
+                               end;
+
+                  4: begin    //Hunt
+
+                              uc_nation = nation_russian;
+                              uc_side = 3;
+                              if magenta=1 then uc_side = 6;
+
+                              vc_control = control_computer;
+                              vc_engine = engine_combustion;
+                              vc_chassis = ru_medium_tracked;
+
+                              hc_class=class_soldier;
+                              hc_attr=[10,10];
+
+                              if gamestage < 3 then                                                      //before gamestage 3 includes some all human groups, and vehicles are mostly gatling
+                              begin
+                                   if rand(1,3)>1 then
+                                   begin
+                                        if gamestage=1 then n=rand(1,3);
+                                        if gamestage=2 then n=[rand(2,4),rand(2,4),rand(2,5)][difficulty];
+                                        repeat
+                                              roll=rand(1,6);
+                                              if roll=1 or roll=2 or roll=3 then
+                                                 vc_weapon = ru_gatling_gun;
+                                              if roll=4 or roll=5 then
+                                                 vc_weapon = ru_rocket_launcher;
+                                              if roll=6 then
+                                                 vc_weapon = ru_gun;
+
+                                              veh_type1=createvehicle;
+                                              Group_hunt=Group_hunt^veh_type1;
+                                        until Group_hunt=n;
+                                   end
+                                   else
+                                   begin
+                                        if gamestage=1 then n=rand(2,3);
+                                        if gamestage=2 then n=rand(3,4);
+                                        repeat
+                                              hc_sex=rand(1,2);
+
+                                              if difficulty=1 then
+                                                 hc_skills=[6,rand(2,4),rand(2,4),rand(2,4)];
+                                              if difficulty=2 then
+                                                 hc_skills=[rand(6,8),rand(2,6),rand(2,6),rand(2,6)];
+                                              if difficulty=3 then
+                                                 hc_skills=[rand(6,9),rand(2,6),rand(2,6),rand(2,6)];
+
+
+                                              if magenta=1 then                                        //magentas are always stronger
+                                              begin
+                                                   hc_skills=[10,rand(5,8),rand(5,8),rand(5,8)];
+                                                   hc_attr=[11,11];
+                                              end;
+
+                                              sol_1=createhuman;
+                                              Group_hunt=Group_hunt^sol_1;
+                                        until Group_hunt=n;
+                                   end;
+
+                              end
+                              else
+                              begin
+                                   if rand(1,8)>1 then                                           //from gamestage 3 onward almost no human groups and swtch the priority to guns
+                                   begin
+                                        n=[rand(4,5),rand(4,5),rand(4,6)][difficulty];
+                                        repeat
+                                              roll=rand(1,6);
+                                              if roll=1 or roll=2 or roll=3 then
+                                                 vc_weapon = ru_gun;
+                                              if roll=4 or roll=5 then
+                                                 vc_weapon = ru_rocket_launcher;
+                                              if roll=6 then
+                                                 vc_weapon = ru_gatling_gun;
+
+                                              veh_type1=createvehicle;
+                                              Group_hunt=Group_hunt^veh_type1;
+                                        until Group_hunt=n;
+                                   end
+                                   else
+                                   begin
+                                        n=[rand(3,4),rand(3,4),rand(4,5)][difficulty];
+                                        repeat
+                                              hc_sex=rand(1,2);
+
+                                              if difficulty=1 then
+                                                 hc_skills=[7,rand(2,6),rand(2,6),rand(2,6)];
+                                              if difficulty=2 then
+                                                 hc_skills=[7,rand(2,6),rand(2,6),rand(2,6)];
+                                              if difficulty=3 then
+                                                 hc_skills=[7,rand(2,6),rand(2,6),rand(2,6)];
+
+
+                                              if magenta=1 then                                       //magentas are always stronger
+                                              begin
+                                                   hc_skills=[10,rand(5,8),rand(5,8),rand(5,8)];
+                                                   hc_attr=[11,11];
+                                              end;
+
+                                              sol_1=createhuman;
+                                              Group_hunt=Group_hunt^sol_1;
+                                        until Group_hunt=n;
+                                   end;
+                              end;
+
+                              result=Group_hunt;
+                              end;
+
+                  5: begin    //Ar5 escapees
+                              uc_nation = nation_arabian;
+                              uc_side = 5;
+
+                              temp=rand(1,15);
+                              if temp=1 or temp=2 or temp=3 or temp=4 or temp=5 then        //mostly groups of 1 or two
+                                    temp=1;
+                              if temp=6 or temp=7 or temp=8 or temp=9 then
+                                    temp=2;
+                              if temp=10 or temp=11 or temp=12 then
+                                    temp=3;
+                              if temp=13 or temp=14 then
+                                    temp=4;
+                              if temp=15 then
+                                    temp=5;
+                              repeat
+                                    case rand(1,4) of                                          //make sure the skill reflects the class
+                                         1: PrepareSoldier(false,8);
+                                         2: PrepareEngineer(false,8);
+                                         3: PrepareMechanic(false,8);
+                                         4: PrepareScientist(false,8);
+                                    end;
+                                    hc_attr=[10,10];
+
+                                    escapee=createhuman;
+                                    Group_escapees=Group_escapees^escapee;
+                              until Group_escapees=temp;
+
+                              result=Group_escapees;
+                              end;
+
+                  6: begin    //Legion
+                              uc_nation = nation_arabian;                                     //first attack is composed of all ape vehicles
+                              uc_side = 8;
+
+                              vc_control = control_apeman;
+                              vc_engine = engine_siberite;
+                              vc_chassis = Ar_half_tracked;
+
+                              if legion_attack=1 then
+                              begin
+                                   vc_weapon = ar_gun;                                               //3 guns
+                                   repeat                                                            //2 rockets
+                                         veh_type1 = createvehicle;                                  //and a radar
+                                         Group_Leg = Group_Leg^veh_type1;
+                                   until Group_Leg=3;
+
+                                   vc_weapon = ar_rocket_launcher;
+                                   repeat
+                                         veh_type2 = createvehicle;
+                                         Group_Leg = Group_Leg^veh_type2;
+                                   until Group_Leg=5;
+
+                                   vc_weapon = ar_radar;
+                                   repeat
+                                         veh_type3 = createvehicle;
+                                         Group_Leg = Group_Leg^veh_type3;
+                                   until Group_Leg=6;
+                              end;
+
+                              if legion_attack=3 then                                              //second legion attack uses mostly human drived vehicles
+                              begin
+                                   vc_weapon = ar_gun;                                             //1 gun
+                                   repeat                                                          //2 gatlings
+                                         veh_type1 = createvehicle;                                //2 rockets
+                                         Group_Leg = Group_Leg^veh_type1;                          //and a radar
+                                   until Group_Leg=1;
+
+                                   vc_weapon = ar_gatling_gun;
+                                   vc_control=control_manual;
+                                   repeat
+                                         veh_type1 = createvehicle;
+                                         Group_Leg = Group_Leg^veh_type1;
+                                   until Group_Leg=3;
+
+                                   vc_weapon = ar_rocket_launcher;
+                                   repeat
+                                         veh_type1 = createvehicle;
+                                         Group_Leg = Group_Leg^veh_type1;
+                                   until Group_Leg=5;
+
+                                   vc_weapon = ar_radar;
+                                   vc_control=control_apeman;
+                                   repeat
+                                         veh_type3 = createvehicle;
+                                         Group_Leg = Group_Leg^veh_type3;
+                                   until Group_Leg=6;
+
+                                   inithc;
+                                   repeat
+                                         hc_sex=rand(1,2);
+                                         hc_skills=[rand(2,6),rand(2,6),rand(6,8),rand(2,6)];
+                                         hc_class=class_mechanic;
+                                         sol_1=createhuman;
+
+                                         temp=unitfilter(group_leg,[f_empty]);
+                                         if temp>0 then
+                                             placehumaninunit(sol_1,temp[1]);
+                                               
+                                   until unitfilter(group_leg,[f_empty])=0;
+                              end;
+
+                              result=Group_Leg;
+                              end;
+
+                  7: begin    //Omar                            //5 people: 1sci 2mechs and 1 sol 1 mortar, hovercrafts for sldiers, 1 control, and one manual gun and one manual rocket (mech and sci), remote radar and 4 vehicles either remote or apeman
+                              uc_nation = nation_arabian;
+                              uc_side = 2;
+
+                              hc_attr=[10,10];
+
+                              temp_list=omar_forces_main diff Gonzo;
+                              temp_list2=omar_forces_random;
+                                                                         
+                              temp=temp_list^temp_list2;      //change the characters profesion to their top skill
+
+                              for i=1 to temp do
+                                  case GetTopSkill(temp[i]) of
+                                       1: setclass(temp[i],class_soldier);
+                                       2: setclass(temp[i],class_mechanic);     //who'd bring an engineer to a firefight?
+                                       3: setclass(temp[i],class_mechanic);
+                                       4: setclass(temp[i],class_scientistic);
+                                  end;
+
+
+                              //First person in group: highly skilled mechanic
+                              //check if there's one in main characters, in not check if there's one in random characters, if not create one (this priority aplies to all people in this group)
+
+                              temp=unitfilter(omar_forces_main,[f_minskill,skill_mechanical,7]);
+                              if temp=0 then
+                              begin
+                                   temp=unitfilter(omar_forces_random,[f_minskill,skill_mechanical,7]);
+                                   if temp=0 then
+                                   begin
+                                        hc_sex=rand(1,2);
+                                        hc_skills=[rand(2,6),rand(2,6),rand(7,9),rand(2,6)];
+                                        hc_class=class_mechanic;
+                                        sol_1=createhuman;
+                                        Group_Omar=Group_Omar^sol_1;
+                                        mech=sol_1;
+                                   end
+                                   else
+                                   begin
+                                        if temp>1 then
+                                           roll=rand(1,temp)
+                                        else roll=1;
+                                        Group_Omar=Group_Omar^temp[roll];
+                                        mech=temp[roll];
+                                        omar_forces_random=omar_forces_random diff temp[roll];
+                                   end;
+                              end
+                              else
+                              begin
+                                   if temp>1 then
+                                      roll=rand(1,temp)
+                                   else roll=1;
+                                   Group_Omar=Group_Omar^temp[roll];
+                                   mech=temp[roll];
+                                   omar_forces_main=omar_forces_main diff temp[roll];
+                              end;
+
+                              setclass(mech,class_mechanic);
+
+
+
+                              //Next: at least average mechanic (though can be as good as the first one)////////////////////////////////////////////
+                              temp=unitfilter(omar_forces_main,[f_minskill,skill_mechanical,5]) diff Gonzo;
+                              if temp=0 then
+                              begin
+                                   temp=unitfilter(omar_forces_random,[f_minskill,skill_mechanical,5]);
+                                   if temp=0 then
+                                   begin
+                                        hc_sex=rand(1,2);
+                                        hc_skills=[rand(1,5),rand(1,5),rand(5,9),rand(1,5)];
+                                        hc_class=class_mechanic;
+                                        sol_1=createhuman;
+                                        Group_Omar=Group_Omar^sol_1;
+                                   end
+                                   else
+                                   begin
+                                        if temp>1 then
+                                           roll=rand(1,temp)
+                                        else roll=1;
+                                        setclass(temp[roll],class_mechanic);
+                                        Group_Omar=Group_Omar^temp[roll];
+                                        omar_forces_random=omar_forces_random diff temp[roll];
+                                   end;
+                              end
+                              else
+                              begin
+                                   if temp>1 then
+                                      roll=rand(1,temp)
+                                   else roll=1;
+                                   setclass(temp[roll],class_mechanic);
+                                   Group_Omar=Group_Omar^temp[roll];
+                                   omar_forces_main=omar_forces_main diff temp[roll];
+                              end;
+
+
+
+                              //Next: a scientist//////////////////////////////////////////////////////////////////////////////////////////////////
+                              temp=unitfilter(omar_forces_main,[f_minskill,skill_scientistic,6]) diff Gonzo;
+                              if temp=0 then
+                              begin
+                                   temp=unitfilter(omar_forces_random,[f_minskill,skill_scientistic,6]);
+                                   if temp=0 then
+                                   begin
+                                        hc_sex=rand(1,2);
+                                        hc_skills=[rand(1,5),rand(1,5),rand(1,5),rand(6,9)];
+                                        hc_class=class_scientistic;
+                                        sol_1=createhuman;
+                                        Group_Omar=Group_Omar^sol_1;
+                                   end
+                                   else
+                                   begin
+                                        if temp>1 then
+                                           roll=rand(1,temp)
+                                        else roll=1;
+                                        setclass(temp[roll],class_scientistic);
+                                        Group_Omar=Group_Omar^temp[roll];
+                                        omar_forces_random=omar_forces_random diff temp[roll];
+                                   end;
+                              end
+                              else
+                              begin
+                                   if temp>1 then
+                                      roll=rand(1,temp)
+                                   else roll=1;
+                                   setclass(temp[roll],class_scientistic);
+                                   Group_Omar=Group_Omar^temp[roll];
+                                   omar_forces_main=omar_forces_main diff temp[roll];
+                              end;
+
+
+
+                              //Last two are soldiers/////////////////////////////////////////////////////////////////////////////////////////////
+                              Repeat
+                                   temp=unitfilter(omar_forces_main,[f_minskill,skill_combat,6]) diff Gonzo;
+                                   if temp=0 then
+                                   begin
+                                        temp=unitfilter(omar_forces_random,[f_minskill,skill_combat,6]);
+                                        if temp=0 then
+                                        begin
+                                             hc_sex=rand(1,2);
+                                             hc_skills=[rand(6,9),rand(2,5),rand(2,5),rand(2,5)];
+                                             hc_class=class_soldier;
+                                             sol_1=createhuman;
+                                             Group_Omar=Group_Omar^sol_1;
+                                        end
+                                        else
+                                        begin
+                                             if temp>1 then
+                                                roll=rand(1,temp)
+                                             else roll=1;
+                                             setclass(temp[roll],class_soldier);
+                                             Group_Omar=Group_Omar^temp[roll];
+                                             omar_forces_random=omar_forces_random diff temp[roll];
+                                        end;
+                                   end
+                                   else
+                                   begin
+                                        if temp>1 then
+                                           roll=rand(1,temp)
+                                        else roll=1;
+                                        setclass(temp[roll],class_soldier);
+                                        Group_Omar=Group_Omar^temp[roll];
+                                        omar_forces_main=omar_forces_main diff temp[roll];
+                                   end;
+                              until Group_Omar=5;
+
+                              //Save the remaining random people
+                              SetLastMission(omar_forces_random,12);  //For correct xp bonus later on
+                              SaveCharacters(omar_forces_random,'NewKaaba_folks_13');
+                              omar_forces_random = [];
+                       
+                              temp=unitfilter(Group_Omar,[f_class,class_soldier]);     //change one soldier to mortar
+                              setclass(temp[1],class_mortar);
+
+
+
+
+                              vc_control = control_manual;
+                              vc_engine = engine_combustion;
+                              vc_chassis = Ar_hovercraft;
+
+                              repeat                                              //two hovercrafts for the soldiers
+                                    if rand(1,2)=1 then
+                                       vc_weapon=ar_double_machine_gun
+                                    else vc_weapon=ar_light_gun;
+                                    veh_type1=createvehicle;
+                                    placehumaninunit(temp[1],veh_type1);
+                                    temp=delete(temp,1);
+                                    
+                                    Group_Omar=Group_Omar^veh_type1;
+                              until Group_Omar=7;
+
+                              vc_engine = engine_siberite;
+                              vc_chassis = Ar_half_tracked;
+
+                              
+                              repeat
+                                    temp=unitfilter(Group_Omar,[[f_type,unit_human],[f_not,[f_driving]]]) diff mech;         //manual vehicles for the rest: control tower, a gun and a rocket
+
+                                    vc_weapon=ar_control_tower;
+                                    if Group_Omar=8 then
+                                       vc_weapon=ar_gun;
+                                    if Group_Omar=9 then
+                                       vc_weapon=ar_rocket_launcher;
+
+                                    veh_type1=createvehicle;
+
+                                    if Group_Omar=7 then
+                                       placehumaninunit(mech,veh_type1)
+                                    else
+                                        placehumaninunit(temp[1],veh_type1);
+                            
+                                    Group_Omar=Group_Omar^veh_type1;
+                              until Group_Omar=10;
+
+                              if rand(1,2)=1 then                                                            //one tracked remote radar
+                                 vc_engine = engine_siberite
+                              else vc_engine = engine_combustion;
+                              vc_control=control_remote;
+                              vc_weapon=ar_radar;
+                              veh_type1=createvehicle;
+                              Group_Omar=Group_Omar^veh_type1;
+
+                              if difficulty<3 then                                                           //additional radar on medium and easy
+                              begin
+                                   if difficulty=2 then
+                                   begin
+                                        vc_engine=[engine_siberite,engine_combustion][rand(1,2)];
+                                        veh_type1=createvehicle
+                                   end
+                                   else
+                                       begin
+                                            vc_engine = engine_combustion;
+                                            vc_chassis = Ar_hovercraft;
+                                            veh_type1=createvehicle;
+                                       end;
+                                   Group_Omar=Group_Omar^veh_type1;
+                              end;
+
+
+                              if difficulty<3 then                                                           //cargo carrying oil on medium and easy
+                              begin
+                                   vc_chassis = Ar_half_tracked;
+                                   vc_engine=engine_siberite;
+                                   vc_weapon=ar_cargo_bay;
+                                   veh_type2=createvehicle;
+                                   Group_Omar=Group_Omar^veh_type2;
+
+                                   if difficulty=1 then
+                                      setcargo(veh_type2,mat_oil,70)
+                                   else setcargo(veh_type2,mat_oil,50);
+
+                              end;
+
+                              repeat                                                                         //extra five vehicles, ape or remote controlled
+                                    roll=rand(1,3);
+                                    if roll=1 then vc_weapon=ar_gatling_gun;
+                                    if roll=2 then vc_weapon=ar_gun;
+                                    if roll=3 then vc_weapon=ar_rocket_launcher;
+                                    if Group_Omar=14 then vc_weapon=ar_flame_thrower;                        //one of them is a flame thorower, everything else randomized
+
+                                    if rand(1,2)=1 then
+                                       vc_chassis=Ar_half_tracked
+                                    else vc_chassis=ar_medium_trike;
+
+                                    if rand(1,2)=1 then
+                                       vc_engine=engine_siberite
+                                    else vc_engine=engine_combustion;
+
+                                    if rand(1,2)=1 then
+                                       vc_control=control_remote
+                                    else vc_control=control_apeman;
+
+                                    veh_type1=createvehicle;
+                                    Group_Omar=Group_Omar^veh_type1;
+                              until Group_Omar=[18,18,16][difficulty];
+
+                              Placehumaninunit(Omar,mastodon);
+                              Group_Omar=Group_Omar^mastodon;
+
+                              Group_Omar=Group_Omar^kitty;
+                              Group_Omar=Group_Omar^cat;
+
+                              if Gonzo in omar_forces_main then
+                                 Group_Omar=Group_Omar^Gonzo;
+
+                              result=Group_Omar;
+                              end;
+                  
+                  8: begin    //Hunt triggered                      // added just to fill the gap between hunt normal and escapees
+
+                              uc_nation = nation_russian;
+                              uc_side = 3;
+
+                              hc_class=class_soldier;
+                              hc_attr=[10,10];
+
+
+                              vc_control = control_computer;         //mostly gatilngs
+                              vc_engine = engine_combustion;
+                              vc_chassis = ru_medium_wheeled;        //all wheeled to make them fast egnough to catch up to side 5 units
+                              roll=rand(1,5);
+                              if roll=5 then                         //mostly gatlings
+                                 vc_weapon=ru_gun;
+                              if roll=4 then
+                                 vc_weapon=ru_rocket_launcher;
+                              if roll<4 then
+                                 vc_weapon=ru_gatling_gun;
+
+
+                              roll=rand(1,3);
+
+                              repeat
+                                    veh_type1=createvehicle;
+                                    Group_Hunt=Group_Hunt^veh_type1;
+                              until Group_Hunt=roll;
+
+                              result=Group_Hunt;
+                              end;
+             end;
+
+end;
+
+//Attacking AI                     //controls how the Russians groups behave once they spot the enemy
+Export Function Attack(Group_number,Group_type,Group_pursuing_range);
+var i,j,seen_arabians,russian_group;
+var effective_range,target_unit;
+var attack_side_5,temp_list,temp_list2,temp_list3,temp,temp_val,temp_val2,temp_val3,temp_hex,attacked_unit,enemy_size,field_size;
+var machines,gatlings,rocketls;
+begin
+     russian_group=russians[Group_number];
+
+     for i=1 to russian_group do                      //ignore dying units
+         if isok(russian_group[i])=0 then
+            russian_group=delete(russian_group,i);
+
+     for i=1 to range_list do
+         if i=Group_number then
+            effective_range=range_list[i];
+
+     seen_arabians=UnitsInRange(russian_group,detected_arabians,effective_range);     //Determine which detected units to attack (wouldn't want to start pursuing enemy that is 100 hexes away)
+
+     if seen_arabians>0 then
+     begin
+             case group_type[1] of                        //Attacking pattern depending on group type
+                     1: begin
+                             temp=unitfilter(russian_group,[[f_type,unit_vehicle],[f_control,control_computer]]);
+                             if seen_arabians>0 then
+                             begin
+                                  target_hg=tag(target_hg,group_number,ClosestUnit(russian_group,seen_arabians));     //the heavy group simply attacks the closest unit
+
+                                  for i in temp do
+                                      if see(3,target_hg[group_number]) or see(6,target_hg[group_number]) then      //dont't attack an enemy you don't see
+                                         comattackunit(i,target_hg[group_number])
+                                      else commoveunit(i,target_hg[group_number]);
+
+                             end;
+
+
+                             //bazookas                                                  //bazookers use special amunition but there is no way of checking if a rocket is actually fired implemented, so in practice it happens more rarely than it should
+                             temp=unitfilter(russian_group,[f_class,class_bazooker]);
+                             if temp>0 then
+                             begin
+                                  target_bazooka=tag(target_bazooka,group_number,0);               
+
+                                  temp_list=unitfilter(seen_arabians,[f_dist,russian_group[1],13]);    //checks the lives of all seen units within 13 hexes (beyond that the life of units don't matter) and arranges them from lowest
+                                  temp_list2=[];
+                                  for i in temp_list do
+                                      temp_list2=temp_list2^getlives(i);
+
+                                  temp_list=WorstFromListByList(temp_list,temp_list2);
+                                  for i in seen_arabians do
+                                      if getdistunits(i,russian_group[1])>13 then
+                                         temp_list=temp_list^i;
+
+                                  if temp_list[1]=0 then           //sometimes kept returning 0 as the first number, instead of unit id. Something wrong with the way WorstFromListByList is used?
+                                     temp_list=delete(temp_list,1);
+
+
+                                                                   //target priority: radars or controltowers, other vehicles, mortars, other humans
+                                                                   //because they are arranged from lowest life they will always attack the one with lowest health of a given group
+                                  if unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])>0 then
+                                     target_bazooka=tag(target_bazooka,group_number,unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])[1]);
+
+                                  if unitfilter(temp_list,[f_type,unit_vehicle])>0 and target_bazooka[group_number]=0 then
+                                     target_bazooka=tag(target_bazooka,group_number,unitfilter(temp_list,[f_type,unit_vehicle])[1]);
+
+                                  if unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])>0 and target_bazooka[group_number]=0 then
+                                     target_bazooka=tag(target_bazooka,group_number,unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])[1]);
+
+                                  if target_bazooka[group_number]=0 then
+                                     target_bazooka=tag(target_bazooka,group_number,temp_list[1]);
+
+
+                                  temp_val3=200;                                 //duration in tick of a lapsing caused by time rocket on different upgrades
+                                  if gettech(tech_ST1,3)=state_researched then
+                                     temp_val3=300;
+                                  if gettech(tech_ST2,3)=state_researched then
+                                     temp_val3=400;
+
+                                  temp_list=unitfilter(russian_group,[f_empty]);
+                                  for i in temp do
+                                      if GetDistUnits(i,target_bazooka[group_number])>10 then
+                                      begin
+                                           if temp_list>0 then
+                                              comenterunit(i,nearestunittounit(temp_list,i));
+                                           addcommoveunit(i,target_bazooka[group_number]);     //if a bazooker is farther away from its target than 10 hexes, he should approach in vehicle
+                                      end
+                                      else
+                                      begin
+                                           if isinunit(i) then
+                                              comexitvehicle(i);
+
+                                           if bazooka_engagetime[group_number]=999$0 then       //999min is the initial value, before entering the combat
+                                              bazooka_engagetime=tag(bazooka_engagetime,group_number,tick-temp_val3);  //the timer set to tick minus temp_val should mean a time rocket should be fired first, in practice thre's some delay
+
+
+                                           if unitfilter(russian_group,[f_weapon,ru_time_lapser])>0 and unitfilter(russian_group,[f_weapon,ru_heavy_gun])>1  then        //if there are time lapsers and there's still some firepower in the group, they should fire space rockets rather than time rockets
+                                           begin
+                                                field_size=8;                                   //estimated size of lapsing field depending on circumstances
+                                                if gettech(tech_ST2,3)=state_researched then
+                                                   field_size=10;
+                                                if gettech(tech_ST3,3)=state_researched then
+                                                   field_size=12;
+                                                if unitfilter(russian_group,[f_weapon,ru_time_lapser])>1 then
+                                                   field_size=field_size+2;
+
+                                                   //if a unit is outside the lapsing field and not more than 8 hexes beyond it, attempt to teleport it into the field
+                                                if getdistunits(unitfilter(russian_group,[f_weapon,ru_time_lapser])[1],target_bazooka[group_number])>field_size and getdistunits(unitfilter(russian_group,[f_weapon,ru_time_lapser])[1],target_bazooka[group_number])<field_size+8 then
+                                                begin
+                                                     temp_val=unitfilter(russian_group,[f_weapon,ru_time_lapser]);
+                                                     temp_hex=SpaceRocketTargeting(getx(temp_val[1]),gety(temp_val[1]),target_bazooka[group_number]);  //find the coordinates to target with the space rocket
+                                                     comspaceshift(i,temp_hex[1],temp_hex[2]);
+                                                end;
+                                           end
+                                           else
+                                           begin
+                                                if tick>bazooka_engagetime[group_number]+temp_val3 then             //if there are no time lapsers present use the time rockets, if the set time from previous rocket has passed
+                                                begin
+                                                     comtimeshift(i,getx(target_bazooka[group_number]),gety(target_bazooka[group_number]));
+                                                     bazooka_engagetime=tag(bazooka_engagetime,group_number,tick);    //update the timer 
+                                                end;
+                                           end;
+
+
+                                           temp_val=0;
+                                           if hastask(i)[1][1]='A' or hastask(i)[1][1]='%' or hastask(i)[1][1]='&' then       //if a unit doesn't have the order of attacking or firing one of the special rockets already, attack the choosen target
+                                              temp_val=1;
+                                           if hastask(i)=0 then
+                                              comattackunit(i,target_bazooka[group_number])
+                                           else if temp_val=0 then
+                                                   comattackunit(i,target_bazooka[group_number]);
+                                      end;
+                                  end;
+
+                                    temp=unitfilter(russian_group,[f_weapon,ru_time_lapser]);        //the timelapsers move to the average position of heavy guns
+                                    if temp>0 then
+                                    begin
+                                         if unitfilter(russian_group,[f_weapon,ru_heavy_gun])> 0 then
+                                         begin
+                                              temp_hex=AverageGroupPos(unitfilter(russian_group,[f_weapon,ru_heavy_gun]));
+                                              for i in temp do
+                                                  if getdistunitxy(i,temp_hex[1],temp_hex[2])>5 then
+                                                     commovexy(i,temp_hex[1],temp_hex[2]);
+                                         end
+                                         else
+                                             for i in temp do
+                                                 commoveunit(i,nearestunittounit(unitfilter(russian_group,[f_not,[f_weapon,ru_time_lapser]]),i));
+
+                             end;
+
+                        end;
+                     2: begin    //scout group
+                        //do not engage if there are [3 vehicle guns] or [4 vehicles in total] or [2 vehicles and 2 mortars] or [4 mortars] or [2 mortars and 4 soldiers]
+                        //half the time should go past enemy than actually attack
+                               if seen_arabians>0 then
+                               begin
+                                    enemy_size=0;     //how many spotted arabrian units there are. 1 means too much for the scouts to take on
+
+                                    for i in seen_arabians do
+                                    begin
+                                         if getType(i)=unit_vehicle then
+                                            if getweapon(i)=ar_gun then
+                                               enemy_size=enemy_size+1.333
+                                            else enemy_size=enemy_size+1;
+                                         if getclass(i)=class_mortar then
+                                            enemy_size=enemy_size+1;
+                                         if getclass(i)=class_soldier then
+                                            enemy_size=enemy_size+0.5;
+                                         if getclass(i)=class_apeman_soldier or getclass(i)=class_apeman_kamikaze then
+                                            enemy_size=enemy_size+0.25;
+                                    end;
+
+
+                                    if enemy_size<3.99 then
+                                    begin
+                                         if Target_List[group_number]=-1 then       //half the time the group won't engage the player and just move on
+                                         begin
+                                              ru_groupstatus=tag(ru_groupstatus,group_number,0);
+                                              exit;
+                                         end;
+
+                                         target_unit=ClosestUnit(russian_group,seen_arabians);
+                                         comattackunit(russian_group,target_unit);
+                                    end
+                                    else
+                                        begin        //if there's many player units detected
+                                             temp=getdistunitxy(russian_group[1],scout_getaway[1][1],scout_getaway[1][2]);   //find the closest enter area and switch the [path] for that single hex.
+                                             ru_paths=tag(ru_paths,group_number,[[scout_getaway[1][1],scout_getaway[1][2]]]);
+                                             for i in scout_getaway do
+                                                 if getdistunitxy(russian_group[1],i[1],i[2])<temp then
+                                                 begin
+                                                      temp=getdistunitxy(russian_group[1],i[1],i[2]);
+                                                      ru_paths=tag(ru_paths,group_number,[i]);
+                                                 end;
+                                             ru_groupstatus=tag(ru_groupstatus,Group_number,2);                        //tag the group as running back home
+                                             Target_List=tag(target_list,group_number,[getX(seen_arabians[1]), getY(seen_arabians[1])]);               //Target_list holds the coordinates of where the player was spotted
+                                             exit;
+                                        end;
+                               end;
+                        end;
+                     3: begin   //seek group
+                               if seen_arabians>0 then
+                               begin
+                                    //Hg within the group - picking the target and attacking         
+                                    temp=unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_heavy_gun]]);
+                                    if temp>0 then
+                                    begin
+                                         target_hg=tag(target_hg,group_number,0);                           
+
+                                         temp_list=unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_not,[f_lives,700]]]);    //take note of units fairly wounded
+                                         temp_list2=[];
+                                         for i in temp_list do
+                                             temp_list2=temp_list2^getlives(i);                //arrange from lowest health
+                                                                                               //because they are arranged from lowest life they will always attack the one with lowest health of a given group
+                                         temp_list=WorstFromListByList(temp_list,temp_list2);
+                                         temp_list=temp_list^unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_lives,700]]);
+                                         for i in seen_arabians do
+                                             if getdistunits(i,russian_group[1])>13 then
+                                                temp_list=temp_list^i;
+
+                                         if temp_list[1]=0 then
+                                            temp_list=delete(temp_list,1); //sometimes kept returning 0 as the first number, instead of unit id. Something wrong with the way WorstFromListByList is used?
+
+                                                                                     //the priority for heavy gun is: control tower or radar, other vehicles, mortars, other humans
+                                         if unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])>0 then
+                                            target_hg=tag(target_hg,group_number,unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])[1]);
+
+                                         if unitfilter(temp_list,[f_type,unit_vehicle])>0 and target_hg[group_number]=0 then
+                                            target_hg=tag(target_hg,group_number,unitfilter(temp_list,[f_type,unit_vehicle])[1]);
+
+                                         if unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])>0 and target_hg[group_number]=0 then
+                                            target_hg=tag(target_hg,group_number,unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])[1]);
+
+                                         if target_hg[group_number]=0 then
+                                            target_hg=tag(target_hg,group_number,temp_list[1]);
+
+
+                                         comattackunit(temp,target_hg[group_number]);
+
+                                    end;
+
+                                    //guns
+                                    temp=unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_gun]]);
+                                    if temp>0 then
+                                    begin
+                                         target_gun=tag(target_gun,group_number,0);
+
+                                         temp_list=unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_not,[f_lives,700]]]);    //take note of units fairly wounded
+                                         temp_list2=[];                                                      //because they are arranged from lowest life they will always attack the one with lowest health of a given group
+                                         for i in temp_list do
+                                             temp_list2=temp_list2^getlives(i);
+
+                                         temp_list=WorstFromListByList(temp_list,temp_list2);
+                                         temp_list=temp_list^unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_lives,700]]);
+                                         for i in seen_arabians do
+                                             if getdistunits(i,russian_group[1])>13 then
+                                                temp_list=temp_list^i;                                
+
+                                         if temp_list[1]=0 then
+                                            temp_list=delete(temp_list,1);  //sometimes kept returning 0 as the first number, instead of unit id. Something wrong with the way WorstFromListByList is used?
+
+                                                                                //unlike heavy guns, these target mortars first
+                                         if unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])>0 then
+                                            target_gun=tag(target_gun,group_number,unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])[1]);
+
+                                         if unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])>0 and target_gun[group_number]=0 then
+                                            target_gun=tag(target_gun,group_number,unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])[1]);
+
+                                         if unitfilter(temp_list,[f_type,unit_vehicle])>0 and target_gun[group_number]=0 then
+                                            target_gun=tag(target_gun,group_number,unitfilter(temp_list,[f_type,unit_vehicle])[1]);
+
+                                         if target_gun[group_number]=0 then
+                                            target_gun=tag(target_gun,group_number,temp_list[1]);
+
+                                         //if the target is a mortar, and there are machine guns or gatlings in the group, then the guns are constantly moving around the target and fire at the mortar due to PriorityAttack(which is done in control Russians block module AI)
+                                         if gettype(target_gun[group_number])=unit_human and getclass(target_gun[group_number])=class_mortar then
+                                         begin
+                                              if unitfilter(russian_group,[ [f_type,unit_vehicle],[f_or,[f_weapon,ru_gatling_gun],[f_weapon,ru_heavy_machine_gun]] ])>0 then
+                                              begin
+                                                   for i in temp do              
+                                                   begin
+                                                        temp_hex=RandHexXYRminRmax(GetX(target_gun[group_number]),GetY(target_gun[group_number]),7,10);  //find random hex around the target
+                                                        if getdistunits(i,target_gun[group_number])>12 then
+                                                           temp_hex=RandHexXYRminRmax(GetX(target_gun[group_number]),GetY(target_gun[group_number]),6,7);  //if the target is farther away aim to move closer to it
+                                                  
+                                                           commovexy(i,temp_hex[1],temp_hex[2])
+
+                                                   end;
+                                              end
+                                              else for i in temp do           //if there are no gatlings or machine guns in the group, simply move close to the mortars
+                                                       if getdistunits(i,target_gun[group_number])>3 then
+                                                          MoveCloseTounit(i,target_gun[group_number],3)
+                                                       else comattackunit(i,target_gun[group_number]);
+                                         end
+                                         else
+                                         for i in temp do
+                                         begin
+                                              comattackunit(temp,target_gun[group_number]);
+                                              if getside(target_gun[group_number])=5 then        //if the target is side 5, then move closer to the target in order to attack, because they are constantly moving away              
+                                              begin
+                                                   MoveCloseTounit(i,target_gun[group_number],3);
+                                                   addcomattackunit(i,target_gun[group_number]);
+                                              end;
+                                         end;
+
+                                    end;
+
+                                    //rest - heavy machine guns, gatlings, rocket launchers, rockets, all target the same way
+                                    temp=unitfilter(russian_group,[ [f_and, [f_type,unit_vehicle],[f_or,[f_weapon,ru_heavy_machine_gun],[f_weapon,ru_gatling_gun],[f_weapon,ru_rocket_launcher],[f_weapon,ru_rocket]] ] ]);
+                                    if temp>0 then
+                                    begin
+                                         target_all=tag(target_all,group_number,0);
+
+                                         temp_list=unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_not,[f_lives,700]]]);    //take note of units fairly wounded
+                                         temp_list2=[];
+                                         for i in temp_list do
+                                             temp_list2=temp_list2^getlives(i);                        //arrange from lowest health
+                                                                                                       //because they are arranged from lowest life they will always attack the one with lowest health of a given group
+                                         temp_list=WorstFromListByList(temp_list,temp_list2);
+                                         temp_list=temp_list^unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_lives,700]]);
+                                         for i in seen_arabians do
+                                             if getdistunits(i,russian_group[1])>13 then
+                                                temp_list=temp_list^i;
+
+                                         if temp_list[1]=0 then
+                                            temp_list=delete(temp_list,1);     //sometimes kept returning 0 as the first number, instead of unit id. Something wrong with the way WorstFromListByList is used?
+
+
+                                                                              //priority of targeting: mortars, other humans, control tower or radar, other vehicles
+                                         if unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])>0 then
+                                            target_all=tag(target_all,group_number,unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])[1]);
+
+                                         if unitfilter(temp_list,[f_type,unit_human])>0 and target_all[group_number]=0 then
+                                            target_all=tag(target_all,group_number,unitfilter(temp_list,[f_type,unit_human])[1]);
+
+                                         if unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])>0 and target_all[group_number]=0 then
+                                            target_all=tag(target_all,group_number,unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])[1]);
+
+                                         if target_all[group_number]=0 then
+                                            target_all=tag(target_all,group_number,temp_list[1]);
+
+
+                                         if gettype(target_all[group_number])=unit_human and getclass(target_all[group_number])=class_mortar then   //if the target is a mortar, this subgroup (+ guns) splits into two groups, primary approaches the mortar, secondary moves constantly around it
+                                         begin
+                                              temp_list=0;
+                                              machines=unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_heavy_machine_gun]]);
+                                              gatlings=unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_gatling_gun]]);
+                                              rocketls=unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_rocket_launcher]]);
+
+                                              if gatlings>0 then
+                                              begin                                                                               //only one type of vehicles is the primary, ther rest is secondary
+                                                   temp_list=gatlings; temp_list2=machines;  temp_list2=temp_list2^rocketls;      //the priority for primary group is: gatlings, machine guns, guns, rockets
+                                              end;
+                                              if temp_list=0 and machines>0 then
+                                              begin                                                                               //long distance rockets don't take part in this, they simply attack
+                                                   temp_list=machines; temp_list2=rocketls;
+                                              end;
+                                              if temp_list=0 then
+                                              begin
+                                                   temp_list=rocketls;
+                                                   if unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_gun]])>0 then
+                                                      temp_list2=rocketls; temp_list=0;
+                                              end;
+
+                                              if temp_list>0 then                        //the primary group moves into the mortars
+                                                 for i in temp_list do
+                                                 begin
+                                                      if getweapon(i)=ru_rocket_launcher then
+                                                         temp_val=6
+                                                      else temp_val=3;
+
+                                                      if getdistunits(i,target_all[group_number])>temp_val then
+                                                         MoveCloseToUnit(i,target_all[group_number],temp_val)
+                                                      else comattackunit(i,target_all[group_number]);
+
+                                                 end;
+
+
+                                              if temp_list2>0 then                       //the secondary chooses a random hex around the target
+                                                 for i in temp_list2 do
+                                                 begin
+                                                      if GetWeapon(i)=ru_rocket_launcher then
+                                                         if gettech(tech_weap2,3)=state_researched then
+                                                            temp_val=17            //range of the rocket, determines how far away can the rocket move from the target
+                                                         else temp_val=15;
+
+                                                      temp_hex=RandHexXYRminRmax(GetX(target_all[group_number]),GetY(target_all[group_number]),10,temp_val);
+                                                      if getdistunits(i,target_all[group_number])>temp_val+1 then
+                                                         temp_hex=RandHexXYRminRmax(GetX(target_all[group_number]),GetY(target_all[group_number]),9,10);
+
+                                                      
+                                                      commovexy(i,temp_hex[1],temp_hex[2]);
+                                                 end;
+                                         end
+                                         else
+                                         for i in temp do        //if it's not a mortar
+                                         begin
+                                              if see(3,target_all[group_number]) or see(6,target_all[group_number]) then     //don't attack a unit you don't see
+                                                 comattackunit(i,target_all[group_number])
+                                              else MoveCloseToUnit(i,target_all[group_number],3);
+                                                   if getside(target_all[group_number])=5 then                             //if it's side 5 move close to unit first
+                                                   begin
+                                                        MoveCloseToUnit(i,target_all[group_number],3);
+                                                        addcomattackunit(i,target_all[group_number]);
+                                                   end;
+                                         end;
+                                    end;
+
+                                    //bazookas - target priority as heavy guns. Time rockets should be fired after the previous time lapsing effect ends. Space rockets used only if the group has time lapsers (not in seek group0
+                                               //it takes 1 tick to actually fire a single rocket, (less than turning around) and just after the rocket leaves the bazooka, that bazooker is idle - therefore its negligible
+                                               //100 tics must pass for a bazooker to fire another rocket - wheather he continously aims or does something else. 
+                                               //bazooka range is 4-15 hexes. duration of time rockets: 200 ticks on spece-time upgrade 0, 300 ticks on up 1, 400 ticks on up 2 and 3
+
+                                               //timelapser (single) field size (not hexagonial hence 2 values): up0 - 8 (9) hexes; up1 - same; up2 - 10 (11) hexes; up3 - 12 (13) hexes
+                                               // 2 timelapsers field on up3 goes as far as 17 hexes// 2timelapsers at dist 10 enhance 0, at dist 9 enhance 1, at dist 5 and below hnhance of 2 (but the other value by 4);
+                                               //at up0: 2 timelapsers at dist 0 enhance to 11 hexes
+                                               //hence assuming field sizes of [8,10,12][upgrade] +2 if there's another lapser
+                                                                              
+                                               //bazookas are too valuable to be chasing after mortars if those are far waway. The priority choice should reflect that
+
+                                    temp=unitfilter(russian_group,[f_class,class_bazooker]);
+                                    if temp>0 then
+                                    begin
+                                         target_bazooka=tag(target_bazooka,group_number,0);
+
+                                         temp_list=unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_not,[f_lives,700]]]);    //take note of units fairly wounded
+                                         temp_list2=[];
+                                         for i in temp_list do                                             //arrange from lowest health
+                                             temp_list2=temp_list2^getlives(i);                            //because they are arranged from lowest life they will always attack the one with lowest health of a given group
+
+                                         temp_list=WorstFromListByList(temp_list,temp_list2);
+                                         temp_list=temp_list^unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_lives,700]]);
+                                         for i in seen_arabians do
+                                             if getdistunits(i,russian_group[1])>13 then
+                                                temp_list=temp_list^i;
+
+                                         if temp_list[1]=0 then
+                                            temp_list=delete(temp_list,1);       //sometimes kept returning 0 as the first number, instead of unit id. Something wrong with the way WorstFromListByList is used?
+
+                                                                                     //target priority as heavy gun
+                                         if unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])>0 then
+                                            target_bazooka=tag(target_bazooka,group_number,unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])[1]);
+
+                                         if unitfilter(temp_list,[f_type,unit_vehicle])>0 and target_bazooka[group_number]=0 then
+                                            target_bazooka=tag(target_bazooka,group_number,unitfilter(temp_list,[f_type,unit_vehicle])[1]);
+
+                                         if unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])>0 and target_bazooka[group_number]=0 then
+                                            target_bazooka=tag(target_bazooka,group_number,unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])[1]);
+
+                                         if target_bazooka[group_number]=0 then
+                                            target_bazooka=tag(target_bazooka,group_number,temp_list[1]);
+
+                                         temp_val3=200;
+                                         if gettech(tech_ST1,3)=state_researched then
+                                            temp_val3=300;
+                                         if gettech(tech_ST2,3)=state_researched then
+                                            temp_val3=400;                           //duration in tick of time rocket lapsing
+
+                                         temp_list=unitfilter(russian_group,[f_empty]);
+                                         for i in temp do
+                                             if GetDistUnits(i,target_bazooka[group_number])>12 then    //if the target is too far away the bazooker drives up to it
+                                             begin
+                                                  if temp_list>0 then
+                                                     comenterunit(i,nearestunittounit(temp_list,i));
+                                                  addcommoveunit(i,target_bazooka[group_number]);
+                                             end
+                                             else
+                                                 begin
+                                                      if isinunit(i) then
+                                                         comexitvehicle(i);
+
+                                                      if bazooka_engagetime[group_number]=999$0 then                   //999min is the initial value, set when not in combat
+                                                         bazooka_engagetime=tag(bazooka_engagetime,group_number,tick-temp_val3);
+
+                                                      temp_val=0;
+                                                      if hastask(i)[1][1]='A' or hastask(i)[1][1]='%' or hastask(i)[1][1]='&' then   //attack if the bazooker foesn't have a task of firing a special rocket
+                                                         temp_val=1;
+                                                      if hastask(i)=0 then
+                                                         comattackunit(i,target_bazooka[group_number])
+                                                      else if temp_val=0 then
+                                                              comattackunit(i,target_bazooka[group_number]);
+
+                                                      if unitfilter(russian_group,[f_weapon,ru_time_lapser])>0 then    //currently not present in seek group
+                                                      begin
+                                                           if tick>bazooka_engagetime[group_number]+temp_val3 then
+                                                           begin
+                                                                field_size=8;
+                                                                if gettech(tech_ST2,3)=state_researched then
+                                                                   field_size=10;
+                                                                if gettech(tech_ST3,3)=state_researched then
+                                                                   field_size=12;
+                                                                if unitfilter(russian_group,[f_weapon,ru_time_lapser])>1 then
+                                                                   field_size=field_size+2;
+
+                                                                if getdistunits(unitfilter(russian_group,[f_weapon,ru_time_lapser])[1],target_bazooka[group_number])>field_size and getdistunits(unitfilter(russian_group,[f_weapon,ru_time_lapser])[1],target_bazooka[group_number])<field_size+8 then
+                                                                begin
+                                                                     temp_val=unitfilter(russian_group,[f_weapon,ru_time_lapser]);;
+                                                                     temp_hex=SpaceRocketTargeting(getx(temp_val[1]),gety(temp_val[1]),target_bazooka[group_number]);
+                                                                     comspaceshift(i,temp_hex[1],temp_hex[2]);
+                                                                end;
+                                                                bazooka_engagetime=tag(bazooka_engagetime,group_number,tick);
+                                                           end;
+                                                      end
+                                                      else
+                                                      begin
+                                                           if tick>bazooka_engagetime[group_number]+temp_val3 then      //fire a space rocket if the time set passes
+                                                           begin
+                                                                comtimeshift(i,getx(target_bazooka[group_number]),gety(target_bazooka[group_number]));
+                                                                bazooka_engagetime=tag(bazooka_engagetime,group_number,tick);
+                                                           end;
+                                                      end;
+                                                 end;
+                                    end;
+
+                                    temp=unitfilter(russian_group,[f_weapon,ru_time_lapser]);              //not present in seek group
+                                    if temp>0 then
+                                    begin
+                                         if unitfilter(russian_group,[f_weapon,ru_heavy_gun])> 0 then
+                                         begin
+                                              for i in temp do
+                                                  if getdistunits(unitfilter(russian_group,[f_weapon,ru_heavy_gun])[1],i)>5 then     //time lapsers move to heavy guns
+                                                     commoveunit(i,unitfilter(russian_group,[f_weapon,ru_heavy_gun])[1]);
+                                         end
+                                         else
+                                             for i in temp do
+                                                 commoveunit(i,nearestunittounit(unitfilter(russian_group,[f_not,[f_weapon,ru_time_lapser]]),i));
+
+                                    end;
+                              end;
+                        end;  
+                     4: begin //group hunt
+                             //guns
+                             temp=unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_gun]]);
+                             if temp>0 then
+                             begin
+                                  target_gun=tag(target_gun,group_number,0);
+
+                                  temp_list=unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_not,[f_lives,700]]]);    //take note of units fairly wounded
+                                  temp_list2=[];
+                                  for i in temp_list do                                   //arrange by lowest health
+                                      temp_list2=temp_list2^getlives(i);                  //because they are arranged from lowest life they will always attack the one with lowest health of a given group
+
+                                  temp_list=WorstFromListByList(temp_list,temp_list2);
+
+                                  temp_list=temp_list^unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_lives,700]]);
+                                  for i in seen_arabians do
+                                      if getdistunits(i,russian_group[1])>13 then
+                                         temp_list=temp_list^i;
+
+                                  if temp_list[1]=0 then
+                                     temp_list=delete(temp_list,1);      //sometimes kept returning 0 as the first number, instead of unit id. Something wrong with the way WorstFromListByList is used?
+
+                                                                   //prioritize fleeing (side5) arabians, after that: mortars, vehicles, rest of humans
+                                  if unitfilter(temp_list,[f_side,5])>0 then
+                                     target_gun=tag(target_gun,group_number,unitfilter(temp_list,[f_side,5])[1]);
+
+                                  if unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])>0 and target_gun[group_number]=0 then
+                                     target_gun=tag(target_gun,group_number,unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])[1]);
+
+                                  if unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])>0 and target_gun[group_number]=0 then
+                                     target_gun=tag(target_gun,group_number,unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])[1]);
+
+                                  if unitfilter(temp_list,[f_type,unit_vehicle])>0 and target_gun[group_number]=0 then
+                                     target_gun=tag(target_gun,group_number,unitfilter(temp_list,[f_type,unit_vehicle])[1]);
+
+                                  if target_gun[group_number]=0 then
+                                     target_gun=tag(target_gun,group_number,temp_list[1]);
+
+                                  if gettype(target_gun[group_number])=unit_human and getclass(target_gun[group_number])=class_mortar then    //if the target is a mortar, and there are machine guns or gatlings in the group, then the guns are constantly moving around the target and fire at the mortar due to PriorityAttack(which is done in control Russians block module AI)
+                                  begin
+                                       if unitfilter(russian_group,[ [f_type,unit_vehicle],[f_or,[f_weapon,ru_gatling_gun],[f_weapon,ru_heavy_machine_gun]] ])>0 then
+                                       begin
+                                            for i in temp do
+                                            begin
+                                                 temp_hex=RandHexXYRminRmax(GetX(target_gun[group_number]),GetY(target_gun[group_number]),7,10);    //find random hex around the target
+                                                 if getdistunits(i,target_gun[group_number])>12 then
+                                                    temp_hex=RandHexXYRminRmax(GetX(target_gun[group_number]),GetY(target_gun[group_number]),6,7);    //if the target is farther away aim to move closer to it
+
+                                                 commovexy(i,temp_hex[1],temp_hex[2]);
+                                            end;
+                                       end
+                                       else for i in temp do
+                                                if getdistunits(i,target_gun[group_number])>3 then     //if there are no gatlings or machine guns in the group, simply move close to the mortars
+                                                   MoveCloseToUnit(i,target_gun[group_number],3)
+                                                else
+                                                    comattackunit(i,target_gun[group_number]);
+                                  end
+                                  else
+                                      for i in temp do
+                                      begin
+                                           comattackunit(i,target_gun[group_number]);
+                                           if getside(target_gun[group_number])=5 and getdistunits(i,target_gun[group_number])>6 then             //if the target is side 5, then move closer to the target in order to attack, because they are constantly moving away
+                                              moveclosetounit(i,target_gun[group_number],3);
+                                      end;
+
+                             end;
+
+
+                             //rest - gatlings, rocket launchers, soldiers
+                             temp=unitfilter(russian_group,[f_or, [ [f_type,unit_vehicle],[f_or,[f_weapon,ru_gatling_gun],[f_weapon,ru_rocket_launcher]] ], [f_type,unit_human] ]);
+                             if temp>0 then
+                             begin
+                                  target_all=tag(target_all,group_number,0);
+
+                                  temp_list=unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_not,[f_lives,700]]]);    //take note of units fairly wounded
+                                  temp_list2=[];
+                                  for i in temp_list do                                           //arrange by lowest health
+                                      temp_list2=temp_list2^getlives(i);                          //because they are arranged from lowest life they will always attack the one with lowest health of a given group
+
+                                  temp_list=WorstFromListByList(temp_list,temp_list2);
+                                  temp_list=temp_list^unitfilter(seen_arabians,[[f_dist,russian_group[1],13],[f_lives,700]]);
+
+                                  for i in seen_arabians do
+                                      if getdistunits(i,russian_group[1])>13 then
+                                         temp_list=temp_list^i;
+
+                                  if temp_list[1]=0 then
+                                     temp_list=delete(temp_list,1);     //sometimes kept returning 0 as the first number, instead of unit id. Something wrong with the way WorstFromListByList is used?
+
+
+                                                                    //priority of targeting: escapees, mortars, other humans, control tower or radar, other vehicles
+                                  if unitfilter(temp_list,[f_side,5])>0 then
+                                     target_all=tag(target_all,group_number,unitfilter(temp_list,[f_side,5])[1]);
+
+                                  if unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])>0 and target_all[group_number]=0 then
+                                     target_all=tag(target_all,group_number,unitfilter(temp_list,[f_and,[f_type,unit_human],[f_class,class_mortar]])[1]);
+
+                                  if unitfilter(temp_list,[f_type,unit_human])>0 and target_all[group_number]=0 then
+                                     target_all=tag(target_all,group_number,unitfilter(temp_list,[f_type,unit_human])[1]);
+
+                                  if unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])>0 and target_all[group_number]=0 then
+                                     target_all=tag(target_all,group_number,unitfilter(temp_list,[ [f_and, [f_type,unit_vehicle], [f_or,[f_weapon,ar_control_tower],[f_weapon,ar_radar]] ] ])[1]);
+
+                                  if target_all[group_number]=0 then
+                                     target_all=tag(target_all,group_number,temp_list[1]);
+
+
+                                  if gettype(target_all[group_number])=unit_human and getclass(target_all[group_number])=class_mortar then         //if the target is a mortar, this subgroup (+ guns) splits into two groups, primary approaches the mortar, secondary moves constantly around it
+                                  begin
+                                       temp_list=0;
+                                       temp_list2=0;
+                                       gatlings=unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_gatling_gun]]);
+                                       rocketls=unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_rocket_launcher]]);
+
+                                       if gatlings>0 then                                                                          //only one type of vehicles is the primary, ther rest is secondary
+                                          temp_list=gatlings; temp_list2=rocketls;
+                                     
+                                       if temp_list=0 then
+                                          if unitfilter(russian_group,[[f_type,unit_vehicle],[f_weapon,ru_gun]])>0 then
+                                             temp_list2=rocketls
+                                          else temp_list=rocketls;                                                
+
+                                       if unitfilter(russian_group,[f_type,unit_human])> 0 then
+                                          temp_list=temp_list^unitfilter(russian_group,[f_type,unit_human]);            //the priority for primary group is: gatlings, machine guns, guns, rockets
+
+                                       if temp_list>0 then
+                                          for i in temp_list do
+                                          begin
+                                               if getweapon(i)=ru_rocket_launcher then
+                                                  temp_val=6
+                                               else temp_val=3;
+
+                                               if getdistunits(i,target_all[group_number])>temp_val then
+                                                  MoveCloseToUnit(i,target_all[group_number],temp_val)
+                                               else
+                                                   comattackunit(i,target_all[group_number]);                  //the primary group moves into the mortars
+                                          end;
+                                     
+
+                                       if temp_list2>0 then                                                //the secondary chooses a random hex around the target
+                                          for i in temp_list2 do
+                                          begin
+                                               if GetWeapon(i)=ru_rocket_launcher then
+                                                  if gettech(tech_weap2,3)=state_researched then
+                                                     temp_val=17                                   //range of the rocket, determines how far away can the rocket move from the target
+                                                  else temp_val=15;
+
+                                               temp_hex=RandHexXYRminRmax(GetX(target_all[group_number]),GetY(target_all[group_number]),10,temp_val);
+                                               if getdistunits(i,target_all[group_number])>temp_val+1 then
+                                                  temp_hex=RandHexXYRminRmax(GetX(target_all[group_number]),GetY(target_all[group_number]),9,10);
+
+
+                                               commovexy(i,temp_hex[1],temp_hex[2]);
+                                          end;
+                                  end
+                                  else
+                                      for i in temp do
+                                      begin
+                                           if see(3,target_all[group_number]) or see(6,target_all[group_number]) then     //don't attack a unit you don't see
+                                              comattackunit(i,target_all[group_number])
+                                           else commoveunit(i,target_all[group_number]);
+
+                                           if getside(target_all[group_number])=5 then
+                                           begin
+                                                if getdistunits(i,target_all[group_number])>6 then
+                                                   if getweapon(i)=ru_rocket_launcher then
+                                                      moveclosetounit(i,target_all[group_number],5)
+                                                   else moveclosetounit(i,target_all[group_number],3);
+                                                addcomattackunit(i,target_all[group_number]);                   //if it's side 5 move close to unit first
+                                           end;
+                                      end;
+
+                             end;
+
+                        end;
+             end;
+     end
+     else
+         begin
+              ru_groupstatus=tag(ru_groupstatus,Group_number,0);         //untag if no more enemy nearby
+              Target_List=tag(target_list,group_number,0);               //note that this group is not attacking anyone
+              target_hg=tag(target_hg,group_number,0);                   //reset all target lists
+              target_gun=tag(target_gun,group_number,0);
+              target_all=tag(target_all,group_number,0);
+              target_bazooka=tag(target_bazooka,group_number,0);
+              comstop(russians[group_number]);                           //just in case some current command held another by hastask
+
+              bazooka_engagetime=tag(bazooka_engagetime,Group_number,999$0); //reset bazooka timer
+         end;
+end;
+
+
+
+
+Export Function Create_player_forces(list);   //Creates starting units as indicated in main module StartSequence function (player_forces list)
+var i,j,temp,temp_list1,temp_list2,count;
+var mechs,vehs;
+begin
+     inituc;
+     inithc;
+     initvc;
+     uc_nation=nation_arabian;
+     uc_side=2;
+     Randomize;
+
+     temp_list1=[];
+     temp_list2=[];
+
+     if testing=true then
+        for i=1 to player_forces[1] do         //create humans
+        begin
+             if i>1 then
+             begin
+                  hc_attr=[player_forces[1][i][1],player_forces[1][i][2]];
+                  temp=player_forces[1][i][3];
+
+                  if temp=0 then
+                     temp=rand(1,5);
+                  if temp=1 then
+                     hc_class=class_soldier;
+                  if temp=2 then
+                     hc_class=class_engineer;
+                  if temp=3 then
+                     hc_class=class_mechanic;
+                  if temp=4 then
+                     hc_class=class_scientistic;
+                  if temp=5 then
+                     hc_class=class_mortar;
+                  if temp=7 then
+                     hc_class=class_sniper;
+
+                  hc_skills=[player_forces[1][i][4],player_forces[1][i][5],player_forces[1][i][6],player_forces[1][i][7]];
+
+                  if temp=6 then
+                  begin
+                       hc_class=class_desert_warior;
+                       hc_skills=[10,10,10,10];
+                  end;
+
+                  temp=createhuman;
+                  temp_list1=temp_list1^temp;
+             end
+             else
+                 for j in player_forces[1][i] do
+                     temp_list1=temp_list1^j;
+        end;
+
+     if testing=false then
+        temp_list1=player_forces[1];
+     
+     count=0;
+     for i in temp_list1 do   //get the skill of best mechanic, which will be in control
+         if getskill(i,skill_mechanical)>count then
+            count=getskill(i,skill_mechanical);
+
+     for i in player_forces[2] do          //create vehicles
+     begin
+          temp=i[1];
+          if temp=0 then
+             temp=rand(1,5);
+          if temp=1 then
+             vc_chassis=ar_hovercraft;
+          if temp=2 then
+             vc_chassis=ar_light_trike;
+          if temp=3 then
+             vc_chassis=ar_medium_trike;
+          if temp=4 then
+             vc_chassis=ar_half_tracked;
+          if temp=5 then
+             uc_nation=nation_nature;
+
+          temp=i[2];
+          if temp=0 then
+             temp=rand(1,3);
+          if temp=1 then
+             vc_control=control_manual;
+          if temp=2 then
+          begin
+               if count<1 then
+                  vc_control=control_apeman
+               else vc_control=control_remote;      //turn remote vehicles into ape controlled if there are more than the best mech can handle
+               count=count-1;
+          end;
+          if temp=3 then
+             vc_control=control_apeman;
+
+          if i[3]=0 then
+             vc_engine=rand(1,3)
+          else vc_engine=i[3];
+
+          temp=i[4];
+          if temp=0 then
+             temp=rand(1,11);
+          if temp=1 then
+             vc_weapon=ar_multimissile_ballista;
+          if temp=2 then
+             vc_weapon=ar_light_gun;
+          if temp=3 then
+             vc_weapon=ar_double_machine_gun;
+          if temp=4 then
+             vc_weapon=ar_gatling_gun;
+          if temp=5 then
+             vc_weapon=ar_flame_thrower;
+          if temp=6 then
+             vc_weapon=ar_gun;
+          if temp=7 then
+             vc_weapon=ar_rocket_launcher;
+          if temp=8 then
+             vc_weapon=ar_selfpropelled_bomb;
+          if temp=9 then
+             vc_weapon=ar_radar;
+          if temp=10 then
+             vc_weapon=ar_control_tower;
+          if temp=11 then
+             vc_weapon=ar_cargo_bay;
+
+          temp=createvehicle;
+          temp_list2=temp_list2^temp;
+     end;
+
+     result=[temp_list1,temp_list2];
+end;
+
+//Gives a command to unit1 to move to a hex minDist hexes before a unit2. used to make units follow someone without using commoveunit (and walking into them)
+Export Function MoveCloseTounit(unit1,unit2,minDist);
+var i,temp_hex,dist,X,Y,list;
+begin
+     list=[];
+     X=getX(unit2)-minDist;             //works by creating list of hexes, which would create a hexagon of radius minDist around unit2
+     Y=getY(unit2)-minDist;
+
+     for i=1 to mindist do
+         list=list^[[X+i,Y]];
+     X=X+i-1;
+
+     for i=1 to mindist do
+         list=list^[[X+i,Y+i]];
+     X=X+i-1;
+     Y=Y+i-1;
+
+     for i=1 to mindist do
+         list=list^[[X,Y+i]];
+     Y=Y+i-1;
+
+     for i=1 to mindist do
+         list=list^[[X-i,Y]];
+     X=X-i+1;
+
+     for i=1 to mindist do
+         list=list^[[X-i,Y-i]];
+     X=X-i+1;
+     Y=Y-i+1;
+
+     for i=1 to mindist do
+         list=list^[[X,Y-i]];
+
+
+     dist=getdistunitxy(unit1,list[1][1],list[1][2]);    //unit1 then finds the closest hex from the finished list
+     temp_hex=list[1];
+     for i in list do
+         if getdistunitxy(unit1,i[1],i[2])<dist then
+         begin
+              dist=getdistunitxy(unit1,i[1],i[2]);
+              temp_hex=i;
+         end;
+
+
+     if ValidHex(temp_hex[1],temp_hex[2])=0 or InArea(temp_hex[1],temp_hex[2],areainacessible) then   //In case the hex is imposible to reach, it would make an annoying lag
+        commoveunit(unit1,unit2)
+     else
+         commovexy(unit1,temp_hex[1],temp_hex[2]);
+end;                                 
+
+//Generates a hex for space rocket teleporting. Finds a hex behind the Target to bring it toward the hex of X and Y coordinates. Can be a little inaccurate and chooses hex of fixed distance behind the unit
+Export Function SpaceRocketTargeting(X,Y,Target);
+var shooterX,shooterY,targetX,targetY,temp,temp1,temp_val1,temp_val2,hex;
+begin
+     shooterX=X;             //originally compared only positions of the shooter (bazooker) and his target. Adapted to make it possible to bring the target toward some other unit
+     shooterY=Y;
+     targetX=getx(target);
+     targetY=gety(target);
+
+     temp1=[shooterX-targetX,shooterY-targetY];       //works by comparing the coordinates of units
+
+     if temp1[1]=0 then                              //an exeption made for when both units stand on a hex of same x or y coor. otherwise would divide by 0
+     begin
+          if shooterY-targetY>0 then
+             hex=[targetX,targetY-2]
+          else hex=[targetX,targetY+2];
+          result=hex;
+          exit;
+     end;
+     if temp1[2]=0 then
+     begin
+          if shooterX-targetX>0 then
+             hex=[targetX-2,targetY]
+          else hex=[targetX+2,targetY];
+          result=hex;
+          exit;
+     end;
+
+
+     if temp1[1]<temp1[2] then
+     begin
+          temp_val1=temp1[1];
+          temp_val2=temp1[2];
+          if temp_val1<0 then
+             temp_val1=-temp_val1;
+          temp=temp_val2/temp_val1;
+          if shooterX-targetX>0 then
+          begin
+               hex=[targetX-1,targety-temp];
+               if getdistxy(hex[1],hex[2],targetX,targetY)>4 then
+                  hex=[targetX-1,targety-temp/2];
+          end
+          else begin
+                    hex=[targetX+1,targety-temp];
+                    if getdistxy(hex[1],hex[2],targetX,targetY)>4 then
+                    hex=[targetX+1,targety-temp/2];
+               end;
+
+     end
+     else begin
+          temp_val1=temp1[2];
+          temp_val2=temp1[1];
+          if temp_val1<0 then
+             temp_val1=-temp_val1;
+          temp=temp_val2/temp_val1;
+          if shooterY-targetY>0 then
+          begin
+               hex=[targetX-temp,targety-1];
+               if getdistxy(hex[1],hex[2],targetX,targetY)>4 then
+                  hex=[targetX-temp/2,targety-1];
+          end
+          else begin
+                    hex=[targetX-temp,targety+1];
+                    if getdistxy(hex[1],hex[2],targetX,targetY)>4 then
+                       hex=[targetX-temp/2,targety+1];
+               end;
+          end;
+
+     result=hex;
+
+end;
+
+//Works the same way as RandHexXYR, but a minimum distance from a hex can be specified as well as maximum. The randomness can be slightly biased but in practice it's not even noticeable
+Export Function RandHexXYRminRmax(X,Y,n,m);
+var a,b,hex_x,hex_y;                           //NOTE: m must be higher than n, other cases weren't considered in making this function
+begin
+     case rand(1,4) of                                             //works by defining the desired area of result hex, as 4 "areas" in turn defined just by limits of their hexes choosen at random (i.e. [rand(Xmin,Xmax),rand(Ymin,Ymax)])
+          1: begin hex_x=rand(X-m,X); hex_y=rand(Y-m,Y-n); end;
+          2: begin hex_x=rand(X,X+m); hex_y=rand(Y+n,Y+m); end;
+
+          3: if rand(1,2)=1 then                                  //because the shape of such an "area" (parallelogram) can't be altered, 2 of the "areas" had to be splitinto two, and again one of those into several (m-1) "areas"
+             begin
+                  hex_x=rand(X-m,X-n); hex_y=rand(Y-n,Y);
+             end
+             else
+             begin
+                  a=rand(1,m-1);
+                  if a>m-n then
+                     b=a-(m-n)+1
+                  else b=1;
+
+                  hex_x=X-m+a; hex_y=rand(Y+b,Y+a);
+             end;
+
+          4: if rand(1,2)=1 then
+             begin
+                  hex_x=rand(X+n,X+m); hex_y=rand(Y,Y+n);
+             end
+             else
+             begin
+                  a=rand(1,m-1);
+                  if a>m-n then
+                     b=a-(m-n)+1
+                  else b=1;
+
+                  hex_x=X+m-a; hex_y=rand(Y-a,Y-b);
+             end;
+     end;
+     
+     if ValidHex(hex_x,hex_y)=true then            //quick fix for when the hex goes out of map
+        result=[hex_x,hex_y]
+     else result=[X,Y];
+end;
+
+
+Export Function PrepareNature;
+var i,agres,ape,roll,hex,temp,temp2;
+begin
+     Randomize;
+     //Apes
+     uc_nation=nation_nature;
+     uc_side=0;
+     hc_class = class_apeman;
+     agres = -10 + difficulty * 20;         //agessivity set as in other missions in campaign
+
+     for i=1 to 19 do
+     begin  
+          hc_attr=[rand(15,18),12];
+          hc_agressivity=Rand(-1*agres,agres);
+          hc_sex=sex_male;
+          hc_name=PlanetOfTheApes[i];
+          hc_skills=[rand(7,10),rand(2,4),rand(2,4),rand(2,4)];
+
+          if i=1 or i=3 then hc_skills=[rand(7,10),rand(2,4),1,rand(6,8)];
+
+          if i=2 or i=14 then
+          begin
+               hc_skills=[rand(7,10),rand(2,4),rand(0,1),rand(6,8)];
+               hc_sex=sex_female;
+          end;
+
+          if i=16 then hc_sex=sex_female;
+
+          ape=CreateHuman;
+          Apes=Apes^ape;
+     end;
+
+     for i=1 to 5 do
+     begin
+          roll=rand(1,Apes);
+          repeat
+                hex=RandHex(0);
+          until hexinfo(hex[1],hex[2])=0 and not InArea(hex[1],hex[2],areainacessible);
+          placeunitxy(Apes[roll],hex[1],hex[2],0);
+          Apes=delete(Apes,roll);
+     end;
+
+     hc_name='';
+
+
+     //other animals
+     hc_attr=[10,10];
+     hc_skills=[0,0,0,0];
+     for i=1 to 10 do
+     begin
+          if rand(1,2)=1 then
+          begin
+               hc_gallery='nature_foreg'; hc_face_number=1; hc_class=class_phororhacos;
+          end
+          else 
+               begin
+                    hc_gallery='nature_foreg'; hc_face_number=4; hc_class=class_baggie;
+               end;
+
+          temp=createhuman;
+          repeat
+                hex=RandHex(0);
+          until hexinfo(hex[1],hex[2])=0 and not InArea(hex[1],hex[2],areainacessible);
+
+          placeunitxy(temp,hex[1],hex[2],0);
+    end;                     
+
+    temp=[Eh1,Eh2];
+    for i=1 to temp do
+    begin
+         removeunit(temp[i]);
+         repeat
+               hex=RandHex(0);
+         until hexinfo(hex[1],hex[2])=0 and not InArea(hex[1],hex[2],areainacessible);
+
+         placeunitxy(temp[i],hex[1],hex[2],0);
+    end; 
+
+    temp=[ [173,35],[171,46],[167,53],[165,62],[163,71],[161,76],[159,83],[156,92],[153,97],[155,110],[158,128],[186,144],[205,152],[224,165],[173,146],[184,157],[192,166],[193,175] ];    //river hexes
+    for i=1 to 5 do
+    begin
+         hc_gallery='nature_foreg'; hc_face_number=2; hc_class=class_fish;
+         temp2=createhuman;
+         repeat
+               hex=temp[rand(1,temp)];
+         until hexinfo(hex[1],hex[2])=0;
+
+         placeunitxy(temp2,hex[1],hex[2],0);
+    end;
+end;
+
+
+Export Function GetTopSkill(un);     //Returns which skill is the unit's best, as a number of 1 to 4
+var i,list,val,val_top;
+begin
+     list=[getskill(un,skill_combat),getskill(un,skill_engineering),getskill(un,skill_mechanical),getskill(un,skill_scientistic)];
+     val=1;
+     val_top=list[1];
+     for i=1 to list do
+         if list[i]>val_top then
+         begin
+              val_top=list[i];
+              val=i;
+         end;
+     result=val;
+end;
+
+
+
+//Rewrite the whole list switching a choosen value   //Apparently function Replace would work just as well
+Export Function Tag(list,group_number,value);
+var i,j,temp_list,temp_val;
+begin
+     temp_list=[];
+     for i=1 to list do
+     begin
+          if i=group_number then
+             temp_list=temp_list^[value]
+          else
+              temp_list=temp_list^[list[i]];
+     end;
+     result=temp_list;
+end;
+
+Export Function Biggest_distance(group);    //Between units within a group.
+var i,j,dist;
+begin
+dist=0;
+     for i in group do
+     begin
+          for j in group do
+          begin
+               if getdistunits(i,j)>dist then
+                  dist=getdistunits(i,j);
+          end;
+     end;
+result=dist;
+end;
+
+Export Function SmallestDistance(group1,group2);    //Between members of each group.
+var i,j,distance;
+begin
+     if group1=[] or group2=[] then
+        result=999999                   //As with getdistunits, if they're not on map the distance is 99999
+     else
+     begin
+          distance=GetDistUnits(group1[1],group2[1]);
+          for i in group1 do
+          begin
+               for j in group2 do
+                   if GetDistUnits(i,j)<distance then
+                      distance=GetDistUnits(i,j);
+          end;
+          result=distance;
+     end;
+end;
+
+Export Function UnitsInRange(Group_ref,Group_target,Range);  //Returns units from a list (group_target) that are within a given hex range to any member of the reference group.
+var i,j,list;
+begin
+     list=[];
+     for i in group_target do
+         for j in group_ref do
+             if getdistunits(i,j)<range then
+             begin
+                  list=list^i;
+                  break;
+             end;
+     result=list;
+end;
+ 
+Export Function NearestDistFromGroupToUnit(group,_unit);   //Returns the distance (not the unit!) between closest one from the group to the "_unit"
+var i,distance;
+begin
+     distance=GetDistUnits(_unit,group[1]);
+     for i in group do
+         if GetDistUnits(_unit,i)<distance then
+            distance=GetDistUnits(_unit,i);
+
+     result=distance;
+end;         
+
+Export Function ClosestUnit(group1,group2);       //Closest unit from  group2 to group1
+var i,j,temp,distance;                           //Somehow seemed more convenient that NearestUnitToUnit function
+begin
+     distance=GetDistUnits(group1[1],group2[1]);
+     temp=group2[1];
+     for i in group1 do
+     begin
+          for j in group2 do
+              if GetDistUnits(i,j)<distance then
+              begin
+                   distance=GetDistUnits(i,j);
+                   temp=j;
+              end;
+     end;
+     result=temp;
+end;
+
+Export Function FarthestHex(list_hex,un);   //farthest hex in list to unit
+var i,hex,dist;
+begin
+     if un=0 or list_hex=0 then
+     begin
+          result=false;
+          exit;
+     end;
+
+     dist=Getdistunitxy(un,list_hex[1][1],list_hex[1][2]);
+     hex=list_hex[1];
+
+     for i in list_hex do
+         if Getdistunitxy(un,i[1],i[2])>dist then
+         begin
+              dist=Getdistunitxy(un,i[1],i[2]);
+              hex=i;
+         end;
+
+     result=hex;
+end;
+
+
+Export Function AverageGroupPos(list);   //literaly get the average value of all hex coordinates
+var i,tempX,tempY;
+begin
+     tempX=0;
+     tempY=0;
+     for i=1 to list do
+     begin
+          tempX=tempX+getX(list[i]);
+          tempY=tempY+getY(list[i]);
+     end;
+
+     tempX=tempX/list;
+     tempY=tempY/list;
+     result=[tempX,tempY];
+end;
+
+
+Export Function Seek_n_destroy(scout_group_number,targethex);    //Determines the triggered seek group, after a scout group detects significant player force and reports back, that is dissapears at the bottom of the map
+var i,j,path,area,time,paths,areas,temp;
+begin
+     randomize;
+     if targethex>0 then
+     begin
+          temp=[Seekarea1,Seekarea2,Seekarea3,Seekarea4,Seekarea5,Seekarea6,Seekarea7,Seekarea8,Seekarea9,Seekarea10];
+          paths=[seek_hex_set1,seek_hex_set2,seek_hex_set3,seek_hex_set4,seek_hex_set5,seek_hex_set6,seek_hex_set7,seek_hex_set8,seek_hex_set9,seek_hex_set10];
+          areas=[enter4,enter3,enter1,enter1,enter2,enter2,enter2,enter2,enter1,enter4];
+          for j=1 to temp do
+              if InArea(targethex[1],targethex[2],temp[j]) then              //determine in which area the player group was last seen
+              begin
+                   path=paths[j];                               //choose appropriate area of spawning and path to follow
+                   area=areas[j];
+              end;
+
+          time=tick;                                            // determine time of their arrival
+          time=time+rand(0$30,1$0);
+          incomming_seek_group=incomming_seek_group^[[area,path,time]];
+          Target_List=tag(Target_List,scout_group_number,0);                //esure only one group is created each time a scout group reports back
+     end
+     else exit;
+end;
+
+//Arranges numbers in a list from smallest
+Export Function SortByValueAsc(list);
+var i,j,n,temp_list,temp_list2,temp_val,temp_val2;
+begin
+     n=0;
+     for i in list do
+         n=n+1;
+
+     temp_list=[];
+     temp_val=list[1];
+     temp_val2=0;
+     repeat
+           for i in list do
+               if i<temp_val and i>temp_val2 then
+                  temp_val=i;
+
+           temp_list=temp_list^temp_val;
+
+           temp_val2=temp_val;
+           for i in list do
+               if i>temp_val2 then
+                  temp_val=i;
+
+     until temp_list=n;
+     result=temp_list;
+end;
+
+
+//Works like RandHexXYR but considers only emptyhexes
+Export Function RandValidHexXYR(X,Y,r);
+var i,temp_hex,target_hex,n,list;
+begin
+     target_hex=[X,Y];
+
+     list=[];
+     n=0;
+     while r>n do
+     begin
+          n=n+1;
+          temp_hex=[target_hex[1]-n,target_hex[2]-n];
+
+          for i=1 to n do
+          begin
+               temp_hex=[temp_hex[1]+1,temp_hex[2]];
+               if ValidHex(temp_hex[1],temp_hex[2]) and HexInfo(temp_hex[1],temp_hex[2])=0 then
+                  list=list^[temp_hex];
+          end;
+
+          for i=1 to n do
+          begin
+               temp_hex=[temp_hex[1]+1,temp_hex[2]+1];
+               if ValidHex(temp_hex[1],temp_hex[2]) and HexInfo(temp_hex[1],temp_hex[2])=0 then
+                  list=list^[temp_hex];
+          end;
+
+          for i=1 to n do
+          begin
+               temp_hex=[temp_hex[1],temp_hex[2]+1];
+               if ValidHex(temp_hex[1],temp_hex[2]) and HexInfo(temp_hex[1],temp_hex[2])=0 then
+                  list=list^[temp_hex];
+          end;
+
+          for i=1 to n do
+          begin
+               temp_hex=[temp_hex[1]-1,temp_hex[2]];
+               if ValidHex(temp_hex[1],temp_hex[2]) and HexInfo(temp_hex[1],temp_hex[2])=0 then
+                  list=list^[temp_hex];
+          end;
+
+          for i=1 to n do
+          begin
+               temp_hex=[temp_hex[1]-1,temp_hex[2]-1];
+               if ValidHex(temp_hex[1],temp_hex[2]) and HexInfo(temp_hex[1],temp_hex[2])=0 then
+                  list=list^[temp_hex];
+          end;
+
+          for i=1 to n do
+          begin
+               temp_hex=[temp_hex[1],temp_hex[2]-1];
+               if ValidHex(temp_hex[1],temp_hex[2]) and HexInfo(temp_hex[1],temp_hex[2])=0 then
+                  list=list^[temp_hex];
+          end;
+     end;
+
+     if list>0 then
+     begin
+          n=rand(1,list);
+          result=list[n];
+     end;
+end;

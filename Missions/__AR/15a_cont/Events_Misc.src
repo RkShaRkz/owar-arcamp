@@ -1,0 +1,1502 @@
+
+{
+-------------------------------------------------------------------------------
+-- This comment describes the reasoning behind the balancing of this mission --
+-------------------------------------------------------------------------------
+
+This mission is balanced for every difficulty by first balancing difficulty "hard" so it's challenging but not impossible
+and then slacking parameters for easier difficulties. Therefore all observations, decisions and thoughts presented
+here are with respect to difficulty "hard".
+
+First some observations and important decisions:
+
+- The aggregate research time for all artifacts is about the half as the research time for tech_sibfiss. You have to
+take into account, though, that some logistics are required since the third artifact must be researched at
+the alien tower.
+
+- Without tech_sib1 a siberite mine produces 1 siberite in 399 ticks (11.4 sec). With tech_sib1 it is 1 siberite in 285 ticks (8.1 sec).
+
+- The player can choose to build siberite mines on the southern part of the motherlode. It's possible to build two mines (the two
+southernmost deposits). All others are too close to the Russian defences. It takes 90 sec for 1 lvl 10 engineer to build a depot
+and 20 sec to build a siberite mine. The Russians always attack siberite mines the player has build on the south motherlode
+as first priority. The average attack delay for Russian attacks is 4 min. Attack duration is usually about 1 min. Assuming the engineer
+has some help it takes 90 sec to build the depot and the mines. Then the player has 2 1/2 min to mine siberite (4 min - 90 sec)
+before the Russians attack assumably wiping out the mines and the depot (defending them is not easy). After 1 min the attack is
+repelled and the cycle begins again. The cycle takes 90 sec + 2 1/2 min + 1 min = 5 min and the player mines 2 1/2 min with two mines
+meaning on average the player has an income of siberite like from 1 ordinary mine.
+Empirical data has shown that being able to create only one mine fits better with the overall balance.
+
+- To fire a siberite rocket into the American base you have to fire it either from the Russian base, Alliance base, Arabian base or
+just west of the Arabian base (near the river crossing). Thus the player has to defeat either of these bases before being able to
+bomb the Americans.
+
+- If you rush mortars you can have them within 4 min.
+
+- Rushing mortar and stimulation drugs you can be ready to attack in about 11 min.
+
+- Defeating Alliance completely (destroy every building) with 3 mortars, 3 scientists, stimulation drugs and tech_bio1 can be done
+in 660 sec (11 min). This includes getting "help" from the Americans attacking from the south.
+
+- Defeating the Arabians completely with 5 mortars, 3 scientists, stimulation drugs and tech_bio1 can be done in 1130 sec (19 min).
+Note that the result was produced without the Arabs having mortar special defenders (mortars getting out of the barracks to defend
+on foot). Hence in the following we will assume that the feat can be accomplished in 25 min.
+Empirical data indicates a time of 15 min is more fitting.
+
+- Clearing the south-western section of the Russian defences (up to but not including the barracks) with 5 mortars, 4 scientists,
+stimulation drugs and tech_bio1 can be done in 420 sec (7 min). This includes a little help from the Americans (the
+player being neutral with them at this point).
+
+- Defeating the Russians (killing Platonov, not destroying everything) after clearing the south-western defence section with
+5 mortars, 4 scientists, stimulation drugs and tech_bio1 can be done in 1000 sec (17 min). This includes a little help from the
+Americans (the player being neutral with them at this point).
+
+- Defeating the Russians by other means than getting help from the Americans or using the teleport artifact is hard so we will
+assume the player only uses these two tactics. (Bombing the Russians causes the player to lose).
+
+- Defeating the Americans by ordinary means (not using the siberite bomb or artifacts) is very difficult (I never succeeded).
+Of course that doesn't mean it's impossible but we will assume that it is impossible or will take very long time.
+
+- The player is expected to be able to produce and fire a siberite bomb in 20 min. Having 4 lvl 10 scis it takes 9.7 min to
+research tech_sibfiss, having 3 lvl 10 mecs it takes about 4 min to build the bomb and then 5 min to position and fire it
+(the player may have to repel an attack first).
+
+- When making the deal with the Americans to destroy Alliance on difficulty "hard" you have to mine additional siberite to
+have enough to build a siberite bomb. On medium you have just enough. On easy you start with sufficient siberite.
+
+
+Below is listed an array of strategies to complete the mission. Note that other strategies may be feasible on easier difficulties.
+There are 3 main branches:
+- A. Making the deal with the Americans to destroy Alliance. We assume the player picks siberite as the reward.
+- B. Ally with Alliance.
+- C. Do none of the two before mentioned and just go for yourself.
+
+There are four major parameters to balance:
+- When should the Americans build and fire their siberite bomb (AmBomb). The time should give the player just enough time to
+destroy the Americans.
+- When should the Russians start attacking with time lapser vehicles (makes their attack significantly stronger) (RuTimeLapserStart).
+This should occur when the player is expected to have destroyed another team so things would get easier if the Russians didn't
+step up their attack strength.
+- When should the Russians start producing and attacking with behemoths (RuBehemothStart). Should occur late game when only
+the Russians are expected to be left.
+- When should the Russians build and fire their siberite bomb (RuBomb). The time should give the player just enough time to
+destroy the Russians.
+
+If the artifacts were to compete with the siberite bomb on time (how fast can you defeat an enemy), the artifacts would have to have
+ridiculously low research times. Therefore the balancing (on difficulty "hard" at least) presumes the player builds and uses the
+bomb when possible.
+
+
+A1
+- Start*1 + destroy Alliance.                                                   Estimate: 25 min
+- Help Am destroy Ru.                                                           Estimate: 25 min + 5 min = 30 min (another 5 min to get back to your own base)
+- Build siberite bomb.                                                          Estimate: 15 min
+- Bomb Am.                                                                      Estimate: 5 min
+- Destroy Ar.                                                                   Estimate: 10 min (building a new bomb instead of attacking ordinarily)
+
+*1 The time it takes to build your base and get ready to attack others.
+
+It's assumed the player can multitask and mine the few additional siberite crystals needed to build the bomb from the southern part
+of the motherlode.
+
+AmBomb = 75 min
+RuTimeLapserStart = 35 min (or later) (doesn't really matter that much since Ru attacks only the Americans at this point. 35 min is chosen
+because then the player should have penetrated the southwestern Russian defences).
+RuBehemothStart = N/A (Ru should be dead).
+RuBomb = N/A (Ru should be dead).
+
+
+A2
+- Start + destroy Alliance.                                                     Estimate: 25 min
+- Destroy Ar.                                                                   Estimate: 15 min
+- Gather siberite for bomb (from former Ar base).                               Estimate: 5 min (includes building a depot and a mine in the former Arabian base)
+- Build siberite bomb.                                                          Estimate: 15 min - 10 min = 5 min (the research can be done in parallel with attacking the Arabians and gathering siberite)
+- Bomb Am.                                                                      Estimate: 5 min
+- Research artifacts.                                                           Estimate: 10 min - 5 min = 5 min (some research can be done in parallel with building the bomb and using it) (Ru doesn't attack the former Alliance base if the player has a base somewhere on the right half of the map, so the player can just build a minor camp near the alien tower)
+- Destroy Ru (just to the point where siberite bomb production is disrupted).   Estimate: 10 min
+
+AmBomb = 55 min
+RuTimeLapserStart = 30 min (or later) (doesn't really matter that much since Ru attacks only the Americans at this point. 30 min is chosen
+because then the player should have defeated Alliance and retreated to his/her own base).
+RuBehemothStart = 55 min
+RuBomb = 70 min
+
+
+A3
+- Start + destroy Alliance.                                                     Estimate: 25 min
+- Gather siberite for bomb (from the southern motherlode).                      Estimate: 5 min
+- Build siberite bomb.                                                          Estimate: 15 min - 5 min = 10 min (the research can be done in parallel with gathering siberite)
+- Bomb Am.                                                                      Estimate: 5 min (hitting Am is difficult because you have to do it from the former Alliance base, and Am and Ru are constantly attacking eath other through that base)
+- Destroy Ar.                                                                   Estimate: 15 min (building a new bomb instead of attacking ordinarily. Siberite mined from the southern motherlode)
+- Research artifacts.                                                           Estimate: 10 min - 5 min = 5 min (some research can be done in parallel with building the bomb and using it)(Ru doesn't attack the former Alliance base if the player has a base somewhere on the right half of the map, so the player can just build a minor camp near the alien tower)
+- Destroy Ru (just to the point where siberite bomb production is disrupted).   Estimate: 10 min
+
+AmBomb = 45 min
+RuTimeLapserStart = 30 min (or later) (doesn't really matter that much since Ru attacks only the Americans at this point. 30 min is chosen
+because then the player should have defeated Alliance and retreated to his/her own base).
+RuBehemothStart = 60 min
+RuBomb = 75 min
+
+
+B1
+- Start.                                                                        Estimate: 10 min
+- Destroy Ar.                                                                   Estimate: 15 min
+- Gather siberite (from former Ar base).                                        Estimate: 15 min (includes building a depot and a mine in the former Arabian base) (Alliance needs: 300)
+- Destroy Am (just to the point where siberite bomb production is disrupted).   Estimate: 5 min
+- Finish off Am.                                                                Estimate: 10 min (have to completely destroy Am for Alliance to come up with the plan to destroy Ru)
+- Gather siberite (from former Ar base, Am base and southern motherlode)        Estimate: 20 min (Alliance needs: 500)
+- Destroy Ru (just to the point where siberite bomb production is disrupted).   Estimate: 10 min
+
+AmBomb = 45 min
+RuTimeLapserStart = 25 min
+RuBehemothStart = 60 min
+RuBomb = 85 min
+
+
+B2
+- Start.                                                                        Estimate: 10 min
+- Gather siberite (from southern motherlode)                                    Estimate: 25 min
+- Destroy Am (just to the point where siberite bomb production is disrupted).   Estimate: 5 min
+- Finish off Am.                                                                Estimate: 10 min (have to completely destroy Am for Alliance to come up with the plan to destroy Ru)
+- Destroy Ar.                                                                   Estimate: 15 min
+- Gather siberite (from former Ar base, Am base and southern motherlode)        Estimate: 10 min (Alliance needs: 500) (a lot is gathered while destroying Ar)
+- Destroy Ru (just to the point where siberite bomb production is disrupted).   Estimate: 10 min
+
+AmBomb = 40 min
+RuTimeLapserStart = 40 min
+RuBehemothStart = 65 min
+RuBomb = 85 min
+
+
+C1
+- Start.                                                                        Estimate: 10 min
+- Gather siberite for bomb (from the southern motherlode).                      Estimate: 15 min
+- Build siberite bomb.                                                          Estimate: 15 min - 10 min = 5 min (the research can be done in parallel with gathering siberite)
+- Bomb Am.                                                                      Estimate: 5 min (hitting Am is difficult because you have to do it from the former Alliance base, and Am and Ru are constantly attacking eath other through that base) (Am has destroyed Alliance at this point)
+- Destroy Ar.                                                                   Estimate: 15 min (building a new bomb instead of attacking ordinarily. Siberite mined from the southern motherlode)
+- Research artifacts.                                                           Estimate: 10 min - 5 min = 5 min (some research can be done in parallel with building the bomb and using it)(Ru doesn't attack the former Alliance base if the player has a base somewhere on the right half of the map, so the player can just build a minor camp near the alien tower)
+- Destroy Ru (just to the point where siberite bomb production is disrupted).   Estimate: 10 min
+
+AmBomb = 35 min
+RuTimeLapserStart = 35 min
+RuBehemothStart = 50 min
+RuBomb = 65 min
+
+
+C2
+- Start.                                                                        Estimate: 10 min
+- Destroy Ar.                                                                   Estimate: 15 min
+- Gather siberite for bomb (from former Ar base).                               Estimate: 15 min (includes building a depot and a mine in the former Arabian base)
+- Build siberite bomb.                                                          Estimate: 15 min - 10 min = 5 min (the research can be done in parallel with gathering siberite)
+- Bomb Am.                                                                      Estimate: 0 min (just fire it from the former Arabian base)
+- Research artifacts.                                                           Estimate: 10 min (Am has destroyed Alliance at this point) (Ru doesn't attack the former Alliance base if the player has a base somewhere on the right half of the map, so the player can just build a minor camp near the alien tower)
+- Destroy Ru (just to the point where siberite bomb production is disrupted).   Estimate: 10 min
+
+AmBomb = 45 min
+RuTimeLapserStart = 25 min
+RuBehemothStart = 45 min
+RuBomb = 65 min
+
+
+** Conclusions **
+
+-- AmBomb --
+if strategy group C then AmBomb = 45 min
+else if group B then AmBomb = 55 min  //Keep at 55 for group B although calculations show otherwise since it's under these circumstances only one mine (instead of two) on the mother seems to work.
+else if group A and not A1 then AmBomb = 55
+else if A1 then AmBomb = 75
+
+The strategies where the Americans can be bombed very quickly are all gathering siberite from the southern part of the motherlode which means
+they have to defend against both the Russians and the Arabians the whole time (and their attacks get stronger and stronger). So if the player
+can manage that I think he/she deserves having some extra time to bomb Am.
+
+If some scientists got away in mission 13a_cont AmBomb = AbBomb - 5 min (goes before difficulty multiplication, see below). This renders some
+strategies unusable.
+
+-- RuTimeLapserStart --
+(Almost) everyone can agree on RuTimeLapserStart = 35 min. Additionally, if the player handed over Kozlov to the Russians so they don't attack the player,
+they start attacking again at RuTimeLapserStart.
+
+-- RuBehemothStart --
+If strategy group A then RuBehemothStart = 60 min
+else if group B then RuBehemothStart = 65 min
+else if group C then RuBehemothStart = 50 min
+
+-- RuBomb --
+If strategy group A then RuBomb = 75 min
+else if group B then RuBomb = 85 min
+else if group C then RuBomb = 65 min
+
+-- Americans destroy Alliance --
+If the player doesn't interfere Am will destroy Alliance after some time. This time should assure that the player can't defeat Ar before defeating Alliance
+if the player makes the deal with Am, but Am should also destroy Alliance as late as possible since Ru will only attack Am when Am breaks through to Ru.
+Considering Am may actually not completely destroy Alliance on the first attack after they have been given permission to destroy them I believe the best
+time for this event is after 25 min.
+
+-- Other difficulties than "hard" --
+AmBomb, RuTimeLapserStart, RuBehemothStart, RuBomb and AmDetroyAlli times will be multiplied by [1.5,1.25,1][difficulty]. The numbers have no real logical origin.
+It's just a guess what would be best. (Although they do fit the increase in attack delay as difficulty goes down).
+}
+
+Export Function StratGroupAUsed;
+     begin
+          result := american_deal_status in [2,3];
+     end;
+
+Export Function StratGroupBUsed;
+     begin
+          result := alliance_deal_status = 2 and 2 in ai_bases;
+     end;
+
+Export Function StratGroupCUsed;
+     begin
+          result := not StratGroupAUsed and not StratGroupBUsed;
+     end;
+
+Export Function AdjustTimeToDifficulty(time);
+     begin
+          result = RoundDouble(time * [1.5,1.25,1][difficulty]);
+     end;
+
+Export Function GetApes(side);
+     begin
+          result = FilterAllUnits([[f_side,side],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+     end;
+
+Export Function GetMainPlayerCharacters;
+     begin
+          result = UnitFilter([Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam, Kozlov, player_scout, Kyouma],[f_side,you]);
+     end;
+
+Export Function GetNonmainPlayerCharacters;
+     begin
+          result = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff (GetApes(you) ^ GetMainPlayerCharacters);
+     end;
+
+
+//Americans and Russians researching and building the siberite bomb.
+//Siberite fission research times with lvl 10 scis.
+//1 sci - 2330 sec (38.8 min)
+//2 sci - 1170 sec (19.5 min)
+//3 sci - 780 sec  (13 min)
+//4 sci - 580 sec  (9.7 min)
+//5 sci - 460 sec  (7.7 min)
+//6 sci - 390 sec  (6.5 min)
+//Building the bomb takes approximately 17 * 1500 / [number of mechanics with skill 10] ticks.
+//With 3 lvl 10 mecs that is ca. 4 min.
+Every 0$1.6 do
+     var i, lab, base, timeout, val;
+     var sib_lab, penalty;
+     begin
+          sib_lab = [0,0,0,0];
+          penalty := LoadVariable('Am_scientists_escaped_13a_cont',false);
+
+          //prerequisites to siberite fission.
+          for i in [GetBaseSide(1),GetBaseSide(4)] do
+               begin
+                    SetTech(tech_sibdet,i,state_researched);
+                    SetTech(tech_sibpow,i,state_researched);
+                    SetTech(tech_sibeng,i,state_researched);
+                    SetTech(tech_gun,i,state_researched);
+                    SetTech(tech_rocket,i,state_researched);
+               end;
+
+          repeat
+          wait(0$3);
+
+          if not 1 in ai_bases and not 4 in ai_bases then
+               exit;
+
+          for base in [1,4] do
+               begin
+                    if not base in ai_bases then
+                         continue;
+
+                    case base of
+                         1: begin
+                              if StratGroupAUsed then
+                                   timeout = 75$0
+                              else if StratGroupBUsed then
+                                   timeout = 85$0
+                              else
+                                   timeout = 65$0;
+                         end;
+                         4: begin
+                              if StratGroupCUsed then
+                                   timeout = 45$0
+                              else if StratGroupBUsed then
+                                   timeout = 55$0
+                              else
+                                   begin
+                                        val = true;  //True if southwestern Russian defences are gone
+                                        for i in FilterAllUnits([[f_side,russians],[f_or,[f_btype,b_bunker],[f_btype,b_turret]],[f_ok],[f_not,[f_constructed]]]) do
+                                             if GetY(i) >= 35 and GetY(i) <= 42 then
+                                                  begin
+                                                       val = false;
+                                                       break;
+                                                  end;
+
+                                        if StratGroupAUsed and not val then
+                                             timeout = 55$0
+                                        else //val = true
+                                             timeout = 75$0;
+                                   end;
+
+                              if penalty then
+                                   timeout = timeout - 5$0;
+                         end;
+                    end;
+
+                    timeout = AdjustTimeToDifficulty(timeout);
+                              
+                    //Start researching some time before construction of the bomb should occur. This should give enough time for the
+                    //research to be done.
+                    if not Researched(GetBaseSide(base),tech_sibfiss) then
+                         begin
+                              if tick < timeout - 25$0 then
+                                   continue;
+
+                              if IsDead(sib_lab[base]) or GetSide(sib_lab[base]) <> GetBaseSide(base) then
+                                   sib_lab = Replace(sib_lab,base,0);
+
+                              if sib_lab[base] = 0 then
+                                   begin
+                                        for i in UnitFilter(ai_all_buildings[base],[f_or,[f_btype,b_lab],[f_btype,b_lab_half],[f_btype,b_lab_full]]) do
+                                             if b_lab_siberium in [GetLabKind(i,1),GetLabKind(i,2)] then
+                                                  begin
+                                                       sib_lab = Replace(sib_lab,base,i);
+                                                       break;
+                                                  end;
+                                   end;
+
+                              if IsOk(sib_lab[base]) and IsIdle(sib_lab[base]) then
+                                   ComResearch(sib_lab[base],tech_sibfiss);
+                         end
+                    else
+                         begin
+                              //Build it! We recycle the used rocket so don't build a new until that is done.
+                              if ai_sib_bomb_vehicles[base] = 0 then
+                                   begin
+                                        if IsOk(ai_sib_bomb_fact[base]) and GetBType(ai_sib_bomb_fact[base]) = b_factory and IsIdle(ai_sib_bomb_fact[base]) then
+                                             case GetNation(ai_sib_bomb_fact[base]) of //engine_combustion important! So the player can't use the destroy siberite artifact on the bomb
+                                                  nation_american: ComConstruct(ai_sib_bomb_fact[base],us_heavy_tracked,engine_combustion,control_manual,us_siberium_rocket);
+                                                  nation_russian: ComConstruct(ai_sib_bomb_fact[base],ru_heavy_tracked,engine_combustion,control_manual,ru_siberium_rocket);
+                                             end;
+                                   end;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//Alien building is indestructible.
+Every 0$5 do
+     begin
+          SetLives(alien_tower,1000);
+          enable;
+     end;
+
+
+//The Russians have a few vehicles guarding the southern part of the motherlode from the Arab scientists.
+//They are only capable of defending against one maybe two scientists.
+Every 0$1+0$0.5 do
+     var i, temp_list, temp_list_2, temp_unit;
+     var vehicle_list;
+     begin
+          InitUc;
+          InitVc;
+
+          uc_nation = nation_russian;
+          uc_side = russians;
+          uc_direction = 2;
+          vc_engine = engine_siberite;
+          vc_control = control_computer;
+          vc_chassis = ru_medium_tracked;
+          vc_weapon = ru_gatling_gun;
+
+          vehicle_list = [];
+          for i = 1 to 2 do
+               vehicle_list = vehicle_list ^ CreateVehicle;
+
+          for i in vehicle_list do
+               PlaceUnitXYR(i,82,68,5,false);
+
+          repeat
+          wait(0$1);
+
+          vehicle_list = UnitFilter(vehicle_list,[f_alive]);
+          if vehicle_list = 0 then
+               exit;
+
+          temp_unit = 0;
+          temp_list = [];
+          for i in FilterAllUnits([[f_side,arabians],[f_class,class_scientistic],[f_see,russians]]) do
+               if GetDistUnitArea(i,south_motherlode_area) <= 10 then
+                    temp_list = temp_list ^ i;
+
+          if temp_list > 0 then
+               begin
+                    temp_list_2 = [];
+                    for i in temp_list do
+                         temp_list_2 = temp_list_2 ^ GetLives(i);
+                    temp_unit = WorstFromListByList(temp_list,temp_list_2);
+               end;
+
+          for i in vehicle_list do
+               begin
+                    if GetDistUnitArea(i,south_motherlode_area) > 10 then
+                         ComMoveXY(i,82,68)
+                    else
+                         if temp_unit > 0 then
+                              ComAttackUnit(i,temp_unit);
+               end;
+
+          until false;
+     end;
+
+
+//Event controller. Ensures certain events occur in a given order.
+Every 0$1.6 do
+     begin
+          wait(1$30);
+          init_dialogue_start = true;
+
+          wait(2$30);
+          powell_call_start = true;
+        
+          wait(1$0);
+          intermediate_dialogue_start = true;
+
+          wait(2$0);
+          alliance_call_start = true;
+     end;
+
+
+//After a short while there's a radio dialogue between all parties.
+Every 0$1 trigger init_dialogue_start do
+     var i, temp_list;
+     begin
+          DialogueOn;
+
+          SayRadio(Roth,'D3-Ro-1');
+          SayRadio(Powell,'D3-Po-1');
+          SayRadio(Roth,'D3-Ro-2');
+          SayRadio(Omar,'D3-Om-1');
+          SayRadio(Roth,'D3-Ro-3');
+          SayRadio(Platonov,'D3-Pla-1');
+          SayRadio(Roth,'D3-Ro-4');
+          SayRadio(Powell,'D3-Po-2');
+          SayRadio(Roth,'D3-Ro-5');
+          SayRadio(Powell,'D3-Po-3');
+          SayRadio(Roth,'D3-Ro-6');
+          SayRadio(Platonov,'D3-Pla-2');
+          SayRadio(Powell,'D3-Po-4');
+          SayRadio(Roth,'D3-Ro-7');
+          SayRadio(Omar,'D3-Om-2');
+
+          Say(Heike,'D3-H-1');
+
+          if IsOk(Oswald) then
+               Say(Oswald,'D3-Os-1');
+
+          if IsOk(Kozlov) then
+               Say(Kozlov,'D3-Koz-1a')
+          else
+               Say(Heike,'D3-H-2b');
+
+          Say(Heike,'D3-H-3');
+
+          temp_list = UnitFilter([Sonya,MarkB,Kyouma],[f_ok]);
+          if temp_list > 0 then  //should be the case
+               begin
+                    i = Rand(1,temp_list+0);
+                    i = temp_list[i];
+                    case i of
+                         Sonya: Say(i,'D3-So-1');
+                         MarkB: Say(i,'D3-Ma-1');
+                         Kyouma: Say(i,'D3-Kyo-1');
+                    end;
+
+                    Say(Heike,'D3-H-4');
+
+                    case i of
+                         Sonya: Say(i,'D3-So-2');
+                         MarkB: Say(i,'D3-Ma-2');
+                         Kyouma: Say(i,'D3-Kyo-2');
+                    end;
+
+                    Say(Heike,'D3-H-5');
+
+                    case i of
+                         Sonya: Say(i,'D3-So-3');
+                         MarkB: Say(i,'D3-Ma-3');
+                         Kyouma: Say(i,'D3-Kyo-3');
+                    end;
+               end;
+
+          dwait(0$0.2);
+          ChangeMissionObjectives('M2');
+
+          DialogueOff;
+     end;
+
+
+//When the Arabians attack they also send scientists to try and contaminate the motherlode.
+//In the beginning only on foot. Later in vehicles.
+Every 0$1+0$0.5 do
+     var vehicle_waypoints, on_foot_waypoints, vehicle_group_scis, vehicle_group_vehicles, un, i, temp_list, num_veh, num_sci;
+     var ar_base_num, on_foot_group, vehicle_group, sib_locs, waypoints1, waypoints2, waypoints3, first_time, unit_hex_index, unit_sibloc_hex;
+     var parking_spots, unit_park_hex, vehicle_dist, human_dist, dialogue_played;
+     begin
+          ar_base_num = 3;
+          on_foot_group = [];
+          vehicle_group = [];
+          vehicle_dist = 5;
+          human_dist = 4;
+          sib_locs = [[53,67]];  //Location of some of the siberite sources of the motherlode
+          waypoints1 = [[170,146],[159,134],[143,118],[130,108],[115,98],[99,84]];  //Direct route
+          waypoints2 = [[170,146],[159,134],[144,126],[133,120],[122,108],[110,96],[99,84]];  //More sneaky route
+          waypoints3 = [[170,146],[159,134],[144,126],[133,120],[119,116],[108,104],[98,94],[90,84],[81,72]];  //Muchos sneaky route following the river (not possible for vehicles)
+          parking_spots = [[81,70],[78,64],[85,74],[82,63],[88,78],[92,83]];  //Places to park the vehicle. Sorted in ascending order according to niceness
+          first_time = true;
+          unit_hex_index = [];  //Index is unit id, value is which waypoints number the unit has reached
+          unit_sibloc_hex = [];  //Index is unit id, value is hex of a siberite deposit the unit will try to contaminate
+          unit_park_hex = [];  //Index is unit id, value is hex where to park (vehicle)
+          dialogue_played = false;
+
+          for i in sib_locs do
+               SetResourceVisibility(i[1],i[2],GetBaseSide(ar_base_num));
+
+
+          repeat
+          wait(0$1);
+
+          if not ar_base_num in ai_bases then
+               exit;
+
+          //Check when we should start.
+          repeat
+          wait(0$1);
+          until ar_attack_commenced;
+
+          contaminate_scis_ready = false;
+          ar_attack_commenced = false;
+
+
+          //Create units. They spawn at the eastern border of the Arabian base.
+          //Number increases with each attack.
+          i = (attacked_times[3] + 1 - num_attacks_ar_on_alli) div 2 + [0,0,1][difficulty];
+          if i > [2,3,5][difficulty] then
+               i = [2,3,5][difficulty];
+
+          num_veh = (i - 1) div 3;
+          num_sci = i - 3 * num_veh;
+
+          vehicle_group = CreateUnitsWithClass(num_veh,class_scientistic,ar_base_num);
+          temp_list = CreateArSciVehicles(num_veh);
+
+          for i = 1 to vehicle_group+0 do
+               PlaceHumanInUnit(vehicle_group[i],temp_list[i]);
+
+          vehicle_group = vehicle_group ^ temp_list;
+
+          on_foot_group = CreateUnitsWithClass(num_sci,class_scientistic,ar_base_num);
+          if on_foot_group = 0 then
+               contaminate_scis_ready = true;
+
+          for i in vehicle_group ^ on_foot_group do
+               begin
+                    unit_hex_index = Replace(unit_hex_index,i,1);
+                    SetDir(i,4);
+               end;
+
+          for i in UnitFilter(vehicle_group,[f_type,unit_human]) ^ on_foot_group do
+               unit_sibloc_hex = Replace(unit_sibloc_hex,i,sib_locs[Rand(1,sib_locs+0)]);
+
+          for i in UnitFilter(vehicle_group,[f_type,unit_vehicle]) do
+               PlaceUnitArea(i,ar_sci_enter_area,false);
+
+          for i in on_foot_group do
+               PlaceUnitArea(i,ar_sci_enter_area,false);
+
+
+          //Determine which route to take.
+          if first_time then
+               begin
+                    first_time = false;
+                    vehicle_waypoints = waypoints1;
+                    on_foot_waypoints = waypoints1;
+               end
+          else
+               begin
+                    if Rand(1,2) = 1 then
+                         vehicle_waypoints = waypoints1
+                    else
+                         vehicle_waypoints = waypoints2;
+
+                    if Rand(1,2) = 1 then
+                         on_foot_waypoints = waypoints2
+                    else
+                         on_foot_waypoints = waypoints3;
+               end;
+
+
+          //Control units. Move to the motherlode ignoring all enemies and contaminate d'a shiiit.
+          repeat
+          wait(0$0.7);
+
+          temp_list = UnitFilter(vehicle_group,[[f_type,unit_vehicle],[f_ok]]);
+          vehicle_group_scis = UnitFilter(vehicle_group,[[f_type,unit_human],[f_alive]]);
+          vehicle_group = temp_list ^ vehicle_group_scis;
+          on_foot_group = UnitFilter(on_foot_group,[f_alive]);
+
+          if (vehicle_group_scis ^ on_foot_group) = 0 then
+               break;
+
+          vehicle_group_scis = UnitFilter(vehicle_group_scis,[f_not,[f_driving]]);
+          vehicle_group_vehicles = UnitFilter(vehicle_group,[f_type,unit_vehicle]);
+
+
+          //Little dialogue the first time the player spots the scientists
+          if not dialogue_played then
+               begin
+                    temp_list = UnitFilter(vehicle_group ^ on_foot_group,[f_see,you]);
+                    if temp_list > 0 then
+                         begin
+                              dialogue_played = true;
+
+                              CenterOnUnits(temp_list);
+                              DialogueOn;
+                              ForceSay(Heike,'D5-H-1');
+                              DialogueOff;
+                         end;
+               end;
+
+
+          //Check if units are ready to go for the next hex on the route.
+          for i in vehicle_group_scis ^ vehicle_group_vehicles do
+               begin
+                    if unit_hex_index[i] = vehicle_waypoints + 1 then
+                         begin
+                              if GetDistUnitXY(i,unit_park_hex[i][1],unit_park_hex[i][2]) <= 2 then
+                                   begin
+                                        unit_hex_index = Replace(unit_hex_index,i, unit_hex_index[i]+1 );
+                                   end
+                              else
+                                   continue;
+                         end;
+
+                    if unit_hex_index[i] > vehicle_waypoints + 1 then
+                         begin
+                              if GetType(i) = unit_vehicle then
+                                   begin
+                                        ComExitVehicle(UnitsInside(i));
+                                        vehicle_group_vehicles = vehicle_group_vehicles diff i;
+                                   end;
+
+                              continue;
+                         end;
+
+                    if GetDistUnitXY(i,vehicle_waypoints[unit_hex_index[i]][1],vehicle_waypoints[unit_hex_index[i]][2]) <= vehicle_dist then
+                         begin
+                              if not contaminate_scis_ready and unit_hex_index[i] = 2 then
+                                   continue;
+
+                              unit_hex_index = Replace(unit_hex_index,i, unit_hex_index[i]+1 );
+
+                              temp_list = UnitsInside(i);
+                              if temp_list > 0 then
+                                   unit_hex_index = Replace(unit_hex_index,temp_list[1], unit_hex_index[i] );  //Same index as vehicle
+                         end;
+
+                    //Time to park
+                    if unit_hex_index[i] = vehicle_waypoints + 1 then
+                       if GetType(i) = unit_vehicle then
+                         begin
+                              un = false;
+                              if unit_park_hex < i then
+                                   un = true
+                              else
+                                   if unit_park_hex[i] = 0 then
+                                        un = true;
+
+                              if un then
+                                   begin
+                                        //Find an unoccupied parking spot
+                                        temp_list = [];
+                                        for un in parking_spots do
+                                             if HexInfo(un[1],un[2]) = 0 then
+                                                  temp_list = temp_list ^ [un];
+
+                                        for un in vehicle_group_vehicles do
+                                             if unit_park_hex >= un then
+                                                  if unit_park_hex[un] > 0 then
+                                                       temp_list = temp_list diff [unit_park_hex[un]];
+
+                                        if temp_list > 0 then
+                                             unit_park_hex = Replace(unit_park_hex,i, temp_list[1] )
+                                        else
+                                             begin
+                                                  //Can't park anywhere
+                                                  unit_hex_index = Replace(unit_hex_index,i, unit_hex_index[i]+1 );
+                                             end;
+
+                                        temp_list = UnitsInside(i);
+                                        if temp_list > 0 then
+                                             unit_hex_index = Replace(unit_hex_index,temp_list[1], vehicle_waypoints+2 );  //Humans don't park
+                                   end;
+                         end
+                       else
+                            unit_hex_index = Replace(unit_hex_index,i, unit_hex_index[i]+1 );  //Humans don't park
+               end;
+
+          temp_list = [];
+          for i in on_foot_group do
+               begin
+                    if unit_hex_index[i] > on_foot_waypoints then
+                         continue;
+
+                    if GetDistUnitXY(i,on_foot_waypoints[unit_hex_index[i]][1],on_foot_waypoints[unit_hex_index[i]][2]) <= human_dist then
+                         begin
+                              if not contaminate_scis_ready and unit_hex_index[i] = 4 then
+                                   begin
+                                        temp_list = temp_list ^ i;
+                                        continue;
+                                   end;
+
+                              unit_hex_index = Replace(unit_hex_index,i, unit_hex_index[i]+1 );
+                         end;
+               end;
+
+          if temp_list+0 = on_foot_group+0 or ContactTime([you,arabians]) <= 0$2 then
+               contaminate_scis_ready = true;
+
+
+          //If there are unoccupied vehicles then make the nearest scientist enter it if the
+          //scientist is not too far away
+          temp_list = vehicle_group_scis ^ on_foot_group;
+          if temp_list > 0 then
+               begin
+                    for i in UnitFilter(vehicle_group_vehicles,[f_empty]) do
+                         begin
+                              if temp_list = 0 then
+                                   break;
+
+                              un = AllNearestUnitToUnit(temp_list,i);
+
+                              if GetDistUnits(un,i) <= 6 then
+                                   begin
+                                        ComEnterUnit(un,i);
+
+                                        if un in vehicle_group_scis then
+                                             begin
+                                                  vehicle_group_scis = vehicle_group_scis diff un;
+                                             end
+                                        else
+                                             begin
+                                                  on_foot_group = on_foot_group diff un;
+                                                  vehicle_group = vehicle_group ^ un;
+
+                                                  //Set hex index to the same as the vehicle
+                                                  unit_hex_index = Replace(unit_hex_index,un, unit_hex_index[i] );
+                                             end;
+                                   end;
+                         end;
+               end;
+
+
+          //Follow the route. If at the end of the route then exit vehicle and contaminate the designated siberite source.
+          for i in vehicle_group_vehicles ^ vehicle_group_scis do
+               begin
+                    if unit_hex_index[i] = vehicle_waypoints + 1 then
+                         begin
+                              ComMoveXY(i,unit_park_hex[i][1],unit_park_hex[i][2]);
+                         end
+                    else
+                         if unit_hex_index[i] > vehicle_waypoints + 1 then
+                              begin
+                                   ComContaminate(i,unit_sibloc_hex[i][1],unit_sibloc_hex[i][2]);  //We know it's a human
+                              end
+                         else
+                              if GetDistUnitXY(i,vehicle_waypoints[unit_hex_index[i]][1],vehicle_waypoints[unit_hex_index[i]][2]) > vehicle_dist then
+                                   ComMoveXY(i,vehicle_waypoints[unit_hex_index[i]][1],vehicle_waypoints[unit_hex_index[i]][2]);
+               end;
+
+          for i in on_foot_group do
+               begin
+                    if unit_hex_index[i] > on_foot_waypoints then
+                         begin
+                              ComContaminate(i,unit_sibloc_hex[i][1],unit_sibloc_hex[i][2]);
+                         end
+                    else
+                         if GetDistUnitXY(i,on_foot_waypoints[unit_hex_index[i]][1],on_foot_waypoints[unit_hex_index[i]][2]) > human_dist then
+                              ComMoveXY(i,on_foot_waypoints[unit_hex_index[i]][1],on_foot_waypoints[unit_hex_index[i]][2]);
+               end;
+
+
+          until false;
+
+          until false;
+     end;
+Function CreateArSciVehicles(num_units);
+     var i;
+     begin
+          InitUc;
+          InitVc;
+          uc_side = GetBaseSide(3);
+          uc_nation = nation_arabian;
+
+          vc_control = control_manual;
+          result = [];
+
+          for i = 1 to num_units do
+               begin
+                    vc_weapon = [ar_double_machine_gun,ar_light_gun,ar_multimissile_ballista][Rand(1,3)];
+                    vc_chassis = [ar_half_tracked,ar_medium_trike,ar_light_trike,ar_hovercraft][Rand(1,4)];
+
+                    if vc_chassis in [ar_half_tracked,ar_medium_trike] then
+                         vc_engine = engine_combustion
+                    else
+                         vc_engine = engine_solar;
+
+                    result = result ^ CreateVehicle;
+               end;
+     end;
+//If the motherlode is successfully contaminated things go wild! Animate some explosions
+//around the motherlode area.
+On SibDepositContaminated(contaminating_scientist, x_of_deposit, y_of_deposit) do
+     var hex, hex_list;
+     begin
+          ExclusiveOn;
+          wait(0$2);  //wait for contamination to show up
+          InGameOn;
+          CenterOnXY(56,58);
+          PlaceSeeing(62,60,you,-13);
+          PlaceSeeing(51,60,you,-13);
+          wait(0$3);
+
+          hex_list = [[67,65],[59,56],[58,63],[52,56],[50,62]];
+          while hex_list > 0 do
+               begin
+                    hex = hex_list[Rand(1,hex_list+0)];
+                    hex_list = hex_list diff [hex];
+                    hex = RandHexXYR(hex[1],hex[2],5,false);
+                    MineExplosion(hex[1],hex[2],true);
+
+                    wait(Rand(0$0.5,0$1.5));
+               end;
+
+          YouLost('SibCont');
+     end;
+
+
+//If the player has Kozlov the Russians would like the player to hand him over.
+Every 0$1+0$0.1 do
+     var choice_list, cho;
+     begin
+          //Wait until first Russian attack has been repelled
+          repeat
+          wait(0$1);
+          until ai_vehicles_attack[1] > 0;
+
+          repeat
+          wait(0$1);
+          until UnitFilter(ai_vehicles_attack[1],[f_ok]) = 0;
+
+          wait(Rand(0$10,0$20));
+
+          if not IsLive(Kozlov) then
+               exit;
+
+          choice_list = [1,2,3];
+
+          DialogueOn;
+
+          SayRadio(Platonov,'D4-Pla-1');
+          dwait(0$0.2);
+
+          repeat
+
+          cho = SelectiveQuery('QKozlovHandover',choice_list);
+          case cho of
+               1: begin
+                    Say(Heike,'D4-1-H-1');
+               end;
+               2: begin
+                    Say(Heike,'D4-2-H-1');
+                    SayRadio(Platonov,'D4-2-Pla-1');
+                    choice_list = choice_list diff 2;
+               end;
+               3: begin
+                    Say(Heike,'D4-3-H-1');
+                    SayRadio(Platonov,'D4-3-Pla-1');
+               end;
+          end;
+
+          dwait(0$0.2);
+
+          until cho in [1,3];
+
+          DialogueOff;
+
+          if cho = 3 then
+               exit;
+
+          //Kozlov is handed over. Disable siberite fission technology and stop all research concerning it (doesn't
+          //stop just because you disable the technology. The same applies for factories constructing siberite rockets
+          //but the player would never have come that far at this point).
+          //Event "ResearchStarted" could be used to track labs researching sibrite fission but we just cancel research going on in
+          //upgraded Russian labs.
+          russians_dont_attack_player = true;
+          player_starting_units = player_starting_units diff Kozlov;
+          SetTech(tech_sibfiss,you,state_disabled);
+          ComCancel(FilterAllUnits([[f_side,you],[f_or,[f_btype,b_lab_half],[f_btype,b_lab_full]],[f_nation,nation_russian]]));
+          SetSide(Kozlov,russians_alt);
+          ChangeSideFog(russians_alt,you);
+
+          repeat
+          wait(0$1);
+
+          if IsInUnit(Kozlov) > 0 then
+               case GetType(IsInUnit(Kozlov)) of
+                    unit_vehicle: ComExitVehicle(Kozlov);
+                    unit_building: ComExitBuilding(Kozlov);
+               end
+          else ComMoveXY(Kozlov,59,20);
+
+          until GetDistUnitXY(Kozlov,59,20) <= 4 or IsDead(Kozlov);
+
+          if IsDead(Kozlov) then  //The player thought it was funny to kill him...
+               begin
+                    russians_dont_attack_player = false;
+                    exit;
+               end;
+
+          DialogueOn;
+          CenterOnUnits(Kozlov);
+
+          Say(Platonov,'D4-1-Pla-1');
+
+          DialogueOff;
+
+          SetAttitude(russians,russians_alt,att_enemy,true);  //Kills Kozlov
+          repeat
+          wait(0$1);
+          until IsDead(Kozlov);
+
+          ChangeSideFog(russians_alt,russians_alt);
+          SetAttitude(russians,russians_alt,att_friend,true);
+     end;
+//The Russians will start attacking the player again if:
+//- The player attacks the Russians.
+//- The player builds anything on the southern part of the motherlode.
+//- After a timeout.
+Every 0$1+0$0.2 do
+     var i;
+     begin
+          repeat
+          wait(0$1);
+
+          if not russians_dont_attack_player then
+               continue;
+
+          if tick >= 40$0 then
+               begin
+                    russians_dont_attack_player = false;
+                    exit;
+               end;
+
+          if ContactTime([you,russians]) <= 0$2 then
+               begin
+                    for i in FilterAllUnits([f_side,russians]) do
+                         if SideShoot(i) = you then
+                              begin
+                                   russians_dont_attack_player = false;
+                                   exit;
+                              end;
+               end;
+
+          if FilterAllUnits([[f_side,you],[f_type,unit_building],[f_inarea,south_motherlode_area]]) > 0 then
+               begin
+                    russians_dont_attack_player = false;
+                    exit;
+               end;
+
+          until false;
+     end;
+
+
+//After some time Powell offers the player resources in exchange for destroying Alliance.
+Every 0$1+0$0.9 trigger powell_call_start do
+     var temp_list, i;
+     begin
+          if not IsOk(Powell) then
+               exit;
+
+          DialogueOn;
+
+          SayRadio(Powell,'D6-Po-1');
+
+          temp_list = UnitFilter([Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis],[f_ok]);
+          if temp_list > 0 then
+               begin
+                    i = temp_list[Rand(1,temp_list+0)];
+                    case i of
+                         Olaf: Say(i,'D6-Ola-1');
+                         Sonya: Say(i,'D6-So-1');
+                         Oswald: Say(i,'D6-Os-1');
+                         Ralph: Say(i,'D6-Ra-1');
+                         Kowalski: Say(i,'D6-Ko-1');
+                         Suze: Say(i,'D6-Su-1');
+                         MarkB: Say(i,'D6-Mark-1');
+                         Kurt: Say(i,'D6-Ku-1');
+                         Martin: Say(i,'D6-Mart-1');
+                         Louis: Say(i,'D6-Lo-1');
+                    end;
+               end;
+
+          ForceSay(Heike,'D6-H-1');
+          SayRadio(Powell,'D6-Po-2');
+
+          dwait(0$0.2);
+          i = Query('QAmericanDealAccept');
+          case i of
+               1: begin  //Accept
+                   ForceSay(Heike,'D6-1-H-1');
+                   SayRadio(Powell,'D6-1-Po-1');
+               end;
+               2: begin  //Decline
+                   ForceSay(Heike,'D6-2-H-1');
+                   SayRadio(Powell,'D6-2-Po-1');
+
+                   DialogueOff;
+
+                   exit;
+               end;
+          end;
+
+          american_deal_status = 1;
+
+          dwait(0$0.2);
+          i = Query('QAmericanDealResources');
+          case i of
+               1: begin  //Crates
+                    american_deal_reward = [250,0,0];
+               end;
+               2: begin  //Oil
+                    american_deal_reward = [0,300,0];
+               end;
+               3: begin  //Siberite
+                    //Siberite lab = 5 crystals, siberite factory ext = 10 crystals, siberite rocket = 60 crystals (75 all in all).
+                    //On medium the player starts with a little siberite so he/she doesn't need a whole 75 more. On hard the player
+                    //starts with no siberite and should spend some effort on getting all necessary to build the bomb.
+                    american_deal_reward = [0,0,60];
+               end;
+               4: begin  //Demand more
+                    ForceSay(Heike,'D6-14-H-1');
+                    SayRadio(Powell,'D6-14-Po-1');
+                    ForceSay(Heike,'D6-14-H-2');
+                    SayRadio(Powell,'D6-14-Po-2');
+
+                    DialogueOff;
+
+                    exit;
+               end;
+          end;
+
+          american_deal_status = 2;
+
+          ForceSay(Heike,'D6-1c-H-1');
+          SayRadio(Powell,'D6-1c-Po-1');
+          ForceSay(Heike,'D6-1c-H-2');
+
+          dwait(0$0.2);
+          ChangeMissionObjectives('MDestroyAlliance');
+          SetAttitude(you,americans,att_friend,true);
+
+          DialogueOff;
+     end;
+
+//If the player enters the American base the Americans's attitude immediately changes to enemy.
+Every 0$1+0$0.9 trigger american_deal_status = 2 do
+     begin
+          repeat
+          wait(0$1);
+
+          if not ( american_deal_status = 2 or ( american_deal_status = 3 and GetAttitude(americans,you) <> att_enemy ) ) then
+               exit;
+
+          if FilterAllUnits([[f_side,you],[f_inarea,GetBaseArea(4)]]) > 0 then
+               begin
+                    SetAttitude(you,americans,att_enemy,true);
+
+                    //Change it back to friendly when there's no player unit inside any more if the deal is
+                    //still on.
+                    while american_deal_status = 2 and FilterAllUnits([[f_side,you],[f_inarea,GetBaseArea(4)]]) > 0 do
+                         begin
+                              wait(0$2);
+                         end;
+
+                    if american_deal_status = 2 then
+                         SetAttitude(you,americans,att_friend,true)
+                    else
+                         exit;
+               end;
+
+          until false;
+     end;
+
+//If the player shoots at the Americans they're not gonna be happy about it.
+Every 0$1.5 trigger american_deal_status = 2 do
+     var count;
+     begin
+          count = 0;
+          repeat
+          wait(0$1);
+
+          if american_deal_status <> 2 then
+               exit;
+
+          if ContactTime([you,americans]) <= 0$2 or ai_contact_time[you][americans] <= 0$2 then
+               count = count + 1
+          else
+               if count > 0 then
+                    count = count - 1;
+
+          until count >= 6;
+
+          DialogueOn;
+          SayRadio(Powell,'D14-Po-1');
+          DialogueOff;
+
+          american_deal_status = 4;
+          SetAttitude(you,americans,att_enemy,true);
+          ChangeMissionObjectives('MDelDestroyAlliance');
+     end;
+
+//If the Americans see the player having a siberite bomb all friendly attitudes are gone.
+//Same goes if the player fires a siberite bomb.
+Every 0$1.4 trigger american_deal_status = 2 do
+     begin
+          repeat
+          wait(0$1);
+
+          if not ( american_deal_status = 2 or ( american_deal_status = 3 and GetAttitude(americans,you) <> att_enemy ) ) then
+               exit;
+
+          if FilterAllUnits([[f_side,you],[f_or,[f_weapon,ru_siberium_rocket],[f_weapon,ru_siberium_rocket_remainder],[f_weapon,us_siberium_rocket],[f_weapon,us_siberium_rocket_remainder]],[f_see,americans]]) > 0
+             or player_fired_siberite_bomb then
+               begin
+                    SetAttitude(americans,you,att_enemy,true);
+
+                    if american_deal_status = 2 then
+                         begin
+                              american_deal_status = 4;
+                              ChangeMissionObjectives('MDelDestroyAlliance');
+                         end;
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//While the player is neutral or friendly with the Americans he/she can choose to be a douchebag and block
+//the American attackers e.g. with crates or buildings. Detect this by checking if the American attackers
+//are forced to cross the river by the Arab base.
+Every 0$1.5 trigger american_deal_status = 2 do
+     var i;
+     begin
+          repeat
+          wait(0$2);
+
+          if not ( american_deal_status = 2 or ( american_deal_status = 3 and GetAttitude(americans,you) <> att_enemy ) ) then
+               exit;
+
+          for i in ai_vehicles_attack[4] do
+               if GetDistUnitArea(i,ar_crossing_area) <= 3 then
+                    begin
+                         SetAttitude(americans,you,att_enemy,true);
+
+                         if american_deal_status = 2 then
+                              begin
+                                   american_deal_status = 4;
+                                   ChangeMissionObjectives('MDelDestroyAlliance');
+                              end;
+
+                         exit;
+                    end;
+
+          until false;
+     end;
+
+//Wait for the player to eliminate the Alliance. Then hand over the reward (if the player actually helped destroy Alliance).
+Every 0$1.9 trigger american_deal_status = 2 do
+     var start_tick, dialogue_played, i, vehicle_list, val, un, reward;
+     begin
+          start_tick = tick;
+          dialogue_played = false;
+
+          repeat
+          wait(0$1);
+
+          if american_deal_status <> 2 then
+               exit;
+
+          if tick >= start_tick + 7$0 and not dialogue_played then  //Time chosen so the player will always hear this dialogue (the player probably haven't even started attacking Alliance).
+               begin
+                    dialogue_played = true;
+                    DialogueOn;
+
+                    SayRadio(Powell,'D10-Po-1');
+
+                    DialogueOff;
+               end;
+
+          until not 2 in ai_bases;
+
+          Wait(0$3);
+          if american_deal_status <> 2 then
+               exit;
+
+          DialogueOn;
+
+          if FilterAllUnits([[f_side,you],[f_inarea,Alliance_base]]) > 0 then
+               ForceSay(Heike,'D11-H-1a')
+          else
+               begin
+                    SayRadio(Powell,'D11-Po-1b');
+                    ForceSay(Heike,'D11-H-1b');
+               end;
+
+          if (player_alliance_uns_destroy[1]+0) >= [3,4,5][difficulty] and (player_alliance_uns_destroy[2]+0) >= [3,4,5][difficulty] then
+               begin
+                    SayRadio(Powell,'D11-Po-1x');  //give reward
+                    reward = true;
+               end
+          else
+               begin
+                    SayRadio(Powell,'D11-Po-2x');  //don't give reward
+                    reward = false;
+               end;
+
+          DialogueOff;
+
+          SetAttitude(you,americans,att_neutral,true);  //Note, neutral attitude
+          american_deal_status = 3;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('MOutDestroyAlliance');
+
+          if not reward then
+               exit;
+
+
+          //Spawn automatic cargo bays with the required materials.
+          wait(0$10);
+
+          InitUc;
+          InitVc;
+          uc_side = GetBaseSide(4);
+          uc_nation = GetBaseNation(4);
+          vc_chassis = us_medium_tracked;
+          vc_control = control_computer;
+          vc_engine = engine_siberite;
+          vc_weapon = us_cargo_bay;
+
+          while (american_deal_reward diff 0)+0 > 0 do
+               begin
+                    un = CreateVehicle;
+                    vehicle_list = vehicle_list ^ un;
+
+                    for i = 1 to american_deal_reward do
+                         if american_deal_reward[i] > 0 then
+                              begin
+                                   val = american_deal_reward[i];
+                                   if val > 100 then
+                                        val = 100;
+
+                                   val = val - GetCargo(un,mat_multi);
+                                   case i of
+                                        1: AddCargo(un,mat_cans,val);
+                                        2: AddCargo(un,mat_oil,val);
+                                        3: AddCargo(un,mat_siberit,val);
+                                   end;
+
+                                   american_deal_reward = Replace(american_deal_reward,i, american_deal_reward[i]-val );
+
+                                   if GetCargo(un,mat_multi) = 100 then
+                                        break;
+                              end;
+               end;
+
+          repeat
+
+          for i in vehicle_list do
+               if not IsPlaced(i) then
+                    if PlaceUnitXYR(i,108,183,6,false) then
+                         ComHold(i);  //So the cargo bay won't load off to the depot
+
+          wait(0$1);
+          until UnitFilter(vehicle_list,[f_not,[f_placed]]) = 0;
+
+
+          //Move to the area of the former Alliance base, drop the materials and move back to the American base.
+          repeat
+          wait(0$1);
+
+          vehicle_list = UnitFilter(vehicle_list,[f_alive]);
+
+          if vehicle_list = 0 then
+               break;
+
+          for i in vehicle_list do
+               begin
+                    if GetCargo(i,mat_multi) > 0 and GetAttitude(you,americans) <> att_enemy then
+                         begin
+                              if GetDistUnitXY(i,ai_human_pullback_hex[2][1],ai_human_pullback_hex[2][2]) > 5 then
+                                   ComMoveXY(i,ai_human_pullback_hex[2][1],ai_human_pullback_hex[2][2])
+                              else
+                                   begin
+                                        ComUnload(i);
+                                        AddComMoveXY(i,ai_human_pullback_hex[4][1],ai_human_pullback_hex[4][2]);  //So won't pick the materials up again
+                                   end;
+                         end
+                    else
+                         begin
+                              if GetDistUnitXY(i,ai_human_pullback_hex[4][1],ai_human_pullback_hex[4][2]) > 5 then
+                                   ComMoveXY(i,ai_human_pullback_hex[4][1],ai_human_pullback_hex[4][2])
+                              else
+                                   DestroyUnit(i);
+                         end;
+               end;
+
+          until false;
+     end;
+
+//If the player successfully helped the Americans destroy The Alliance, gaining neutrality with them, that
+//neutrality is lost when the Russians have been defeated.
+Every 0$1+0$0.1 trigger american_deal_status = 3 do
+     begin
+          repeat
+          wait(0$1);
+          //until not 1 in ai_bases;
+          until IsDead(Platonov);
+
+          SetAttitude(you,americans,att_enemy,true);
+     end;
+
+
+//Intermediate dialogue about the deeper meaning with the war.
+Every 0$1+0$0.8 trigger intermediate_dialogue_start do
+     var other, str;
+     begin
+          repeat
+          wait(0$1);
+          until ContactTime(you) >= 0$5;
+
+          if not IsOk(Olaf) and not IsOk(Martin) then
+               exit;
+
+          if IsOk(Olaf) then
+               begin
+                    other = Olaf;
+                    str = 'Ola';
+               end
+          else
+               begin
+                    other = Martin;
+                    str = 'Mart';
+               end;
+
+          DialogueOn;
+
+          Say(other,'D9-'&str&'-1');
+
+          if other = Olaf then
+               ForceSay(Heike,'D9-H-1a')
+          else
+               ForceSay(Heike,'D9-H-1b');
+
+          Say(other,'D9-'&str&'-2');
+          ForceSay(Heike,'D9-H-2');
+          Say(other,'D9-'&str&'-3');
+          ForceSay(Heike,'D9-H-3');
+          Say(other,'D9-'&str&'-4');
+          ForceSay(Heike,'D9-H-4');
+          Say(other,'D9-'&str&'-5');
+
+          if other = Olaf then
+               ForceSay(Heike,'D9-H-5a')
+          else
+               ForceSay(Heike,'D9-H-5b');
+
+          Say(other,'D9-'&str&'-6');
+
+          DialogueOff;
+     end;
+
+//If the player isn't working together with the Alliance, the Americans destroy the Alliance
+//after some time.
+Every 0$1+0$0.2 trigger alliance_call_start do
+     var i, temp_list;
+     begin
+          i = AdjustTimeToDifficulty(25$0);
+          wait(i);
+              
+          repeat
+          wait(0$1);
+
+          if not 2 in ai_bases then
+               exit;
+
+          until UnitFilter(ai_vehicles_attack[4],[f_ok]) = 0;
+                    
+          i = attacked_times[4]+0;
+
+          repeat
+          wait(0$1);
+
+          if not 2 in ai_bases then
+               exit;
+
+          until attacked_times[4]+0 > i and ContactTime([americans,alliance]) <= 0$2 and alliance_deal_status <> 2;
+                               
+          am_going_to_destroy_alli = true;
+
+          //Destroy all Alliance defences. This may look a little funny if the player is watching.
+          for i in ai_all_buildings[2] do
+               if GetBType(i) in [b_armoury,b_barracks,b_bunker,b_turret] and GetY(i) >= 123 then
+                    KillUnit(i);
+
+          //Also don't rebuild these buildings
+          for i in ai_buildings_locations[2] do
+               if i[4] in [b_armoury,b_barracks,b_bunker,b_turret] and i[2] >= 123 then
+                    begin
+                         temp_list = ai_buildings_locations[2] diff [i];
+                         ai_buildings_locations = Replace(ai_buildings_locations,2,temp_list);
+                    end;
+     end;
+
+//The Americans (or anyone else but the player) should not kill the Alliance main characters by mistake (not until they are supposed to
+//destroy Alliance at least).
+Every 0$1+0$0.7 do
+     var i;
+     begin
+          DoNotAttack(americans,Roth);
+          DoNotAttack(americans,Gossudarov);
+          DoNotAttack(americans,Joan);
+
+          repeat
+          wait(0$1);
+
+          for i in ([Roth,Gossudarov,Joan] diff 0) do
+               if SideShoot(i) <> you then
+                    SetLives(i,1000);  //Could be damaged by AOE damage like rockets
+
+          until am_going_to_destroy_alli or alliance_deal_status = 2 or (ai_sib_bomb_used_time_matrix[2] diff -1) > 0 or american_deal_status > 0;
+
+          NormalAttack(americans,Roth);
+          NormalAttack(americans,Gossudarov);
+          NormalAttack(americans,Joan);
+     end;

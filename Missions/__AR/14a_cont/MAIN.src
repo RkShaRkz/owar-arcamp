@@ -1,0 +1,605 @@
+
+Export testing;
+
+Export you, russians, nature, russians_alt;
+
+Export Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam;
+Export Heinz;
+
+Export ai_time_shift_data, ai_time_shift_hexes, ai_time_shift_hexes_underway;
+Export ai_groups, ai_vehicles, ai_mechanics, ai_soldiers, ai_scientists, ai_homespot, ai_mechanic_vehicle_map;
+
+Export spared_russians, time_start;
+Export assault_ai_mechanics, assault_ai_vehicles, assault_ai_mechanic_vehicle_map, assault_deployed;
+Export spared_russians_all_units, spared_russian_answer, russians_on_hill_seen, spared_russian_speaker;
+
+
+Starting
+begin
+     RandomizeAll;
+     ResetFog;
+                 
+     testing = false;  //Testing mission or real campaign?
+
+     ai_groups = [1,2];  //One group on each side of the ravine (1 = left, 2 = right).
+     ai_vehicles = [[],[]];  //The vehicles of each group.
+     ai_mechanics = [[],[]];  //The mechanics driving vehicles of each group.
+     ai_soldiers = [[],[]];  //The soldiers (including bazookers) of each group. Also includes mechanics with no vehicle.
+     ai_scientists = [[],[]];  //The scientists of each group.
+     ai_homespot = [];  //Index is unit id, value is a hex [x,y] denoting where the unit should return to when idle.
+     ai_mechanic_vehicle_map = [];  //Index is mechanic id, value is id of the vehicle the mechanic controls.
+
+     ai_time_shift_data = [[],[],[],[],[],[],[],[]];  //[time,radius] - duration and radius of a time shifting rocket (for each side (NOT BASE!)).
+     ai_time_shift_hexes = [[],[],[]];  //[x,y,time] - hexes where a time shifting rocket has landed (and how long until the effect disappears).
+     ai_time_shift_hexes_underway = [[],[],[]];  //[x,y,id,tick] - The bazooker who have been ordered to fire a time shifting rocket at hex [x,y] but haven't done so yet.
+     
+
+     spared_russians = [];  //Identifiers of Russians who's life the player spared in mission 10 (if any).
+     spared_russians_all_units = [];  //Identifiers of all units the spared Russians are accompanied by (both humans and vehicles) (included the spared Russians themselves).
+     spared_russian_answer = 0;  //Answer to the question if the player will accept the spared Russians' help.
+     spared_russian_speaker = 0;  //Identifier of the Russian speaking when the player meets the spared Russians.
+     time_start = -1;  //The tick at which control is transfered to the player.
+     russians_on_hill_seen = false;  //True when the player has seen the Russians on the hill.
+     assault_ai_mechanics = [];  //Mechanics for assault event.
+     assault_ai_vehicles = [];  //Vehicles for assault event.
+     assault_ai_mechanic_vehicle_map = [];  //Same as "ai_mechanic_vehicle_map" but for assault event.
+     assault_deployed = false;  //True when the assault troops have spawned. After this point the player can't negotiate with the Russians.
+
+
+     PrepareSides;
+     PrepareNature;
+     PrepareArabians;
+     PrepareComputerSides;
+     InitiateTimeShiftData;
+
+
+     Action;
+end;
+
+Function InitiateTimeShiftData;
+     var side;
+     begin
+          //The following is approximate data on time shifting rockets.
+          //No space-time upgrade researched: Duration 215 tick, radius 4 hexes.
+          //Space-time upgrade 1 researched: Duration 320 tick, radius 7 hexes.
+          //Space-time upgrade 2 researched: Duration 420 tick, radius 10 hexes.
+          //Space-time upgrade 3 researched: Duration 420 tick, radius 10 hexes.
+
+          for side = 1 to 8 do
+               if Researched(side,tech_st3) then
+                    ai_time_shift_data = Replace(ai_time_shift_data,side,[420,10])
+               else
+                    if Researched(side,tech_st2) then
+                         ai_time_shift_data = Replace(ai_time_shift_data,side,[420,10])
+                    else
+                         if Researched(side,tech_st1) then
+                              ai_time_shift_data = Replace(ai_time_shift_data,side,[320,7])
+                         else
+                              ai_time_shift_data = Replace(ai_time_shift_data,side,[215,4]);
+     end;
+
+Function PrepareSides;
+     begin
+          //Who is who and decide initial attitudes
+          nature = 0;
+          you = 8;
+          russians = 3;
+          russians_alt = 6;
+
+          SetAttitude(you,russians,att_enemy,true);
+          SetAttitude(you,russians_alt,att_friend,true);
+
+          SetAttitude(russians,russians_alt,att_enemy,true);
+     end;
+
+Function PrepareNature;
+     var i, spots, num, agres, count, temp_unit;
+     begin
+          spots = [[16,10],[30,38],[49,64],[73,108],[110,103],[133,98],[101,84],[181,110],[206,104],[189,78],
+                   [163,69],[166,48],[156,9],[111,26],[75,8]];
+
+          InitUc;
+          InitHc;
+
+          uc_side = nature;
+          uc_nation = nation_nature;
+
+          agres = -10 + difficulty * 20;
+
+          //Tigers
+          count = [1,2,3][difficulty];
+          hc_gallery = 'nature_foreg';
+          hc_face_number = 3;
+          hc_class = class_tiger;
+          hc_sex = sex_male;
+          for i = 1 to count do
+               begin
+                    if spots = 0 then
+                         exit;
+
+                    uc_direction = Rand(0,5);
+                    hc_agressivity = Rand(0,agres);
+                    hc_attr = [Rand(11,12),Rand(10,11)];
+                    hc_skills = [Rand(2,difficulty+1),0,0,0];
+
+                    num = Rand(1,spots);
+                    PlaceUnitXYR(CreateHuman,spots[num][1],spots[num][2],5,false);
+                    spots = Delete(spots,num);
+               end;
+
+          //Baggies
+          hc_class = class_baggie;
+          hc_gallery = 'nature_foreg';
+          hc_face_number = 4;
+          hc_skills = [0,0,0,0];
+          for i = 1 to 3 do
+               begin
+                    if spots = 0 then
+                         exit;
+
+                    uc_direction = Rand(0,5);
+                    hc_agressivity = Rand(-30,0);
+                    hc_attr = [Rand(9,10),Rand(11,12)];
+
+                    num = Rand(1,spots);
+                    PlaceUnitXYR(CreateHuman,spots[num][1],spots[num][2],5,false);
+                    spots = Delete(spots,num);
+               end;
+     end;
+
+Function PrepareArabians;
+     var i, temp_unit, people_list, other_folks, vehicles_list, un, k;
+     begin
+          InitHc;
+          InitUc;
+          uc_side = you;
+          uc_nation = nation_arabian;
+
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_14a_sel');
+
+                    if TestCharacters('Olaf_14a_sel') then
+                         Olaf = CreateCharacter('Olaf_14a_sel')
+                    else
+                         Olaf = 0;
+
+                    if TestCharacters('Sonya_14a_sel') then
+                         Sonya = CreateCharacter('Sonya_14a_sel')
+                    else
+                         Sonya = 0;
+
+                    if TestCharacters('Oswald_14a_sel') then
+                         Oswald = CreateCharacter('Oswald_14a_sel')
+                    else
+                         Oswald = 0;
+
+                    if TestCharacters('Ralph_14a_sel') then
+                         Ralph = CreateCharacter('Ralph_14a_sel')
+                    else
+                         Ralph = 0;
+
+                    if TestCharacters('Kowalski_14a_sel') then
+                         Kowalski = CreateCharacter('Kowalski_14a_sel')
+                    else
+                         Kowalski = 0;
+
+                    if TestCharacters('Suze_14a_sel') then
+                         Suze = CreateCharacter('Suze_14a_sel')
+                    else
+                         Suze = 0;
+
+                    if TestCharacters('MarkB_14a_sel') then
+                         MarkB = CreateCharacter('MarkB_14a_sel')
+                    else
+                         MarkB = 0;
+
+                    if TestCharacters('Kurt_14a_sel') then
+                         Kurt = CreateCharacter('Kurt_14a_sel')
+                    else
+                         Kurt = 0;
+
+                    if TestCharacters('Martin_14a_sel') then
+                         Martin = CreateCharacter('Martin_14a_sel')
+                    else
+                         Martin = 0;
+
+                    if TestCharacters('Louis_14a_sel') then
+                         Louis = CreateCharacter('Louis_14a_sel')
+                    else
+                         Louis = 0;
+
+                    if TestCharacters('Khattam_14a_sel') then
+                         Khattam = CreateCharacter('Khattam_14a_sel')
+                    else
+                         Khattam = 0;
+
+                    other_folks = CreateCharacterSet('Others_14a_sel') diff 0;
+
+
+                    Heinz = CreateCharacter('Heinz_13a_cont');
+               end
+          else
+               begin
+                    InitHc;
+
+                    PrepareSoldier(sex_female,9);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+
+                    PrepareScientist(sex_female,9);
+                    hc_name = 'Sonya';
+                    Sonya = CreateHuman;
+
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Oswald';
+                    Oswald = CreateHuman;
+
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Ralph';
+                    Ralph = CreateHuman;
+
+                    if difficulty = 1 then
+                         begin
+                              PrepareSoldier(sex_female,9);
+                              hc_name = 'Suze';
+                              Suze = CreateHuman;
+                         end;
+
+                    if difficulty <= 2 then
+                         begin
+                              PrepareMechanic(sex_male,9);
+                              hc_name = 'Martin';
+                              Martin = CreateHuman;
+                         end;
+
+                    PrepareEngineer(sex_male,9);
+                    hc_name = 'Louis';
+                    Louis = CreateHuman;
+
+                    Olaf = 0;
+                    Kowalski = 0;
+                    MarkB = 0;
+                    Kurt = 0;
+                    Khattam = 0;
+
+                    other_folks = [];
+                    InitHc;
+                    for i = 1 to 1 do
+                         begin
+                              PrepareHuman(false,class_mechanic,8);
+                              other_folks = other_folks ^ CreateHuman;
+                         end;
+
+
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Heinz';
+                    Heinz = CreateHuman;
+               end;
+
+          people_list = ([Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam] ^ other_folks) diff 0;
+
+
+          //Cargo bay(s) with materials.
+          vehicles_list = [];
+
+          InitVc;
+
+          vc_weapon = ar_cargo_bay;
+          vc_chassis = ar_half_tracked;
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+
+          for i = 1 to [2,1,1][difficulty] do
+               begin
+                    temp_unit = CreateVehicle;
+
+                    k = false;
+
+                    for un in people_list do
+                         if GetClass(un) = class_mechanic then
+                              begin
+                                   PlaceHumanInUnit(un,temp_unit);
+                                   people_list = people_list diff un;
+                                   k = true;
+
+                                   break;
+                              end;
+
+                    if not k and people_list > 0 then
+                         begin
+                              PlaceHumanInUnit(people_list[1],temp_unit);
+                              people_list = Delete(people_list,1);
+                         end;
+
+                    if i = 1 then
+                         begin
+                              SetCargo(temp_unit,mat_cans,[100,80,60][difficulty]);
+                              AddCargo(temp_unit,mat_oil,[0,20,40][difficulty]);
+                         end
+                    else
+                         begin
+                              SetCargo(temp_unit,mat_cans,20);
+                              AddCargo(temp_unit,mat_oil,40);
+                              AddCargo(temp_unit,mat_siberit,40);
+                         end;
+
+                    vehicles_list = vehicles_list ^ temp_unit;
+               end;
+
+
+          //War vehicles
+          for i = 1 to [2,1,1][difficulty] do
+               begin
+                    vc_weapon = [ar_gun,ar_gatling_gun][Rand(1,2)];
+                    temp_unit = CreateVehicle;
+
+                    k = false;
+
+                    for un in people_list do
+                         if GetClass(un) = class_mechanic then
+                              begin
+                                   PlaceHumanInUnit(un,temp_unit);
+                                   people_list = people_list diff un;
+                                   k = true;
+
+                                   break;
+                              end;
+
+                    if not k and people_list > 0 then
+                         begin
+                              PlaceHumanInUnit(people_list[1],temp_unit);
+                              people_list = Delete(people_list,1);
+                         end;
+
+                    vehicles_list = vehicles_list ^ temp_unit;
+               end;
+
+
+          //Place units
+          for i in vehicles_list ^ people_list do  //vehicles first so we are sure there is room for them
+               PlaceUnitXYR(i,110,66,8,false);
+     end;
+
+Function PrepareComputerSides;
+     var veh, hum, i, temp_list, hex_list, group, n, sol, baz;
+     begin
+          case difficulty of
+               1: begin
+               end;
+               2: begin
+                    SetTech(tech_weap1,russians,state_researched);
+                    SetTech(tech_st1,russians,state_researched);
+               end;
+               3: begin
+                    SetTech(tech_weap1,russians,state_researched);
+                    SetTech(tech_weap2,russians,state_researched);
+                    SetTech(tech_st1,russians,state_researched);
+                    SetTech(tech_st2,russians,state_researched);
+                    SetTech(tech_st3,russians,state_researched);
+               end;
+          end;
+               
+          //Russians on the hill
+          //Units
+          InitUc;
+          InitHc;
+          InitVc;
+
+          uc_side = russians;
+          uc_nation = nation_russian;
+
+          
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          vc_chassis = ru_medium_tracked;
+
+          hex_list = [[[68,48,1],[62,42,1],[33,25,3],[65,45,2],[43,31,2],[57,43,3]],
+                      [[78,34,3],[70,28,3],[63,11,1],[74,31,2],[66,15,2],[70,22,3]]
+                     ];
+
+          for group in ai_groups do
+               begin
+                    if difficulty >= 2 then
+                         begin
+                              vc_weapon = [ru_gun,ru_gatling_gun][Rand(1,2)];
+                              CreateAndPlaceVehicleWithDriver(group,hex_list[group][1][1],hex_list[group][1][2],hex_list[group][1][3]);
+                         end;
+
+                    if difficulty = 3 then
+                         begin
+                              vc_weapon = ru_rocket_launcher;
+                              CreateAndPlaceVehicleWithDriver(group,hex_list[group][2][1],hex_list[group][2][2],hex_list[group][2][3]);
+                         end;
+
+                    vc_weapon = ru_gun;
+                    CreateAndPlaceVehicleWithDriver(group,hex_list[group][3][1],hex_list[group][3][2],hex_list[group][3][3]);
+
+
+                    case group of
+                         1: begin
+                              sol = [2,3,3][difficulty];
+                              baz = [0,0,1][difficulty];
+                         end;
+                         2: begin
+                              sol = [1,1,2][difficulty];
+                              baz = [1,2,2][difficulty];
+                         end;
+                    end;
+
+                    temp_list = CreateUnitsWithClass(sol,class_soldier,russians) ^ CreateUnitsWithClass(baz,class_bazooker,russians);
+                    for i in temp_list do
+                         PlaceUnitXYR(i,hex_list[group][4][1],hex_list[group][4][2],hex_list[group][4][3],false);
+
+                    ai_soldiers = Replace(ai_soldiers,group,ai_soldiers[group] ^ temp_list);
+
+
+                    case group of
+                         1: begin
+                              sol = [2,2,2][difficulty];
+                              baz = [0,1,1][difficulty];
+                         end;
+                         2: begin
+                              sol = [1,1,2][difficulty];
+                              baz = [0,1,1][difficulty];
+                         end;
+                    end;
+
+                    temp_list = CreateUnitsWithClass(sol,class_soldier,russians) ^ CreateUnitsWithClass(baz,class_bazooker,russians);
+                    for i in temp_list do
+                         PlaceUnitXYR(i,hex_list[group][5][1],hex_list[group][5][2],hex_list[group][5][3],false);
+
+                    ai_soldiers = Replace(ai_soldiers,group,ai_soldiers[group] ^ temp_list);
+
+
+                    temp_list = CreateUnitsWithClass([0,1,2][difficulty],class_scientistic,russians);
+                    for i in temp_list do
+                         PlaceUnitXYR(i,hex_list[group][6][1],hex_list[group][6][2],hex_list[group][6][3],false);
+
+                    ai_scientists = Replace(ai_scientists,group,ai_scientists[group] ^ temp_list);
+               end;
+
+          //Set homespots
+          for i in FilterAllUnits([f_side,russians]) do
+               ai_homespot = Replace(ai_homespot,i,[GetX(i),GetY(i)]);
+
+
+          //Spared Russian (from Ar10).
+          if not testing then
+               begin
+                    spared_russians = CreateCharacterSet('Released_Russian_prisoners_10') diff 0;
+               end
+          else
+               begin
+                    spared_russians = CreateUnitsWithClass(1,class_soldier,russians_alt);
+               end;
+
+          if spared_russians > 0 then
+               begin
+                    //The group always consists of three people and one vehicle.
+                    temp_list = [];
+                    if spared_russians >= 3 then
+                         begin
+                              for i = 1 to 3 do
+                                   temp_list = temp_list ^ spared_russians[i];
+                         end
+                    else
+                         begin
+                              temp_list = spared_russians;
+                              temp_list = temp_list ^ CreateUnitsWithClass(3-temp_list,class_mechanic,russians_alt);
+                         end;
+
+                    if difficulty <= 2 then
+                         SetClass(temp_list[1],class_bazooker);
+
+                    InitUc;
+                    InitVc;
+
+                    uc_side = russians_alt;
+                    uc_nation = nation_russian;
+                    vc_control = control_manual;
+                    vc_engine = engine_siberite;
+                    vc_chassis = ru_medium_tracked;
+                    vc_weapon = [ru_gun,ru_rocket_launcher,ru_gatling_gun][Rand(1,3)];
+
+                    i = CreateVehicle;
+                    PlaceHumanInUnit(temp_list[temp_list+0],i);
+
+                    spared_russians_all_units = i ^ temp_list;  //Vehicle first so we are sure there is room for placing it
+
+                    for i in spared_russians_all_units do
+                         begin
+                              if IsInUnit(i) > 0 then
+                                   continue;
+
+                              SetDir(i,5);
+                              PlaceUnitXYR(i,186,114,4,false);
+                         end;
+               end;
+     end;
+Function CreateAndPlaceVehicleWithDriver(group,x,y,dir);
+     var veh, hum;
+     begin
+          veh = CreateVehicle;
+          hum = CreateUnitsWithClass(1,class_mechanic,russians)[1];
+
+          PlaceHumanInUnit(hum,veh);
+          SetDir(veh,dir);
+          PlaceUnitXY(veh,x,y,false);
+
+          SetFuel(veh,Rand(40,60));
+
+          ai_vehicles = Replace(ai_vehicles,group,ai_vehicles[group] ^ veh);
+          ai_mechanics = Replace(ai_mechanics,group,ai_mechanics[group] ^ hum);
+
+          ai_mechanic_vehicle_map = Replace(ai_mechanic_vehicle_map,hum,veh);
+     end;
+Export Function CreateUnitsWithClass(num_units,un_class,side);
+     var i, overskill;
+     begin
+          result = [];
+
+          InitUc;
+          InitHc;
+
+          case side of
+               you: begin
+                    uc_nation = nation_arabian;
+               end;
+               russians, russians_alt: begin
+                    uc_nation = nation_russian;
+               end;
+          end;
+          uc_side = side;
+
+          overskill = difficulty + 7;
+
+          for i = 1 to num_units do
+               begin
+                    if Rand(1,3) = 1 then
+                         PrepareHuman(false,un_class,-overskill+1)
+                    else PrepareHuman(false,un_class,overskill);
+
+                    result = result ^ CreateHuman;
+               end;
+     end;
+
+Function Action;
+     var i, temp_list;
+     begin
+          wait(2);  //So CenterNowOnXY works properly
+
+          RevealFogArea(you,reveal_fog_area);
+
+          CenterNowOnXY(41,8);
+
+          InGameOn;
+
+          temp_list = FilterAllUnits([f_side,you]);
+          ComMoveXY(temp_list,136,80);
+
+          wait(0$0.8);
+          for i = 1 to 5 do
+               begin
+                    CenterOnUnits(temp_list);
+                    wait(0$1.7);
+               end;
+
+          ComStop(temp_list);
+
+          SayRadio(Heinz,'D2-He-1');
+          Say(Heike,'D2-H-1');
+          {SayRadio(Heinz,'D2-He-2');  -> Need to cover face somehow. Temporary solution ->} wait(0$1.2);
+          Say(Heike,'D2-H-2');
+
+          InGameOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M1');
+          SetAreaMapShow(exit_area,1);
+
+          wait(0$0.2);
+          SaveForQuickRestart;
+
+          time_start = tick;
+     end;

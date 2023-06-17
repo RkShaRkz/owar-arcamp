@@ -1,0 +1,44 @@
+
+//Crates in area for the player.
+//These spawns have to be normalize in time so we hit an average drop interval of 1$45 as closely as possible
+//to lower the derivation of total material available to an acceptable level (less than a difficulty difference
+//cf. comments at variable "buildup_time").
+Every 0$1 do
+     var drop_time;
+     begin
+          drop_time = -1;
+          repeat
+               if drop_time = -1 then
+                    begin
+                         drop_time = Rand(1$35,1$55);
+                         Wait(drop_time);
+                    end
+               else
+                    begin
+                         Wait(2 * 1$45 - drop_time);
+                         drop_time = -1;
+                    end;
+
+               CreateCratesArea(Rand(4,5),crate_area,true);
+
+          until end_of_mission;
+     end;
+
+//Crates not in area for the player. Bonus if player can get hands on them but their primary function is to make the map look natural -
+//it would seem a little odd if there were no crates at all uphill around the Russian base.
+Every 0$1 do
+     var hex;
+     begin
+          Wait(Rand(2$30,4$0));
+
+          repeat
+               hex = RandHex(false);
+               if not InArea(hex[1],hex[2],crate_area) then
+                    break;
+
+          until false;
+
+          CreateCratesXY(Rand(2,3),hex[1],hex[2],true);
+
+          enable;
+     end;

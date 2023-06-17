@@ -1,0 +1,487 @@
+
+
+//If the player sees the Russian base.
+EVERY 0$1 DO
+var temp_list;
+  begin
+    repeat
+    wait(0$1);
+
+    if olaf_dialogue_started then
+         exit;
+
+    temp_list = FilterAllUnits( [[f_see,you], [f_type,unit_building], [f_side,russians] ]);
+
+    until temp_list > 0;
+
+    CenterOnUnits(temp_list);
+    wait(0$0.1);
+
+    DialogueOn;
+    Say(Heike,'D2H1');
+    DialogueOff;
+
+    if IsInArea(Heike,Hill) then
+      Hint('Range of sight');
+  end;
+
+
+//When Heike see's vehicle tracks
+Every 0$0.7 trigger SeeArea(you,road) > 0 do
+     begin
+          if not olaf_dialogue_started then
+               begin
+                    has_seen_tracks = true;
+
+                    if not has_met_am then
+                         begin
+                              DialogueOn;
+                              Say(Heike,'Dy1');
+                              DialogueOff;
+                         end;
+               end
+          else
+               begin
+                    // you talk a little about the tracks
+                    if olaf_dialogue_started and not has_met_olaf then
+                         begin
+                              enable;
+                              exit;
+                         end;
+
+                    if not IsOk(Olaf) then
+                         exit;
+
+                    DialogueOn;
+
+                    Say(Heike,'D6H1');
+                    Say(Olaf,'D6O1');
+                    Say(Heike,'D6H2');
+                    Say(Olaf,'D6O2');
+
+                    DialogueOff;
+
+                    wait(0$0.2);
+                    CommenceAlternativeObjective(1);;
+               end;
+     end;
+Function CommenceAlternativeObjective(int);
+     begin
+          // try to capture vehicle
+          SetAreaMapShow(SouthSide,1);
+          case int of
+               1: ChangeMissionObjectives('M3');
+               2: ChangeMissionObjectives('M2b');
+          end;
+          Hint('Alliances');
+
+          south_escape_enabled = true;
+
+          // and vehicle can come
+          vehicle_can_go:=true;
+     end;
+
+
+//When Heike spots American.
+EVERY 0$0.5 TRIGGER see(you, lost_american) DO
+  var seex, seey;
+  begin
+    InGameOn;
+
+    has_met_am = true;
+
+    CenterOnUnits(lost_american);
+    seex = GetX(lost_american);
+    seey = GetY(lost_american);
+    PlaceSeeing(seex,seey,you,-3);
+// move each to other
+    ComMoveUnit(Heike,lost_american);
+    ComMoveUnit(lost_american,Heike);
+    Wait(0$0.5);
+    ComTurnUnit(Heike,lost_american);
+    AddComStand(Heike);
+    wait(0$0.4);
+    ComTurnUnit(lost_american,Heike);
+    AddComStand(lost_american);
+
+// this wav is played in asynchronous mode and without titles
+    async;                     //Using SayEffect will do if this doesn't work???
+    SayNoFace(Heike,'D3H1');
+    sync;
+// ... that means it sounds at the same time as following
+    Say(lost_american,'D3A1');
+
+// Dialogue continues as usually
+    Say(Heike,'D3H2');
+    Say(lost_american,'D3A2');
+
+    wait(0$0.2);
+
+    PlaceUnitXYR(american_pursuer1,38,13,2,false);
+    PlaceUnitXYR(american_pursuer2,38,13,2,false);
+    ComHold(american_pursuers);
+
+    am_query_answer = Query('Q1');
+    case am_query_answer of
+      1:begin  //Attack
+          
+          Say(Heike,'D3aH1');
+// you start to attack ...
+          SetAttitude(you,americans,att_enemy,false);
+          ComAttackUnit(Heike,lost_american);
+          
+          ingameoff;
+          wait(lost_americanreaction);
+
+// ... and american start to attack you. You can play again
+          SetAttitude(americans,you,att_enemy,false);
+          
+          ComAttackUnit(lost_american,Heike);
+
+// ... but both russians are comming
+          wait(0$2);
+          CenterOnUnits(american_pursuers);
+          DialogueOn;
+          Say(american_pursuer1,'D3aR1');
+
+          dwait(0$0.2);
+          CenterOnUnits(Heike);
+
+          DialogueOff;
+        end;
+      2:begin  //Ignore
+          
+          Say(Heike,'D3bH1');
+
+// and russians are comming
+          CenterOnUnits(american_pursuers);
+          DialogueOn;
+          Say(american_pursuer1,'D3bR1');
+          DialogueOff;
+
+          wait(0$0.2);
+          CenterOnUnits(Heike);
+
+          ComFree(lost_american);
+
+          ingameoff;
+        end;
+      3:begin  //Help
+
+          Say(Heike,'D3cH1');
+
+// they want lost_american to die
+          CenterOnUnits(american_pursuers);
+          DialogueOn;
+          Say(american_pursuer1,'D3bR1');
+          DialogueOff;
+
+          Wait(0$0.2);
+          CenterOnUnits([Heike,lost_american]);
+          ComFree(lost_american);
+          SetSide(lost_american,you);  //Player gets control of American unit
+
+          InGameOff;
+
+          controlling_more_units_hint_given = true;
+          Hint('Controlling more units');
+        end;
+    end;
+
+    RemoveSeeing(seex,seey,you);
+    AmericanHunt;
+  end;
+
+//Finish American event if choose to help him.
+EVERY 0$1+0$0.2 trigger has_met_am DO
+  var bool, i, countdown_seen;
+  begin
+    if am_query_answer <> 3 then
+         exit;
+
+    countdown_seen = 5;
+
+    repeat
+    wait(0$1);
+
+    //Pursuers defeated
+    if UnitFilter(american_pursuers,[f_ok]) = 0 then
+         break;
+
+
+    if FilterAllUnits([[f_side,you],[f_see,russians]]) > 0 then
+         countdown_seen = 5
+    else
+         countdown_seen = countdown_seen - 1;
+
+    if countdown_seen > 0 then
+         continue;
+
+    //Player has hidden from the pursuers. They walk past Heike and the American.
+    bool = true;
+    for i in american_pursuers do
+         if GetX(i) < 74 then
+              begin
+                   bool = false;
+                   break;
+              end;
+
+    if bool then
+         break;
+
+    //The player rushes to the west and escapes the pursuers.
+    bool = true;
+    for i in [Heike,lost_american] do
+         if GetX(i) > 45 then
+              begin
+                   bool = false;
+                   break;
+              end;
+
+    if bool then
+         break;
+
+    until false;
+
+    if not IsOk(lost_american) then
+         exit;
+
+          //What to do with the American
+          ingameon;
+          CenterOnUnits([Heike,lost_american]);
+          SetSide(lost_american,1);
+          ComWalk([Heike,lost_american]);
+          Wait(0$0.1);  //wait for change side
+
+          ComTurnUnit(Heike,lost_american);
+          AddComStand(Heike);
+
+          ComTurnUnit(lost_american,Heike);
+          AddComStand(lost_american);
+
+          Say(lost_american,'D4A1');
+
+          Wait(0$0.2);  //wait for turning before query
+          //Query: kill/let him go
+            case Query('Q2') of
+              1:begin
+                  am_query_answer = 1;
+
+                  Say(Heike,'D4aH1');
+                  ingameoff;
+// you are enemies now
+                  SetAttitude(you,americans,att_enemy,true);
+// and attack each other
+                  ComAttackUnit(Heike,lost_american);
+                  ComAttackUnit(lost_american,Heike);
+                end;
+              2:begin
+                  Say(Heike,'D4bH1');
+                  Say(lost_american,'D4bA1');
+
+                  ComMoveXY(lost_american,36,1);
+                  SetAttitude(americans,you,att_friend,true);
+                  SetAttitude(americans,russians,att_friend,true);  //to avoid interferrence
+
+                  wait(0$1.5);
+                  Say(Heike,'D4bH2');
+                  wait(0$0.5);
+                  ingameoff;
+                end;
+            end;
+
+     //Move the lost American out of the map.
+     repeat
+     wait(0$0.6);
+
+     if not IsOk(lost_american) then
+          exit;
+
+     if HasTask(lost_american) then
+          continue;
+
+     if GetDistUnitXY(lost_american,36,1) > 2 then
+          ComMoveXY(lost_american,36,1)
+     else
+          begin
+               RemoveUnit(lost_american);
+               exit;
+          end;
+
+     until false;
+
+  end;
+
+
+//Heike meets Olaf.
+Every 0$1+0$0.4 trigger has_met_am and ( GetSide(lost_american) <> you or not IsOk(lost_american) ) and
+                       GetX(Heike) - GetY(Heike) div 2 < 25 do  //Vertical line from hex [25,0]
+     var int;
+     begin
+          //Olaf appears just outside Heikes vision as soon as she can't be seen by any Russians and Heike can't see the American.
+          while See(you,lost_american) or See(russians,Heike) do
+               wait(0$1);
+
+          wait(0$3);
+
+              olaf_dialogue_started = true;
+
+              InGameOn;
+              ExclusiveOff;
+
+              // ... Olaf apperars ....
+              SetAttitude(you_alt,russians,att_friend,true);  //safety precaution
+              SpawnOlaf;
+              // ... and Heike meets him.
+              CenterOnUnits([Heike,Olaf]);
+              ComStand(Heike);
+
+              Say(Olaf,'D5O1');
+
+              ComMoveUnit(Olaf,Heike);
+              ComTurnUnit(Heike,Olaf);
+              AddComStand(Heike);
+
+              int = 0;
+              repeat
+                   wait(0$0.5);
+                   int = int + 1;
+              until GetDistUnits(Heike,Olaf) < 6 or int = 10;  //little safety
+              ComTurnUnit(Olaf,Heike);
+              AddComStand(Olaf);
+
+              Say(Heike,'D5H1');
+              Say(Olaf,'D5O2');
+              Say(Heike,'D5H2');
+              Say(Olaf,'D5O3');
+              Say(Heike,'D5H3');
+
+              // Olaf gives some map information to you
+              Say(Olaf,'D5O4');
+              wait(0$1);
+              RevealFogArea(you,RF1);
+              RevealFogArea(you,RF2);
+              if not dia_skip then
+                   CenterOnXY(116,18);
+
+              wait(0$3);
+
+              if not dia_skip then
+                   CenterOnXY(136,67);
+              
+              RaiseSailEvent(1);
+              Say(Olaf,'D5O4a');
+
+              Say(Heike,'D5H4');
+
+              RaiseSailEvent(2);
+              Say(Olaf,'D5O5');
+              Say(Heike,'D5H5');
+
+              if has_seen_tracks then  //If Heike already has seen the vehicle tracks
+                   begin
+                        Say(Heike,'D5H6');
+                        Say(Olaf,'D6O1');
+                        Say(Heike,'D6H2');
+                        Say(Olaf,'D6O2');
+
+                        ingameoff;
+                        wait(0$0.2);
+                        CommenceAlternativeObjective(2);
+                   end
+              else
+                   begin
+                        Say(Olaf,'D5O6');
+
+                        ingameoff;
+                        wait(0$0.2);
+                        ChangeMissionObjectives('M2a');
+                   end;
+
+              has_met_olaf = true;
+              SetAreaMapShow(EastSide,1);
+              east_escape_enabled = true;
+              SetAttitude(you_alt,russians,att_enemy,true);
+              SetSide(Olaf,you);
+
+              if not controlling_more_units_hint_given then
+                   begin
+                        controlling_more_units_hint_given = true;
+                        Hint('Controlling more units');
+                   end;
+  end;
+Function SpawnOlaf;
+     var dir, dist, x, y, hex;
+     begin
+          dist = 7;
+          x = GetX(Heike);
+          y = GetY(Heike);
+
+          repeat
+               dist = dist + 1;
+               for dir = 0 to 5 do
+                    begin
+                         hex = [ShiftX(x,dir,dist),ShiftY(y,dir,dist)];
+                         if not SeeXY(you,hex[1],hex[2]) and not InArea(hex[1],hex[2],area_roadguard)
+                                                         and not InArea(hex[1],hex[2],RF1)
+                                                         and not InArea(hex[1],hex[2],RF2)
+                                                         and not InArea(hex[1],hex[2],guardpost) then
+                              if PlaceUnitXY(Olaf,hex[1],hex[2],false) then  //If successfully placed
+                                   exit;
+                    end;
+          until dist > 20;
+
+          //If everything else goes wrong...
+          PlaceUnitXYR(Olaf,x,y,10,false);
+     end;
+On SailEvent(int) do
+     begin
+          case int of
+               1: begin
+                    Wait(0$3);
+                    if dia_skip then
+                         exit;
+
+                    CenterOnXY(134,44);
+               end;
+               2: begin
+                    RevealFogArea(you,guardpost);
+                    Wait(0$1.5);
+
+                    if dia_skip then
+                         exit;
+
+                    CenterOnXY(79,85);
+               end;
+          end;
+
+          wait(0$3);
+
+          if dia_skip then
+               exit;
+
+          CenterOnUnits([Heike,Olaf]);
+     end;
+On DialogueSkipped(val) do
+     begin
+          if olaf_dialogue_started then
+               dia_skip = true;
+     end;
+
+//Olaf dead
+every 0$1 trigger has_met_olaf and not IsOk(Olaf) and IsOk(Heike) do
+  begin
+    DialogueOn;
+    Say(Heike,'D10H1');
+    DialogueOff;
+  end;
+
+//Heike or Olaf gets a little too close to the Russians posts
+every 0$0.5 trigger has_met_olaf and ( IsInArea(Heike,guardpost) or IsInArea(Heike,RF1) or IsInArea(Heike,RF2) ) and IsOk(Olaf) do
+  begin
+       Say(Olaf,'D8O1');
+  end;
+every 0$0.5 trigger has_met_olaf and ( IsInArea(Olaf,guardpost) or IsInArea(Olaf,RF1) or IsInArea(Olaf,RF2) ) and IsOk(Olaf) do
+  begin
+       Say(Olaf,'D9O1');
+  end;

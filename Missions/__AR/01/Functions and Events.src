@@ -1,0 +1,301 @@
+
+Every 0$1 trigger IsInArea(Joan,JoanArea) and Joan_flee do
+  var dist_list, a;
+  begin
+       CenterOnUnits(Joan);
+       PlaceSeeing(59,45,2,-3);
+       DialogueOn;
+       // - Hey, there's a scientist getting away!
+       Say(NeuFeld,'JoanFleeNotice');
+       //- After her! Get her!
+       Say(Comm,'JoanFleeComm');
+       DialogueOff;
+
+       //The two closest arabs run to get Joan
+       Joan_killers = [];
+       dist_list = [];
+       for a in all_arab_groups do
+            dist_list = dist_list ^ GetDistUnits(Joan,a);
+       for a in SortListByListAsc(all_arab_groups,dist_list) do
+            begin
+                 if a in [Heike,Comm,Abdul] then
+                      continue;
+
+                 Joan_killers = Joan_killers ^ a;
+
+                 if Joan_killers = 2 then
+                      break;
+            end;
+       ComAttackUnit(Joan_killers,Joan);
+       SetSkill(Joan_killers,skill_combat,4);
+       SetAttr(Joan_killers,attr_speed,12);
+
+       RaiseSailEvent(1);
+
+       wait(0$2);
+       Removeseeing(59,45,2);
+  end;
+
+ 
+On SailEvent(int) do
+     begin
+          case int of
+               1: begin
+                    repeat
+                         CenterOnUnits(depot2);
+                         wait(0$2.5);
+                         CenterOnUnits(Joan);
+                         wait(0$2.5);
+                    until joan_escaped or UnitFilter(americans diff Joan,[f_ok]) = 0;
+
+                    while not joan_escaped do
+                         begin
+                              CenterOnUnits(Joan);
+                              wait(0$2.5);
+                         end;
+               end;
+               2: begin
+                    // Dr. Fergusson
+                    // Behaviour: Very nervous and evasive
+                    wait(325);  //Commander must have finished saying that none may escape
+                    ComMoveToArea(Joan,JoanArea);
+                    AddComEnterUnit(Joan,eon);
+                    Joan_flee = true;
+               end;
+          end;
+     end;
+
+
+//Stop attacking Joan
+Every 1 trigger joan_flee and GetLives(Joan) < 500 do
+     begin
+          SetAttr(joan_killers,attr_speed,8);
+          ComMoveUnit(joan_killers,joan);  //stop shooting
+
+          SetAttr(Joan,attr_stamina,100);  //Don't die!
+     end;
+
+
+//Joan escape!
+Every 0$1 trigger GetDistUnits(Joan,eon) <= 4 and joan_flee do
+     begin
+          joan_escaped = true;
+          CenterOnUnits(Joan);
+
+          DialogueOn;
+          // Dr. Fergusson: John!! I'm going with you, wherever you are!
+          Say(Joan,'FnEg');
+          DialogueOff;
+
+          repeat
+          wait(0$0.2);
+          until not IsPlaced(Joan);
+
+          Wait(0$0.5);
+
+          if joan_killers > 0 then
+               begin
+                    DialogueOn;
+                    // Arab pursuer: Shit! Sir, she got away.
+                    Say(joan_killers[1],'JoanKillerShit');
+                    // Commander: You imbecile fools! Well, we will just take care of her on the other side. She won't make it far.
+                    Say(Comm,'VelJoanAway');
+                    DialogueOff;
+
+                    SetAttr(joan_killers,attr_speed,11);
+                    ComStop(joan_killers);
+               end;
+     end;
+
+
+//American die
+every 0$1 trigger FilterAllUnits([[f_side,1],[f_type,unit_human],[f_ok]]) = 0 do
+  var x,y,a;
+  begin
+    wait(0$3);
+    music_class=music_prep;
+
+    CenterOnUnits([comm,Abdul]);
+    wait(0$1.5);
+
+    dialogueon;
+    // Commander: Good job ladies and gentlemen. This area is clear. Now the real fun begins.
+    say(Comm,'VelGo');
+    // Abdul: Lose no time, you must complete your mission at all costs.
+    say(Abdul,'DBAb1_v2');
+    // Commander: Understood, sir. All units move to EON.
+    say(Comm,'VelAe');
+    DialogueOff;
+
+  // UNITS MOVEMENT TO EON
+
+    //*****ONE BY ONE*****//
+
+    eon_positions = [];
+    x = 68;
+    y = 27;
+    repeat
+         eon_positions = eon_positions ^ [[x,y]];
+
+         if x = 73 and y = 37 then
+              begin
+                   x = 64;
+                   y = 25;
+                   continue;
+              end;
+         if x = 69 and y = 35 then
+              begin
+                   x = 66;
+                   y = 26;
+                   continue;
+              end;
+
+         x = x + 1;
+         y = y + 2;
+    until x = 71+1 and y = 36+2;
+
+    //Commander
+    eon_positions = eon_positions ^ [[73,31],[72,29]];
+    all_arab_groups = all_arab_groups diff comm;
+    all_arab_groups = all_arab_groups ^ comm;
+    all_arab_groups = all_arab_groups diff Abdul;
+    all_arab_groups = all_arab_groups ^ Abdul;
+
+    MoveToEonCheck;
+
+    for a = 1 to 4 do
+      begin
+        Wait(0$5);
+        CenterOnUnits(all_arab_groups);
+      end;
+    wait(0$4);
+
+
+//  **********************************************************************************************
+//  *                                                                                            *
+//  * ACCORDING TO THE SCRIPT, SOME SHEIKS APPEAR ABOVE THE AMERICAN BASE AT THIS POINT OF TIME. *
+//  *                                                                                            *
+//  **********************************************************************************************
+
+    prepare_sheiks;
+    PlaceUnitXY(Sheik1,31,6,0);
+    PlaceUnitXY(Sheik2,35,6,0);
+    ComMoveXY(Sheik1,40,15);
+    ComCarabine(Sheik2);
+    AddComMoveXY(Sheik2,45,15);
+    AddComTurnXY(Sheik1,40,16);
+    AddComTurnXY(Sheik2,45,16);
+    AddComStand(Sheik1);
+    AddComStand(Sheik2);
+    wait(0$0.5);
+    CenterOnUnits([Sheik1,Sheik2]);
+    wait(0$0.5);
+    // Sheik1: This is the area.
+    Say(Sheik1,'Sk1E');
+    wait(0$3);
+    // Sheik2: It seems Abdul was the right choice. Our future is secured.
+    Say(Sheik2,'Sk2E');
+    wait(0$2.5);
+    CenterOnUnits(EON);
+
+    repeat
+    wait(0$1);
+    until MoveToEonCheck;
+
+    Wait(0$0.5);
+
+    //CenterOnXY(77,36);
+    DialogueOn;
+    // Commander: I'm going to read names. Go into that machine. Hans Gluckman...
+    say(Comm,'DBVel1');
+    say(Hans,'DBHs1');
+    DialogueOff;
+    comenterunit(Hans,eon);
+    wait(0$3);
+
+    DialogueOn;
+    say(Comm,'DBVel2');
+    say(Farmer,'DBRb2');
+    DialogueOff;
+    comenterunit(Farmer,eon);
+    wait(0$3);
+
+    DialogueOn;
+    say(Comm,'DBVel3');
+    say(Leif,'DBLf3');
+    DialogueOff;
+    comenterunit(Leif,eon);
+    wait(0$3);
+
+    DialogueOn;
+    say(Comm,'DBVel4');
+    say(Heike,'DBHeike');
+    DialogueOff;
+    comenterunit(Heike,eon);
+    wait(0$3);
+
+    DialogueOn;
+    say(Comm,'DBVel5');
+    say(Ortlieb,'DBLud');
+    DialogueOff;
+    comenterunit(Ortlieb,eon);
+    wait(0$3);
+
+    DialogueOn;
+    say(Comm,'DBVel6');
+    say(Oskar,'DBOsk');
+    DialogueOff;
+    comenterunit(Oskar,eon);
+
+   //ingameoff;  -> Nope, just change map
+  end;
+
+
+//Come to Eon
+Function MoveToEonCheck;
+var k, dir;
+begin
+    result = true; //Are all units in position?
+
+    for k = 1 to all_arab_groups do
+         begin
+              if not IsOk(all_arab_groups[k]) then
+                   continue;
+
+              if GetX(all_arab_groups[k]) <> eon_positions[k][1] or GetY(all_arab_groups[k]) <> eon_positions[k][2] then
+                   begin
+                        ComMoveXY(all_arab_groups[k],eon_positions[k][1],eon_positions[k][2]);
+                        if all_arab_groups[k] in [Comm,Abdul] then
+                             AddComTurnXY(all_arab_groups[k],66,30)
+                        else AddComTurnXY(all_arab_groups[k],85,33);
+
+                        result = false;
+                        continue;
+                   end;
+
+              dir = GetDir(all_arab_groups[k]);
+              if ( dir <> 1 and not all_arab_groups[k] in [Comm,Abdul] ) or ( dir <> 4 and all_arab_groups[k] in [Comm,Abdul] ) then
+                   begin
+                        if all_arab_groups[k] in [Comm,Abdul] then
+                             ComTurnXY(all_arab_groups[k],66,30)
+                        else ComTurnXY(all_arab_groups[k],85,33);
+
+                        result = false;
+                   end;
+         end;
+end;
+
+
+// Ending event ( If Heike enter to Eon then mission is ending )
+On enterbuilding(b,un) do
+  begin
+    if b=eon then
+      if un = Heike then
+          begin
+            wait(0$1.3);
+            //savecharacters(Heike,'Heike');  -> Heike will be create from Start.txt in the next map to ensure she has correct XP and skills
+            Changemap('1','%_cont'); //Changing map
+          end
+        else
+          RemoveUnit(un); //Remove unit if he/she enters Eon
+  end;

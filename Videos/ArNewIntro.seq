@@ -1,0 +1,6 @@
+load "videos\ArNewIntro.prx"
+load "videos\ArNewIntroB.prx"
+play "videos\ArNewIntro.prx"
+play "videos\ArNewIntroB.prx"
+free "videos\ArNewIntro.prx"
+free "videos\ArNewIntroB.prx"

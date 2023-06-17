@@ -1,0 +1,270 @@
+
+//Controls the Russians hunting the lost American.
+Export Function AmericanHunt;
+     var x, y, int, count, shooting_uns, seen_once, see_heike;
+     var hunter_dia;
+     begin
+          hunter_dia = false;
+          see_heike = false;
+
+          repeat
+          ComAgressiveMove(american_pursuers,113,9);
+
+          wait(0$1);
+
+          if UnitFilter(american_pursuers,[f_ok]) = 0 then
+               break;
+
+          if See(russians,Heike) then
+               see_heike = true;
+
+          if not hunter_dia and lost_am_red_hex > 0 and not see_heike then
+               begin
+                    if SeeXY(russians,lost_am_red_hex[1],lost_am_red_hex[2]) then
+                         begin
+                              hunter_dia = true;
+
+                              if IsOk(american_pursuer1) then
+                                   begin
+                                        DialogueOn;
+
+                                        if you_kill_am then
+                                             Say(american_pursuer1,'Dx5')
+                                        else
+                                             Say(american_pursuer1,'Dx6');  //then the pursuers must have killed lost_american
+
+                                        DialogueOff;
+                                   end;
+
+                         end;
+               end;
+
+          if UnitFilter(american_pursuers,[f_inarea,RF1])+0 = american_pursuers then
+               begin
+                    rusforce1 = rusforce1 ^ american_pursuers;
+                    break;
+               end;
+
+          until false;
+
+     end;
+
+On UnitGoesToRed(un) do
+     begin
+          if un = lost_american then
+               begin
+                    lost_am_red_hex = [GetX(lost_american),GetY(lost_american)];
+
+                    if UnitShoot(lost_american) = Heike and not See(russians,un) then
+                         you_kill_am = true;
+               end;
+     end;
+
+
+//The Russian roadguard's patrolling route
+Every 0$3 do
+     var patrol_route, i, temp_list;
+     var roadguard_dialogue_played;
+     begin
+          patrol_route = [ [110,45],  //fork of road
+                           [128,62],
+                           [142,68],  //lower Russian base
+                           [128,62],
+                           [110,45],  //fork of road
+                           [100,51],
+                           [91,53],
+                           [79,52],   //End of forest at lower Russian base
+                           [91,53],
+                           [100,51],
+                           [110,45],  //fork of road
+                           [119,27] ];  //Upper Russian base
+
+          i = 1;
+          roadguard_dialogue_played = false;
+
+          repeat
+               wait(0$1);
+
+               if not IsOk(roadguard) then
+                    continue;
+
+               if IsDead(roadguard) then
+                    break;
+
+               temp_list = FilterAllUnits([[f_side,you],[f_inarea,area_roadguard],[f_see,russians],[f_ok]]);
+               if temp_list > 0 and not roadguard_dialogue_played then
+                    begin
+                         roadguard_dialogue_played = true;
+
+                         CenterNowOnUnits(roadguard);
+                         wait(3);  //wait for center
+
+                         DialogueOn;
+                         Say(roadguard,'D13R1');
+                         DialogueOff;
+                    end;
+
+               if temp_list > 0 then
+                    begin
+                         ComAgressiveMove(roadguard,GetX(temp_list[1]),GetY(temp_list[1]));
+                         roadguard_hunters = rus_vehicles;
+                    end
+               else
+                    begin
+                         roadguard_hunters = [];
+
+                         if GetDistUnitXY(roadguard,patrol_route[i][1],patrol_route[i][2]) <= 2 then
+                              begin
+                                   i = i + 1;
+
+                                   if i > patrol_route then
+                                        i = 1;
+                              end;
+
+                         ComAgressiveMove(roadguard,patrol_route[i][1],patrol_route[i][2]);
+                    end;
+
+          until false;
+     end;
+
+
+//If a Russian spots the player, the nearest Russian units attack and pursue the target.
+Every 0$1+0$0.7 do
+     var see_list, first_spot, hunting, hunters;
+     begin
+          first_spot = false;
+          hunting = false;
+          hunters = [];
+
+          repeat
+          wait([0$2,0$1,0$0.5][difficulty]);
+
+          see_list = FilterAllUnits([[f_side,you],[f_see,russians]]);
+          if see_list = 0 then
+               begin
+                    first_spot = true;
+
+                    //If hunting target is killed and no other targets is in sight then stop units from walking all the way to position of the now dead unit.
+                    if hunting then
+                         ComStop(hunters);
+
+                    hunting = false;
+
+                    continue;
+               end;
+
+          hunting = true;
+
+          if first_spot then
+               first_spot = false
+          else
+               begin
+                    wait([0$6,0$5,0$3][difficulty]);
+
+                    see_list = FilterAllUnits([[f_side,you],[f_see,russians]]);
+                    if see_list = 0 then
+                         begin
+                              first_spot = true;
+                              hunting = false;
+
+                              continue;
+                         end;
+               end;
+
+          hunters = UnitFilter(rusforce1^rusforce2^rusforce3,[[f_side,russians],[f_dist,see_list[1],17]]) ^ roadguard_hunters;
+          ComAgressiveMove(hunters,GetX(see_list[1]),GetY(see_list[1]));
+
+          until false;
+     end;
+
+
+//Keep people at their positions
+Every 0$3+0$0.9 do
+     var i;
+     begin
+          while FilterAllUnits([[f_side,you],[f_see,russians]]) > 0 do
+               wait(0$10);
+
+          for i in UnitFilter(rusforce1 ^ rusforce2 ^ rusforce3,[f_ok]) do
+               if GetDistUnitXY(i,GetRememberedX(i),GetRememberedY(i)) > 4 and not HasTask(i) then
+                    ComAgressiveMove(i,GetRememberedX(i),GetRememberedY(i));
+
+          enable;
+     end;
+
+
+//Control mechanics in vehicles. Repair if necessary. If vehicle is dead then join the footmen.
+Every 0$1+0$0.8 do
+     var mec, veh, see_list;
+     begin
+          repeat
+          wait(0$1);
+
+          see_list = FilterAllUnits([[f_side,you],[f_see,russians]]);
+
+          for mec = 1 to mechanic_vehicle_map do
+               begin
+                    if mechanic_vehicle_map[mec] = 0 then
+                         continue;
+
+                    if IsDead(mec) then
+                         begin
+                              mechanic_vehicle_map = Replace(mechanic_vehicle_map,mec,[]);
+                              continue;
+                         end;
+
+                    veh = mechanic_vehicle_map[mec][1];
+
+                    if IsDead(veh) then
+                         begin
+                              case mechanic_vehicle_map[mec][2] of
+                                   1: rusforce1 = rusforce1 ^ mec;
+                                   2: rusforce2 = rusforce2 ^ mec;
+                                   3: rusforce3 = rusforce3 ^ mec;
+                              end;
+
+                              mechanic_vehicle_map = Replace(mechanic_vehicle_map,mec,[]);
+
+                              continue;
+                         end;
+
+                    if not IsOk(veh) then
+                         ComRepairVehicle(mec,veh)
+                    else
+                         if see_list = 0 and GetDistUnitXY(veh,GetRememberedX(veh),GetRememberedY(veh)) < 4 and GetLives(veh) < 1000 then
+                              begin
+                                   case GetType(IsInUnit(mec)) of
+                                        unit_vehicle: ComExitVehicle(mec);
+                                        unit_building: ComExitBuilding(mec);
+                                        else
+                                             ComRepairVehicle(mec,veh);
+                                   end;
+                              end
+                         else
+                              begin
+                                   if IsInUnit(mec) <> veh then
+                                        begin
+                                             case GetType(IsInUnit(mec)) of
+                                                  unit_vehicle: ComExitVehicle(mec);
+                                                  unit_building: ComExitBuilding(mec);
+                                                  else
+                                                       ComEnterUnit(mec,veh);
+                                             end;
+                                        end
+                              end;
+               end;
+
+          until false;
+     end;
+
+
+//Russian tanks never run out of fuel...
+Every 0$5 do
+     var i;
+     begin
+          for i in rus_vehicles do
+               if GetEngine(i) = engine_combustion and GetFuel(i) < 50 and not See(you,i) then
+                    SetFuel(i,100);
+
+          enable;
+     end;

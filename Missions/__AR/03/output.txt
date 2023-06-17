@@ -1,0 +1,1171 @@
+// export ape_status , Aviradze , Messenger ; export FarmerVehicle ; starting RocknRoll ;
+   0: CALL 5 0 0
+   4: END
+// function RocknRoll ; var Heike , Ralph , Oswald , Sonya , Lister ; var testing ; begin
+   5: LD_INT 0
+   7: PPUSH
+   8: PPUSH
+   9: PPUSH
+  10: PPUSH
+  11: PPUSH
+  12: PPUSH
+  13: PPUSH
+// ResetFog ;
+  14: CALL_OW 335
+// RandomizeAll ;
+  18: CALL_OW 11
+// testing = false ;
+  22: LD_ADDR_VAR 0 7
+  26: PUSH
+  27: LD_INT 0
+  29: ST_TO_ADDR
+// ComHold ( the_ape ) ;
+  30: LD_INT 1
+  32: PPUSH
+  33: CALL_OW 140
+// uc_side = 2 ;
+  37: LD_ADDR_OWVAR 20
+  41: PUSH
+  42: LD_INT 2
+  44: ST_TO_ADDR
+// uc_direction = 1 ;
+  45: LD_ADDR_OWVAR 24
+  49: PUSH
+  50: LD_INT 1
+  52: ST_TO_ADDR
+// uc_nation = nation_arabian ;
+  53: LD_ADDR_OWVAR 21
+  57: PUSH
+  58: LD_INT 2
+  60: ST_TO_ADDR
+// if not testing then
+  61: LD_VAR 0 7
+  65: NOT
+  66: IFFALSE 148
+// begin Heike = CreateCharacter ( Heike_02 ) ;
+  68: LD_ADDR_VAR 0 2
+  72: PUSH
+  73: LD_STRING Heike_02
+  75: PPUSH
+  76: CALL_OW 34
+  80: ST_TO_ADDR
+// SetClass ( Heike , class_soldier ) ;
+  81: LD_VAR 0 2
+  85: PPUSH
+  86: LD_INT 1
+  88: PPUSH
+  89: CALL_OW 336
+// SetDir ( Heike , uc_direction ) ;
+  93: LD_VAR 0 2
+  97: PPUSH
+  98: LD_OWVAR 24
+ 102: PPUSH
+ 103: CALL_OW 233
+// Aviradze = CreateCharacter ( Aviradze_02 ) ;
+ 107: LD_ADDR_EXP 2
+ 111: PUSH
+ 112: LD_STRING Aviradze_02
+ 114: PPUSH
+ 115: CALL_OW 34
+ 119: ST_TO_ADDR
+// SetClass ( Aviradze , class_scientistic ) ;
+ 120: LD_EXP 2
+ 124: PPUSH
+ 125: LD_INT 4
+ 127: PPUSH
+ 128: CALL_OW 336
+// SetDir ( Aviradze , uc_direction ) ;
+ 132: LD_EXP 2
+ 136: PPUSH
+ 137: LD_OWVAR 24
+ 141: PPUSH
+ 142: CALL_OW 233
+// end else
+ 146: GO 239
+// begin hc_name = Heike ;
+ 148: LD_ADDR_OWVAR 26
+ 152: PUSH
+ 153: LD_STRING Heike
+ 155: ST_TO_ADDR
+// hc_sex = sex_female ;
+ 156: LD_ADDR_OWVAR 27
+ 160: PUSH
+ 161: LD_INT 2
+ 163: ST_TO_ADDR
+// hc_class = class_soldier ;
+ 164: LD_ADDR_OWVAR 28
+ 168: PUSH
+ 169: LD_INT 1
+ 171: ST_TO_ADDR
+// Heike = createhuman ;
+ 172: LD_ADDR_VAR 0 2
+ 176: PUSH
+ 177: CALL_OW 44
+ 181: ST_TO_ADDR
+// hc_sex = sex_male ;
+ 182: LD_ADDR_OWVAR 27
+ 186: PUSH
+ 187: LD_INT 1
+ 189: ST_TO_ADDR
+// hc_name = Aviradze ;
+ 190: LD_ADDR_OWVAR 26
+ 194: PUSH
+ 195: LD_STRING Aviradze
+ 197: ST_TO_ADDR
+// hc_class = class_scientistic ;
+ 198: LD_ADDR_OWVAR 28
+ 202: PUSH
+ 203: LD_INT 4
+ 205: ST_TO_ADDR
+// hc_skills = [ 0 , 0 , 0 , 3 ] ;
+ 206: LD_ADDR_OWVAR 31
+ 210: PUSH
+ 211: LD_INT 0
+ 213: PUSH
+ 214: LD_INT 0
+ 216: PUSH
+ 217: LD_INT 0
+ 219: PUSH
+ 220: LD_INT 3
+ 222: PUSH
+ 223: EMPTY
+ 224: LIST
+ 225: LIST
+ 226: LIST
+ 227: LIST
+ 228: ST_TO_ADDR
+// aviradze = createhuman ;
+ 229: LD_ADDR_EXP 2
+ 233: PUSH
+ 234: CALL_OW 44
+ 238: ST_TO_ADDR
+// end ; if not testing then
+ 239: LD_VAR 0 7
+ 243: NOT
+ 244: IFFALSE 306
+// begin if TestCharacters ( Ralph_02 ) then
+ 246: LD_STRING Ralph_02
+ 248: PPUSH
+ 249: CALL_OW 28
+ 253: IFFALSE 296
+// begin Ralph = CreateCharacter ( Ralph_02 ) ;
+ 255: LD_ADDR_VAR 0 3
+ 259: PUSH
+ 260: LD_STRING Ralph_02
+ 262: PPUSH
+ 263: CALL_OW 34
+ 267: ST_TO_ADDR
+// SetClass ( Ralph , class_soldier ) ;
+ 268: LD_VAR 0 3
+ 272: PPUSH
+ 273: LD_INT 1
+ 275: PPUSH
+ 276: CALL_OW 336
+// SetDir ( Ralph , uc_direction ) ;
+ 280: LD_VAR 0 3
+ 284: PPUSH
+ 285: LD_OWVAR 24
+ 289: PPUSH
+ 290: CALL_OW 233
+// end else
+ 294: GO 304
+// Ralph = 0 ;
+ 296: LD_ADDR_VAR 0 3
+ 300: PUSH
+ 301: LD_INT 0
+ 303: ST_TO_ADDR
+// end else
+ 304: GO 332
+// begin hc_name = Ralph ;
+ 306: LD_ADDR_OWVAR 26
+ 310: PUSH
+ 311: LD_STRING Ralph
+ 313: ST_TO_ADDR
+// hc_class = class_soldier ;
+ 314: LD_ADDR_OWVAR 28
+ 318: PUSH
+ 319: LD_INT 1
+ 321: ST_TO_ADDR
+// Ralph = CreateHuman ;
+ 322: LD_ADDR_VAR 0 3
+ 326: PUSH
+ 327: CALL_OW 44
+ 331: ST_TO_ADDR
+// end ; if not testing then
+ 332: LD_VAR 0 7
+ 336: NOT
+ 337: IFFALSE 399
+// begin if TestCharacters ( Oswald_02 ) then
+ 339: LD_STRING Oswald_02
+ 341: PPUSH
+ 342: CALL_OW 28
+ 346: IFFALSE 389
+// begin Oswald = CreateCharacter ( Oswald_02 ) ;
+ 348: LD_ADDR_VAR 0 4
+ 352: PUSH
+ 353: LD_STRING Oswald_02
+ 355: PPUSH
+ 356: CALL_OW 34
+ 360: ST_TO_ADDR
+// SetClass ( Oswald , class_soldier ) ;
+ 361: LD_VAR 0 4
+ 365: PPUSH
+ 366: LD_INT 1
+ 368: PPUSH
+ 369: CALL_OW 336
+// SetDir ( Oswald , uc_direction ) ;
+ 373: LD_VAR 0 4
+ 377: PPUSH
+ 378: LD_OWVAR 24
+ 382: PPUSH
+ 383: CALL_OW 233
+// end else
+ 387: GO 397
+// Oswald = 0 ;
+ 389: LD_ADDR_VAR 0 4
+ 393: PUSH
+ 394: LD_INT 0
+ 396: ST_TO_ADDR
+// end else
+ 397: GO 417
+// begin hc_name = Oswald ;
+ 399: LD_ADDR_OWVAR 26
+ 403: PUSH
+ 404: LD_STRING Oswald
+ 406: ST_TO_ADDR
+// Oswald = createhuman ;
+ 407: LD_ADDR_VAR 0 4
+ 411: PUSH
+ 412: CALL_OW 44
+ 416: ST_TO_ADDR
+// end ; if not testing then
+ 417: LD_VAR 0 7
+ 421: NOT
+ 422: IFFALSE 484
+// begin if TestCharacters ( Sonya_02 ) then
+ 424: LD_STRING Sonya_02
+ 426: PPUSH
+ 427: CALL_OW 28
+ 431: IFFALSE 474
+// begin Sonya = CreateCharacter ( Sonya_02 ) ;
+ 433: LD_ADDR_VAR 0 5
+ 437: PUSH
+ 438: LD_STRING Sonya_02
+ 440: PPUSH
+ 441: CALL_OW 34
+ 445: ST_TO_ADDR
+// SetClass ( Sonya , class_scientistic ) ;
+ 446: LD_VAR 0 5
+ 450: PPUSH
+ 451: LD_INT 4
+ 453: PPUSH
+ 454: CALL_OW 336
+// SetDir ( Sonya , uc_direction ) ;
+ 458: LD_VAR 0 5
+ 462: PPUSH
+ 463: LD_OWVAR 24
+ 467: PPUSH
+ 468: CALL_OW 233
+// end else
+ 472: GO 482
+// Sonya = 0 ;
+ 474: LD_ADDR_VAR 0 5
+ 478: PUSH
+ 479: LD_INT 0
+ 481: ST_TO_ADDR
+// end else
+ 482: GO 518
+// begin hc_name = Sonya ;
+ 484: LD_ADDR_OWVAR 26
+ 488: PUSH
+ 489: LD_STRING Sonya
+ 491: ST_TO_ADDR
+// hc_sex = sex_female ;
+ 492: LD_ADDR_OWVAR 27
+ 496: PUSH
+ 497: LD_INT 2
+ 499: ST_TO_ADDR
+// hc_class = class_scientistic ;
+ 500: LD_ADDR_OWVAR 28
+ 504: PUSH
+ 505: LD_INT 4
+ 507: ST_TO_ADDR
+// Sonya = createhuman ;
+ 508: LD_ADDR_VAR 0 5
+ 512: PUSH
+ 513: CALL_OW 44
+ 517: ST_TO_ADDR
+// end ; if not testing then
+ 518: LD_VAR 0 7
+ 522: NOT
+ 523: IFFALSE 585
+// begin if TestCharacters ( Lister_02 ) then
+ 525: LD_STRING Lister_02
+ 527: PPUSH
+ 528: CALL_OW 28
+ 532: IFFALSE 575
+// begin Lister = CreateCharacter ( Lister_02 ) ;
+ 534: LD_ADDR_VAR 0 6
+ 538: PUSH
+ 539: LD_STRING Lister_02
+ 541: PPUSH
+ 542: CALL_OW 34
+ 546: ST_TO_ADDR
+// SetClass ( Lister , class_soldier ) ;
+ 547: LD_VAR 0 6
+ 551: PPUSH
+ 552: LD_INT 1
+ 554: PPUSH
+ 555: CALL_OW 336
+// SetDir ( Lister , uc_direction ) ;
+ 559: LD_VAR 0 6
+ 563: PPUSH
+ 564: LD_OWVAR 24
+ 568: PPUSH
+ 569: CALL_OW 233
+// end else
+ 573: GO 583
+// Lister = 0 ;
+ 575: LD_ADDR_VAR 0 6
+ 579: PUSH
+ 580: LD_INT 0
+ 582: ST_TO_ADDR
+// end else
+ 583: GO 619
+// begin hc_name = Lister ;
+ 585: LD_ADDR_OWVAR 26
+ 589: PUSH
+ 590: LD_STRING Lister
+ 592: ST_TO_ADDR
+// hc_sex = sex_male ;
+ 593: LD_ADDR_OWVAR 27
+ 597: PUSH
+ 598: LD_INT 1
+ 600: ST_TO_ADDR
+// hc_class = class_soldier ;
+ 601: LD_ADDR_OWVAR 28
+ 605: PUSH
+ 606: LD_INT 1
+ 608: ST_TO_ADDR
+// Lister = createhuman ;
+ 609: LD_ADDR_VAR 0 6
+ 613: PUSH
+ 614: CALL_OW 44
+ 618: ST_TO_ADDR
+// end ; Messenger = NewCharacter ( Farmer ) ;
+ 619: LD_ADDR_EXP 3
+ 623: PUSH
+ 624: LD_STRING Farmer
+ 626: PPUSH
+ 627: CALL_OW 25
+ 631: ST_TO_ADDR
+// PlaceUnitXY ( Aviradze , 39 , 71 , false ) ;
+ 632: LD_EXP 2
+ 636: PPUSH
+ 637: LD_INT 39
+ 639: PPUSH
+ 640: LD_INT 71
+ 642: PPUSH
+ 643: LD_INT 0
+ 645: PPUSH
+ 646: CALL_OW 48
+// PlaceUnitXY ( Heike , 38 , 72 , false ) ;
+ 650: LD_VAR 0 2
+ 654: PPUSH
+ 655: LD_INT 38
+ 657: PPUSH
+ 658: LD_INT 72
+ 660: PPUSH
+ 661: LD_INT 0
+ 663: PPUSH
+ 664: CALL_OW 48
+// PlaceUnitXY ( Ralph , 39 , 74 , false ) ;
+ 668: LD_VAR 0 3
+ 672: PPUSH
+ 673: LD_INT 39
+ 675: PPUSH
+ 676: LD_INT 74
+ 678: PPUSH
+ 679: LD_INT 0
+ 681: PPUSH
+ 682: CALL_OW 48
+// PlaceUnitXY ( Oswald , 37 , 70 , false ) ;
+ 686: LD_VAR 0 4
+ 690: PPUSH
+ 691: LD_INT 37
+ 693: PPUSH
+ 694: LD_INT 70
+ 696: PPUSH
+ 697: LD_INT 0
+ 699: PPUSH
+ 700: CALL_OW 48
+// PlaceUnitXY ( Sonya , 37 , 68 , false ) ;
+ 704: LD_VAR 0 5
+ 708: PPUSH
+ 709: LD_INT 37
+ 711: PPUSH
+ 712: LD_INT 68
+ 714: PPUSH
+ 715: LD_INT 0
+ 717: PPUSH
+ 718: CALL_OW 48
+// PlaceUnitXY ( Lister , 36 , 66 , false ) ;
+ 722: LD_VAR 0 6
+ 726: PPUSH
+ 727: LD_INT 36
+ 729: PPUSH
+ 730: LD_INT 66
+ 732: PPUSH
+ 733: LD_INT 0
+ 735: PPUSH
+ 736: CALL_OW 48
+// disable ( 1 ) ;
+ 740: LD_INT 1
+ 742: DISABLE_MARKED
+// ape_status = 0 ;
+ 743: LD_ADDR_EXP 1
+ 747: PUSH
+ 748: LD_INT 0
+ 750: ST_TO_ADDR
+// ComStand ( all_units diff the_ape ) ;
+ 751: LD_OWVAR 3
+ 755: PUSH
+ 756: LD_INT 1
+ 758: DIFF
+ 759: PPUSH
+ 760: CALL_OW 165
+// InGameOn ;
+ 764: CALL_OW 8
+// DialogueOn ;
+ 768: CALL_OW 6
+// CenterNowOnXY ( 40 , 79 ) ;
+ 772: LD_INT 40
+ 774: PPUSH
+ 775: LD_INT 79
+ 777: PPUSH
+ 778: CALL_OW 86
+// Dwait ( 0 0$1.1 ) ;
+ 782: LD_INT 39
+ 784: PPUSH
+ 785: CALL_OW 68
+// RandomizeAll ;
+ 789: CALL_OW 11
+// Say ( Aviradze , D1Av1 ) ;
+ 793: LD_EXP 2
+ 797: PPUSH
+ 798: LD_STRING D1Av1
+ 800: PPUSH
+ 801: CALL_OW 88
+// DialogueOff ;
+ 805: CALL_OW 7
+// repeat ComMoveXY ( Aviradze , 45 , 71 ) ;
+ 809: LD_EXP 2
+ 813: PPUSH
+ 814: LD_INT 45
+ 816: PPUSH
+ 817: LD_INT 71
+ 819: PPUSH
+ 820: CALL_OW 111
+// wait ( 0 0$0.5 ) ;
+ 824: LD_INT 18
+ 826: PPUSH
+ 827: CALL_OW 67
+// until GetDistUnitXY ( Aviradze , 45 , 71 ) <= 2 ;
+ 831: LD_EXP 2
+ 835: PPUSH
+ 836: LD_INT 45
+ 838: PPUSH
+ 839: LD_INT 71
+ 841: PPUSH
+ 842: CALL_OW 297
+ 846: PUSH
+ 847: LD_INT 2
+ 849: LESSEQUAL
+ 850: IFFALSE 809
+// ape_status = 1 ;
+ 852: LD_ADDR_EXP 1
+ 856: PUSH
+ 857: LD_INT 1
+ 859: ST_TO_ADDR
+// if Oswald > 0 then
+ 860: LD_VAR 0 4
+ 864: PUSH
+ 865: LD_INT 0
+ 867: GREATER
+ 868: IFFALSE 928
+// begin Say ( Oswald , D1Os1 ) ;
+ 870: LD_VAR 0 4
+ 874: PPUSH
+ 875: LD_STRING D1Os1
+ 877: PPUSH
+ 878: CALL_OW 88
+// Say ( Heike , D1H1 ) ;
+ 882: LD_VAR 0 2
+ 886: PPUSH
+ 887: LD_STRING D1H1
+ 889: PPUSH
+ 890: CALL_OW 88
+// Say ( Oswald , D1Os2 ) ;
+ 894: LD_VAR 0 4
+ 898: PPUSH
+ 899: LD_STRING D1Os2
+ 901: PPUSH
+ 902: CALL_OW 88
+// ape_status = 2 ;
+ 906: LD_ADDR_EXP 1
+ 910: PUSH
+ 911: LD_INT 2
+ 913: ST_TO_ADDR
+// Say ( Heike , D1H2 ) ;
+ 914: LD_VAR 0 2
+ 918: PPUSH
+ 919: LD_STRING D1H2
+ 921: PPUSH
+ 922: CALL_OW 88
+// end else
+ 926: GO 943
+// begin wait ( 0 0$5 ) ;
+ 928: LD_INT 175
+ 930: PPUSH
+ 931: CALL_OW 67
+// ape_status = 2 ;
+ 935: LD_ADDR_EXP 1
+ 939: PUSH
+ 940: LD_INT 2
+ 942: ST_TO_ADDR
+// end ; repeat wait ( 0 0$0.5 ) ;
+ 943: LD_INT 18
+ 945: PPUSH
+ 946: CALL_OW 67
+// until GetDistUnits ( Aviradze , the_ape ) <= 2 ;
+ 950: LD_EXP 2
+ 954: PPUSH
+ 955: LD_INT 1
+ 957: PPUSH
+ 958: CALL_OW 296
+ 962: PUSH
+ 963: LD_INT 2
+ 965: LESSEQUAL
+ 966: IFFALSE 943
+// uc_direction = 5 ;
+ 968: LD_ADDR_OWVAR 24
+ 972: PUSH
+ 973: LD_INT 5
+ 975: ST_TO_ADDR
+// uc_nation = 2 ;
+ 976: LD_ADDR_OWVAR 21
+ 980: PUSH
+ 981: LD_INT 2
+ 983: ST_TO_ADDR
+// vc_chassis = ar_light_trike ;
+ 984: LD_ADDR_OWVAR 37
+ 988: PUSH
+ 989: LD_INT 12
+ 991: ST_TO_ADDR
+// vc_control = control_manual ;
+ 992: LD_ADDR_OWVAR 38
+ 996: PUSH
+ 997: LD_INT 1
+ 999: ST_TO_ADDR
+// vc_engine = engine_solar ;
+1000: LD_ADDR_OWVAR 39
+1004: PUSH
+1005: LD_INT 2
+1007: ST_TO_ADDR
+// vc_weapon = 24 ;
+1008: LD_ADDR_OWVAR 40
+1012: PUSH
+1013: LD_INT 24
+1015: ST_TO_ADDR
+// FarmerVehicle = CreateVehicle ;
+1016: LD_ADDR_EXP 4
+1020: PUSH
+1021: CALL_OW 45
+1025: ST_TO_ADDR
+// PlaceUnitXY ( FarmerVehicle , 52 , 77 , false ) ;
+1026: LD_EXP 4
+1030: PPUSH
+1031: LD_INT 52
+1033: PPUSH
+1034: LD_INT 77
+1036: PPUSH
+1037: LD_INT 0
+1039: PPUSH
+1040: CALL_OW 48
+// PlaceHumanInUnit ( Messenger , FarmerVehicle ) ;
+1044: LD_EXP 3
+1048: PPUSH
+1049: LD_EXP 4
+1053: PPUSH
+1054: CALL_OW 52
+// ComMoveXY ( FarmerVehicle , 45 , 72 ) ;
+1058: LD_EXP 4
+1062: PPUSH
+1063: LD_INT 45
+1065: PPUSH
+1066: LD_INT 72
+1068: PPUSH
+1069: CALL_OW 111
+// ape_status = 3 ;
+1073: LD_ADDR_EXP 1
+1077: PUSH
+1078: LD_INT 3
+1080: ST_TO_ADDR
+// SetAttr ( the_ape , attr_speed , 15 ) ;
+1081: LD_INT 1
+1083: PPUSH
+1084: LD_INT 2
+1086: PPUSH
+1087: LD_INT 15
+1089: PPUSH
+1090: CALL_OW 239
+// ComMoveXY ( the_ape , 62 , 51 ) ;
+1094: LD_INT 1
+1096: PPUSH
+1097: LD_INT 62
+1099: PPUSH
+1100: LD_INT 51
+1102: PPUSH
+1103: CALL_OW 111
+// repeat wait ( 0 0$0.2 ) ;
+1107: LD_INT 7
+1109: PPUSH
+1110: CALL_OW 67
+// until GetDistUnits ( Aviradze , the_ape ) >= 5 ;
+1114: LD_EXP 2
+1118: PPUSH
+1119: LD_INT 1
+1121: PPUSH
+1122: CALL_OW 296
+1126: PUSH
+1127: LD_INT 5
+1129: GREATEREQUAL
+1130: IFFALSE 1107
+// Say ( Aviradze , D1Av2 ) ;
+1132: LD_EXP 2
+1136: PPUSH
+1137: LD_STRING D1Av2
+1139: PPUSH
+1140: CALL_OW 88
+// ComStop ( FarmerVehicle ) ;
+1144: LD_EXP 4
+1148: PPUSH
+1149: CALL_OW 141
+// wait ( 0 0$1 ) ;
+1153: LD_INT 35
+1155: PPUSH
+1156: CALL_OW 67
+// ComExitVehicle ( Messenger ) ;
+1160: LD_EXP 3
+1164: PPUSH
+1165: CALL_OW 121
+// AddComMoveXY ( Messenger , 43 , 72 ) ;
+1169: LD_EXP 3
+1173: PPUSH
+1174: LD_INT 43
+1176: PPUSH
+1177: LD_INT 72
+1179: PPUSH
+1180: CALL_OW 171
+// wait ( 0 0$0.2 ) ;
+1184: LD_INT 7
+1186: PPUSH
+1187: CALL_OW 67
+// Say ( Messenger , D1Me1 ) ;
+1191: LD_EXP 3
+1195: PPUSH
+1196: LD_STRING D1Me1
+1198: PPUSH
+1199: CALL_OW 88
+// Wait ( 0 0$0.2 ) ;
+1203: LD_INT 7
+1205: PPUSH
+1206: CALL_OW 67
+// ComTurnUnit ( all_units diff [ Messenger , the_ape ] , Messenger ) ;
+1210: LD_OWVAR 3
+1214: PUSH
+1215: LD_EXP 3
+1219: PUSH
+1220: LD_INT 1
+1222: PUSH
+1223: EMPTY
+1224: LIST
+1225: LIST
+1226: DIFF
+1227: PPUSH
+1228: LD_EXP 3
+1232: PPUSH
+1233: CALL_OW 119
+// Wait ( 0 0$0.2 ) ;
+1237: LD_INT 7
+1239: PPUSH
+1240: CALL_OW 67
+// ComTurnUnit ( Messenger , Aviradze ) ;
+1244: LD_EXP 3
+1248: PPUSH
+1249: LD_EXP 2
+1253: PPUSH
+1254: CALL_OW 119
+// Say ( Aviradze , D1Av3 ) ;
+1258: LD_EXP 2
+1262: PPUSH
+1263: LD_STRING D1Av3
+1265: PPUSH
+1266: CALL_OW 88
+// ComTurnUnit ( Messenger , Heike ) ;
+1270: LD_EXP 3
+1274: PPUSH
+1275: LD_VAR 0 2
+1279: PPUSH
+1280: CALL_OW 119
+// Say ( Heike , D1H3 ) ;
+1284: LD_VAR 0 2
+1288: PPUSH
+1289: LD_STRING D1H3
+1291: PPUSH
+1292: CALL_OW 88
+// ComMoveXY ( Messenger , 42 , 72 ) ;
+1296: LD_EXP 3
+1300: PPUSH
+1301: LD_INT 42
+1303: PPUSH
+1304: LD_INT 72
+1306: PPUSH
+1307: CALL_OW 111
+// Say ( Messenger , D1Me2 ) ;
+1311: LD_EXP 3
+1315: PPUSH
+1316: LD_STRING D1Me2
+1318: PPUSH
+1319: CALL_OW 88
+// while GetDistUnitXY ( Messenger , 42 , 72 ) > 1 do
+1323: LD_EXP 3
+1327: PPUSH
+1328: LD_INT 42
+1330: PPUSH
+1331: LD_INT 72
+1333: PPUSH
+1334: CALL_OW 297
+1338: PUSH
+1339: LD_INT 1
+1341: GREATER
+1342: IFFALSE 1390
+// begin wait ( 0 0$1 ) ;
+1344: LD_INT 35
+1346: PPUSH
+1347: CALL_OW 67
+// if IsInUnit ( Messenger ) then
+1351: LD_EXP 3
+1355: PPUSH
+1356: CALL_OW 310
+1360: IFFALSE 1373
+// ComExitVehicle ( Messenger ) else
+1362: LD_EXP 3
+1366: PPUSH
+1367: CALL_OW 121
+1371: GO 1388
+// ComMoveXY ( Messenger , 42 , 72 ) ;
+1373: LD_EXP 3
+1377: PPUSH
+1378: LD_INT 42
+1380: PPUSH
+1381: LD_INT 72
+1383: PPUSH
+1384: CALL_OW 111
+// end ;
+1388: GO 1323
+// ComTurnUnit ( Messenger , Heike ) ;
+1390: LD_EXP 3
+1394: PPUSH
+1395: LD_VAR 0 2
+1399: PPUSH
+1400: CALL_OW 119
+// Say ( Messenger , D1Me3 ) ;
+1404: LD_EXP 3
+1408: PPUSH
+1409: LD_STRING D1Me3
+1411: PPUSH
+1412: CALL_OW 88
+// Say ( Aviradze , D1Av4 ) ;
+1416: LD_EXP 2
+1420: PPUSH
+1421: LD_STRING D1Av4
+1423: PPUSH
+1424: CALL_OW 88
+// ComTurnUnit ( Messenger , Aviradze ) ;
+1428: LD_EXP 3
+1432: PPUSH
+1433: LD_EXP 2
+1437: PPUSH
+1438: CALL_OW 119
+// Wait ( 0 0$0.3 ) ;
+1442: LD_INT 10
+1444: PPUSH
+1445: CALL_OW 67
+// Say ( Messenger , D1Me4 ) ;
+1449: LD_EXP 3
+1453: PPUSH
+1454: LD_STRING D1Me4
+1456: PPUSH
+1457: CALL_OW 88
+// Say ( Aviradze , D1Av5 ) ;
+1461: LD_EXP 2
+1465: PPUSH
+1466: LD_STRING D1Av5
+1468: PPUSH
+1469: CALL_OW 88
+// Say ( Heike , D1H4 ) ;
+1473: LD_VAR 0 2
+1477: PPUSH
+1478: LD_STRING D1H4
+1480: PPUSH
+1481: CALL_OW 88
+// ComTurnUnit ( Messenger , Heike ) ;
+1485: LD_EXP 3
+1489: PPUSH
+1490: LD_VAR 0 2
+1494: PPUSH
+1495: CALL_OW 119
+// Wait ( 0 0$0.3 ) ;
+1499: LD_INT 10
+1501: PPUSH
+1502: CALL_OW 67
+// Say ( Messenger , D1Me5 ) ;
+1506: LD_EXP 3
+1510: PPUSH
+1511: LD_STRING D1Me5
+1513: PPUSH
+1514: CALL_OW 88
+// ComEnterUnit ( Messenger , FarmerVehicle ) ;
+1518: LD_EXP 3
+1522: PPUSH
+1523: LD_EXP 4
+1527: PPUSH
+1528: CALL_OW 120
+// ComMoveXY ( FarmerVehicle , 45 , 79 ) ;
+1532: LD_EXP 4
+1536: PPUSH
+1537: LD_INT 45
+1539: PPUSH
+1540: LD_INT 79
+1542: PPUSH
+1543: CALL_OW 111
+// wait ( 0 0$2 ) ;
+1547: LD_INT 70
+1549: PPUSH
+1550: CALL_OW 67
+// enable ( 1 ) ;
+1554: LD_INT 1
+1556: ENABLE_MARKED
+// wait ( 0 0$3 ) ;
+1557: LD_INT 105
+1559: PPUSH
+1560: CALL_OW 67
+// ChangeMapFunc ;
+1564: CALL 2033 0 0
+// end ;
+1568: LD_VAR 0 1
+1572: RET
+// every 0 0$1 trigger ape_status = 1 do var hex , temp_value ;
+1573: LD_EXP 1
+1577: PUSH
+1578: LD_INT 1
+1580: EQUAL
+1581: IFFALSE 1947
+1583: GO 1585
+1585: DISABLE
+1586: LD_INT 0
+1588: PPUSH
+1589: PPUSH
+// begin temp_value = 0 ;
+1590: LD_ADDR_VAR 0 2
+1594: PUSH
+1595: LD_INT 0
+1597: ST_TO_ADDR
+// repeat if ape_status < 3 then
+1598: LD_EXP 1
+1602: PUSH
+1603: LD_INT 3
+1605: LESS
+1606: IFFALSE 1639
+// begin ComTameXY ( Aviradze , 45 , 71 ) ;
+1608: LD_EXP 2
+1612: PPUSH
+1613: LD_INT 45
+1615: PPUSH
+1616: LD_INT 71
+1618: PPUSH
+1619: CALL_OW 131
+// wait ( 0 0$1 ) ;
+1623: LD_INT 35
+1625: PPUSH
+1626: CALL_OW 67
+// ComStand ( Aviradze ) ;
+1630: LD_EXP 2
+1634: PPUSH
+1635: CALL_OW 165
+// end ; case ape_status of 1 :
+1639: LD_EXP 1
+1643: PUSH
+1644: LD_INT 1
+1646: DOUBLE
+1647: EQUAL
+1648: IFTRUE 1652
+1650: GO 1791
+1652: POP
+// begin temp_value = temp_value + 1 ;
+1653: LD_ADDR_VAR 0 2
+1657: PUSH
+1658: LD_VAR 0 2
+1662: PUSH
+1663: LD_INT 1
+1665: PLUS
+1666: ST_TO_ADDR
+// if temp_value > 2 then
+1667: LD_VAR 0 2
+1671: PUSH
+1672: LD_INT 2
+1674: GREATER
+1675: IFFALSE 1685
+// temp_value = 1 ;
+1677: LD_ADDR_VAR 0 2
+1681: PUSH
+1682: LD_INT 1
+1684: ST_TO_ADDR
+// case temp_value of 1 :
+1685: LD_VAR 0 2
+1689: PUSH
+1690: LD_INT 1
+1692: DOUBLE
+1693: EQUAL
+1694: IFTRUE 1698
+1696: GO 1736
+1698: POP
+// begin ComHold ( the_ape ) ;
+1699: LD_INT 1
+1701: PPUSH
+1702: CALL_OW 140
+// if Rand ( 1 , 2 ) = 1 then
+1706: LD_INT 1
+1708: PPUSH
+1709: LD_INT 2
+1711: PPUSH
+1712: CALL_OW 12
+1716: PUSH
+1717: LD_INT 1
+1719: EQUAL
+1720: IFFALSE 1734
+// ComTurnUnit ( the_ape , Aviradze ) ;
+1722: LD_INT 1
+1724: PPUSH
+1725: LD_EXP 2
+1729: PPUSH
+1730: CALL_OW 119
+// end ; 2 :
+1734: GO 1789
+1736: LD_INT 2
+1738: DOUBLE
+1739: EQUAL
+1740: IFTRUE 1744
+1742: GO 1788
+1744: POP
+// begin hex = RandHexArea ( ape_area , false ) ;
+1745: LD_ADDR_VAR 0 1
+1749: PUSH
+1750: LD_INT 1
+1752: PPUSH
+1753: LD_INT 0
+1755: PPUSH
+1756: CALL_OW 16
+1760: ST_TO_ADDR
+// ComMoveXY ( the_ape , hex [ 1 ] , hex [ 2 ] ) ;
+1761: LD_INT 1
+1763: PPUSH
+1764: LD_VAR 0 1
+1768: PUSH
+1769: LD_INT 1
+1771: ARRAY
+1772: PPUSH
+1773: LD_VAR 0 1
+1777: PUSH
+1778: LD_INT 2
+1780: ARRAY
+1781: PPUSH
+1782: CALL_OW 111
+// end ; end ;
+1786: GO 1789
+1788: POP
+// end ; 2 :
+1789: GO 1930
+1791: LD_INT 2
+1793: DOUBLE
+1794: EQUAL
+1795: IFTRUE 1799
+1797: GO 1916
+1799: POP
+// begin temp_value = GetDistUnits ( the_ape , Aviradze ) ;
+1800: LD_ADDR_VAR 0 2
+1804: PUSH
+1805: LD_INT 1
+1807: PPUSH
+1808: LD_EXP 2
+1812: PPUSH
+1813: CALL_OW 296
+1817: ST_TO_ADDR
+// if temp_value >= 2 then
+1818: LD_VAR 0 2
+1822: PUSH
+1823: LD_INT 2
+1825: GREATEREQUAL
+1826: IFFALSE 1914
+// begin if temp_value > 4 then
+1828: LD_VAR 0 2
+1832: PUSH
+1833: LD_INT 4
+1835: GREATER
+1836: IFFALSE 1846
+// temp_value = 4 ;
+1838: LD_ADDR_VAR 0 2
+1842: PUSH
+1843: LD_INT 4
+1845: ST_TO_ADDR
+// ComMoveXY ( the_ape , ShiftX ( GetX ( Aviradze ) , 1 , temp_value - 1 ) , ShiftY ( GetY ( Aviradze ) , 1 , temp_value - 1 ) ) ;
+1846: LD_INT 1
+1848: PPUSH
+1849: LD_EXP 2
+1853: PPUSH
+1854: CALL_OW 250
+1858: PPUSH
+1859: LD_INT 1
+1861: PPUSH
+1862: LD_VAR 0 2
+1866: PUSH
+1867: LD_INT 1
+1869: MINUS
+1870: PPUSH
+1871: CALL_OW 272
+1875: PPUSH
+1876: LD_EXP 2
+1880: PPUSH
+1881: CALL_OW 251
+1885: PPUSH
+1886: LD_INT 1
+1888: PPUSH
+1889: LD_VAR 0 2
+1893: PUSH
+1894: LD_INT 1
+1896: MINUS
+1897: PPUSH
+1898: CALL_OW 273
+1902: PPUSH
+1903: CALL_OW 111
+// AddComStand ( the_ape ) ;
+1907: LD_INT 1
+1909: PPUSH
+1910: CALL_OW 225
+// end ; end ; 3 :
+1914: GO 1930
+1916: LD_INT 3
+1918: DOUBLE
+1919: EQUAL
+1920: IFTRUE 1924
+1922: GO 1929
+1924: POP
+// exit ; end ;
+1925: GO 1947
+1927: GO 1930
+1929: POP
+// Wait ( 0 0$2 ) ;
+1930: LD_INT 70
+1932: PPUSH
+1933: CALL_OW 67
+// until ape_status = 3 ;
+1937: LD_EXP 1
+1941: PUSH
+1942: LD_INT 3
+1944: EQUAL
+1945: IFFALSE 1598
+// end ;
+1947: PPOPN 2
+1949: END
+// every 0 0$0.5 marked 1 do var i ;
+1950: GO 1952
+1952: DISABLE
+1953: LD_INT 0
+1955: PPUSH
+// begin for i in FilterAllUnits ( [ f_inarea , exit_area ] ) do
+1956: LD_ADDR_VAR 0 1
+1960: PUSH
+1961: LD_INT 95
+1963: PUSH
+1964: LD_INT 2
+1966: PUSH
+1967: EMPTY
+1968: LIST
+1969: LIST
+1970: PPUSH
+1971: CALL_OW 69
+1975: PUSH
+1976: FOR_IN
+1977: IFFALSE 1990
+// RemoveUnit ( i ) ;
+1979: LD_VAR 0 1
+1983: PPUSH
+1984: CALL_OW 64
+1988: GO 1976
+1990: POP
+1991: POP
+// ComMoveXY ( all_units diff the_ape , 45 , 79 ) ;
+1992: LD_OWVAR 3
+1996: PUSH
+1997: LD_INT 1
+1999: DIFF
+2000: PPUSH
+2001: LD_INT 45
+2003: PPUSH
+2004: LD_INT 79
+2006: PPUSH
+2007: CALL_OW 111
+// if ( all_units diff the_ape ) = 0 then
+2011: LD_OWVAR 3
+2015: PUSH
+2016: LD_INT 1
+2018: DIFF
+2019: PUSH
+2020: LD_INT 0
+2022: EQUAL
+2023: IFFALSE 2029
+// ChangeMapFunc ;
+2025: CALL 2033 0 0
+// enable ;
+2029: ENABLE
+// end ;
+2030: PPOPN 1
+2032: END
+// function ChangeMapFunc ; begin
+2033: LD_INT 0
+2035: PPUSH
+// SaveCharacters ( Messenger , Messenger_03 ) ;
+2036: LD_EXP 3
+2040: PPUSH
+2041: LD_STRING Messenger_03
+2043: PPUSH
+2044: CALL_OW 38
+// wait ( 0 0$0.2 ) ;
+2048: LD_INT 7
+2050: PPUSH
+2051: CALL_OW 67
+// ChangeMap ( %_cont , %_cont ) ;
+2055: LD_STRING %_cont
+2057: PPUSH
+2058: LD_STRING %_cont
+2060: PPUSH
+2061: CALL_OW 340
+// end ;
+2065: LD_VAR 0 1
+2069: RET
+// on DialogueSkipped ( val ) do begin ChangeMapFunc ;
+2070: CALL 2033 0 0
+// end ;
+2074: PPOPN 1
+2076: END

@@ -1,0 +1,4659 @@
+[dialog window_nafuk_black]
+158 149
+Dialog inflatable
+[item1]
+"cerna10060"
+158 149
+Middle middle
+[end]
+
+[dialog window_multidebriefing]
+0 0
+Dialog
+[item1]
+"MultiDebriefing"
+0 0
+Left top
+[end]
+
+[dialog window_debriefing]
+158 149
+Dialog inflatable
+[item1]
+"cerna10060"
+158 149
+Middle middle
+
+[item2]
+"debriefing"
+158 149
+Left top
+[end]
+
+[dialog window_nafuk]
+158 149
+Dialog inflatable
+[item1]
+"textura_nafuk"
+178 169
+Middle middle
+
+[item2]
+"textura_nafuk"
+228 169
+Middle middle
+
+[item3]
+"textura_nafuk"
+238 169
+Middle middle
+
+[item4]
+"textura_nafuk"
+178 239
+Middle middle
+
+[item5]
+"textura_nafuk"
+178 219
+Middle middle
+
+[item6]
+"textura_nafuk"
+228 219
+Middle middle
+
+[item7]
+"textura_nafuk"
+238 219
+Middle middle
+
+[item8]
+"textura_nafuk"
+228 239
+Middle middle
+
+[item9]
+"textura_nafuk"
+238 239
+Middle middle
+
+[item10]
+"ramecek_01_LB"
+158 249
+Left bottom
+
+[item11]
+"ramecek_01_LT"
+158 149
+Left top
+
+[item12]
+"ramecek_01_RB"
+258 249
+Right bottom
+
+[item13]
+"ramecek_01_RT"
+258 149
+Right top
+
+[item14]
+"ramecek_01_B"
+208 249
+Middle bottom
+
+[item15]
+"ramecek_01_L"
+158 199
+Left middle
+
+[item16]
+"ramecek_01_R"
+258 199
+Right middle
+
+[item17]
+"ramecek_01_T"
+208 149
+Middle top
+[end]
+
+[dialog window_query]
+158 149
+Dialog inflatable
+[item1]
+"textura_nafuk"
+178 169
+Middle middle
+
+[item2]
+"textura_nafuk"
+228 169
+Middle middle
+
+[item3]
+"textura_nafuk"
+238 169
+Middle middle
+
+[item4]
+"textura_nafuk"
+178 239
+Middle middle
+
+[item5]
+"textura_nafuk"
+178 219
+Middle middle
+
+[item6]
+"textura_nafuk"
+228 219
+Middle middle
+
+[item7]
+"textura_nafuk"
+238 219
+Middle middle
+
+[item8]
+"textura_nafuk"
+228 239
+Middle middle
+
+[item9]
+"textura_nafuk"
+238 239
+Middle middle
+
+[item10]
+"ramecek_01_LB"
+158 249
+Left bottom
+
+[item11]
+"ramecek_01_LT"
+158 149
+Left top
+
+[item12]
+"ramecek_01_RB"
+258 249
+Right bottom
+
+[item13]
+"ramecek_01_RT"
+258 149
+Right top
+
+[item14]
+"ramecek_01_B"
+208 249
+Middle bottom
+
+[item15]
+"ramecek_01_L"
+158 199
+Left middle
+
+[item16]
+"ramecek_01_R"
+258 199
+Right middle
+
+[item17]
+"ramecek_01_T"
+208 149
+Middle top
+[end]
+
+[dialog window_load]
+158 149
+Dialog inflatable
+[item1]
+"textura_nafuk"
+178 169
+Middle middle
+
+[item2]
+"textura_nafuk"
+228 169
+Middle middle
+
+[item3]
+"textura_nafuk"
+238 169
+Middle middle
+
+[item4]
+"textura_nafuk"
+178 239
+Middle middle
+
+[item5]
+"textura_nafuk"
+178 219
+Middle middle
+
+[item6]
+"textura_nafuk"
+228 219
+Middle middle
+
+[item7]
+"textura_nafuk"
+238 219
+Middle middle
+
+[item8]
+"textura_nafuk"
+228 239
+Middle middle
+
+[item9]
+"textura_nafuk"
+238 239
+Middle middle
+
+[item10]
+"ramecek_01_LB"
+158 249
+Left bottom
+
+[item11]
+"ramecek_01_LT"
+158 149
+Left top
+
+[item12]
+"ramecek_01_RB"
+258 249
+Right bottom
+
+[item13]
+"ramecek_01_RT"
+258 149
+Right top
+
+[item14]
+"ramecek_01_B"
+208 249
+Middle bottom
+
+[item15]
+"ramecek_01_L"
+158 199
+Left middle
+
+[item16]
+"ramecek_01_R"
+258 199
+Right middle
+
+[item17]
+"ramecek_01_T"
+208 149
+Middle top
+[end]
+
+[dialog window_options]
+158 149
+Dialog inflatable
+[item1]
+"textura_nafuk"
+173 169
+Middle middle
+
+[item2]
+"textura_nafuk"
+223 169
+Middle middle
+
+[item3]
+"textura_nafuk"
+238 169
+Middle middle
+
+[item4]
+"textura_nafuk"
+172 239
+Middle middle
+
+[item5]
+"textura_nafuk"
+173 219
+Middle middle
+
+[item6]
+"textura_nafuk"
+222 219
+Middle middle
+
+[item7]
+"textura_nafuk"
+238 219
+Middle middle
+
+[item8]
+"textura_nafuk"
+220 239
+Middle middle
+
+[item9]
+"textura_nafuk"
+238 239
+Middle middle
+
+[item10]
+"ramecek_01_LB"
+150 249
+Left bottom
+
+[item11]
+"ramecek_01_LT"
+150 149
+Left top
+
+[item12]
+"ramecek_01_RB"
+250 249
+Right bottom
+
+[item13]
+"ramecek_01_RT"
+250 149
+Right top
+
+[item14]
+"ramecek_01_B"
+200 249
+Middle bottom
+
+[item15]
+"ramecek_01_L"
+150 199
+Left middle
+
+[item16]
+"ramecek_01_R"
+250 199
+Right middle
+
+[item17]
+"ramecek_01_T"
+200 149
+Middle top
+
+[item18]
+"drat_H"
+186 194
+Left top
+
+[item19]
+"drat_H"
+284 194
+Left top
+
+[item20]
+"drat_H"
+334 194
+Left top
+
+[item21]
+"drat_V"
+185 194
+Left top
+
+[item22]
+"drat_V"
+185 244
+Left top
+
+[item23]
+"drat_H"
+185 338
+Left top
+
+[item24]
+"drat_H"
+285 338
+Left top
+
+[item25]
+"drat_H"
+333 338
+Left top
+
+[item26]
+"drat_V"
+383 288
+Left top
+
+[item27]
+"drat_V"
+383 244
+Left top
+
+[item28]
+"drat_V"
+185 289
+Left top
+
+[item29]
+"drat_V"
+383 194
+Left top
+
+[item30]
+"drat_H"
+234 194
+Left top
+
+[item31]
+"drat_H"
+235 338
+Left top
+
+[item32]
+"drat_V"
+613 194
+Left top
+
+[item33]
+"drat_H"
+564 194
+Left top
+
+[item34]
+"drat_V"
+415 288
+Left top
+
+[item35]
+"drat_H"
+415 338
+Left top
+
+[item36]
+"drat_H"
+514 194
+Left top
+
+[item37]
+"drat_H"
+464 194
+Left top
+
+[item38]
+"drat_H"
+416 194
+Left top
+
+[item39]
+"drat_V"
+415 244
+Left top
+
+[item40]
+"drat_V"
+415 194
+Left top
+
+[item41]
+"drat_H"
+465 338
+Left top
+
+[item42]
+"drat_H"
+515 338
+Left top
+
+[item43]
+"drat_H"
+563 338
+Left top
+
+[item44]
+"drat_V"
+613 244
+Left top
+
+[item45]
+"drat_V"
+613 288
+Left top
+
+[item46]
+"drat_H"
+186 367
+Left top
+
+[item47]
+"drat_V"
+185 367
+Left top
+
+[item48]
+"drat_H"
+234 367
+Left top
+
+[item49]
+"drat_H"
+284 367
+Left top
+
+[item50]
+"drat_H"
+334 367
+Left top
+
+[item51]
+"drat_H"
+384 367
+Left top
+
+[item52]
+"drat_H"
+434 367
+Left top
+
+[item53]
+"drat_H"
+484 367
+Left top
+
+[item54]
+"drat_H"
+534 367
+Left top
+
+[item55]
+"drat_H"
+564 367
+Left top
+
+[item56]
+"drat_V"
+185 417
+Left top
+
+[item57]
+"drat_H"
+185 480
+Left top
+
+[item58]
+"drat_H"
+235 480
+Left top
+
+[item59]
+"drat_H"
+285 480
+Left top
+
+[item60]
+"drat_H"
+335 480
+Left top
+
+[item61]
+"drat_H"
+385 480
+Left top
+
+[item62]
+"drat_H"
+435 480
+Left top
+
+[item63]
+"drat_H"
+485 480
+Left top
+
+[item64]
+"drat_H"
+535 480
+Left top
+
+[item65]
+"drat_H"
+563 480
+Left top
+
+[item66]
+"drat_V"
+613 367
+Left top
+
+[item67]
+"drat_V"
+613 415
+Left top
+
+[item68]
+"drat_V"
+185 431
+Left top
+
+[item69]
+"drat_V"
+613 431
+Left top
+[end]
+
+[dialog window_file_menu]
+264 99
+Dialog inflatable
+[item1]
+"filemenu_T"
+264 99
+Left top
+
+[item2]
+"filemenu_C"
+264 135
+Middle middle
+
+[item3]
+"filemenu_B"
+264 165
+Left bottom
+[end]
+
+[dialog button_nafuk]
+387 301
+Button inflatable
+[item1]
+"button_down_C"
+399 301
+Middle top
+
+[item2]
+"button_over_L"
+387 301
+Left top
+
+[item3]
+"button_over_R"
+429 301
+Right top
+[end]
+
+[dialog button_nafuk click]
+387 301
+Button inflatable
+[item1]
+"button_down_C"
+399 301
+Middle top
+
+[item2]
+"button_down_L"
+387 301
+Left top
+
+[item3]
+"button_down_R"
+429 301
+Right top
+[end]
+
+[dialog button_nafuk over]
+387 301
+Button inflatable
+[item1]
+"button_down_C"
+399 301
+Middle top
+
+[item2]
+"button_up_L"
+387 301
+Left top
+
+[item3]
+"button_up_R"
+429 301
+Right top
+[end]
+
+[dialog button_options]
+387 301
+Button inflatable
+[item1]
+"button_down_C"
+399 301
+Middle top
+
+[item2]
+"button_over_L"
+387 301
+Left top
+
+[item3]
+"button_over_R"
+429 301
+Right top
+[end]
+
+[dialog button_options click]
+387 301
+Button inflatable
+[item1]
+"button_down_C"
+399 301
+Middle top
+
+[item2]
+"button_down_L"
+387 301
+Left top
+
+[item3]
+"button_down_R"
+429 301
+Right top
+[end]
+
+[dialog button_options over]
+387 301
+Button inflatable
+[item1]
+"button_down_C"
+399 301
+Middle top
+
+[item2]
+"button_up_L"
+387 301
+Left top
+
+[item3]
+"button_up_R"
+429 301
+Right top
+[end]
+
+[dialog button]
+369 299
+Button
+[item1]
+"button_over_L"
+369 299
+
+
+[item2]
+"button_down_C"
+436 299
+
+
+[item3]
+"button_down_C"
+406 299
+
+
+[item4]
+"button_down_C"
+376 299
+
+
+[item5]
+"button_down_C"
+466 299
+
+
+[item6]
+"button_over_R"
+496 299
+
+[end]
+
+[dialog button click]
+369 299
+Button
+[item1]
+"button_down_L"
+369 299
+
+
+[item2]
+"button_down_C"
+436 299
+
+
+[item3]
+"button_down_C"
+406 299
+
+
+[item4]
+"button_down_C"
+376 299
+
+
+[item5]
+"button_down_C"
+466 299
+
+
+[item6]
+"button_down_R"
+496 299
+
+[end]
+
+[dialog button over]
+369 299
+Button
+[item1]
+"button_up_L"
+369 299
+
+
+[item2]
+"button_down_C"
+436 299
+
+
+[item3]
+"button_down_C"
+406 299
+
+
+[item4]
+"button_down_C"
+376 299
+
+
+[item5]
+"button_down_C"
+466 299
+
+
+[item6]
+"button_up_R"
+496 299
+
+[end]
+
+[dialog button disable]
+369 299
+Button
+[item1]
+"button_over_L"
+369 299
+
+
+[item2]
+"button_down_C"
+436 299
+
+
+[item3]
+"button_down_C"
+406 299
+
+
+[item4]
+"button_down_C"
+376 299
+
+
+[item5]
+"button_down_C"
+466 299
+
+
+[item6]
+"button_over_R"
+496 299
+
+[end]
+
+[dialog button_load]
+369 299
+Button
+[item1]
+"button_over_L"
+369 299
+
+
+[item2]
+"button_down_C"
+436 299
+
+
+[item3]
+"button_down_C"
+406 299
+
+
+[item4]
+"button_down_C"
+376 299
+
+
+[item5]
+"button_down_C"
+466 299
+
+
+[item6]
+"button_over_R"
+496 299
+
+[end]
+
+[dialog button_load click]
+369 299
+Button
+[item1]
+"button_down_L"
+369 299
+
+
+[item2]
+"button_down_C"
+436 299
+
+
+[item3]
+"button_down_C"
+406 299
+
+
+[item4]
+"button_down_C"
+376 299
+
+
+[item5]
+"button_down_C"
+466 299
+
+
+[item6]
+"button_down_R"
+496 299
+
+[end]
+
+[dialog button_load over]
+369 299
+Button
+[item1]
+"button_up_L"
+369 299
+
+
+[item2]
+"button_down_C"
+436 299
+
+
+[item3]
+"button_down_C"
+406 299
+
+
+[item4]
+"button_down_C"
+376 299
+
+
+[item5]
+"button_down_C"
+466 299
+
+
+[item6]
+"button_up_R"
+496 299
+
+[end]
+
+[dialog vertscrollbar ub]
+76 65
+Scrollbar
+[item1]
+"FListBox_up"
+76 65
+Left top
+[end]
+
+[dialog vertscrollbar ub click]
+76 65
+Scrollbar
+[item1]
+"FListBox_upClick"
+76 65
+
+[end]
+
+[dialog vertscrollbar slider]
+76 65
+Scrollbar
+[item1]
+"FListBox_ScrollSlider"
+77 65
+
+[end]
+
+[dialog vertscrollbar sliderback]
+76 65
+Scrollbar
+[item1]
+"FListBox_ScrollBack"
+77 65
+
+[end]
+
+[dialog vertscrollbar db]
+76 65
+Scrollbar
+[item1]
+"FListBox_down"
+76 65
+
+[end]
+
+[dialog vertscrollbar db click]
+76 65
+Scrollbar
+[item1]
+"FListBox_downClick"
+76 65
+
+[end]
+
+[dialog vertscrollbarT ub]
+76 65
+Scrollbar
+[item1]
+"FListBox_up"
+76 65
+Left top
+[end]
+
+[dialog vertscrollbarT ub click]
+76 65
+Scrollbar
+[item1]
+"FListBox_upClick"
+76 65
+
+[end]
+
+[dialog vertscrollbarT slider]
+76 65
+Scrollbar
+[item1]
+"FListBox_ScrollSlider"
+77 65
+
+[end]
+
+[dialog vertscrollbarT sliderback]
+76 65
+Scrollbar
+[item1]
+"FListBox_ScrollBack"
+77 65
+
+[end]
+
+[dialog vertscrollbarT db]
+76 65
+Scrollbar
+[item1]
+"FListBox_down"
+76 65
+
+[end]
+
+[dialog vertscrollbarT db click]
+76 65
+Scrollbar
+[item1]
+"FListBox_downClick"
+76 65
+
+[end]
+
+[dialog combobox_1024]
+233 157
+Combobox
+[item1]
+"FListBox_LT"
+233 157
+Left top
+
+[item2]
+"FListBox_RT"
+328 157
+Left top
+
+[item3]
+"FListBox_LB"
+233 163
+Left top
+
+[item4]
+"FListBox_RB"
+328 163
+Left top
+
+[item5]
+"FListBox_T"
+242 157
+Left top
+
+[item6]
+"FListBox_T"
+266 157
+Left top
+
+[item7]
+"FListBox_T"
+304 157
+Left top
+
+[item8]
+"FListBox_T"
+280 157
+Left top
+
+[item9]
+"FListBox_B"
+242 162
+Left top
+
+[item10]
+"FListBox_B"
+264 162
+Left top
+
+[item11]
+"FListBox_B"
+288 162
+Left top
+
+[item12]
+"FListBox_B"
+304 162
+Left top
+[end]
+
+[dialog combobox_1024 db]
+233 157
+Combobox
+[item1]
+"FListBox_down"
+233 156
+Left top
+[end]
+
+[dialog combobox_1024 db click]
+233 157
+Combobox
+[item1]
+"FListBox_downClick"
+233 156
+Left top
+[end]
+
+[dialog combobox_800]
+233 157
+Combobox
+[item1]
+"FListBox_LT"
+233 157
+Left top
+
+[item2]
+"FListBox_RT"
+304 157
+Left top
+
+[item3]
+"FListBox_LB"
+233 161
+Left top
+
+[item4]
+"FListBox_RB"
+304 161
+Left top
+
+[item5]
+"FListBox_T"
+242 157
+Left top
+
+[item6]
+"FListBox_T"
+266 157
+Left top
+
+[item7]
+"FListBox_B"
+242 160
+Left top
+
+[item8]
+"FListBox_B"
+266 160
+Left top
+
+[item9]
+"FListBox_B"
+280 160
+Left top
+
+[item10]
+"FListBox_T"
+280 157
+Left top
+[end]
+
+[dialog combobox_800 db]
+233 157
+Combobox
+[item1]
+"FListBox_down"
+233 156
+Left top
+[end]
+
+[dialog combobox_800 db click]
+233 157
+Combobox
+[item1]
+"FListBox_downClick"
+233 156
+Left top
+[end]
+
+[dialog combobox_640]
+233 157
+Combobox
+[item1]
+"FListBox_LT"
+233 157
+Left top
+
+[item2]
+"FListBox_RT"
+286 157
+Left top
+
+[item3]
+"FListBox_LB"
+233 161
+Left top
+
+[item4]
+"FListBox_RB"
+286 161
+Left top
+
+[item5]
+"FListBox_T"
+242 157
+Left top
+
+[item6]
+"FListBox_B"
+242 160
+Left top
+
+[item7]
+"FListBox_T"
+262 157
+Left top
+
+[item8]
+"FListBox_B"
+262 160
+Left top
+[end]
+
+[dialog combobox_640 db]
+233 157
+Combobox
+[item1]
+"FListBox_down"
+233 156
+Left top
+[end]
+
+[dialog combobox_640 db click]
+233 157
+Combobox
+[item1]
+"FListBox_downClick"
+233 156
+Left top
+[end]
+
+[dialog teamform]
+0 0
+Dialog
+[item1]
+"1024team_select"
+0 0
+Left top
+[end]
+
+[dialog mortar]
+400 300
+Button
+[item1]
+"1024change-mort"
+400 300
+Left top
+[end]
+
+[dialog mortar click]
+400 300
+Button
+[item1]
+"1024change-mort-klik"
+400 300
+
+[end]
+
+[dialog mortar over]
+400 300
+Button
+[item1]
+"1024change-mort-mo"
+400 300
+
+[end]
+
+[dialog engeneer]
+400 300
+Button
+[item1]
+"1024change-eng"
+400 300
+Left top
+[end]
+
+[dialog engeneer click]
+400 300
+Button
+[item1]
+"1024change-eng-klik"
+400 300
+
+[end]
+
+[dialog engeneer over]
+400 300
+Button
+[item1]
+"1024change-eng-mo"
+400 300
+
+[end]
+
+[dialog scientist]
+400 300
+Button
+[item1]
+"1024change-sci"
+400 300
+Left top
+[end]
+
+[dialog scientist click]
+400 300
+Button
+[item1]
+"1024change-sci-klik"
+400 300
+
+[end]
+
+[dialog scientist over]
+400 300
+Button
+[item1]
+"1024change-sci-mo"
+400 300
+
+[end]
+
+[dialog sniper]
+400 300
+Button
+[item1]
+"1024change-snip"
+400 300
+Left top
+[end]
+
+[dialog sniper click]
+400 300
+Button
+[item1]
+"1024change-snip-klik"
+400 300
+
+[end]
+
+[dialog sniper over]
+400 300
+Button
+[item1]
+"1024change-snip-mo"
+400 300
+
+[end]
+
+[dialog soldier]
+400 300
+Button
+[item1]
+"1024change-sold"
+400 300
+Left top
+[end]
+
+[dialog soldier click]
+400 300
+Button
+[item1]
+"1024change-sold-klik"
+400 300
+
+[end]
+
+[dialog soldier over]
+400 300
+Button
+[item1]
+"1024change-sold-mo"
+400 300
+
+[end]
+
+[dialog mechanic]
+400 300
+Button
+[item1]
+"1024change-mech"
+400 300
+Left top
+[end]
+
+[dialog mechanic click]
+400 300
+Button
+[item1]
+"1024change-mech-klik"
+400 300
+
+[end]
+
+[dialog mechanic over]
+400 300
+Button
+[item1]
+"1024change-mech-mo"
+400 300
+
+[end]
+
+[dialog bazooker]
+400 300
+Button
+[item1]
+"1024change-baz"
+400 300
+Left top
+[end]
+
+[dialog bazooker click]
+400 300
+Button
+[item1]
+"1024change-baz-klik"
+400 300
+
+[end]
+
+[dialog bazooker over]
+400 300
+Button
+[item1]
+"1024change-baz-mo"
+400 300
+
+[end]
+
+[dialog checkbox]
+228 263
+Checkbox
+[item1]
+"CheckBox_Unchecked"
+228 263
+
+[end]
+
+[dialog checkbox on]
+228 263
+Checkbox
+[item1]
+"CheckBox_checked"
+228 263
+
+[end]
+
+[dialog horizScrollBar ub]
+218 171
+Scrollbar
+[item1]
+"FListBox_left"
+218 171
+Left top
+[end]
+
+[dialog horizScrollBar ub click]
+218 171
+Scrollbar
+[item1]
+"FListBox_leftClick"
+218 171
+
+[end]
+
+[dialog horizScrollBar slider]
+218 171
+Scrollbar
+[item1]
+"FListBox_ScrollSlider"
+218 172
+
+[end]
+
+[dialog horizScrollBar sliderback]
+218 171
+Scrollbar
+[item1]
+"FListBox_ScrollBack_horiz"
+218 172
+
+[end]
+
+[dialog horizScrollBar db]
+218 171
+Scrollbar
+[item1]
+"FListBox_right"
+218 171
+
+[end]
+
+[dialog horizScrollBar db click]
+218 171
+Scrollbar
+[item1]
+"FListBox_rightClick"
+218 171
+
+[end]
+
+[dialog listbox_nafuk]
+372 263
+Dialog inflatable
+[item1]
+"FListBox_BX"
+391 303
+Middle bottom
+
+[item2]
+"FListBox_CX"
+392 283
+Middle middle
+
+[item3]
+"FListBox_LBX"
+372 303
+Left bottom
+
+[item4]
+"FListBox_LTX"
+372 263
+Left top
+
+[item5]
+"FListBox_LX"
+372 283
+Left middle
+
+[item6]
+"FListBox_RBX"
+410 303
+Right bottom
+
+[item7]
+"FListBox_RTX"
+410 263
+Right top
+
+[item8]
+"FListBox_RX"
+411 283
+Right middle
+
+[item9]
+"FListBox_TX"
+391 263
+Middle top
+[end]
+
+[dialog Log_listbox_nafuk_640]
+372 263
+Dialog inflatable
+[item1]
+"FListBox_BX"
+391 300
+Middle bottom
+
+[item2]
+"FListBox_CX"
+392 280
+Middle middle
+
+[item3]
+"FListBox_LBX"
+372 300
+Left bottom
+
+[item4]
+"FListBox_LTX"
+372 263
+Left top
+
+[item5]
+"FListBox_LX"
+372 280
+Left middle
+
+[item6]
+"FListBox_RBX"
+410 300
+Right bottom
+
+[item7]
+"FListBox_RTX"
+410 263
+Right top
+
+[item8]
+"FListBox_RX"
+411 280
+Right middle
+
+[item9]
+"FListBox_TX"
+391 263
+Middle top
+[end]
+
+[dialog Log_listbox_nafuk_800]
+372 263
+Dialog inflatable
+[item1]
+"FListBox_BX"
+391 292
+Middle bottom
+
+[item2]
+"FListBox_CX"
+392 272
+Middle middle
+
+[item3]
+"FListBox_LBX"
+372 292
+Left bottom
+
+[item4]
+"FListBox_LTX"
+372 263
+Left top
+
+[item5]
+"FListBox_LX"
+372 272
+Left middle
+
+[item6]
+"FListBox_RBX"
+410 292
+Right bottom
+
+[item7]
+"FListBox_RTX"
+410 263
+Right top
+
+[item8]
+"FListBox_RX"
+411 272
+Right middle
+
+[item9]
+"FListBox_TX"
+391 263
+Middle top
+[end]
+
+[dialog listbox_nafuk_1024]
+372 263
+Dialog inflatable
+[item1]
+"FListBox_BX"
+391 303
+Middle bottom
+
+[item2]
+"FListBox_CX"
+392 283
+Middle middle
+
+[item3]
+"FListBox_LBX"
+372 303
+Left bottom
+
+[item4]
+"FListBox_LTX"
+372 263
+Left top
+
+[item5]
+"FListBox_LX"
+372 283
+Left middle
+
+[item6]
+"FListBox_RBX"
+416 303
+Right bottom
+
+[item7]
+"FListBox_RTX"
+416 263
+Right top
+
+[item8]
+"FListBox_RX"
+417 283
+Right middle
+
+[item9]
+"FListBox_TX"
+391 263
+Middle top
+
+[item10]
+"FListBox_BX"
+409 303
+Middle bottom
+
+[item11]
+"FListBox_CX"
+410 283
+Middle middle
+
+[item12]
+"FListBox_TX"
+409 263
+Middle top
+[end]
+
+[dialog listbox_nafuk_800]
+372 263
+Dialog inflatable
+[item1]
+"FListBox_BX"
+391 302
+Middle bottom
+
+[item2]
+"FListBox_CX"
+392 283
+Middle middle
+
+[item3]
+"FListBox_LBX"
+372 302
+Left bottom
+
+[item4]
+"FListBox_LTX"
+372 263
+Left top
+
+[item5]
+"FListBox_LX"
+372 284
+Left middle
+
+[item6]
+"FListBox_RBX"
+412 302
+Right bottom
+
+[item7]
+"FListBox_RTX"
+412 263
+Right top
+
+[item8]
+"FListBox_RX"
+413 284
+Right middle
+
+[item9]
+"FListBox_TX"
+391 263
+Middle top
+
+[item10]
+"FListBox_BX"
+401 302
+Middle bottom
+
+[item11]
+"FListBox_CX"
+402 283
+Middle middle
+
+[item12]
+"FListBox_TX"
+401 263
+Middle top
+[end]
+
+[dialog listbox_nafuk_640]
+372 263
+Dialog inflatable
+[item1]
+"FListBox_LBX"
+372 302
+Left bottom
+
+[item2]
+"FListBox_LTX"
+372 263
+Left top
+
+[item3]
+"FListBox_LX"
+372 282
+Left middle
+
+[item4]
+"FListBox_RBX"
+410 302
+Right bottom
+
+[item5]
+"FListBox_RTX"
+410 263
+Right top
+
+[item6]
+"FListBox_RX"
+411 282
+Right middle
+
+[item7]
+"FListBox_TX"
+391 263
+Middle top
+
+[item8]
+"FListBox_BX"
+391 302
+Middle bottom
+
+[item9]
+"FListBox_CX"
+392 283
+Middle middle
+[end]
+
+[dialog edit_nafuk]
+375 210
+Dialog inflatable
+[item1]
+"FListBox_LTX"
+375 210
+Left top
+
+[item2]
+"FListBox_LBX"
+375 213
+Left bottom
+
+[item3]
+"FListBox_TX"
+394 210
+Middle top
+
+[item4]
+"FListBox_BX"
+394 213
+Middle bottom
+
+[item5]
+"FListBox_RTX"
+413 210
+Right top
+
+[item6]
+"FListBox_RBX"
+413 213
+Right bottom
+[end]
+
+[dialog loadedit_editbox]
+375 210
+Dialog inflatable
+[item1]
+"FListBox_LTX"
+375 210
+Left top
+
+[item2]
+"FListBox_LBX"
+375 213
+Left bottom
+
+[item3]
+"FListBox_TX"
+394 210
+Middle top
+
+[item4]
+"FListBox_BX"
+394 213
+Middle bottom
+
+[item5]
+"FListBox_RTX"
+413 210
+Right top
+
+[item6]
+"FListBox_RBX"
+413 213
+Right bottom
+[end]
+
+[dialog reviewteam]
+0 0
+Dialog
+[item1]
+"1024team_review"
+0 0
+Left top
+[end]
+
+[dialog 1024reviewteam]
+0 0
+Dialog inflatable
+[item1]
+"cerna12864"
+0 0
+Middle middle
+
+[item2]
+"1024team_review_L2"
+285 80
+Left top
+
+[item3]
+"1024team_review_T"
+0 0
+Left top
+
+[item4]
+"1024team_review_L"
+0 32
+Left top
+
+[item5]
+"1024team_review_R"
+991 83
+Left top
+
+[item6]
+"1024team_review_B"
+0 698
+Left top
+
+[item7]
+"1024team_review_C"
+11 95
+Left top
+[end]
+
+[dialog 800reviewteam]
+0 0
+Dialog inflatable
+[item1]
+"cerna10060"
+10 68
+Middle middle
+
+[item2]
+"1024team_review_B"
+0 545
+Left top
+
+[item3]
+"1024team_review_L"
+0 0
+Left top
+
+[item4]
+"1024team_review_L2"
+222 54
+Left top
+
+[item5]
+"1024team_review_R"
+774 0
+Left top
+
+[item6]
+"1024team_review_T"
+0 0
+Left top
+
+[item7]
+"1024team_review_C"
+22 80
+Left top
+[end]
+
+[dialog 640reviewteam]
+0 0
+Dialog inflatable
+[item1]
+"cerna8060"
+0 0
+Middle middle
+
+[item2]
+"1024team_review_B"
+0 435
+Left top
+
+[item3]
+"1024team_review_L"
+0 0
+Left top
+
+[item4]
+"1024team_review_L2"
+177 45
+Left top
+
+[item5]
+"1024team_review_R"
+619 0
+Left top
+
+[item6]
+"1024team_review_T"
+0 0
+Left top
+
+[item7]
+"1024team_review_C"
+17 60
+Left top
+[end]
+
+[dialog check_ape]
+400 300
+Checkbox
+[item1]
+"1024show-ape-off"
+400 300
+Left top
+[end]
+
+[dialog check_ape on]
+400 300
+Checkbox
+[item1]
+"1024show-ape-on"
+400 300
+
+[end]
+
+[dialog check_baz]
+400 300
+Checkbox
+[item1]
+"1024show-baz-off"
+400 300
+Left top
+[end]
+
+[dialog check_baz on]
+400 300
+Checkbox
+[item1]
+"1024show-baz-on"
+400 300
+
+[end]
+
+[dialog check_eng]
+400 300
+Checkbox
+[item1]
+"1024show-eng-off"
+400 300
+Left top
+[end]
+
+[dialog check_eng on]
+400 300
+Checkbox
+[item1]
+"1024show-eng-on"
+400 300
+
+[end]
+
+[dialog check_mech]
+400 300
+Checkbox
+[item1]
+"1024show-mech-off"
+400 300
+Left top
+[end]
+
+[dialog check_mech on]
+400 300
+Checkbox
+[item1]
+"1024show-mech-on"
+400 300
+
+[end]
+
+[dialog check_mort]
+400 300
+Checkbox
+[item1]
+"1024show-mort-off"
+400 300
+Left top
+[end]
+
+[dialog check_mort on]
+400 300
+Checkbox
+[item1]
+"1024show-mort-on"
+400 300
+
+[end]
+
+[dialog check_sci]
+400 300
+Checkbox
+[item1]
+"1024show-sci-off"
+400 300
+Left top
+[end]
+
+[dialog check_sci on]
+400 300
+Checkbox
+[item1]
+"1024show-sci-on"
+400 300
+
+[end]
+
+[dialog check_snip]
+400 300
+Checkbox
+[item1]
+"1024show-snip-off"
+400 300
+Left top
+[end]
+
+[dialog check_snip on]
+400 300
+Checkbox
+[item1]
+"1024show-snip-on"
+400 300
+
+[end]
+
+[dialog check_sold]
+400 300
+Checkbox
+[item1]
+"1024show-sold-off"
+400 300
+Left top
+[end]
+
+[dialog check_sold on]
+400 300
+Checkbox
+[item1]
+"1024show-sold-on"
+400 300
+
+[end]
+
+[dialog zalozka_auta]
+400 300
+Checkbox
+[item1]
+"1024zalozka-auta-off"
+400 300
+Left top
+[end]
+
+[dialog zalozka_auta on]
+400 300
+Checkbox
+[item1]
+"1024zalozka-auta-on"
+400 300
+
+[end]
+
+[dialog zalozka_bldg]
+400 300
+Checkbox
+[item1]
+"1024zalozka-bldg-off"
+400 300
+Left top
+[end]
+
+[dialog zalozka_bldg on]
+400 300
+Checkbox
+[item1]
+"1024zalozka-bldg-on"
+400 300
+
+[end]
+
+[dialog zalozka_lidi]
+400 300
+Checkbox
+[item1]
+"1024zalozka-lidi-off"
+400 300
+Left top
+[end]
+
+[dialog zalozka_lidi on]
+400 300
+Checkbox
+[item1]
+"1024zalozka-lidi-on"
+400 300
+
+[end]
+
+[dialog check_defence]
+400 300
+Checkbox
+[item1]
+"1024show-defense-off"
+400 300
+Left top
+[end]
+
+[dialog check_defence on]
+400 300
+Checkbox
+[item1]
+"1024show-defense-on"
+400 300
+
+[end]
+
+[dialog check_resources]
+400 300
+Checkbox
+[item1]
+"1024show-resources-off"
+400 300
+Left top
+[end]
+
+[dialog check_resources on]
+400 300
+Checkbox
+[item1]
+"1024show-resources-on"
+400 300
+
+[end]
+
+[dialog check_mainbldg]
+400 300
+Checkbox
+[item1]
+"1024show-mainbldg-off"
+400 300
+Left top
+[end]
+
+[dialog check_mainbldg on]
+400 300
+Checkbox
+[item1]
+"1024show-mainbldg-on"
+400 300
+
+[end]
+
+[dialog check_computer]
+400 300
+Checkbox
+[item1]
+"1024show-comp-off"
+400 300
+Left top
+[end]
+
+[dialog check_computer on]
+400 300
+Checkbox
+[item1]
+"1024show-comp-on"
+400 300
+
+[end]
+
+[dialog check_remote]
+400 300
+Checkbox
+[item1]
+"1024show-remote-off"
+400 300
+Left top
+[end]
+
+[dialog check_remote on]
+400 300
+Checkbox
+[item1]
+"1024show-remote-on"
+400 300
+
+[end]
+
+[dialog check_people]
+400 300
+Checkbox
+[item1]
+"1024show-human-off"
+400 300
+Left top
+[end]
+
+[dialog check_people on]
+400 300
+Checkbox
+[item1]
+"1024show-human-on"
+400 300
+
+[end]
+
+[dialog check_special]
+399 300
+Checkbox
+[item1]
+"1024show-specbldg-off"
+400 300
+Left top
+[end]
+
+[dialog check_special on]
+399 300
+Checkbox
+[item1]
+"1024show-specbldg-on"
+400 300
+
+[end]
+
+[dialog button_back]
+399 299
+Button
+[item1]
+"1024btn-hire"
+400 300
+Left top
+[end]
+
+[dialog button_back click]
+399 299
+Button
+[item1]
+"1024btn-hire-klik"
+400 300
+
+[end]
+
+[dialog button_back over]
+399 299
+Button
+[item1]
+"1024btn-hire-mo"
+400 300
+
+[end]
+
+[dialog button_forward]
+399 299
+Button
+[item1]
+"1024btn-fire"
+400 300
+Left top
+[end]
+
+[dialog button_forward click]
+399 299
+Button
+[item1]
+"1024btn-fire-klik"
+400 300
+Left top
+[end]
+
+[dialog button_forward over]
+399 299
+Button
+[item1]
+"1024btn-fire-mo"
+400 300
+
+[end]
+
+[dialog button_done]
+399 299
+Button
+[item1]
+"1024btn-OK"
+400 300
+Left top
+[end]
+
+[dialog button_done click]
+399 299
+Button
+[item1]
+"1024btn-OK-klik"
+400 300
+
+[end]
+
+[dialog button_done over]
+399 299
+Button
+[item1]
+"1024btn-OK-mo"
+400 300
+
+[end]
+
+[dialog speedbar ub]
+347 226
+Scrollbar
+[item1]
+"1024SpeedBar_Korytnacka"
+347 226
+Left top
+[end]
+
+[dialog speedbar ub click]
+347 226
+Scrollbar
+[item1]
+"1024SpeedBar_Korytnacka"
+347 226
+
+[end]
+
+[dialog speedbar slider]
+347 226
+Scrollbar
+[item1]
+"1024SpeedBar_Slider"
+347 226
+
+[end]
+
+[dialog speedbar sliderback]
+347 226
+Scrollbar
+[item1]
+"1024SpeedBar_SliderBack"
+347 226
+
+[end]
+
+[dialog speedbar db]
+347 226
+Scrollbar
+[item1]
+"1024SpeedBar_Zajac"
+347 226
+
+[end]
+
+[dialog speedbar db click]
+347 226
+Scrollbar
+[item1]
+"1024SpeedBar_Zajac"
+347 226
+
+[end]
+
+[dialog check_sort_eng]
+399 299
+Checkbox
+[item1]
+"1024sort-eng-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_eng on]
+399 299
+Checkbox
+[item1]
+"1024sort-eng-on"
+400 300
+
+[end]
+
+[dialog check_sort_mech]
+399 299
+Checkbox
+[item1]
+"1024sort-mech-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_mech on]
+399 299
+Checkbox
+[item1]
+"1024sort-mech-on"
+400 300
+
+[end]
+
+[dialog check_sort_profs]
+399 299
+Checkbox
+[item1]
+"1024sort-profs-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_profs on]
+399 299
+Checkbox
+[item1]
+"1024sort-profs-on"
+400 300
+
+[end]
+
+[dialog check_sort_sci]
+399 299
+Checkbox
+[item1]
+"1024sort-sci-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_sci on]
+399 299
+Checkbox
+[item1]
+"1024sort-sci-on"
+400 300
+
+[end]
+
+[dialog check_sort_sold]
+399 299
+Checkbox
+[item1]
+"1024sort-sold-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_sold on]
+399 299
+Checkbox
+[item1]
+"1024sort-sold-on"
+400 300
+
+[end]
+
+[dialog check_sort_speed]
+399 299
+Checkbox
+[item1]
+"1024sort-speed-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_speed on]
+399 299
+Checkbox
+[item1]
+"1024sort-speed-on"
+400 300
+
+[end]
+
+[dialog check_sort_bldb]
+399 300
+Checkbox
+[item1]
+"1024sort-vs bldg-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_bldb on]
+399 300
+Checkbox
+[item1]
+"1024sort-vs bldg-on"
+400 300
+
+[end]
+
+[dialog check_sort_sort]
+399 299
+Checkbox
+[item1]
+"1024sort-vs soft-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_sort on]
+399 299
+Checkbox
+[item1]
+"1024sort-vs soft-on"
+400 300
+
+[end]
+
+[dialog check_sort_veh]
+399 299
+Checkbox
+[item1]
+"1024sort-vs veh-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_veh on]
+399 299
+Checkbox
+[item1]
+"1024sort-vs veh-on"
+400 300
+
+[end]
+
+[dialog check_sort_defence]
+399 299
+Checkbox
+[item1]
+"1024sort-defense-off"
+400 300
+Left top
+[end]
+
+[dialog check_sort_defence on]
+399 299
+Checkbox
+[item1]
+"1024sort-defense-on"
+400 300
+
+[end]
+
+[dialog 0def]
+399 299
+Button
+[item1]
+"1024group-0-def"
+400 300
+Left top
+[end]
+
+[dialog 0def click]
+399 299
+Button
+[item1]
+"1024group-0-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 0def over]
+399 299
+Button
+[item1]
+"1024group-0-def-mo"
+400 300
+
+[end]
+
+[dialog 0redef]
+399 299
+Button
+[item1]
+"1024group-0-def"
+400 300
+Left top
+[end]
+
+[dialog 0redef click]
+399 299
+Button
+[item1]
+"1024group-0-rec-klik"
+400 300
+
+[end]
+
+[dialog 0redef over]
+399 299
+Button
+[item1]
+"1024group-0-rec-mo"
+400 300
+
+[end]
+
+[dialog 0nredef]
+399 299
+Button
+[item1]
+"1024group-0-undef"
+400 300
+Left top
+[end]
+
+[dialog 0nredef click]
+399 299
+Button
+[item1]
+"1024group-0-rec-klik"
+400 300
+
+[end]
+
+[dialog 0nredef over]
+399 299
+Button
+[item1]
+"1024group-0-rec-mo"
+400 300
+
+[end]
+
+[dialog 1def]
+399 299
+Button
+[item1]
+"1024group-1-def"
+400 300
+Left top
+[end]
+
+[dialog 1def click]
+399 299
+Button
+[item1]
+"1024group-1-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 1def over]
+399 299
+Button
+[item1]
+"1024group-1-def-mo"
+400 300
+
+[end]
+
+[dialog 1redef]
+399 299
+Button
+[item1]
+"1024group-1-def"
+400 300
+Left top
+[end]
+
+[dialog 1redef click]
+399 299
+Button
+[item1]
+"1024group-1-rec-klik"
+400 300
+
+[end]
+
+[dialog 1redef over]
+399 299
+Button
+[item1]
+"1024group-1-rec-mo"
+400 300
+
+[end]
+
+[dialog 1nredef]
+399 299
+Button
+[item1]
+"1024group-1-undef"
+400 300
+Left top
+[end]
+
+[dialog 1nredef click]
+399 299
+Button
+[item1]
+"1024group-1-rec-klik"
+400 300
+
+[end]
+
+[dialog 1nredef over]
+399 299
+Button
+[item1]
+"1024group-1-rec-mo"
+400 300
+
+[end]
+
+[dialog 2def]
+399 299
+Button
+[item1]
+"1024group-2-def"
+400 300
+Left top
+[end]
+
+[dialog 2def click]
+399 299
+Button
+[item1]
+"1024group-2-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 2def over]
+399 299
+Button
+[item1]
+"1024group-2-def-mo"
+400 300
+
+[end]
+
+[dialog 2redef]
+399 299
+Button
+[item1]
+"1024group-2-def"
+400 300
+Left top
+[end]
+
+[dialog 2redef click]
+399 299
+Button
+[item1]
+"1024group-2-rec-klik"
+400 300
+
+[end]
+
+[dialog 2redef over]
+399 299
+Button
+[item1]
+"1024group-2-rec-mo"
+400 300
+
+[end]
+
+[dialog 2nredef]
+399 299
+Button
+[item1]
+"1024group-2-undef"
+400 300
+Left top
+[end]
+
+[dialog 2nredef click]
+399 299
+Button
+[item1]
+"1024group-2-rec-klik"
+400 300
+
+[end]
+
+[dialog 2nredef over]
+399 299
+Button
+[item1]
+"1024group-2-rec-mo"
+400 300
+
+[end]
+
+[dialog 2def]
+399 299
+Button
+[item1]
+"1024group-2-def"
+400 300
+Left top
+[end]
+
+[dialog 2def click]
+399 299
+Button
+[item1]
+"1024group-2-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 2def over]
+399 299
+Button
+[item1]
+"1024group-2-def-mo"
+400 300
+
+[end]
+
+[dialog 2redef]
+399 299
+Button
+[item1]
+"1024group-2-def"
+400 300
+Left top
+[end]
+
+[dialog 2redef click]
+399 299
+Button
+[item1]
+"1024group-2-rec-klik"
+400 300
+
+[end]
+
+[dialog 2redef over]
+399 299
+Button
+[item1]
+"1024group-2-rec-mo"
+400 300
+
+[end]
+
+[dialog 2nredef]
+399 299
+Button
+[item1]
+"1024group-2-undef"
+400 300
+Left top
+[end]
+
+[dialog 2nredef click]
+399 299
+Button
+[item1]
+"1024group-2-rec-klik"
+400 300
+
+[end]
+
+[dialog 2nredef over]
+399 299
+Button
+[item1]
+"1024group-2-rec-mo"
+400 300
+
+[end]
+
+[dialog 3def]
+399 299
+Button
+[item1]
+"1024group-3-def"
+400 300
+Left top
+[end]
+
+[dialog 3def click]
+399 299
+Button
+[item1]
+"1024group-3-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 3def over]
+399 299
+Button
+[item1]
+"1024group-3-def-mo"
+400 300
+
+[end]
+
+[dialog 3redef]
+399 299
+Button
+[item1]
+"1024group-3-def"
+400 300
+Left top
+[end]
+
+[dialog 3redef click]
+399 299
+Button
+[item1]
+"1024group-3-rec-klik"
+400 300
+
+[end]
+
+[dialog 3redef over]
+399 299
+Button
+[item1]
+"1024group-3-rec-mo"
+400 300
+
+[end]
+
+[dialog 3nredef]
+399 299
+Button
+[item1]
+"1024group-3-undef"
+400 300
+Left top
+[end]
+
+[dialog 3nredef click]
+399 299
+Button
+[item1]
+"1024group-3-rec-klik"
+400 300
+
+[end]
+
+[dialog 3nredef over]
+399 299
+Button
+[item1]
+"1024group-3-rec-mo"
+400 300
+
+[end]
+
+[dialog 4def]
+399 299
+Button
+[item1]
+"1024group-4-def"
+400 300
+Left top
+[end]
+
+[dialog 4def click]
+399 299
+Button
+[item1]
+"1024group-4-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 4def over]
+399 299
+Button
+[item1]
+"1024group-4-def-mo"
+400 300
+
+[end]
+
+[dialog 4redef]
+399 299
+Button
+[item1]
+"1024group-4-def"
+400 300
+Left top
+[end]
+
+[dialog 4redef click]
+399 299
+Button
+[item1]
+"1024group-4-rec-klik"
+400 300
+
+[end]
+
+[dialog 4redef over]
+399 299
+Button
+[item1]
+"1024group-4-rec-mo"
+400 300
+
+[end]
+
+[dialog 4nredef]
+399 299
+Button
+[item1]
+"1024group-4-undef"
+400 300
+Left top
+[end]
+
+[dialog 4nredef click]
+399 299
+Button
+[item1]
+"1024group-4-rec-klik"
+400 300
+
+[end]
+
+[dialog 4nredef over]
+399 299
+Button
+[item1]
+"1024group-4-rec-mo"
+400 300
+
+[end]
+
+[dialog 5def]
+399 299
+Button
+[item1]
+"1024group-5-def"
+400 300
+Left top
+[end]
+
+[dialog 5def click]
+399 299
+Button
+[item1]
+"1024group-5-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 5def over]
+399 299
+Button
+[item1]
+"1024group-5-def-mo"
+400 300
+
+[end]
+
+[dialog 5redef]
+399 299
+Button
+[item1]
+"1024group-5-def"
+400 300
+Left top
+[end]
+
+[dialog 5redef click]
+399 299
+Button
+[item1]
+"1024group-5-rec-klik"
+400 300
+
+[end]
+
+[dialog 5redef over]
+399 299
+Button
+[item1]
+"1024group-5-rec-mo"
+400 300
+
+[end]
+
+[dialog 5nredef]
+399 299
+Button
+[item1]
+"1024group-5-undef"
+400 300
+Left top
+[end]
+
+[dialog 5nredef click]
+399 299
+Button
+[item1]
+"1024group-5-rec-klik"
+400 300
+
+[end]
+
+[dialog 5nredef over]
+399 299
+Button
+[item1]
+"1024group-5-rec-mo"
+400 300
+
+[end]
+
+[dialog 6def]
+399 299
+Button
+[item1]
+"1024group-6-def"
+400 300
+Left top
+[end]
+
+[dialog 6def click]
+399 299
+Button
+[item1]
+"1024group-6-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 6def over]
+399 299
+Button
+[item1]
+"1024group-6-def-mo"
+400 300
+
+[end]
+
+[dialog 6redef]
+399 299
+Button
+[item1]
+"1024group-6-def"
+400 300
+Left top
+[end]
+
+[dialog 6redef click]
+399 299
+Button
+[item1]
+"1024group-6-rec-klik"
+400 300
+
+[end]
+
+[dialog 6redef over]
+399 299
+Button
+[item1]
+"1024group-6-rec-mo"
+400 300
+
+[end]
+
+[dialog 6nredef]
+399 299
+Button
+[item1]
+"1024group-6-undef"
+400 300
+Left top
+[end]
+
+[dialog 6nredef click]
+399 299
+Button
+[item1]
+"1024group-6-rec-klik"
+400 300
+
+[end]
+
+[dialog 6nredef over]
+399 299
+Button
+[item1]
+"1024group-6-rec-mo"
+400 300
+
+[end]
+
+[dialog 7def]
+399 299
+Button
+[item1]
+"1024group-7-def"
+400 300
+Left top
+[end]
+
+[dialog 7def click]
+399 299
+Button
+[item1]
+"1024group-7-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 7def over]
+399 299
+Button
+[item1]
+"1024group-7-def-mo"
+400 300
+
+[end]
+
+[dialog 7redef]
+399 299
+Button
+[item1]
+"1024group-7-def"
+400 300
+Left top
+[end]
+
+[dialog 7redef click]
+399 299
+Button
+[item1]
+"1024group-7-rec-klik"
+400 300
+
+[end]
+
+[dialog 7redef over]
+399 299
+Button
+[item1]
+"1024group-7-rec-mo"
+400 300
+
+[end]
+
+[dialog 7nredef]
+399 299
+Button
+[item1]
+"1024group-7-undef"
+400 300
+Left top
+[end]
+
+[dialog 7nredef click]
+399 299
+Button
+[item1]
+"1024group-7-rec-klik"
+400 300
+
+[end]
+
+[dialog 7nredef over]
+399 299
+Button
+[item1]
+"1024group-7-rec-mo"
+400 300
+
+[end]
+
+[dialog 8def]
+399 299
+Button
+[item1]
+"1024group-8-def"
+400 300
+Left top
+[end]
+
+[dialog 8def click]
+399 299
+Button
+[item1]
+"1024group-8-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 8def over]
+399 299
+Button
+[item1]
+"1024group-8-def-mo"
+400 300
+
+[end]
+
+[dialog 8redef]
+399 299
+Button
+[item1]
+"1024group-8-def"
+400 300
+Left top
+[end]
+
+[dialog 8redef click]
+399 299
+Button
+[item1]
+"1024group-8-rec-klik"
+400 300
+
+[end]
+
+[dialog 8redef over]
+399 299
+Button
+[item1]
+"1024group-8-rec-mo"
+400 300
+
+[end]
+
+[dialog 8nredef]
+399 299
+Button
+[item1]
+"1024group-8-undef"
+400 300
+Left top
+[end]
+
+[dialog 8nredef click]
+399 299
+Button
+[item1]
+"1024group-8-rec-klik"
+400 300
+
+[end]
+
+[dialog 8nredef over]
+399 299
+Button
+[item1]
+"1024group-8-rec-mo"
+400 300
+
+[end]
+
+[dialog 9def]
+399 299
+Button
+[item1]
+"1024group-9-def"
+400 300
+Left top
+[end]
+
+[dialog 9def click]
+399 299
+Button
+[item1]
+"1024group-9-def-klik"
+400 300
+Left top
+[end]
+
+[dialog 9def over]
+399 299
+Button
+[item1]
+"1024group-9-def-mo"
+400 300
+
+[end]
+
+[dialog 9redef]
+399 299
+Button
+[item1]
+"1024group-9-def"
+400 300
+Left top
+[end]
+
+[dialog 9redef click]
+399 299
+Button
+[item1]
+"1024group-9-rec-klik"
+400 300
+
+[end]
+
+[dialog 9redef over]
+399 299
+Button
+[item1]
+"1024group-9-rec-mo"
+400 300
+
+[end]
+
+[dialog 9nredef]
+399 299
+Button
+[item1]
+"1024group-9-undef"
+400 300
+Left top
+[end]
+
+[dialog 9nredef click]
+399 299
+Button
+[item1]
+"1024group-9-rec-klik"
+400 300
+
+[end]
+
+[dialog 9nredef over]
+399 299
+Button
+[item1]
+"1024group-9-rec-mo"
+400 300
+
+[end]
+
+[dialog window_infohuman]
+157 133
+Dialog
+[item1]
+"1024infopanelHuman"
+157 133
+Left top
+[end]
+
+[dialog window_infovehicle]
+157 133
+Dialog
+[item1]
+"1024infopanelVehicle"
+157 133
+Left top
+[end]
+
+[dialog window_infobuilding]
+157 133
+Dialog
+[item1]
+"1024infopanelBuilding"
+157 133
+Left top
+[end]
+
+[dialog window_infoskill]
+180 166
+Dialog
+[item1]
+"1024infopanelSkill"
+180 236
+Left top
+[end]
+
+[dialog skillsup]
+0 0
+Dialog
+[item1]
+"1024team_skills"
+0 0
+Left top
+[end]
+
+[dialog button_cancel]
+407 291
+Button
+[item1]
+"1024btn-Cancel"
+407 291
+Left top
+[end]
+
+[dialog button_cancel click]
+407 291
+Button
+[item1]
+"1024btn-Cancel-klik"
+407 291
+
+[end]
+
+[dialog button_cancel over]
+407 291
+Button
+[item1]
+"1024btn-Cancel-mo"
+407 291
+
+[end]
+
+[dialog but_sold]
+275 267
+Button
+[item1]
+"1024sort-sold-off"
+275 267
+Left top
+[end]
+
+[dialog but_sold click]
+275 267
+Button
+[item1]
+"1024sort-sold-on"
+275 267
+
+[end]
+
+[dialog but_sold over]
+275 267
+Button
+[item1]
+"1024sort-sold-on"
+275 267
+
+[end]
+
+[dialog but_eng]
+266 207
+Button
+[item1]
+"1024sort-eng-off"
+266 207
+Left top
+[end]
+
+[dialog but_eng click]
+266 207
+Button
+[item1]
+"1024sort-eng-on"
+266 207
+
+[end]
+
+[dialog but_eng over]
+266 207
+Button
+[item1]
+"1024sort-eng-on"
+266 207
+
+[end]
+
+[dialog but_mech]
+334 204
+Button
+[item1]
+"1024sort-mech-off"
+334 204
+Left top
+[end]
+
+[dialog but_mech click]
+334 204
+Button
+[item1]
+"1024sort-mech-on"
+334 204
+
+[end]
+
+[dialog but_mech over]
+334 204
+Button
+[item1]
+"1024sort-mech-on"
+334 204
+
+[end]
+
+[dialog but_sci]
+185 159
+Button
+[item1]
+"1024sort-sci-off"
+185 159
+Left top
+[end]
+
+[dialog but_sci click]
+185 159
+Button
+[item1]
+"1024sort-sci-on"
+185 159
+
+[end]
+
+[dialog but_sci over]
+185 159
+Button
+[item1]
+"1024sort-sci-on"
+185 159
+
+[end]
+
+[dialog medailovy_okno]
+243 151
+Dialog
+[item1]
+"ramecek_02_B"
+313 501
+Left top
+
+[item2]
+"ramecek_02_L"
+243 221
+Left top
+
+[item3]
+"ramecek_02_LB"
+243 501
+Left top
+
+[item4]
+"ramecek_02_LT"
+243 151
+Left top
+
+[item5]
+"ramecek_02_R"
+593 221
+Left top
+
+[item6]
+"ramecek_02_RB"
+593 501
+Left top
+
+[item7]
+"ramecek_02_RT"
+593 151
+Left top
+
+[item8]
+"ramecek_02_T"
+313 151
+Left top
+
+[item9]
+"ramecek_02_T"
+383 151
+Left top
+
+[item10]
+"ramecek_02_T"
+453 151
+Left top
+
+[item11]
+"ramecek_02_R"
+593 291
+Left top
+
+[item12]
+"ramecek_02_R"
+593 361
+Left top
+
+[item13]
+"ramecek_02_B"
+383 501
+Left top
+
+[item14]
+"ramecek_02_B"
+453 501
+Left top
+
+[item15]
+"ramecek_02_L"
+243 291
+Left top
+
+[item16]
+"ramecek_02_L"
+243 361
+Left top
+
+[item17]
+"ramecek_02_T"
+523 151
+Left top
+
+[item18]
+"ramecek_02_B"
+523 501
+Left top
+
+[item19]
+"ramecek_02_L"
+243 431
+Left top
+
+[item20]
+"ramecek_02_R"
+593 431
+Left top
+
+[item21]
+"pad"
+283 190
+Left top
+[end]
+
+[dialog player1]
+400 300
+Checkbox
+[item1]
+"DebrChkBox1"
+400 300
+Left top
+[end]
+
+[dialog player1 on]
+400 300
+Checkbox
+[item1]
+"DebrChkBox1a"
+400 300
+
+[end]
+
+[dialog player2]
+400 300
+Checkbox
+[item1]
+"DebrChkBox2"
+400 300
+Left top
+[end]
+
+[dialog player2 on]
+400 300
+Checkbox
+[item1]
+"DebrChkBox2a"
+400 300
+
+[end]
+
+[dialog player3]
+400 300
+Checkbox
+[item1]
+"DebrChkBox3"
+400 300
+Left top
+[end]
+
+[dialog player3 on]
+400 300
+Checkbox
+[item1]
+"DebrChkBox3a"
+400 300
+
+[end]
+
+[dialog player4]
+400 300
+Checkbox
+[item1]
+"DebrChkBox4"
+400 300
+Left top
+[end]
+
+[dialog player4 on]
+400 300
+Checkbox
+[item1]
+"DebrChkBox4a"
+400 300
+
+[end]
+
+[dialog player5]
+400 300
+Checkbox
+[item1]
+"DebrChkBox5"
+400 300
+Left top
+[end]
+
+[dialog player5 on]
+400 300
+Checkbox
+[item1]
+"DebrChkBox5a"
+400 300
+Left top
+[end]
+
+[dialog player6]
+400 300
+Checkbox
+[item1]
+"DebrChkBox6"
+400 300
+Left top
+[end]
+
+[dialog player6 on]
+400 300
+Checkbox
+[item1]
+"DebrChkBox6a"
+400 300
+
+[end]
+
+[dialog player7]
+400 300
+Checkbox
+[item1]
+"DebrChkBox7"
+400 300
+Left top
+[end]
+
+[dialog player7 on]
+400 300
+Checkbox
+[item1]
+"DebrChkBox7a"
+400 300
+
+[end]
+
+[dialog player8]
+400 300
+Checkbox
+[item1]
+"DebrChkBox8"
+400 300
+Left top
+[end]
+
+[dialog player8 on]
+400 300
+Checkbox
+[item1]
+"DebrChkBox8a"
+400 300
+
+[end]
+
+[dialog zalozka_lost]
+266 196
+Checkbox
+[item1]
+"1024zalozka-lost-off"
+266 196
+Left top
+[end]
+
+[dialog zalozka_lost on]
+266 196
+Checkbox
+[item1]
+"1024zalozka-lost-on"
+266 196
+
+[end]
+
+[dialog zalozka_lost]
+266 196
+Checkbox
+[item1]
+"1024zalozka-lost-off"
+266 196
+Left top
+[end]
+
+[dialog zalozka_lost on]
+266 196
+Checkbox
+[item1]
+"1024zalozka-lost-on"
+266 196
+
+[end]
+
+[dialog zalozka_sila]
+266 196
+Checkbox
+[item1]
+"1024zalozka-sila-off"
+266 196
+
+[end]
+
+[dialog zalozka_sila on]
+266 196
+Checkbox
+[item1]
+"1024zalozka-sila-on"
+266 196
+
+[end]
+
+[dialog zalozka_suma]
+266 196
+Checkbox
+[item1]
+"1024zalozka-suma-off"
+266 196
+
+[end]
+
+[dialog zalozka_suma on]
+266 196
+Checkbox
+[item1]
+"1024zalozka-suma-on"
+266 196
+
+[end]
+
+[dialog zalozka_score]
+266 196
+Checkbox
+[item1]
+"1024zalozka-score-off"
+266 196
+
+[end]
+
+[dialog zalozka_score on]
+266 196
+Checkbox
+[item1]
+"1024zalozka-score-on"
+266 196
+
+[end]
+
+[dialog window_dip_color]
+391 250
+Dialog
+[item1]
+"FListBox_RBX"
+422 275
+Left top
+
+[item2]
+"FListBox_LBX"
+391 275
+Left top
+
+[item3]
+"FListBox_LTX"
+391 250
+Left top
+
+[item4]
+"FListBox_RTX"
+422 250
+Left top
+
+[item5]
+"FListBox_RX"
+423 269
+Left top
+
+[item6]
+"FListBox_TX"
+408 250
+Left top
+
+[item7]
+"FListBox_LX"
+391 267
+Left top
+
+[item8]
+"FListBox_BX"
+410 275
+Left top
+
+[item9]
+"colors"
+392 251
+Left top
+[end]
+
+[dialog combo_diplo]
+400 299
+Combobox
+[item1]
+"FListBox_LT"
+400 299
+Left top
+
+[item2]
+"FListBox_LB"
+400 304
+Left top
+
+[item3]
+"FListBox_RT"
+442 299
+Left top
+
+[item4]
+"FListBox_RB"
+442 304
+Left top
+
+[item5]
+"FListBox_T"
+411 299
+Left top
+
+[item6]
+"FListBox_B"
+411 303
+Left top
+
+[item7]
+"FListBox_B"
+421 303
+Left top
+
+[item8]
+"FListBox_T"
+419 299
+Left top
+[end]
+
+[dialog combo_diplo db]
+387 295
+Combobox
+[item1]
+"FListBox_down"
+387 294
+Left top
+[end]
+
+[dialog combo_diplo db click]
+338 317
+Combobox
+[item1]
+"FListBox_downClick"
+338 316
+Left top
+[end]
+
+[dialog window_nafuk_dip_pl]
+418 195
+Dialog inflatable
+[item1]
+"FListBox_RTX"
+459 196
+Right top
+
+[item2]
+"FListBox_RBX"
+459 201
+Right bottom
+
+[item3]
+"FListBox_LTX"
+419 196
+Left top
+
+[item4]
+"FListBox_LBX"
+419 201
+Left bottom
+
+[item5]
+"FListBox_BX"
+440 201
+Middle bottom
+
+[item6]
+"FListBox_TX"
+440 196
+Middle top
+[end]
+
+[dialog skill_sold]
+298 240
+Button
+[item1]
+"1024award-sold"
+298 240
+Left top
+[end]
+
+[dialog skill_sold click]
+298 240
+Button
+[item1]
+"1024award-sold-on"
+298 240
+
+[end]
+
+[dialog skill_sold over]
+298 240
+Button
+[item1]
+"1024award-sold-mo"
+298 240
+
+[end]
+
+[dialog skill_sold disable]
+298 240
+Button
+[item1]
+"1024award-sold-on"
+298 240
+
+[end]
+
+[dialog skill_eng]
+298 240
+Button
+[item1]
+"1024award-eng"
+298 240
+Left top
+[end]
+
+[dialog skill_eng click]
+298 240
+Button
+[item1]
+"1024award-eng-on"
+298 240
+
+[end]
+
+[dialog skill_eng over]
+298 240
+Button
+[item1]
+"1024award-eng-mo"
+298 240
+
+[end]
+
+[dialog skill_eng disable]
+298 240
+Button
+[item1]
+"1024award-eng-on"
+298 240
+
+[end]
+
+[dialog skill_mech]
+298 240
+Button
+[item1]
+"1024award-mech"
+298 240
+Left top
+[end]
+
+[dialog skill_mech click]
+298 240
+Button
+[item1]
+"1024award-mech-on"
+298 240
+
+[end]
+
+[dialog skill_mech over]
+298 240
+Button
+[item1]
+"1024award-mech-mo"
+298 240
+
+[end]
+
+[dialog skill_mech disable]
+298 240
+Button
+[item1]
+"1024award-mech-on"
+298 240
+
+[end]
+
+[dialog skill_sci]
+298 240
+Button
+[item1]
+"1024award-sci"
+298 240
+Left top
+[end]
+
+[dialog skill_sci click]
+298 240
+Button
+[item1]
+"1024award-sci-on"
+298 240
+
+[end]
+
+[dialog skill_sci over]
+298 240
+Button
+[item1]
+"1024award-sci-mo"
+298 240
+
+[end]
+
+[dialog skill_sci disable]
+298 240
+Button
+[item1]
+"1024award-sci-on"
+298 240
+
+[end]
+
+[dialog window_campaign]
+0 0
+Dialog
+[item1]
+"Campaign"
+0 0
+Left top
+[end]
+
+[dialog logwokno]
+179 56
+Dialog
+[item1]
+"1024FacePanel"
+179 56
+Left top
+[end]
+
+[dialog debriefing_button]
+359 321
+Button
+[item1]
+"debriefing_button_up"
+359 321
+Left top
+[end]
+
+[dialog debriefing_button click]
+359 321
+Button
+[item1]
+"debriefing_button_down"
+359 321
+
+[end]
+
+[dialog debriefing_button over]
+359 321
+Button
+[item1]
+"debriefing_button_over"
+359 321
+
+[end]
+
+[dialog debriefing_button disable]
+359 321
+Button
+[item1]
+"debriefing_button_up"
+359 321
+
+[end]
+
+[dialog line1]
+144 342
+Dialog
+[item1]
+"multidebriefing_mode1"
+144 342
+Left top
+[end]
+
+[dialog line2]
+193 276
+Dialog
+[item1]
+"multidebriefing_mode2"
+193 276
+Left top
+[end]
+
+[dialog line3]
+357 285
+Dialog
+[item1]
+"multidebriefing_mode3"
+357 285
+Left top
+[end]
+
+[dialog loading_screen]
+0 0
+Dialog
+[item1]
+"1024loadinscreen"
+0 0
+Left top
+[end]
+
+[dialog button_ok_display]
+234 152
+Button
+[item1]
+"1024btn-OK_display"
+234 152
+Left top
+[end]
+
+[dialog button_ok_display click]
+234 152
+Button
+[item1]
+"1024btn-OK_display_click"
+234 152
+
+[end]
+
+[dialog button_ok_display over]
+234 152
+Button
+[item1]
+"1024btn-OK_display_over"
+234 152
+
+[end]
+
+[dialog button_ok_display disable]
+234 152
+Button
+[end]
+
+[dialog button_fwd_display]
+264 190
+Button
+[item1]
+"1024btn-fwd_display"
+264 190
+Left top
+[end]
+
+[dialog button_fwd_display click]
+264 190
+Button
+[item1]
+"1024btn-fwd_display_click"
+264 190
+
+[end]
+
+[dialog button_fwd_display over]
+264 190
+Button
+[item1]
+"1024btn-fwd_display_over"
+264 190
+
+[end]
+
+[dialog button_fwd_display disable]
+264 190
+Button
+[end]
+
+[dialog button_back_display]
+161 95
+Button
+[item1]
+"1024btn-back_display"
+161 95
+Left top
+[end]
+
+[dialog button_back_display click]
+161 95
+Button
+[item1]
+"1024btn-back_display_click"
+161 95
+
+[end]
+
+[dialog button_back_display over]
+161 95
+Button
+[item1]
+"1024btn-back_display_over"
+161 95
+
+[end]
+
+[dialog button_back_display disable]
+161 95
+Button
+[end]
+

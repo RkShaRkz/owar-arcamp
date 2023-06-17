@@ -1,0 +1,339 @@
+//*************************************************
+//*        Character Movement Scripting           *
+//*************************************************
+
+export function Mission_Started;
+   begin
+     game_speed = 7;
+
+     RevealFogArea(2,AmericanBase);
+     ComCrawl(all_arab_groups);
+
+     CenterOnXY(45,32);
+
+     ArabsTakePositions;
+     wait(0$1);
+
+     // Commander: - Ok. They are sleeping. We only have one chance, so listen up!
+     say(Comm,'VelSoon');
+     CenterOnUnits(all_arab_groups);
+     wait(0$0.5);
+
+     // Commander: Abdul, your company will take cover behind those bushes downhill.
+     say(Comm,'VelBriefA');
+
+     AbdulGroupMoving;
+
+
+     // Commander: Company, we will stay here until Abdul's Company is in position.
+     say(Comm,'VelBriefC');
+     Wait(0$0.6);
+
+     // Commander: All groups, move!
+     say(Comm,'VelMove');
+     CenterOnXY(43,25);
+
+     GensherGroupMove;
+
+
+     wait(0$3);
+
+     // Lister: Commander, which way should I take?
+     say(Lister,'CfLr');
+     // Commander: MOVE IT, LISTER!
+     say(Comm,'CfVel');
+
+     wait(0$12.5);
+     // Commander: Heike, what's your status?
+     Say(comm,'VelInPosition');
+
+
+     while tick < 1500 do  //wait for them in case dialogues were skipped
+           wait(0$1);
+
+     // Heike: Ready anytime.
+     Say(Heike,'HeikeStatus');
+     wait(0$0.5);
+     // Commander: Blow the charges!
+     Say(Comm,'VelBlow');
+
+     Attack;
+ end;
+
+
+Function ArabsTakePositions;
+var i;
+begin
+     for i in FilterAllUnits([f_side, 2]) do
+     begin
+          RemoveUnit(i);
+          SetDir(i, 3);
+     end;
+
+     PlaceUnitXY(Lister, 37, 14, 0);
+     PlaceUnitXY(Gmelin, 38, 14, 0);
+     PlaceUnitXY(Turner, 39, 14, 0);
+     PlaceUnitXY(Comm, 40, 14, 0);
+     PlaceUnitXY(Ortlieb, 41, 14, 0);
+     PlaceUnitXY(Neufeld, 42, 14, 0);
+     PlaceUnitXY(Jevne, 43, 14, 0);
+     PlaceUnitXY(Abdul, 44, 14, 0);
+     PlaceUnitXY(Leif, 45, 14, 0);
+     PlaceUnitXY(New5, 46, 14, 0);
+     PlaceUnitXY(New3, 47, 14, 0);
+     PlaceUnitXY(New4, 48, 14, 0);
+     PlaceUnitXY(Farmer, 53, 18, 0);
+
+     SetDir(New2, 2);
+     SetDir(New1, 2);
+     SetDir(Heike, 2);
+     SetDir(Teodor, 2);
+     SetDir(Oskar, 2);
+     SetDir(Hrovat, 2);
+     SetDir(Hans, 2);
+     PlaceUnitXY(New2, 13,7, 0);
+     PlaceUnitXY(New1, 13,8, 0);
+     PlaceUnitXY(Heike, 12,8, 0);
+     PlaceUnitXY(Teodor, 11,9, 0);
+     PlaceUnitXY(Oskar, 11,10, 0);
+     PlaceUnitXY(Hrovat, 10,10, 0);
+     PlaceUnitXY(Hans, 10,11, 0);
+
+     AddComMoveXY(Hans,27,29);
+     AddcomMoveXY(Hans,30,29);
+
+     AddComMoveXY(Hrovat,27,28);
+     AddComMoveXY(Hrovat,29,28);
+
+     AddComMoveXY(Oskar,27,27);
+     AddComMoveXY(Oskar,29,27);
+
+     AddComMoveXY(Teodor,27,26);
+     AddComMoveXY(Teodor,28,26);
+
+     AddComMoveXY(Heike,27,25);
+     AddComMoveXY(Heike,28,25);
+
+     AddComMoveXY(New1,26,22);
+     AddComMoveXY(New1,27,23);
+
+     AddComMoveXY(New2,26,20);
+     AddComMoveXY(New2,27,21);
+end;
+
+Function AbdulGroupMoving;
+begin
+     // Leif
+     ComWait(Leif,0$5);
+     AddComMoveXY(Leif,45,18);
+     AddComMoveXY(Leif,47,20);
+     AddComMoveXY(Leif,47,24);
+     AddComMoveXY(Leif,47,26);
+
+     // ABDUL
+     ComWait(Abdul,0$0.1);
+     ComMoveXY(Abdul,44,19);
+     AddComMoveXY(Abdul,45,24);
+     AddComMoveXY(Abdul,45,25);
+
+     // JEVNE
+     ComWait(Jevne,0$12);
+     AddComMoveXY(Jevne,45,23);
+     AddComMoveXY(Jevne,49,25);
+     AddComMoveXY(Jevne,49,27);
+
+     // NEUFELD
+     ComWait(Neufeld,0$5);
+     ComWait(Neufeld,0$0.3);
+     AddComMoveXY(Neufeld,42,18);
+     AddComMoveXY(Neufeld,46,22);
+     AddComMoveXY(Neufeld,50,25);
+     AddComMoveXY(Neufeld,50,26);
+
+     // Farmer
+     ComMoveXY(Farmer,54,20);
+     AddComMoveXY(Farmer,54,25);
+     AddComWalk(Farmer);
+     AddComMoveXY(Farmer,55,26);
+     AddComMoveXY(Farmer,55,27);
+     AddComCrawl(Farmer);
+     AddComMoveXY(Farmer,53,27);
+     AddComMoveXY(Farmer,53,26);
+     AddComMoveXY(Farmer,52,27);
+
+     // New5
+     ComWait(New5,0$13);
+     AddComMoveXY(New5,45,14);
+     AddComMoveXY(New5,46,22);
+     AddComMoveXY(New5,46,24);
+     AddComMoveXY(New5,46,25);
+
+     // New3
+     ComWait(New3,0$15.3);
+     AddComMoveXY(New3,47,16);
+     AddComMoveXY(New3,45,16);
+     AddComMoveXY(New3,46,22);
+     AddComMoveXY(New3,48,24);
+     AddComMoveXY(New3,48,26);
+
+     // New4
+     ComWait(New4,0$19);
+     AddComMoveXY(New4,45,14);
+     AddComMoveXY(New4,45,18);
+     AddComMoveXY(New4,46,19);
+     AddComMoveXY(New4,46,22);
+     AddComMoveXY(New4,49,24);
+     AddComMoveXY(New4,49,25);
+end;
+
+Function GensherGroupMove;
+begin
+     // COMMANDER
+     AddComMoveXY(Comm,41,15);
+     AddComMoveXY(Comm,45,19);
+     AddComMoveXY(Comm,45,24);
+     AddComStand(Comm);
+
+     // TURNER
+     AddComWait(Turner,0$0.73);
+     AddComMoveXY(Turner,40,15);
+     AddComWait(Turner,0$0.3);
+     AddComMoveXY(Turner,43,18);
+     AddComWait(Turner,0$0.1);
+     AddComMoveXY(Turner,43,23);
+     AddComMoveXY(Turner,42,23);
+     AddComMoveXY(Turner,42,24);
+
+     // GMELIN
+     AddComWait(Gmelin,0$2);
+     AddComMoveXY(Gmelin,39,15);
+     AddComMoveXY(Gmelin,42,18);
+     AddComWait(Gmelin,0$0.2);
+     AddComMoveXY(Gmelin,42,22);
+     AddComMoveXY(Gmelin,38,22);
+     AddComWait(Gmelin,0$0.33);
+     AddComMoveXY(Gmelin,39,23);
+
+     // Ortlieb
+     AddComWait(Ortlieb,0$1.2);
+     AddComMoveXY(Ortlieb,44,17);
+     AddComMoveXY(Ortlieb,44,22);
+     AddComMoveXY(Ortlieb,40,22);
+     AddComMoveXY(Ortlieb,40,23);
+     AddComMoveXY(Ortlieb,40,24);
+
+     // LISTER
+     AddComWait(Lister,0$4.23);
+     AddComMoveXY(Lister,38,15);
+     AddComMoveXY(Lister,40,17);
+     AddComWait(Lister,0$0.52);
+     AddComMoveXY(Lister,41,17);
+     AddComMoveXY(Lister,43,19);
+     AddComMoveXY(Lister,43,22);
+end;
+
+
+
+
+function Attack;
+ var temp_list, i, k;
+ begin
+
+  music_class=music_combat;
+  wait(0$0.2);
+
+   game_speed=game_speed-1;
+    wait(0$0.2);
+   game_speed=game_speed-1;
+    wait(0$0.2);
+   game_speed=game_speed-1;
+
+  // Abdul: Which Charges? When did you...
+  //Say(Abdul,'AbWut');
+
+  CenterNowOnXY(45,35);
+
+  //**BOOOOOOOOM**//
+  MineExplosion(38,28,1);
+     Wait(0$0.2);
+    MineExplosion(51,33,2);
+       Wait(0$0.45);
+      MineExplosion(44,34,1.5);
+         Wait(0$0.2);
+        MineExplosion(39,38,0.3);
+           Wait(0$0.32);
+          MineExplosion(49,41,2);
+             Wait(0$0.13);
+            MineExplosion(56,37,1);
+
+
+   game_speed=game_speed+1;
+    wait(0$0.2);
+   game_speed=game_speed+1;
+    wait(0$0.2);
+   game_speed=game_speed+1;
+
+  // Commander: MOVE, MOVE, MOVE!
+  async;
+  Say(Comm,'VelFe');
+  sync;
+
+  wait(0$2.5);
+
+  SetAttitude(1,2,att_enemy,true);
+
+  // Let's ignore Joan... WHAT A MISTAKE! (Not a dialog, just a comment from Gwren1)
+  DoNotAttack(2,Joan);
+
+  CenterOnUnits(depot2);
+
+  ComWalk(all_arab_groups);
+  AddComAgressiveMove(all_arab_groups,46,38);
+
+  k = 1;
+  for i in all_arab_groups do
+       begin
+            case k of
+                 1: AddComAgressiveMove(i,38,39);
+                 2: AddComAgressiveMove(i,37,28);
+                 3: AddComAgressiveMove(i,54,34);
+                 4: AddComAgressiveMove(i,56,47);
+            end;
+
+            if k < 4 then
+                 k = k + 1
+            else
+                 k = 1;
+       end;
+
+//*************************************************
+//*        US Forces Movement Scripting           *
+//*************************************************
+
+  RaiseSailEvent(2);  //Joan's escape
+
+  //American human outside building: Shit! We're under attack! Wake up! Wake up!!
+  DialogueOn;
+  Say(Winston,'FkAk');
+  DialogueOff;
+
+  ComExitBuilding(americans);
+  AddComAgressiveMove(americans diff Joan,44,25);
+  AddComMoveXY(Joan,52,39);
+
+  Wait(0$1);
+
+  // American: Shit! We're surrounded!
+  temp_list = UnitFilter(americans,[f_ok]);
+  if temp_list > 0 then
+       Say(temp_list[1],'HrAk');
+
+  Wait(0$0.5);
+  // American non-soldier: My God!
+  temp_list = UnitFilter(americans,[[f_ok],[f_not,[f_class,class_soldier]]]);
+  if temp_list > 0 then
+       Say(temp_list[1],'SrEg');
+
+  // Commander: Don't let anyone escape! Kill them all!
+  Say(Comm,'VelBk');
+end;

@@ -1,0 +1,16 @@
+begin
+? subtype 4
+? type grass
+ ! rgb 120 100 80
+ ! all 120
+ ! sat 50
+ ! hue -10
+new
+? inident keriky
+ ! hue -40
+ ! rgb 100 100 80
+new
+? inident smrcky
+ ! hue -30
+ ! all 110
+end

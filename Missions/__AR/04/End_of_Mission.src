@@ -1,0 +1,62 @@
+
+Every 0$2 trigger FilterAllUnits([[f_or,[f_side,americans],[f_side,russians]],[f_type,unit_human],[f_ok]]) = 0 and IsOk(Heike) do
+     var high_diplo, val, un_list, temp_list, units_list, name_list;
+     begin
+          //Medals and save variables
+          if diplomacy_status[americans] = att_friend or diplomacy_status[russians] = att_friend then
+               high_diplo = 2
+          else
+               if diplomacy_status[americans] = att_neutral or diplomacy_status[russians] = att_neutral then
+                    high_diplo = 1
+               else
+                    high_diplo = 0;
+
+          if high_diplo > 0 then
+               val = 1
+          else val = -1;
+          AddMedal('BasicDiplomacy',val);
+
+          case high_diplo of
+               2: val = 1;
+               1: val = -1;
+               0: val = -2;
+          end;
+          AddMedal('AdvancedDiplomacy',val);
+
+          units_list = UnitFilter(starting_arabs,[f_alive]);
+          case starting_arabs - units_list of
+               0: val = 1;
+               1: val = 2;
+               else val = -1;
+          end;
+          AddMedal('Casualties',val);
+
+          SaveVariable(val > 0,'low_casualties_04');
+
+          GiveMedals('Medals');
+
+
+          //Reward and save people
+          RewardPeople(units_list);
+
+          SaveCharacters(Heike,'Heike_04');
+
+          un_list = [Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn];
+          name_list = ['Sonya','Oswald','Ralph','Kowalski','Willard','Evelyn'];
+          for val = 1 to un_list do
+               if un_list[val] in units_list then
+                    SaveCharacters(un_list[val],name_list[val] & '_04');
+
+          SaveCharacters(units_list diff (un_list ^ Heike),'Others_04');
+
+
+          //Save location of Arab buildings.
+          //Ignore buildings built inside the American and Russian bases.
+          temp_list = [];
+          for val in FilterAllUnits([[f_side,you],[f_type,unit_building],[f_not,[f_inarea,am_base]],[f_not,[f_inarea,ru_base]]]) do
+               temp_list = Insert(temp_list,1, [GetBType(val),GetX(val),GetY(val),GetDir(val),GetLabKind(val,1),GetLabKind(val,2),GetBWeapon(val), main_arab_depot > 0 and val = main_arab_depot] );
+          SaveVariable(temp_list,'Buildings_04');
+
+
+          YouWin;
+     end;

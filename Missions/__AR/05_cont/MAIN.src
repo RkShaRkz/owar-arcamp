@@ -1,0 +1,536 @@
+Export testing;
+Export you, russians, you_alt;
+Export Heike, Gordon, Suze, Ralph, Sonya, Oswald, Farmer, Omar, Abdul, Kowalski, Willard, Evelyn;
+Export Messenger, mes_veh;
+Export Grishko;
+
+Export ai_soldiers, ai_engineers, ai_scientists, ai_depot, ai_lab, ai_turrets;
+Export ai_power_plants, ai_buildings_locations, ai_human_pullback_hex;
+Export ai_building_under_construction, ai_heal_these_humans, ai_all_buildings, ai_building_constructor;
+Export ai_upcoming_building_data, ai_armoury, ai_bunkers, ai_oil_mine;
+Export ai_near_base_dist, ai_side_is_dead, ai_vehicles_defend, ai_vehicle_being_moved, ai_captured_buildings;
+
+Export russians_are_running, flamethrower_constructed, mes_is_olaf, attack_has_begun, attack_timer, buildup_time, quick_buildup, blitzkrieg_time;
+Export blitzkrieg_multiplier;
+
+
+Starting
+begin
+     RandomizeAll;
+     ResetFog;
+
+     testing = false;  //Just testing or campaign for real?
+
+     ai_soldiers = [[],[],[]];  //Soldiers for computer sides
+     ai_engineers = [[],[],[]]; //Engineers for computer sides
+     ai_scientists = [[],[],[]];  //Scientists for computer sides
+     ai_depot = [0,0,0];  //The depot of each computer side
+     ai_lab = [0,0,0];  //The lab of each computer side
+     ai_armoury = [0,0,0];  //The armoury of each computer side
+     ai_bunkers = [[],[],[]];  //The bunkers of each computer side
+     ai_turrets = [[],[],[]];  //The (automatic) turrets of each computer side;
+     ai_oil_mine = [0,0,0];  //The oil mine of each computer side
+     ai_power_plants = [[],[],[]];  //The power plants of each computer side
+     ai_buildings_locations = [[],[],[]];  //The locations of all buildings for each side. Data looking like [x,y,dir,btype,labkind1,labkind2,bweapon] (CF. function "ScanBuildings")
+     ai_captured_buildings = [[],[],[]];  //Identifiers of the buildings each side has lost because someone captured them. Will be recaptured if possible.
+     ai_human_pullback_hex = [[],[],[42,31]];  //Hex where humans can safely retreat to (center of the base)
+     ai_building_under_construction = [0,0,0];  //Identifier of building under construction (only 1 building at a time)
+     ai_heal_these_humans = [[],[],[]];  //Humans needing to be healed
+     ai_all_buildings = [[],[],[]];  //Identifiers of all buildings for each computer side
+     ai_building_constructor = [0,0,0];  //Identifier of the engineer who are going to build a building
+     ai_upcoming_building_data = [[],[],[]];  //Holds the data (building_location syntax) of the building which is going to be build. Isn't reset until the building is completely done.
+     ai_near_base_dist = 35;  //Distance within base where the computer scans for enemies to determine if the base is under attack (so this distance also decides how far away from the base retreating attackers will be pursued).
+     ai_vehicles_defend = [[],[],[]];  //Vehicles of each computer side (in the base)
+     ai_vehicle_being_moved = [0,0,0];  //Identifier of vehicle which is being moved away from building site
+
+     russians_are_running = false;  //Turns true when the Russians realize they are in big trouble and better run for it
+     flamethrower_constructed = false;  //For medal if the player builds a flamethrower
+     mes_is_olaf = false;  //True if the messenger is Olaf (that is: If Olaf didn't die in the first mission)
+     attack_has_begun = false;  //Turns true when Heike is supposed to attack the Russians
+     attack_timer = 0$0;  //Measures how long the attack has taken/took (for medal or for lose the game)
+
+     buildup_time = [Round(250/45 * 1$45 + 70*7/45 * 1$45 + 2$30), //Base + 7 vehicles + EUT  //31,3 min
+                     Round(250/45 * 1$45 + 70*6/45 * 1$45 + 2$20), //Base + 6 vehicles + EUT  //28,4 min
+                     Round(250/45 * 1$45 + 70*5/45 * 1$45 + 2$10), //Base + 5 vehicles + EUT  //25,5 min
+                     Round(250/45 * 1$45 + 70*4/45 * 1$45 + 2$0)]; //Base + 4 vehicles + EUT  //22,6 min
+                                    //The max time the player has to build up an attack force to get the Quick Action medal.
+                                    //The player needs about 250 crates to build up a base
+                                    //A half tracked gun costs 75 crates; half tracked flame thrower 45 crates (but 70 oil!) - we take
+                                    //70 crates as our starting point.
+                                    //EUT is "Expected usage time" - the time it takes from the crates has spawned until we expect
+                                    //the player has gathered it and turned it into something useful like a vehicle or a building.
+                                    //This is a one-shot use (to determine the time between the last spawn until attack start).
+                                    //We calculate with average values for crate spawns (see module "Crates") - that is 45 crates
+                                    //per spawn - spawn every 1$45.
+
+     quick_buildup = -1;  //For medal for quick buildup of forces to attack
+
+     blitzkrieg_time = [2$30 + 0$50 + 2$0 + 3$0, //Prepare 2$30, in pos 0$50, 1 reparation (2$0), attack interact 3$0
+                        2$0 + 0$40 + 0$0 + 2$30, //Prepare 2$0, in pos 0$40, no reparation, attack interact 2$30
+                        1$50 + 0$40 + 0$0 + 2$20] //Prepare 1$50, in pos 0$40, no reparation, attack interact 2$20
+                        [difficulty];  //The max time the player has to make the Russians run away to get the Blitzkrieg medal
+                                       //Notes below are test performed by myself at difficulty 2.
+                                       //Quickest get soldiers in pos (behind Russian base): 2½ min
+                                       //Mec lvl 4 rep 350 HP half_track to 1000 HP ~ 70 sec
+                                       //Attack interact (make Russians flee from the point where contact is made) ~ 1 min (only armoury in red)
+                                       //Mission accomplished in 1968 seconds (468 sec after attack begin)
+                                       //Destroy whole base (3 gun + 4 sol) ~ 200 sec
+                                       //Notes below are test perfermoed by my little brother at difficulty 2.
+                                       //Prepare attack (change class and stuff) - 124 sec
+                                       //Get units in pos (didn't go behind base with soldiers) - 36 sec
+                                       //Base destroyed (after Russians run away) - 223 sec
+                                       //Mission done - 1986 sec all in all - 457 sec after attack start - 269 after Russians run away.
+                                       //Build 2 gun, 1 double machine gun, 1 flame thrower, 1 cargo bay (medium trike)
+                                       //+ used the messenger vehicle for attack.
+                                       //Bunker destroyed made Russians run (and he attacked that bunker with all vehicles).
+
+     //blitzkrieg_multiplier = 1.8;  //Blitzkrieg time multiplied with this factor results in player losing the game for being far too slow.
+     blitzkrieg_multiplier = 18;  //TEMPORARY FIX
+
+     PrepareSides;
+     ScanBuildings;
+     PrepareRussians;
+     PrepareArabs;
+     AdjustResources;
+
+     Action;
+end;
+
+Export Function Round(num);
+     begin
+          result = num div 1;
+     end;
+
+Function PrepareSides;
+     begin
+          you = 2;
+          russians = 3;
+          you_alt = 5;
+
+          SetAttitude(you,russians,att_enemy,true);
+          SetAttitude(you,you_alt,att_friend,true);
+          SetAttitude(russians,you_alt,att_friend,true);
+     end;
+
+Function ScanBuildings;
+     var side, i, temp_list;
+     begin
+          //Adjust base to difficulty
+          if difficulty <= 2 then
+               DestroyUnit(tur1);
+          if difficulty = 1 then
+               DestroyUnit(tur2);
+
+          for side in [russians] do
+               begin
+                    ai_all_buildings = Replace(ai_all_buildings,side, FilterAllUnits([[f_side,side],[f_type,unit_building]]) );
+
+                    for i in ai_all_buildings[side] do
+                         UpdateBuildingBasicVariables(side,i,true);
+
+                    //Prioritated order
+                    temp_list = [];
+                    //for i in ai_depot[side] ^ ai_armoury[side] ^ ai_bunkers[side] ^ ai_power_plants[side] ^ ai_turrets[side] ^ ai_lab[side] ^ ai_oil_mine[side] do
+                    for i in ai_all_buildings[side] do
+                         temp_list = temp_list ^ [ [GetX(i),GetY(i),GetDir(i),GetBType(i),GetLabKind(i,1),GetLabKind(i,2),GetBWeapon(i)] ];
+
+                    ai_buildings_locations = Replace(ai_buildings_locations,side,temp_list);
+                    SortBuildingLocationsListInCorrectOrder(side);
+
+                    //Make sources visible
+                    for i in ai_oil_mine[side] do
+                         SetResourceVisibility(GetX(i),GetY(i),side);
+               end;
+
+          SetBName(ai_depot[russians],'zhukov');
+     end;
+Export Function UpdateBuildingBasicVariables(side,un,add);
+     var temp_list;
+     begin
+          //un - unit to add/remove from basic building variables
+          //add - boolean (true for add units, false for remove)
+
+          case GetBType(un) of
+               b_depot,b_warehouse:
+                    if add then
+                         ai_depot = Replace(ai_depot,side,un)
+                    else
+                         if un = ai_depot[side] then
+                              ai_depot = Replace(ai_depot,side,0);
+               b_lab,b_lab_half,b_lab_full:
+                    if add then
+                         ai_lab = Replace(ai_lab,side,un)
+                    else
+                         if un = ai_lab[side] then
+                              ai_lab = Replace(ai_lab,side,0);
+               b_armoury,b_barracks:
+                    if add then
+                         ai_armoury = Replace(ai_armoury,side,un)
+                    else
+                         if un = ai_armoury[side] then
+                              ai_armoury = Replace(ai_armoury,side,0);
+               b_breastwork,b_bunker: begin
+                    if add then
+                         temp_list = ai_bunkers[side] ^ un
+                    else temp_list = ai_bunkers[side] diff un;
+                    ai_bunkers = Replace(ai_bunkers,side,temp_list);
+               end;
+               b_turret: begin
+                    if add then
+                         temp_list = ai_turrets[side] ^ un
+                    else temp_list = ai_turrets[side] diff un;
+                    ai_turrets = Replace(ai_turrets,side,temp_list);
+               end;
+               b_oil_mine:
+                    if add then
+                         ai_oil_mine = Replace(ai_oil_mine,side,un)
+                    else
+                         if un = ai_oil_mine[side] then
+                              ai_oil_mine = Replace(ai_oil_mine,side,0);
+               b_solar_power,b_oil_power,b_siberite_power: begin
+                    if add then
+                         temp_list = ai_power_plants[side] ^ un
+                    else temp_list = ai_power_plants[side] diff un;
+                    ai_power_plants = Replace(ai_power_plants,side,temp_list);
+               end;
+          end;
+     end;
+Function SortBuildingLocationsListInCorrectOrder(side);
+     var i, temp_list, p;
+     begin
+         temp_list = [];
+
+         for i in ai_buildings_locations[side] do
+              begin
+                   //Prioritated order in which buildings should be (re-)build.
+                   case i[4] of
+                        b_depot, b_warehouse: p = 100;
+                        b_armoury, b_barracks, b_fort: p = 99;
+                        b_solar_power, b_oil_power, b_siberite_power: p = 98;
+                        b_breastwork: p = 97;
+                        b_factory, b_workshop: p = 96;
+                        b_ext_gun, b_ext_noncombat, b_ext_laser, b_ext_computer,
+                        b_ext_radar, b_ext_rocket, b_ext_siberium, b_ext_track, b_ext_stitch: p = 95;
+                        b_bunker: p = 94;
+                        b_control_tower: p = 93;
+                        b_turret: p = 92;
+                        b_lab, b_lab_half, b_lab_full: p = 91;
+                        b_teleport: p = 90;
+                        b_siberite_mine: p = 89;
+                        b_oil_mine: p = 88;
+                   end;
+
+                   temp_list = temp_list ^ p;
+              end;
+
+          temp_list = SortListByListDesc(ai_buildings_locations[side],temp_list);
+          ai_buildings_locations = Replace(ai_buildings_locations,side,temp_list);
+     end;
+
+Function PrepareRussians;
+     var temp_unit, val, temp_list, un;
+     begin
+          InitHc;
+          InitUc;
+          uc_side = russians;
+          uc_nation = nation_russian;
+
+          PrepareScientist(false,-1-difficulty);
+          temp_unit = CreateHuman;
+          ai_scientists = Replace(ai_scientists,russians,[temp_unit]);
+          PlaceHumanInUnit(temp_unit,ai_lab[russians]);
+          if GetSkill(temp_unit,skill_scientistic) < difficulty + 2 then
+               SetSkill(temp_unit,skill_scientistic,difficulty + 2);
+
+          PrepareEngineer(false,-1-difficulty);
+          temp_unit = CreateHuman;
+          ai_engineers = Replace(ai_engineers,russians,[temp_unit]);
+          PlaceHumanInUnit(temp_unit,ai_depot[russians]);
+          if GetSkill(temp_unit,skill_engineering) < difficulty + 2 then
+               SetSkill(temp_unit,skill_engineering,difficulty + 2);
+
+          //Adjust all Russian buildings's level to the engineering skill of the engineer
+          val = GetSkill(temp_unit,skill_engineering);
+          for un in ai_all_buildings[russians] do
+               SetBLevel(un,val);
+
+          Grishko = NewCharacter('Grishko');
+
+          temp_list = [Grishko];
+          for val = 1 to 1 + (difficulty = 3) do
+               begin
+                    PrepareSoldier(false,-1-difficulty);
+                    temp_unit = CreateHuman;
+                    temp_list = temp_list ^ temp_unit;
+
+                    if GetSkill(temp_unit,skill_combat) < difficulty + 2 then
+                         SetSkill(temp_unit,skill_combat,difficulty + 2);
+               end;
+          ai_soldiers = Replace(ai_soldiers,russians,temp_list);
+
+          for un in ai_soldiers[russians] do
+               PlaceHumanInUnit(un,ai_armoury[russians]);
+
+          //Adjust stamina to difficulty
+          SetAttr(ai_scientists[russians] ^ ai_engineers[russians] ^ ai_soldiers[russians],attr_stamina,8+difficulty);
+     end;
+
+Function PrepareArabs;
+     var temp_unit, temp_list, un, val;
+     begin
+          InitHc;
+          InitUc;
+          uc_side = you;
+          uc_nation = nation_arabian;
+
+          Gordon = NewCharacter('Gordon');
+          SetDir(Gordon,5);
+          Suze = NewCharacter('Suze');
+
+          PrepareEngineer(false,2);
+          temp_unit = CreateHuman;
+
+          PlaceHumanInUnit(Gordon,ar_bunk);
+          PlaceHumanInUnit(Suze,ar_armoury);
+          PlaceHumanInUnit(temp_unit,ar_dep);
+
+          //Adjust the building level of the Arab buildings to the level of the engineer
+          val = GetSkill(temp_unit,skill_engineering);
+          for un in [ar_dep,ar_bunk,ar_armoury] do
+               SetBLevel(un,val);
+
+
+          uc_direction = 4;
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_05_sel');
+
+                    if TestCharacters('Sonya_05_sel') then
+                         Sonya = CreateCharacter('Sonya_05_sel')
+                    else Sonya = 0;
+
+                    if TestCharacters('Oswald_05_sel') then
+                         Oswald = CreateCharacter('Oswald_05_sel')
+                    else Oswald = 0;
+
+                    if TestCharacters('Ralph_05_sel') then
+                         Ralph = CreateCharacter('Ralph_05_sel')
+                    else Ralph = 0;
+
+                    if TestCharacters('Kowalski_05_sel') then
+                         Kowalski = CreateCharacter('Kowalski_05_sel')
+                    else Kowalski = 0;
+
+                    if TestCharacters('Willard_05_sel') then
+                         Willard = CreateCharacter('Willard_05_sel')
+                    else Willard = 0;
+
+                    if TestCharacters('Evelyn_05_sel') then
+                         Evelyn = CreateCharacter('Evelyn_05_sel')
+                    else Evelyn = 0;
+
+                    temp_list = CreateCharacterSet('Others_05_sel') diff 0;
+
+                    for un in [Heike,Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn] ^ temp_list do
+                         SetDir(un,uc_direction);
+               end
+          else
+               begin
+                    hc_name = 'Heike';
+                    PrepareSoldier(sex_female,4);
+                    Heike = CreateHuman;
+
+                    hc_name = 'Sonya';
+                    PrepareScientist(sex_female,4);
+                    Sonya = CreateHuman;
+
+                    hc_name = 'Oswald';
+                    PrepareSoldier(sex_male,4);
+                    Oswald = CreateHuman;
+
+                    hc_name = 'Ralph';
+                    PrepareSoldier(sex_male,4);
+                    Ralph = CreateHuman;
+
+                    InitHc;
+                    temp_list = [];
+                    for un = 1 to 2 do
+                         begin
+                              PrepareMechanic(false,3);
+                              temp_list = temp_list ^ CreateHuman;
+                         end;
+               end;
+
+          PlaceUnitXY(Heike,120,46,false);
+          for un in temp_list ^ [Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn] do
+               PlaceUnitXYR(un,123,46,2,false);
+
+          ComMoveXY([Heike,Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn] ^ temp_list,110,43);
+
+
+          Omar = NewCharacter('Omar');
+          Farmer = NewCharacter('Farmer');
+          Abdul = NewCharacter('Abdul');
+
+
+          uc_side = you_alt;
+          if TestCharacters('Olaf_01_cont') then  //If Olaf didn't die in Mission 01 he is the messenger
+               begin
+                    Messenger = CreateCharacter('Olaf_01_cont');
+                    mes_is_olaf = true;
+               end
+          else
+               begin
+                    PrepareMechanic(sex_male,3);
+                    Messenger = CreateHuman;
+               end;
+
+          InitVc;
+          vc_chassis = ar_hovercraft;
+          vc_engine = engine_solar;
+          vc_control = control_manual;
+          vc_weapon = ar_light_gun;
+          uc_direction = 0;
+          mes_veh = CreateVehicle;
+
+          SetLives(mes_veh,450);
+
+          PlaceHumanInUnit(Messenger,mes_veh);
+     end;
+
+Function AdjustResources;
+     var val, c;
+     begin
+          //The player starts with 100 crates - but where they are depends on difficulty...
+          case difficulty of
+               1: begin
+                    SetResourceType(GetBase(ar_dep),mat_cans,80);
+                    val = 2;
+               end;
+               2: begin
+                    SetResourceType(GetBase(ar_dep),mat_cans,40);
+                    val = 6;
+               end;
+               3: begin
+                    SetResourceType(GetBase(ar_dep),mat_cans,0);
+                    val = 10;
+               end;
+          end;
+
+          repeat
+               if val <= 5 then
+                    c = val
+               else c = Rand(3,5);
+
+               val = val - c;
+
+               CreateCratesArea(c,crate_area,false);
+          until val = 0;
+
+
+          //Spawn a few crates outside the crate area
+          for c = 1 to 3 do
+               begin
+                    repeat
+                         val = RandHex(false);
+                         if InArea(val[1],val[2],crate_area) then
+                              val = [];
+
+                    until val > 0;
+
+                    CreateCratesXY(Rand(2,4),val[1],val[2],false);
+               end;
+     end;
+
+Function Action;
+     begin
+          InGameOn;
+          wait(4);
+          CenterNowOnXY(110,36);
+
+          Wait(0$2);
+          ComExitBuilding(Gordon);
+          wait(0$0.2);
+          ComMoveXY(Gordon,111,37);
+          AddComStand(Gordon);
+          wait(0$1);
+
+          Say(Gordon,'D2Go1');
+
+          ComExitBuilding(Suze);
+          Wait(2);
+          ComMoveXY(Suze,109,47);
+          AddComTurnUnit(Suze,Heike);
+          AddComStand(Suze);
+
+          Say(Suze,'D2Su1');
+
+          ComTurnUnit(Heike,Suze);
+          AddComStand(Heike);
+          wait(0$0.2);
+
+          Say(Heike,'D2H1');
+          Say(Suze,'D2Su2');
+
+          if Oswald > 0 then
+               begin
+                    Say(Oswald,'D2Os1a');
+
+                    ComTurnUnit(Heike,Oswald);
+                    AddComStand(Heike);
+                    wait(0$0.2);
+
+                    Say(Heike,'D2H2a');
+
+                    wait(0$0.5);
+                    ComTurnUnit(Heike,Suze);
+                    AddComStand(Heike);
+                    wait(0$0.2);
+               end;
+
+          Say(Heike,'D2H3');
+          Say(Suze,'D2Su3');
+
+          if Ralph > 0 then
+               begin
+                    Say(Ralph,'D2Ra1a');
+
+                    ComTurnUnit(Heike,Ralph);
+                    AddComStand(Heike);
+
+                    Say(Heike,'D2H4a');
+
+                    if Sonya > 0 then
+                         Say(Sonya,'D2So1a');
+
+                    ComTurnUnit(Heike,Suze);
+                    AddComStand(Heike);
+                    wait(0$0.2);
+               end;
+
+          Say(Heike,'D2H5');
+          Say(Suze,'D2Su4');
+          Say(Heike,'D2H6');
+
+          wait(0$0.5);
+          ComTurnXY(Heike, ShiftX(GetX(Heike),2,1) , ShiftY(GetY(Heike),2,1) );
+          wait(0$0.8);
+
+          Say(Heike,'D2H7');
+          SayRadio(Omar,'D2Om1');
+
+          case difficulty of
+               1: SayRadio(Farmer,'D2Fa1Easy');
+               2: SayRadio(Farmer,'D2Fa1Medium');
+               3: SayRadio(Farmer,'D2Fa1Hard');
+          end;
+          SayRadio(Farmer,'D2Fa2');
+
+          InGameOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M1');
+
+          wait(0$0.2);
+          SaveForQuickRestart;
+     end;

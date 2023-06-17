@@ -1,0 +1,25 @@
+begin
+? inident smrcky
+ ! hue 305
+ ! all 80
+ ! contr 85
+new
+? inident vres
+ ! all 70
+ ! rgb 119 101 38
+ ! sat 60
+new
+? inident keriky
+ ! hue -25
+ ! all 85
+ ! sat 90
+ ! contr 80
+ ! add 0 6B1012A6
+new
+? inident rakos
+ ! all 80
+ ! contr 120
+new
+? type terrain
+ ! contr 110
+end

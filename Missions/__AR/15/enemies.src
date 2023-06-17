@@ -1,0 +1,263 @@
+//Aliance - keep people in buildings: engs, sci, mechs, soldiers in turrets barracks or in the base centre
+//        - engs and crane repair damaged buildings
+//        - sci heal people
+//
+
+every 0$1 trigger AllianceDestroyed = 0 do
+var i, temp, temp2, enemy;
+begin
+     Randomize;
+
+     temp = FilterUnitsInArea(engrepair,[[f_type,unit_building],[f_side,7]]);
+
+     for i in temp ^ All_depot do
+         if GetLives(i) < 900 and not i in damaged_buildings then
+            damaged_buildings = damaged_buildings ^ i;
+
+     for i in damaged_buildings do
+         if GetLives(i) = 1000 or IsDead(i) then
+            damaged_buildings = damaged_buildings diff i;
+
+
+     for i in FilterAllunits([[f_side,7],[f_type,unit_human]]) do
+         if GetLives(i) < 700 and not i in damaged_people then
+            damaged_people = damaged_people ^ i;
+
+     for i in damaged_people do
+         if Getlives(i) = 1000 or IsDead(i) then
+            damaged_people = damaged_people diff i;
+
+
+     if GetLives(Alliance_crane) < 500 and not damaged_crane then
+        damaged_crane = 1;
+
+     if damaged_crane and (GetLives(Alliance_crane) = 1000 or GetLives(Alliance_crane) = 0) then
+        damaged_crane = 0;
+
+
+
+     for i in Alliance_engs do
+         if i in damaged_people then
+            ComMoveXY(i, 25,17)
+         else
+             if damaged_buildings > 0 then
+             begin
+                  if IsInUnit(i) then
+                     ComMoveUnit(i,damaged_buildings[1])
+                  else
+                      ComRepairBuilding(i, damaged_buildings[1]);
+             end
+             else
+                 if not IsInUnit(i) then
+                    ComEnterUnit(i, All_depot);
+
+
+     if damaged_buildings > 0 then
+        temp2 = unitfilter(damaged_buildings, [f_inarea, cranerepair]);
+
+     if damaged_crane then
+        ComMoveXY(Alliance_crane,28,15)
+     else
+         if temp2 > 0 then
+            ComRepairBuilding(Alliance_crane, temp2[1]);
+
+
+
+     for i = 1 to Alliance_mechs do
+         if Alliance_mechs[i] in damaged_people then
+            ComMoveXY(Alliance_mechs[i],25,17)
+         else
+             if damaged_crane then
+             begin
+                  if i < 4 then
+                     if IsInUnit(Alliance_mechs[i]) then
+                        ComMoveUnit(Alliance_mechs[i], Alliance_crane)
+                     else
+                         ComRepairVehicle(Alliance_mechs[i], Alliance_crane);
+             end
+             else
+                 if not IsInUnit(Alliance_mechs[i]) then
+                    if i < 4 then
+                    begin
+                         if GetLives(All_fac1) > 0 then
+                            ComEnterUnit(Alliance_mechs[i], All_fac1)
+                         else
+                             ComMoveXY(Alliance_mechs[i],25,17);
+                    end
+                    else
+                        if GetLives(All_fac2) > 0 then
+                           ComEnterUnit(Alliance_mechs[i], All_fac2)
+                        else
+                            ComMoveXY(Alliance_mechs[i],25,17);
+
+
+     for i = 1 to Alliance_sci do
+         if Alliance_sci[i] in damaged_people then
+            ComMoveXY(Alliance_sci[i],25,17)
+         else
+             if damaged_people > 0 then
+             begin
+                  if IsInUnit(Alliance_sci[i]) then
+                  begin
+                       ComExitBuilding(Alliance_sci[i]);
+                       AddComHeal(Alliance_sci[i], damaged_people[1]);
+                  end
+                     else ComHeal(Alliance_sci[i], damaged_people[1]);
+             end
+                else
+                    if not IsInUnit(Alliance_sci[i]) then
+                    begin
+                         temp = [All_lab1,All_lab1,All_lab1,All_lab1, All_lab2,All_lab2,All_lab2,All_lab2, All_lab3,All_lab3,All_lab3][i];
+
+                         if GetLives(temp) > 0 then
+                            ComEnterUnit(Alliance_sci[i],temp)
+                         else
+                             ComMoveXY(Alliance_sci[i],25,17);
+                    end;
+
+
+     temp = Roth ^ Gossudarov diff 0;
+     for i in temp do
+         if not IsInUnit(i) and GetLives(All_lab1) > 200 then
+            ComEnterUnit(i,All_lab1);
+
+
+
+     for i = 1 to Alliance_soldiers do
+         if Alliance_soldiers[i] in damaged_people then
+            ComMoveXY(Alliance_soldiers[i],25,17)
+         else
+             if GetLives(All_bunkers[i]) > 200 then
+             begin
+                  if not IsInUnit(Alliance_soldiers[i]) then
+                     ComEnterUnit(Alliance_soldiers[i], All_bunkers[i]);
+             end
+                else
+                    if not IsInUnit(Alliance_soldiers[i]) then
+                       if GetLives(All_Rubarracks) > 100 and UnitsInside(All_Rubarracks) < 6 then
+                          ComEnterUnit(Alliance_soldiers[i],All_Rubarracks)
+                       else
+                           if GetLives(All_Ambarracks) > 100 and UnitsInside(All_Ambarracks) < 6 then
+                              ComEnterUnit(Alliance_soldiers[i],All_Ambarracks)
+                           else
+                               ComMoveXY(Alliance_soldiers[i],25,17);
+
+
+
+     if IsInUnit(Alliance_bazookers[1]) then
+        temp = All_Rubarracks
+     else
+         temp = Alliance_bazookers[1];
+     enemy = FilterAllUnits([[f_enemy,7],[f_dist,temp,14]]);
+
+     for i = 1 to Alliance_bazookers do
+     begin
+          if Alliance_bazookers[i] in damaged_people or GetLives(All_Rubarracks) < 100 then
+             AddComMoveXY(Alliance_bazookers[i],25,17)
+          else
+              if not IsInUnit(Alliance_bazookers[i]) then
+                 ComEnterUnit(Alliance_bazookers[i], All_Rubarracks);
+
+          if enemy > 0 then
+             ComTimeShift(Alliance_bazookers[1], GetX(enemy[1]), GetY(enemy[1]));
+     end;
+
+
+     for i in Alliance_snipers do
+          if i in damaged_people or GetLives(All_Ambarracks) < 100 then
+             AddComMoveXY(i,25,17)
+          else
+              if not IsInUnit(i) then
+                 ComEnterUnit(i, All_Ambarracks);
+
+
+     temp = FilterAllUnits([[f_side,7],[f_nation,nation_american],[f_btype,b_lab_full]])[1];
+     if temp = 0 or not IsOk(temp) then
+        AllianceDestroyed = 1;
+
+
+enable;
+end;
+
+
+Export RussiansPlaced;
+every 0$1 trigger tick > BurlakCountdown do
+var i, temp, group;
+begin
+     Randomize;
+
+     RussiansPlaced = [];
+
+     repeat
+           wait(0$1);
+
+           group = TeamBurlak[1];
+
+           for i in group do
+           begin
+                repeat
+                      wait(0$0.5);
+                      SetDir(i,rand(2,3));
+                      PlaceUnitArea(i, RusAttack, false);
+                until IsPlaced(i);
+         
+                ComMoveXY(i, GetX(i) + 5, GetY(i) + 10);        //each unit will movew straight down
+           end;
+
+           repeat
+                 wait(0$1);
+           until unitfilter(group, [[f_alive], [f_not,[f_placed]] ]) = 0;
+
+           for i in group do
+           begin
+                ComMoveXY(i, GetX(i) + 10, GetY(i) + 20);
+                AddComMoveXY(i, GetX(i) + 15, GetY(i) + 30);
+
+                AddComMoveXY(i, GetX(i) + 15, GetY(i) + 35);      //and then at player's base
+                AddComMoveXY(i, GetX(i) + 15, GetY(i) + 40);
+                AddComMoveXY(i, GetX(i) + 15, GetY(i) + 45);
+                AddComMoveXY(i, GetX(i) + 15, GetY(i) + 50);
+                AddComMoveXY(i, GetX(i) + 15, GetY(i) + 55);
+                AddComMoveXY(i, GetX(i) + 15, GetY(i) + 60);
+                AddComMoveXY(i, GetX(i) + 15, GetY(i) + 70);
+           end;
+
+           RussiansPlaced = RussiansPlaced ^ group;
+
+           wait(0$45);
+
+           TeamBurlak = Delete(TeamBurlak, 1);
+     until TeamBurlak = 0;
+end;
+
+every 0$1 trigger RussiansPlaced > 0 do
+var i, j, temp;
+begin
+     for i = RussiansPlaced downto 1 do
+     begin
+          temp = 0;
+
+          for j in RussiansPlaced[i] do
+              if FilterAllUnits([[f_side,2],[f_see,3],[f_dist,j,15]]) or HasTask(j) = 0 then
+                 temp = 1;
+
+          if temp = 1 then
+             for j in RussiansPlaced[i] do
+             begin
+                  temp = NearestUnitToUnit(FilterAllUnits([f_side,2]), j);
+                  ComAttackUnit(j,temp);
+             end;
+
+          if UnitFilter(RussiansPlaced[i], [f_ok]) = 0 then
+             RussiansPlaced = Delete(RussiansPlaced, i);
+     end;
+
+enable;
+end;
+
+every 0$1 trigger TeamBurlak = 0 and RussiansPlaced = 0 do
+begin
+     BurlakDestroyed = 1;
+     ChangeMissionObjectives('Main_goals_intro2');
+end;
+

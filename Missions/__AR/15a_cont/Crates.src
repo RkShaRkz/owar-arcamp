@@ -1,0 +1,185 @@
+
+var dont_gather_crates, going_to_drop_material_units;
+
+Export Function InitCrateModule;
+     begin
+          dont_gather_crates = [];  //[[x,y],[x,y]]; List of hexes with crates/material the computer should not gather (because the player deliberately dropped the material).
+          going_to_drop_material_units = [];  //Identifiers of the player units that are going to drop materials (crates, oil etc.).
+     end;
+
+//Crate spawning whole map.
+Every 0$1 + 0$0.4 do
+     begin
+
+          repeat
+          wait( Rand(1$10,2$40) );
+
+          CreateCratesAnywhere(Rand(3,5),true);
+
+          //Chance of extra crates with little delay
+          if Rand(1,4) = 1 then
+               begin
+                    wait( Rand(0$5,0$20) );
+                    CreateCratesAnywhere(Rand(2,4),true);
+               end;
+
+          until false;
+     end;
+
+//Crate spawning where player can relatively easily get them.
+Every 0$1+0$0.5 do
+     var time;
+     begin
+
+          repeat
+          time = [1$40,1$55,2$10][difficulty];
+
+          wait(Rand(time,time+0$30));
+
+          CreateCratesArea(Rand(3,5),player_crate_area,true);
+
+          until false;
+     end;
+
+//Remove crates from the crossing by the Arabian base. No crates are collected here and just a few
+//could block the entire road (unfortunate if the Arabians attack together with the Americans).
+Every 0$1+0$0.8 do
+     var crates_list, temp_list, c;
+     begin
+
+          repeat
+          wait(0$5);
+
+          temp_list = GetListOfCratesInArea(ar_crossing_area);
+          if temp_list = 0 then
+               continue;
+
+          c = 1;
+          crates_list = [];
+          repeat
+               crates_list = crates_list ^ [[temp_list[c],temp_list[c+1]]];
+               c = c + 2;
+          until c > temp_list;
+
+          for c in crates_list do
+               if not SeeXY(you,c[1],c[2]) then
+                    ChangeResourceAmountXY(c[1],c[2],0);
+
+          until false;
+     end;
+
+
+//Detect if the player gives orders to an engineer or cargo bay to drop materials. This could be done
+//just to lure the computer's cargo bay out so it can be easily destroyed.
+Export Function OnCommand_CrateDropDetection(com);
+     var b, temp_list, t;
+     begin
+          if com <> 74 then  //Drop material
+               exit;
+
+          for b in FilterAllUnits([[f_side,you],[f_or,[f_class,class_engineer],[f_class,class_apeman_engineer],[f_weapon,us_cargo_bay],[f_weapon,ru_cargo_bay]]]) do
+               if IsSelected(b) and not b in going_to_drop_material_units then
+                    if HasTask(b) then
+                         //Drop material in task list format is ['m',0,0,0,0,0,0]
+                         begin
+                              for t in GetTaskList(b) do
+                                   begin
+                                        if t[1] = 'm' then
+                                             begin
+                                                  going_to_drop_material_units = going_to_drop_material_units ^ b;
+                                                  break;
+                                             end;
+                                   end;
+                         end;
+
+     end;
+
+//Determine if a unit has dropped some cargo and add the cargo to the list of materials not to gather.
+//If the player gives an engineer/cargo bay not carrying anything the following orders (chaining):
+//Pick up material, drop material; then this every will mark all materials close to the engineer/
+//cargo bay until he/she picks up the designated material (i.e. put them in dont_gather_hexes).
+//This is rare so we will ignore it.
+Every 0$1+0$0.1 do
+     var un, temp_list, t, dist, hex;
+     begin
+          repeat
+          wait(0$0.5);
+
+          if going_to_drop_material_units = 0 then
+               continue;
+
+          for un in going_to_drop_material_units do
+               if not Carry(un) then
+                    begin
+                         if GetType(un) = unit_human then
+                              dist = 2
+                         else
+                              dist = 4;  //cargo bay
+
+                         for hex in GetHexesNearHex(GetX(un),GetY(un),dist) do
+                              if GetResourceAmountXY(hex[1],hex[2]) > 0 then
+                                   dont_gather_crates = Insert(dont_gather_crates,1,hex);
+                    end;
+
+          going_to_drop_material_units = UnitFilter(going_to_drop_material_units,[f_hastask]);
+
+          temp_list = [];
+          for un in going_to_drop_material_units do
+               begin
+                    for t in GetTaskList(un) do
+                         if t[1] = 'm' then
+                              begin
+                                   temp_list = temp_list ^ un;
+                                   break;
+                              end;
+               end;
+
+          going_to_drop_material_units = temp_list;
+
+          until false;
+     end;
+
+//Update the list of materials not to gather, i.e. remove the hex when there is nothing on it any more.
+Every 0$1 do
+     var i;
+     begin
+          repeat
+          wait(0$1);
+
+          if dont_gather_crates = 0 then
+               continue;
+
+          i = 1;
+          while i <= dont_gather_crates do
+               begin
+                    if GetResourceAmountXY(dont_gather_crates[i][1],dont_gather_crates[i][2]) = 0 then
+                         begin
+                              dont_gather_crates = Delete(dont_gather_crates,i);
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          until false;
+     end;
+
+//Returns a list [[x,y],[x,y]...] with materials in the specified area omitting material which shouldn't be
+//gathered.
+Export Function GetListOfCratesInArea_ForGathering(base,area);
+     var temp_list, c;
+     begin
+          temp_list = GetListOfCratesInArea(area);
+          result = [];
+
+          if temp_list > 0 then
+               begin
+                    c = 1;
+                    repeat
+                    if GetResourceTypeXY(temp_list[c],temp_list[c+1]) <> mat_artifact and ( InArea(temp_list[c],temp_list[c+1],GetBaseArea(base)) or not [temp_list[c],temp_list[c+1]] in dont_gather_crates ) then
+                         result = result ^ [[temp_list[c],temp_list[c+1]]];
+
+                    c = c + 2;
+                    until c > temp_list;
+               end;
+     end;

@@ -1,0 +1,440 @@
+Export ru_seen_Heike, ru_avenged_dlg, lost_american_xy, olaf_enabled, pursuers_lost_heike, player_attacked_soldier;
+Export met_olaf, seen_road, lost_am_leaving, helped_am_soldier, enable_recon;
+
+//Intro
+Export Function Action;
+     var helper, i;
+     begin
+          CenterOnXY(79,28);
+
+          InGameOn;
+          wait(0$2.5);
+
+          PlaceUnitXY(Heike,79,28,true);
+          ComTurnXY(Heike, 79, 33);;
+          //ComStand(Heike);
+
+          // ... she start walking around a bit nervously
+          // (commands are stored in queue, i.e. will be resolved during monologue)
+          wait(0$2.4);
+          ComMoveXY(Heike,79,30);
+          AddComWait(Heike,0$0.3);
+          AddComTurnXY(Heike,78,30);
+          AddComWait(Heike,0$1.3);
+          AddComMoveXY(Heike,78,30);
+          AddComWait(Heike,0$1.6);
+          AddComMoveXY(Heike,76,28);
+          AddComWait(Heike,0$1.2);
+          AddComMoveXY(Heike,76,23);
+          wait(0$0.5);
+
+          // ... and then she starts to say something
+          async;
+          Say(Heike,'D1H1');
+          sync;
+
+          // She spots russian corpse ...
+          repeat
+          wait(0$0.5);
+          i = i + 1;
+          until GetDistUnitXY(Heike, 76, 23) < 1 or i = 20;//SeeXY(you,77,23);
+
+          CenterOnXY(77,15);
+
+          // ... and while she is commenting it and going near it, you can start to play
+          ComMoveXY(Heike,77,17);
+          AddComStand(Heike);
+
+          Say(Heike,'D1H1a');
+
+          Wait(0$0.2);
+
+          InGameOff;
+
+          ComFree(Heike);
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M1');
+
+          wait(0$0.2);
+          SaveForQuickRestart;
+
+          wait(0$0.2);
+          Hint('Control basics');
+     end;
+
+//Meeting the American soldier
+every 0$1 do
+var i, temp, temp2, w;
+begin
+     player_attacked_soldier = 0;
+
+     repeat
+           wait(1);
+     until IsInArea(Heike, MeetingAmerican) or tick > 2$0;
+
+     repeat
+           wait(1);
+
+           temp = [GetX(Heike) - 10, GetY(Heike)];
+           temp = RandHexXYR(temp[1], temp[2], 1, 1);
+     until HexInfo(temp[1], temp[2]) = 0;
+
+     PlaceUnitXY(lost_american, temp[1], temp[2], 0);
+
+     repeat
+           wait(1);
+           ComMoveUnit(lost_american, Heike);
+     until See(2, lost_american);
+
+     InGameOn;
+     ComStop(Heike);
+     AddComTurnUnit(Heike, lost_american);
+
+     wait(0$0.5);
+
+     AddComAnim(Heike, 2);    //Pointing the gun
+     wait(0$0.2);
+     DialogueOn;
+
+     Say(Heike, 'D3H1');
+     Say(lost_american, 'D3A1');
+     Say(Heike, 'D3H2');
+     Say(lost_american, 'D3A2');
+
+     case Query('Q1') of
+          1: begin
+                  Say(Heike, 'D3aH1');
+                  Say(american_pursuer1, 'D3aR1');
+
+                  SetAttitude(2, 1, att_enemy, True);
+                  ComWait(lost_american, lost_americanreaction);
+                  w = 1;
+             end;
+
+          2: begin
+                  Say(Heike, 'D3bH1');
+                  Say(american_pursuer1, 'D3bR1');
+
+                  temp = [GetX(lost_american), GetY(lost_american)];
+                  ComMoveXY(lost_american, temp[1]+15, temp[2]);
+             end;
+
+          3: begin
+                  Say(Heike, 'D3cH1');
+                  SetSide(lost_american, 2);
+                  helped_am_soldier = 1;
+                  Hint('Controlling more units');
+             end;
+     end;
+
+     ComStop(Heike);
+     temp = [GetX(lost_american) - 15, GetY(lost_american)];
+
+     DialogueOff;
+     InGameOff;
+
+     if w then
+        wait(0$15);
+
+     repeat
+           wait(1);
+           temp2 = RandHexXYR(temp[1], temp[2], 2, 1);
+
+           if IsPlaced(american_pursuer1) then
+              PlaceUnitXY(american_pursuer2, temp2[1], temp2[2], 0)
+           else
+               PlaceUnitXY(american_pursuer1, temp2[1], temp2[2], 0);
+     until IsPlaced(american_pursuer1) and IsPlaced(american_pursuer2);
+
+     ComAttackUnit(american_pursuers, lost_american);
+     pursuers_lost_heike = 1;
+end;
+
+//Control Russian soldiers
+every 0$1 trigger UnitFilter(american_pursuers, [f_ok]) do
+var i, temp, ap;
+begin
+     if IsOk(american_pursuer1) then
+        ap = american_pursuer1
+     else
+         if IsOk(american_pursuer2) then
+            ap = american_pursuer2
+         else
+             exit;
+
+     if ru_seen_Heike and UnitFilter(american_pursuers, [f_dist, Heike, 15]) = 0 then
+        pursuers_lost_heike = 1;
+
+     if See(3, Heike) then
+        pursuers_lost_heike = 0;
+
+     if lost_american_xy = 0 then
+     begin
+          if pursuers_lost_heike then
+             ComAttackUnit(american_pursuers, lost_american)
+          else
+              ComAttackUnit(american_pursuers, NearestUnitToUnit(Heike^lost_american, ap));
+     end
+     else
+         if pursuers_lost_heike then
+            ComAgressiveMove(american_pursuers, 118, 19)
+         else
+             ComAgressiveMove(american_pursuers, GetX(Heike), GetY(Heike));
+
+     if IsInArea(american_pursuer1, bases) then
+     begin
+          ru1_sol = ru1_sol ^ american_pursuer1;
+          american_pursuer1 = 0;
+     end;
+
+     if IsInArea(american_pursuer2, bases) then
+     begin
+          ru1_eng = ru1_eng ^ american_pursuer2;
+          american_pursuer2 = 0;
+     end;
+
+enable;
+end;
+
+
+every 1 do
+begin
+     if See(3, Heike) then
+        ru_seen_Heike = 1
+     else
+         enable;
+end;
+
+//When the american soldier is killed or found dead by the russians
+every 0$1 trigger lost_american_xy > 0 do
+var i, temp;
+begin
+     repeat
+           wait(0$1);
+
+           if ru_seen_Heike or ru_avenged_dlg = 1 then
+              exit;
+
+           temp = UnitFilter(american_pursuers, [f_distxy, lost_american_xy[1], lost_american_xy[2], 5]);
+     until temp > 0;
+
+     ru_avenged_dlg = 1;
+     Say(temp[1], 'Dx5');
+end;
+
+On HumanDestroyed(human, side, nation, x, y, direction, sex, cl) Do
+begin
+     if human = lost_american then
+     begin
+          lost_american_xy = [x,y];
+
+          if GetSide(UnitShoot(lost_american)) = 3 and not ru_avenged_dlg then
+          begin
+               ru_avenged_dlg = 1;
+               Say(UnitShoot(lost_american), 'Dx6');
+          end;
+     end;
+end;
+
+
+//On killing the Russians
+every 0$1 trigger IsDead(american_pursuer1) and IsDead(american_pursuer2) do
+begin
+     if IsOk(lost_american) and helped_am_soldier then
+     begin
+          DialogueOn;
+
+          Say(lost_american, 'D4A1');
+          wait(0$0.2);
+
+          case Query('Q2') of
+               1: begin
+                       Say(Heike, 'D4aH1');
+
+                       DialogueOff;
+                       SetSide(lost_american, 1);
+                       SetAttitude(2, 1, att_enemy, True);
+                       ComWait(lost_american, lost_americanreaction);
+                       AddComAttackUnit(lost_american, Heike);
+                  end;
+
+               2: begin
+                       Say(Heike, 'D4bH1');
+                       Say(lost_american, 'D4bA1');
+
+                       DialogueOff;
+                       SetSide(lost_american, 1);
+                       ComMoveXY(lost_american, 81, 1);
+                       lost_am_leaving = 1;
+
+                       Say(Heike, 'D4bH2');
+                  end;
+          end;
+     end;
+
+     olaf_enabled = 1;
+end;
+
+//american soldier leaving
+every 0$1 trigger lost_am_leaving and IsOk(lost_american) do
+begin
+     if GetDistUnitXY(lost_american, 81, 1) > 3 then
+        ComMoveXY(lost_american, 81, 1)
+     else
+         RemoveUnit(lost_american);
+
+     if UnitShoot(lost_american) = Heike then
+        player_attacked_soldier = 1;
+
+enable;
+end;
+
+every 0$1 trigger IsDead(lost_american) do
+olaf_enabled = 1;
+
+//seeing the road
+every 0$1 trigger SeeArea(2, road) > 0 do
+begin
+     if not met_olaf then
+        Say(Heike, 'Dy1')
+     else
+         if IsOk(Olaf) then
+         begin
+              Say(Heike, 'D6H1');
+              Say(Olaf, 'D6O1');
+              Say(Heike, 'D6H2');
+              Say(Olaf, 'D6O2');
+
+              ChangeMissionObjectives('M3');
+              SetAreaMapShow(escapesouth, 1);
+              enable_recon = 1;
+              SetAttitude(2, 1, att_neutral, True);
+              Hint('Alliances');
+         end;
+
+     seen_road = 1;
+end;
+
+//seeing base
+every 0$1 trigger FilterAllUnits([[f_type,unit_building],[f_see,2]]) > 0 and not met_olaf do
+Say(Heike, 'D2H1');
+
+every 0$1 trigger IsInArea(Heike, hillhint) do
+Hint('Range of sight');
+
+//meeting Olaf
+every 0$1 trigger IsInArea(Heike, meetingOlaf) and olaf_enabled do
+var i, temp, hex, d;
+begin
+     while hex = 0 do
+     begin
+          d = [4,5,3,0];
+
+          for i in d do
+          begin
+               temp = [ShiftX(GetX(Heike), i, 12), ShiftY(GetY(Heike), i, 12)];
+
+               if HexInfo(temp[1], temp[2]) = 0 and ValidHex(temp[1], temp[2]) then
+               begin
+                    hex = temp;
+                    break;
+               end;
+          end;
+
+          wait(1);
+     end;
+
+     PlaceUnitXY(Olaf, hex[1], hex[2], 0);
+     temp = [ShiftX(GetX(Heike), i, 9), ShiftY(GetY(Heike), i, 9)];
+     ComMoveXY(Olaf, temp[1], temp[2]);
+     AddComTurnUnit(Olaf, Heike);
+
+     while not See(2, Olaf) do
+           wait(0$1);
+
+     InGameOn;
+     ComTurnUnit(Heike, Olaf);
+
+     Say(Olaf, 'D5O1');
+
+     ComMoveUnit(Olaf, Heike);
+     AddComTurnUnit(Olaf, Heike);
+
+     Say(Heike, 'D5H1');
+     Say(Olaf, 'D5O2');
+     Say(Heike, 'D5H2');
+     Say(Olaf, 'D5O3');
+     Say(Heike, 'D5H3');
+
+     CenterOnXY(137,67);
+     RevealFogArea(2, bases);
+
+     Say(Olaf, 'D5O4');
+     CenterOnXY(118,21);
+     Say(Olaf, 'D5O4a');
+
+     Say(Heike, 'D5H5');
+     SetAreaMapShow(escapeeast, 1);
+
+     if seen_road then
+     begin
+          Say(Heike, 'D5H6');
+          Say(Olaf, 'D6O1');
+          Say(Heike, 'D6H2');
+          Say(Olaf, 'D6O2');
+
+          ChangeMissionObjectives('M2b');
+          SetAreaMapShow(escapesouth, 1);
+          enable_recon = 1;
+          SetAttitude(2, 1, att_neutral, True);
+          Hint('Alliances');
+     end
+     else
+     begin
+          Say(Olaf, 'D5O6');
+          ChangeMissionObjectives('M2a');
+     end;
+
+     CenterOnUnits(Heike);
+     InGameOff;
+     met_olaf = 1;
+     SetSide(Olaf, 2);
+
+     if not helped_am_soldier then
+        Hint('Controlling more units');
+end;
+
+
+every 0$1 trigger IsDead(Olaf) do
+Say(Heike, 'D10H1');
+
+every 0$1 trigger FilterAllUnits([[f_side,2],[f_type,unit_vehicle],[f_nation,nation_american]]) do
+begin
+     Say(Olaf, 'D7O1');
+     enable_recon = 0;
+     Hint('Vehicles');
+end;
+
+every 0$1 trigger IsInUnit(Heike) or IsInUnit(Olaf) do
+begin
+     Hint('Controlling vehicles');
+end;
+
+every 0$1 trigger FilterAllUnits([[f_side,2],[f_type,unit_vehicle],[f_distxy,88,92,7]]) > 0 do
+var i, temp;
+begin
+     Say(blockade_sol[1], 'D13R1');
+
+     uc_side = 3;
+     uc_nation = nation_russian;
+
+     for i = 1 to 2 do
+     begin
+          PrepareSoldier(false, 1);
+          temp = CreateHuman;
+          PlaceUnitXYR(temp, 141, 71, 2, 0);
+          blockade_sol = blockade_sol ^ temp;
+     end;
+end;
+

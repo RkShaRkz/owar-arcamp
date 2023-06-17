@@ -1,0 +1,32 @@
+begin
+? type grass
+ ! sat 65
+ ! contr 83
+ ! hue -22
+new
+? inident "STree: list-akat-maly"
+ ! sat 70
+ ! hue -22
+new
+? inident "STree: list-sahara"
+ ! hue -37
+new
+? inident keriky
+ ! hue -29
+new
+? inident vres
+ ! hue 44
+new
+? inident smrcky
+ ! hue -29
+new
+? type boulder
+ ! sat 115
+ ! all 85
+new
+? inident "STree: ker-rosti"
+ ! hue -37
+new
+? inident "STree: list-kastan"
+ ! add 12 0080FF
+end

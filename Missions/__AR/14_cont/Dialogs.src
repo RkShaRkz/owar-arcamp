@@ -1,0 +1,508 @@
+//Brieffing
+Export Function Action;
+var i;
+begin
+     IngameOn;
+     ExclusiveOff;
+
+     for i in filterunitsinarea(area_base7,[f_side,3]) do     //sometimes a rocket could attack the turrets during the intro
+         DoNotAttack(2,i);
+
+     PrepareComputerSides=1;
+
+     RevealFOgArea(2,Snake_initial);
+     placeunitxy(Snake,44,30,false);
+     centernowonunits(Snake);
+
+     commovexy(Snake,29,24);
+
+     wait(0$2);
+     placeunitarea(player_forces[1],player_start_area,false);
+     player_forces=delete(player_forces,1);
+
+     commovexy(Heike,21,18);
+     addcomexitvehicle(Heike);
+     addcommovexy(Heike,27,22);
+     addcomturnunit(Heike,Snake);
+     addcomturnunit(Snake,Heike);
+
+     repeat
+           wait(0$1);
+           centeronunits(Snake);
+     until isat(Heike,27,22) and isat(Snake,29,24);
+
+     say(Heike,'Br_He1');
+     say(Snake,'Br_Sn1');
+     RevealFogArea(2,reveal_defences);
+     say(Heike,'Br_He2');
+     say(Snake,'Br_Sn2');
+     say(Heike,'Br_He3');
+     //could center on base 1 wait and center on base 2
+     say(Snake,'Br_Sn3');
+     say(Heike,'Br_He4');
+     RevealFogArea(2,reveal_buildings);
+
+     //point out labs and mines and factories
+     intro_centering=1;
+     say(Snake,'Br_Sn4');
+     say(Heike,'Br_He5');
+
+     //center on snake again
+     intro_centering=2;
+     centeronunits(snake);
+     say(Snake,'Br_Sn5');
+     say(Heike,'Br_He6');
+
+     say(Snake,'Br_Sn6');
+     say(Heike,'Br_He7');
+     say(Snake,'Br_Sn7');
+     say(Heike,'Br_He8');
+
+     //center on teleport
+     RevealFogArea(2,reveal_main_teleport);
+     centeronxy(137,178);
+     say(Snake,'Br_Sn8');
+     centeronunits(snake);  //center back
+     say(Snake,'Br_Sn9');
+     say(Heike,'Br_He9');
+     
+     say(Snake,'Br_Sn10');
+     say(Heike,'Br_He10');
+
+     setside(Snake,5);
+     comagressivemove(Snake,11,1);
+
+     ingameoff;
+     base_spawn_delay=10;
+     tick=0;
+
+     wait(0$2);
+
+     enable(1);
+     SaveForQuickRestart;
+     case difficulty of
+          1: ChangeMissionObjectives('initialgoals_easy');
+          2: ChangeMissionObjectives('initialgoals_medium');
+          3: ChangeMissionObjectives('initialgoals_hard');
+     end;
+
+     for i in filterunitsinarea(area_base7,[f_side,3]) do    
+         NormalAttack(2,i);
+
+     for i in [base1_mark, base2_mark, base3_mark, base4_mark, base5_mark, base6_mark, base7_mark, base8_mark, base9_mark, base10_mark] do
+         SetAreaMapShow(i, 1);
+
+     SetAreaMapShow(base9_mark, 5);
+     SetAreaMapShow(base10_mark, 5);
+
+     wait(0$0.5);
+     Query('destruction_msg');
+end;
+
+every 0$2 do
+var i,temp;
+begin
+     temp=isdrivenby( unitfilter(player_forces,[f_weapon,ar_control_tower])[1] );
+
+     for i=1 to player_forces do
+     begin
+          repeat
+                wait(0$1);
+                placeunitarea(player_forces[i],player_start_area,false);
+          until isplaced(player_forces[i]);
+
+          if getcontrol(player_forces[i])=control_remote then
+             linkvehicletohuman(player_forces[i],temp);
+
+          if i<5 then
+             commovexy(player_forces[i],21,18)
+          else
+              if i<10 then
+                 commovexy(player_forces[i],18,22)
+              else
+                  commovexy(player_forces[i],20,8);
+     end;
+
+
+     enable(3);
+end;
+
+
+//Delayed spawning of all the units to avoid lags
+every 1 do
+begin
+
+     if base_spawn_delay<10 then
+        base_spawn_delay=2;
+     wait(0$10);
+     if base_spawn_delay<10 then
+        base_spawn_delay=3;
+     wait(0$10);
+     if base_spawn_delay<10 then
+        base_spawn_delay=4;
+     wait(0$10);
+     if base_spawn_delay<10 then
+        base_spawn_delay=5;
+     wait(0$10);
+     if base_spawn_delay<10 then
+        base_spawn_delay=6;
+     wait(0$10);
+     if base_spawn_delay<10 then
+        base_spawn_delay=7;
+     wait(0$10);
+     if base_spawn_delay<10 then
+        base_spawn_delay=8;
+     wait(0$10);
+     if base_spawn_delay<10 then
+        base_spawn_delay=9;
+end;
+
+//point out labs and mines and factories during dialogue
+every 0$0.5 trigger intro_centering=1 do
+begin
+     centeronxy(110,128);
+     wait(0$2);
+     if intro_centering = 2 then exit;
+     centeronxy(215,140);
+     wait(0$2);
+     if intro_centering = 2 then exit;
+     centeronxy(194,106);
+end;
+
+//Snake walking away
+every 0$0.5 trigger getside(snake)=5 do
+begin
+     comagressivemove(Snake,11,1);
+     if getdistunitxy(Snake,11,1)<3 then
+     begin
+          removeunit(Snake);
+          exit;
+     end;
+enable;
+end;
+
+//Gordon's call
+every 0$1 trigger help_variant=2 marked 1 do
+var i,temp;
+begin
+     repeat
+           wait(0$1);
+           for i in filterallunits([f_side,8]) do
+               if see(2,i) then
+                  temp=1;
+           if temp>0 then
+              break;
+     until tick>5$0;
+
+     DialogueOn;
+
+     SayRadio(Gordon,'G_Go1');
+
+     if LoadVariable('Traitors_leader_is_Gordon_10', 0) = 1 or testing=true then
+        Say(Heike,'G_He1')
+     else Say(Heike,'G_He1_not_Gordon');
+
+     SayRadio(Gordon,'G_Go2');
+     Say(Heike,'G_He2');
+     SayRadio(Gordon,'G_Go3');
+     CenterOnXy(97,66);
+     viewmineatpos(118,72,2);
+     viewmineatpos(118,73,2);
+     viewmineatpos(76,67,2);
+     viewmineatpos(79,67,2);
+     viewmineatpos(100,68,2);
+     viewmineatpos(81,53,2);
+     viewmineatpos(104,65,2);
+     RevealFogArea(2,reveal_legion);
+
+     SayRadio(Gordon,'G_Go4');
+     setside(filterallunits([f_side,8]),2);
+
+     DialogueOff;
+
+     wait(0$0.2);
+     Query('Mines_msg');
+
+     minesready=1;
+
+     wait(0$3);
+     Say(Heike,'G_He3');
+end;
+
+//Alliance
+every 22$30 trigger all_variant=1 marked 1 do
+begin
+     DialogueOn;
+
+     SayRadio(Alliance_sol,'C_Al1');
+     Say(Heike,'C_He1');
+     SayRadio(Alliance_sol,'C_Al2');
+     SayRadio(Alliance_sol,'C_Al3');
+     Say(Heike,'C_He2');
+     SayRadio(Alliance_sol,'C_Al4');
+     SayRadio(Alliance_sol,'C_Al5');
+
+     DialogueOff;
+
+     ConvoyTimer=tick;
+end;
+
+every 0$1 trigger deserting>0 do
+begin
+     wait(rand(1$30,2$0));
+
+     SayRadio(Snake,'C_Sn1');
+     Say(Heike,'C_He3');
+end;
+
+//Automatic disabling of the teleport
+every 45$0 trigger GetSide(ruteleprt)=3 and not teleporter_captured do
+begin
+     Teleport_status=0;
+end;
+
+//Taking over the teleport
+every 0$1 trigger unitfilter(ai_soldiers[5],[f_ok])=0 marked 2 do
+var temp,tech,i,random;
+begin
+     //Selecting a tech speaker
+     temp=[Olaf, Sonya,  Khattam, Aviradze, Evelyn, Swansson, Dwayne, Makise] diff 0;
+
+     if temp>0 then
+        tech=temp[rand(1,temp)]
+     else
+         begin
+              tech=filterallunits([[f_side,2],[f_type,unit_human]])[1];
+              for i in filterallunits([[f_side,2],[f_type,unit_human]]) do
+                  if GetSkill(i,skill_scientistic)>GetSkill(tech,skill_scientistic) then
+                     tech=i;
+         end;
+
+     if not tech in [Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Khattam, Aviradze, Evelyn, Swansson, Dwayne, Makise] then
+        random=tech;
+
+
+     DialogueOn;
+
+     if tech=Heike then
+        Say(Heike,'Tr1_Tech_He')
+     else
+         begin
+              Say(Heike,'Tr1_He1');
+
+              case tech of
+                   Olaf:     Say(Olaf,'Tr1_Tech_Olaf');
+                   Sonya:    Say(Sonya,'Tr1_Tech_So');
+                   Oswald:   Say(Oswald,'Tr1_Tech_Os');
+                   Ralph:    Say(Ralph,'Tr1_Tech_Ra');
+                   Kowalski: Say(Kowalski,'Tr1_Tech_Ko');
+                   Khattam:  Say(Khattam,'Tr1_Tech_Kh');
+                   Aviradze: Say(Aviradze,'Tr1_Tech_Av');
+                   Evelyn:   Say(Evelyn,'Tr1_Tech_Ev');
+                   Swansson: Say(Swansson,'Tr1_Tech_Sw');
+                   Dwayne:   Say(Dwayne,'Tr1_Tech_Dw');
+                   Makise:   Say(Makise,'Tr1_Tech_Ma');
+                   random:   if getsex(random)=sex_male then
+                                Say(random,'Tr1_Tech_SomeM')
+                             else
+                                 Say(random,'Tr1_Tech_SomeF');
+              end;
+         end;
+
+     Say(Heike,'Tr1_He2');
+     DialogueOff;
+
+     wait(0$0.5);
+     ChangeMissionObjectives('teleport2');
+
+     setside(ruteleprt,5);
+
+     teleporter_captured = true;
+end;
+
+//Testing the teleport - dialogue after sending in a radar
+every 0$1 trigger Teleportation_test=1 do
+var tech,i,temp,random;
+begin
+     if Teleport_status=0 then
+     begin
+          wait(0$3);
+          Say(Heike,'Tr2_He4');
+          Teleport_SaveVariable=-3;
+          wait(0$0.2);
+          ChangeMissionObjectives('teleport4');
+     end
+     else
+         begin
+               wait(0$5);
+
+               //Selecting a tech speaker again, in case previous one was killed
+               temp=filterallunits([f_weapon,ar_control_tower]);
+               tech=isdrivenby(temp[1]);
+
+               if tech=0 then
+               begin
+                    temp=[Olaf, Sonya,  Khattam, Aviradze, Evelyn, Swansson, Dwayne, Makise] diff 0;
+
+                    if temp>0 then
+                       tech=temp[rand(1,temp)]
+                    else
+                    begin
+                         tech=filterallunits([[f_side,2],[f_type,unit_human]])[1];
+                         for i in filterallunits([[f_side,2],[f_type,unit_human]]) do
+                             if GetSkill(i,skill_scientistic)>GetSkill(tech,skill_scientistic) then
+                                tech=i;
+                    end;
+               end;
+
+               if not tech in [Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Khattam, Aviradze, Evelyn, Swansson, Dwayne, Makise] then
+                  random=tech;
+
+               Say(Heike,'Tr2_He2');
+
+               case tech of
+                    Olaf:     Say(Olaf,'Tr2_Tech_Olaf');
+                    Sonya:    Say(Sonya,'Tr2_Tech_So');
+                    Oswald:   Say(Oswald,'Tr2_Tech_Os');
+                    Ralph:    Say(Ralph,'Tr2_Tech_Ra');
+                    Kowalski: Say(Kowalski,'Tr2_Tech_Ko');
+                    Khattam:  Say(Khattam,'Tr2_Tech_Kh');
+                    Aviradze: Say(Aviradze,'Tr2_Tech_Av');
+                    Evelyn:   Say(Evelyn,'Tr2_Tech_Ev');
+                    Swansson: Say(Swansson,'Tr2_Tech_Sw');
+                    Dwayne:   Say(Dwayne,'Tr2_Tech_Dw');
+                    Makise:   Say(Makise,'Tr2_Tech_Ma');
+                    random:   if getsex(random)=sex_male then
+                                 Say(random,'Tr2_Tech_SomeM')
+                              else
+                                  Say(random,'Tr2_Tech_SomeF');
+               end;
+
+               Say(Heike,'Tr2_He3');
+               wait(0$0.2);
+               ChangeMissionObjectives('teleport3');
+
+               Teleport_status=2;
+               Teleport_SaveVariable=-1;
+         end;
+end;
+
+//If the teleport was taken or destroyed
+every 0$1 trigger tick>35$0 and teleport_status>0 and not 5 in ai_bases do
+begin
+     repeat
+           wait(0$1);
+           if teleport_status=3 then
+              exit;
+     until GetSide(ruteleprt)=3 or GetLives(ruteleprt)=0;
+
+     centeronxy(137,178);
+     placeseeing(137,178,2,4);
+     Say(Heike,'Tr2_He5');
+     wait(0$10);
+     removeseeing(137,178,2);
+end;
+
+
+//First Omar call
+every 42$30 do
+begin
+     DialogueOn;
+
+     SayRadio(Omar,'Mid_Om1');
+     Say(Heike,'Mid_He1');
+     SayRadio(Omar,'Mid_Om2');
+     Say(Heike,'Mid_He2');
+     SayRadio(Omar,'Mid_Om3');
+     SayRadio(Omar,'Mid_Om4');
+     Say(Heike,'Mid_He3');
+     SayRadio(Omar,'Mid_Om5');
+     Say(Heike,'Mid_He4');
+     SayRadio(Omar,'Mid_Om6');
+     Say(Heike,'Mid_He5');
+     SayRadio(Omar,'Mid_Om7');
+     SayRadio(Omar,'Mid_Om8');
+
+     DialogueOff;
+
+     wait(0$2);
+     if help_variant=2 then
+        Say(Heike,'Mid_He6');
+end;
+
+
+//Snake call
+every 0$1 trigger tick>42$30 do
+begin
+     wait(rand(3$0,8$0));
+
+     Say(Heike,'call_He1');
+     SayRadio(Snake,'call_Sn1');
+end;
+
+
+//End of mission
+every 0$1 trigger tick>90$0 OR (TransportAllReadyToGo and ai_bases=0 and unitfilter(base9_people^base10_people,[f_ok])=0 and base_list = 0 and unitfilter(RussianPeople,[f_ok])<=RussianPeople*0.2 ) do
+var extratime;
+begin
+     if ai_bases>0 then
+     begin
+          InGameOn;
+          sayradio(Omar,'End_fail');
+          wait(0$0.5);
+          Youlost('NotDestroyedEgnough');
+          exit;
+     end;
+
+     DialogueOn;
+
+     if tick<90$0 then
+     begin
+          extratime=90$0 - tick;
+          if extratime>5$0 then
+             extratime=5$0;
+          FinalCountdown=FinalCountdown + extratime;
+
+          Say(Heike,'End_He1');
+          SayRadio(Omar,'End_Om1');
+     end
+     else
+         SayRadio(Omar,'End_Om2');
+
+
+     SayRadio(Omar,'End_Om3');
+     Say(Heike,'End_He2');
+     SayRadio(Omar,'End_Om4');
+     Say(Heike,'End_He3');
+
+     dwait(0$0.2);
+     query('Selection_msg');
+     //RescuePeople=CharacterSelection('',filterallunits([[f_side,2],[f_type,unit_human]])-4,filterallunits([[f_side,2],[f_type,unit_human]])-4, [sel_hired,sel_dont_change_class,sel_not_changeable,Heike,sel_changeable]^filterallunits([[f_side,2],[f_type,unit_human]]) diff Heike ,[]);
+     //EscortPeople=filterallunits([[f_side,2],[f_type,unit_human]])  diff RescuePeople;
+
+     //if islive(Gonzo) then
+     //   RescuePeople=RescuePeople^gonzo;
+
+     dwait(0$0.2);
+     ChangeMissionObjectives('preparations');
+
+     DialogueOff;
+
+     MissionEnd=1;
+
+     wait(0$5);
+     Say(Heike,'End_He5');
+     if teleport_status<2 then
+        begin
+             Say(Heike,'End_He6a');
+             Say(Heike,'End_He7a');
+        end
+     else
+         begin
+              Say(Heike,'End_He6b');
+              Say(Heike,'End_He7b');
+         end;
+
+     wait(0$3);
+     Say(Heike,'Tr3_He4');
+end;

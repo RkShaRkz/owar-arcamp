@@ -1,0 +1,847 @@
+
+//base activities
+every 0$1 trigger mb_bases>0 do
+var i,j,k,temp,temp2,temp_list,temp_list2,temp_list3,retreat;
+var bunkers,barracks,sol_barracks,sol_bunkers;
+var eng_skill,low_blevel_list;
+var factory,chassis,engine,control,weapon;
+var vehicles, vehicles_hexes, vehicle_retreat;
+begin
+     //send people with no task to buildings
+     //heal people if needed
+     //repair/upgrade if necessary
+     //make vehicles
+     //take action if attacked
+
+     retreat=[[23,17],[149,120],[172,16]];
+     vehicle_retreat = [ [29,33],[151,130],[187,35]];
+
+     for i in mb_bases do
+     begin
+          eng_skill=0;
+          for j in unitfilter(mb_people[i],[f_class,class_engineer]) do
+              if GetSkill(j,skill_engineering)>eng_skill then
+                 eng_skill=GetSkill(j,skill_engineering);
+          low_blevel_list=[];
+
+          //check the buildings
+          for j=1 to mb_buildings[i] do
+          begin
+               if mb_buildings[i][j] > 0 then
+               if GetLives(mb_buildings[i][j])<1000 or GetBLevel(mb_buildings[i][j])<eng_skill then
+               begin
+                    if GetLives(mb_buildings[i][j])=0 then
+                    begin
+                         mb_to_build_list=Replace(mb_to_build_list,i,mb_to_build_list[i] ^ [mb_buildings_locations[i][j]]);
+
+                         temp_list = mb_buildings[i];
+                         temp_list = Replace(temp_list, j, 0);
+                         mb_buildings=Replace(mb_buildings,i,temp_list);
+                         //break;
+                    end
+                    else
+                        if not mb_buildings[i][j] in mb_damaged_buildings[i] and not mb_buildings[i][j] in ai_units_irradiated then
+                           mb_damaged_buildings=Replace(mb_damaged_buildings,i, mb_damaged_buildings[i] ^ mb_buildings[i][j]);
+               end;
+          end;
+
+
+          //mind the damaged buildings
+          if mb_damaged_buildings[i]>1 and unitfilter(mb_people[i],[[f_class,class_engineer],[f_lives,600]])>0 then
+          begin
+               temp=mb_damaged_buildings[i][1];
+               temp2=GetLives(temp);
+
+               for j in mb_damaged_buildings[i] do
+                   if GetLives(j)<temp2-400 then
+                   begin
+                        temp=j;
+                        temp2=GetLives(j);
+                   end;
+
+               temp_list=mb_damaged_buildings[i] diff temp;
+
+               mb_damaged_buildings=Replace(mb_damaged_buildings,i, temp ^ temp_list);
+          end;
+
+          //remove damaged buildings from list if fixed or dead
+          if mb_damaged_buildings[i]>0 then
+             for j in mb_damaged_buildings[i] do
+                 if (GetLives(j)=1000 and GetBLevel(j)>=eng_skill) or GetLives(j)=0 then
+                    mb_damaged_buildings=Replace(mb_damaged_buildings,i, mb_damaged_buildings[i] diff j);
+
+
+          //if a new building is started put it back into the list of buildings
+          temp=FilterUnitsInArea([base_legion_minor,base_russians_minor,base_us_minor][i],[[f_side,[8,3,1][i]],[f_type,unit_building]]) diff mb_buildings[i];
+
+          if temp>0 then
+             for j=1 to mb_buildings_locations[i] do
+                 if GetX(temp[1])=mb_buildings_locations[i][j][1]   and   GetY(temp[1])=mb_buildings_locations[i][j][2] then
+                 begin
+                      temp_list=mb_buildings[i];
+                      temp_list=Replace(temp_list,j,temp[1]);
+                      mb_buildings=Replace(mb_buildings,i, temp_list);
+
+                      //automatically upgrade
+                      case mb_buildings_locations[i][j][4] of
+                           b_armoury: if not i=3 then addcomupgrade(temp[1]);
+                           b_workshop: addcomupgrade(temp[1]);
+                           b_lab: addcomupgradelab(temp[1],b_lab_biological);
+                      end;
+
+                      mb_rebuild_tick = Replace(mb_rebuild_tick, i, tick);
+                 end;
+
+          if mb_to_build_list[i]>0 then
+             for j=1 to mb_to_build_list[i] do
+             begin
+                  temp=HexInfo(mb_to_build_list[i][j][1],mb_to_build_list[i][j][2]);
+                  if temp>0 then
+                     if GetBType(temp)=mb_to_build_list[i][j][4] then
+                     begin
+                          temp_list=mb_to_build_list[i];
+                          temp_list=delete(temp_list,j);
+
+                          mb_to_build_list=Replace(mb_to_build_list,i,temp_list);
+                          break;
+                     end;
+             end;
+        
+
+          //factory, first check if all defences have weapons
+          factory=unitfilter(mb_buildings[i],[f_btype,b_factory])[1];
+          for j in mb_buildings_locations[i] do
+              if j[4] in [b_bunker,b_turret] then
+                 if GetBWeapon(HexInfo(j[1],j[2]))=0 then
+                    if GetWorkingProgress(factory)=0 then
+                       ComPlaceWeapon(HexInfo(j[1],j[2]), j[5]);
+
+          //make vehicles
+          if i=2 then
+             factory=HexInfo(198,215);  //Russian vehicles are made in main base
+          if not -1 in mb_vehicles[i] and tick > mb_vehreplace_tick[i] + 1$0 then
+             for j=1 to mb_vehicles[i] do
+                 if mb_vehicles[i][j]=0 or IsDead(mb_vehicles[i][j]) and not mb_vehicles[i][j] = -2 then
+                 begin
+                      if i = 1 then   //in Legion's case, don't start making an ape vehicle without having the ape in the factory first
+                      begin
+                           temp = UnitFilter(UnitsInside(factory), [f_class, class_apeman]);
+
+                           if temp = 0 then
+                              continue;
+                      end;
+
+                      weapon = mb_vehiclestemp_weapons[i][j];
+
+                      if weapon = -2 then
+                      begin
+                           temp = mb_vehicles[i];
+                           temp = Replace(temp, j, -2);
+                           mb_vehicles = Replace(mb_vehicles, i, temp);
+
+                           break;
+                      end;
+
+                      chassis = mb_vehiclestemp_chassis[i][j];
+                      engine=engine_combustion;
+                      control=[control_apeman,control_computer,control_computer][i];
+
+                                                           
+                      if chassis > 0 and engine > 0 and control > 0 and weapon > 0 then
+                         ComConstruct(factory,chassis,engine,control,weapon);
+
+                      temp=mb_vehicles[i];
+                      temp=Replace(temp,j,-1);
+                      mb_vehicles=Replace(mb_vehicles,i,temp);
+
+                      mb_vehreplace_tick = Replace(mb_vehreplace_tick, i, tick);
+
+                      break;
+                 end;
+
+          //see if the player is attacking the main base
+          //send some vehicles to help in that case
+          temp_list = mb_vehicles[i] diff [0,-1];
+          temp_list2 = [ai_patrol[1],[],ai_patrol[2]][i] diff [0, -1];
+          for j in temp_list2 do
+              if IsDead(j) then
+                 temp_list2 = temp_list2 diff j;
+
+          if not i = 2 then
+             if BaseUnderAttack(i, 2) and mb_re_timer[i] = 0 then
+                if temp_list >= [3,4,6][difficulty] and  temp_list2 < 3 then         //send the minor base vehicles only if the patrol is out of comission
+                begin
+                     temp_list = [];
+                     temp_list2 = mb_vehicles[i];
+
+                     for j = 1 to [3,4,6][difficulty] do
+                     begin
+                          temp = temp_list2[Rand(1,temp_list2)];
+
+                          temp_list2 = temp_list2 diff temp;
+                          temp_list = temp_list ^ temp;
+                     end;
+
+                     temp_list2 = mb_vehicles[i];
+                     temp_list3 = [];
+
+                     for j = 1 to mb_vehicles[i] do
+                         if mb_vehicles[i][j] in temp_list then
+                         begin
+                              temp_list2 = Replace(temp_list2, j, -2);
+                              temp_list3 = temp_list3 ^ mb_vehicles[i][j];
+                         end
+                            else
+                                temp_list3 = temp_list3 ^ 0;
+
+                     mb_vehicles = Replace(mb_vehicles, i, temp_list2);
+                     mb_re_vehicles = Replace(mb_re_vehicles, i, temp_list3);
+                     mb_re_timer = Replace(mb_re_timer, i, -1);
+                end;
+
+          if mb_re_timer[i] > 0 then
+             mb_re_timer = Replace(mb_re_timer, i, mb_re_timer[i] - 0$1);
+
+
+
+          vehicles = mb_vehicles[i];
+          vehicles_hexes = mb_vehicles_hexes[i];
+
+          for j = mb_vehicles[i] downto 1 do
+              if mb_vehicles[i][j] in [0, -1, -2] then
+              begin
+                   vehicles = Delete(vehicles, j);
+                   vehicles_hexes = Delete(vehicles_hexes, j);
+              end;
+
+          //check for damaged vehicles
+          temp = mb_damagedvehicles[i];
+
+          for j in vehicles do
+              if GetLives(j) < 800 then
+                 if not j in mb_damagedvehicles[i] then
+                    temp = temp ^ j;
+
+          for j in mb_damagedvehicles[i] do
+              if GetLives(j) = 1000 or GetLives(j) < 100 then
+                 temp = temp diff j;
+
+          mb_damagedvehicles = Replace(mb_damagedvehicles, i, temp);
+
+          //control vehicles
+          if mb_detected_enemy[i] = 0 then       //take positions or go get repaired if no enemies are around
+          begin
+               for j=1 to vehicles do
+                   if vehicles[j] in mb_damagedvehicles[i] then
+                      ComMoveXY(vehicles[j], vehicle_retreat[i][1], vehicle_retreat[i][2])
+                   else
+                       if GetDistUnitXY(vehicles[j], mb_vehicles_hexes[i][j][1], mb_vehicles_hexes[i][j][2]) > 3 then
+                          ComMoveXY(vehicles[j], vehicles_hexes[j][1], vehicles_hexes[j][2]);
+          end
+          else
+              for j = 1 to vehicles do
+              begin
+                   temp = NearestUnitToUnit(mb_detected_enemy[i], vehicles[j]);
+
+                   if i = 1 and not GetWeapon(vehicles[j]) = ar_rocket_launcher and mb_legion_kam = 0 and GetLives(vehicles[j]) < 500 then
+                   begin
+                        if GetDistUnits(vehicles[j], temp) > 3 then
+                           ComMoveUnit(vehicles[j], temp)
+                        else
+                            SetTaskList(vehicles[j], [['K',0,0,0,0,0,0]]);    //self destruction comand
+                   end
+                   else
+                       ComAttackUnit(vehicles[j], temp);
+              end;
+
+
+          //Mechanics repair cars that come close to the factory
+          temp_list = [];
+
+
+          for j = 1 to vehicles do
+              if vehicles[j] in mb_damagedvehicles[i] and GetDistUnitXY(vehicles[j], vehicle_retreat[i][1], vehicle_retreat[i][2]) < 5 then
+                 temp_list = temp_list ^ vehicles[j];
+
+          if temp_list > 0 then
+             for j in UnitFilter(mb_people[i], [f_class, class_mechanic]) do
+                 if IsInUnit(j) then
+                 begin
+                      ComExitBuilding(j);
+                      AddComRepairVehicle(j, temp_list[1]);
+                 end
+                 else
+                     ComRepairVehicle(j, temp_list[1]);
+
+
+          //check for injured people
+          for j in mb_people[i] do
+              if GetLives(j)=0 then
+              begin
+                   mb_people=Replace(mb_people,i,mb_people[i] diff j);
+                   mb_injured=Replace(mb_injured,i,mb_injured[i] diff j);
+              end;
+
+
+          //mortars, bazookas and snipers go into barracks
+          case i of
+               1: begin
+                       sol_barracks = unitfilter(mb_people[i], [f_class,class_mortar]);
+                       sol_bunkers = unitfilter(mb_people[i], [f_class,class_soldier]) ^ mb_legion_apesoldiers;
+                  end;
+               2: begin
+                       sol_barracks = unitfilter(mb_people[i], [f_class,class_bazooker]);
+                       sol_bunkers = unitfilter(mb_people[i], [f_class,class_soldier]);
+                  end;
+               3: begin
+                       sol_barracks = unitfilter(mb_people[i], [f_class,class_sniper]);
+                       sol_bunkers = unitfilter(mb_people[i], [f_class,class_soldier]);
+                  end;
+          end;
+
+          for j in sol_bunkers do
+              if GetBType( IsInUnit(j) ) = b_bunker then
+                 sol_bunkers = sol_bunkers diff j;
+
+          temp = unitfilter(mb_buildings[i], [ [f_or,[f_btype,b_barracks],[f_btype,b_armoury]], [f_ok]]);
+
+          if temp > 0 then
+             barracks = temp[1]
+          else
+              barracks = 0;
+
+          bunkers = unitfilter(mb_buildings[i], [[f_btype,b_bunker], [f_ok], [f_empty]]);
+          temp_list = [];
+
+          for j = 1 to bunkers do
+              if j <= sol_bunkers then
+              begin
+                   temp_list = temp_list ^ sol_bunkers[j];
+
+                   if not sol_bunkers[j] in mb_injured[i] then
+                      ComMoveUnit(sol_bunkers[j], bunkers[j]);
+              end
+              else
+                  if i = 1 then
+                  begin
+                       if mb_legion_kam > 0 then
+                       begin
+                            mb_legion_apesoldiers = mb_legion_apesoldiers ^ mb_legion_kam[1]; //assign an ape in place of a missing soldier
+                            mb_legion_kam = delete(mb_legion_kam,1);
+                       end;
+                   end
+                   else
+                       begin
+                            SetTaskList(bunkers[j],[[3,0,0,0,0,0,0]]);    //turn an empty bunker into turret
+
+                            temp_list = mb_buildings_locations[i];
+                            for k = 1 to temp_list do
+                                if GetX(bunkers[j]) = mb_buildings_locations[i][k][1] and GetY(bunkers[j]) = mb_buildings_locations[i][k][2] then
+                                begin
+                                     temp = mb_buildings_locations[i][k];
+                                     temp = replace(temp,4,b_turret);
+
+                                     temp_list = replace(temp_list,k,temp);
+
+                                     mb_buildings_locations = replace(mb_buildings_locations,i,temp_list);
+                                end;
+                       end;
+
+
+          sol_barracks = sol_barracks ^ (sol_bunkers diff temp_list);
+
+
+          for j in sol_barracks do
+              if barracks = 0 then
+              begin
+                   temp = UnitFilter(mb_detected_enemy[i], [f_inarea,[base_legion_minor,base_russians_minor,base_us_minor][i]]);
+
+                   if temp > 0 and not j in mb_injured[i] then
+                      ComAttackUnit(j, NearestUnitToUnit(temp, j))
+                   else
+                       if GetDistUnitXY(j, retreat[i][1], retreat[i][2]) > 5 then
+                          ComMoveXY(j, retreat[i][1], retreat[i][2])
+              end
+              else
+                  if not IsInUnit(j) = barracks then
+                     if IsInUnit(j) = 0 then
+                        ComEnterUnit(j, barracks)
+                     else
+                         ComMoveUnit(j, barracks);
+
+
+          if i = 1 then
+             for j in mb_legion_apesoldiers do
+                 if not GetClass(j) = class_apeman_soldier then
+                    if not IsInUnit(j) then
+                       ComEnterUnit(j, barracks)
+                    else
+                        if not IsInUnit(j) = barracks then
+                           ComMoveUnit(j, barracks)
+                        else
+                            ComChangeProfession(j, class_apeman_soldier);
+
+
+          //controlling people
+          for j in mb_people[i] do
+          begin
+               //check if anyone needs healing
+               if GetLives(j)<600 then
+                  if not j in mb_injured[i] then
+                     mb_injured=Replace(mb_injured,i,mb_injured[i]^j);
+
+
+               if mb_injured[i]>0 and GetClass(j)=class_scientistic and not j in mb_injured[i] then
+                  if isinunit(j) then
+                  begin
+                       comexitbuilding(j);
+                       addcomheal(j, mb_injured[i][1] );
+                  end
+                  else comheal(j, mb_injured[i][1] );
+
+
+               //legion base tames apes
+               if GetClass(j)=class_scientistic and GetSide(j)=legion and mb_injured[1]=0 and apes>0 then
+                  if GetSide(apes[1])=0 then
+                     ComTameXY(j, 5, 5 )
+                  else
+                      begin
+                           if mb_legion_kam<3 then
+                              mb_legion_kam=mb_legion_kam^apes[1]
+                           else
+                               mb_legion_ape_fac=mb_legion_ape_fac^apes[1];
+                           
+                           apes=apes diff apes[1];
+                      end;
+
+
+               //repair damaged buildings
+               if GetClass(j)=class_engineer and not j in mb_injured[i] then
+                  if mb_damaged_buildings[i]>0 then
+                     if IsInUnit(j) then
+                     begin
+                          comexitbuilding(j);
+                          addcomrepairbuilding(j,mb_damaged_buildings[i][1]);
+                     end
+                     else
+                         comrepairbuilding(j,mb_damaged_buildings[i][1]);
+
+
+               //if there are no damaged buildings, rebuild if needed
+               if GetClass(j)=class_engineer and not j in mb_injured[i] then
+                  if mb_damaged_buildings[i]=0 and mb_to_build_list[i]>0 then
+                     if mb_to_build_list[i][1][4] >= 0 and mb_to_build_list[i][1][1] > 0 and mb_to_build_list[i][1][2] > 0 and mb_to_build_list[i][1][3] in [0,1,2,3,4,5] then
+                        if tick > mb_rebuild_tick[i] + 1$30 then
+                           combuild(j, mb_to_build_list[i][1][4], mb_to_build_list[i][1][1], mb_to_build_list[i][1][2], mb_to_build_list[i][1][3]);
+
+
+
+               //send idle civilian units to buildings
+               if HasTask(j)=0   and   not IsInUnit(j)   and   not j in mb_injured[i]   and   not (GetClass(j)=class_scientistic and mb_injured[i]>0) then
+                  case GetClass(j) of
+                       class_engineer: ComEnterUnit(j, unitfilter(mb_buildings[i],[f_btype,b_depot])[1] );
+                       class_mechanic: if mb_damagedvehicles[i] = 0 then
+                                          ComEnterUnit(j, unitfilter(mb_buildings[i],[f_btype,b_factory])[1] );
+                       class_scientistic: case i of
+                                               1: ComEnterUnit(j, unitfilter(mb_buildings[i],[f_btype,b_lab_half])[1] );
+                                               2,3: ComEnterUnit(j, unitfilter(mb_buildings[i],[f_btype,b_depot])[1] );
+                                          end;
+                  end;
+
+          end;
+
+
+          //the injured retreat
+          if mb_injured[i]>0 then
+             for j in mb_injured[i] do
+                 if GetLives(j)<1000 then
+                 begin
+                      if GetDistUnitXY(j,retreat[i][1],retreat[i][2]) > 6 then
+                         ComMoveXY(j,retreat[i][1],retreat[i][2]);
+
+                      case GetType(IsInUnit(j)) of
+                           unit_vehicle: comexitvehicle(j);
+                           unit_building: comexitbuilding(j);
+                      end;
+                 end
+                 else
+                     mb_injured=replace(mb_injured,i,mb_injured[i] diff j);
+
+     end;
+
+
+     //controlling kamikadze, unarmed apes get the bombs from barracks, idle go to the depot
+     temp_list = mb_detected_enemy[1];
+
+     if 1 in mb_bases then
+     for i = 1 to mb_legion_kam do
+         if GetLives(mb_legion_kam[i]) = 0 then
+         begin
+              mb_legion_kam = mb_legion_kam diff mb_legion_kam[i];
+              break;
+         end
+         else
+             if GetClass(mb_legion_kam[i]) = class_apeman then
+             begin
+                  if GetBType( IsInUnit(mb_legion_kam[i]) ) = b_barracks then
+                     ComChangeProfession(mb_legion_kam[i], class_apeman_kamikaze)
+                  else
+                      if unitfilter(mb_buildings[1], [f_btype,b_barracks]) > 0 then
+                         ComEnterUnit(mb_legion_kam[i], unitfilter(mb_buildings[1], [f_btype,b_barracks])[1] );
+             end
+                else
+                    if temp_list > 0 then
+                    begin
+                         if IsInUnit(mb_legion_kam[i]) then                           //pick different targets for each ape
+                            temp = NearestUnitToUnit(temp_list, IsInUnit(mb_legion_kam[i]))
+                         else
+                             temp = NearestUnitToUnit(temp_list, mb_legion_kam[i]);
+
+                         temp_list = temp_list diff temp;
+
+
+                         if IsInUnit(mb_legion_kam[i]) then
+                            ComExitBuilding(mb_legion_kam[i])
+                         else
+                             ComattackUnit(mb_legion_kam[i], temp);
+                    end
+                    else
+                        if not IsInUnit(mb_legion_kam[i]) or not GetBType( IsInUnit(mb_legion_kam[i]) ) = b_depot then
+                           ComEnterUnit(mb_legion_kam[i], unitfilter(mb_buildings[1], [f_btype,b_depot])[1] );
+
+
+     //extra apes go to the factory
+     for i in mb_legion_ape_fac do
+         if GetLives(i)=0 then
+             mb_legion_ape_fac=mb_legion_ape_fac diff i
+          else
+              if not IsInUnit(i) then
+                 if Hastask(i)=0 then
+                    comenterunit(i, unitfilter(mb_buildings[1],[f_btype,b_factory])[1]);
+
+
+     //spawning new apes if the minor legion base has less than 3
+     if mb_legion_kam + mb_legion_ape_fac + apes < 6 and apes_tick=999$0 then
+        apes_tick=tick;
+
+     if tick>apes_tick + [0$45,0$30,0$15][difficulty] then
+     begin
+          uc_side=0;
+          uc_nation=nation_nature;
+          InitHc;
+          hc_skills=[10,10,0,0];
+          hc_attr=[11,11];
+          hc_class=class_apeman;
+          hc_name='';
+
+          temp=CreateHuman;
+          PlaceUnitXYR(temp,5,3,2,false);
+          apes=apes ^ temp;
+
+          apes_tick=999$0;
+     end;
+
+enable;
+end;
+
+//Detecting player units
+every 0$1 trigger mb_bases>0 do
+var i, j, temp, detected_units, area1, area2;
+begin
+     for i = 1 to 3 do
+     begin
+          area1 = [base_legion_minor, base_russians_minor, base_us_minor][i];
+          area2 = [mb_legion_perimeter, 1, mb_us_perimeter][i];
+
+          detected_units = [];
+
+          if i = 2 then
+             temp = FilterUnitsInArea(area1, [f_side,2])
+          else
+              temp = FilterUnitsInArea(area1, [f_side,2]) ^ FilterUnitsInArea(area2, [f_side,2]);
+
+          for j in temp do
+              if See([8,3,1][i], j) or GetSide( Attacks(j) ) = [8,3,1][i] then
+                 if not j in detected_units then
+                    detected_units = detected_units ^ j;
+
+
+          for j in detected_units do
+              if not IsInArea(j, area1) and not IsInArea(j, area2) then
+                 detected_units = detected_units diff j;
+
+
+          mb_detected_enemy = Replace(mb_detected_enemy, i, detected_units);
+     end;
+
+enable;
+end;
+
+//controling the reinforcements from minor base
+every 0$1 trigger -1 in mb_re_timer do
+var i, j, temp, temp2, temp_list, enemies, vehs;
+begin
+     for i = 1 to mb_re_timer do
+         if mb_re_timer[i] = -1 then
+         begin
+              vehs = UnitFilter(mb_re_vehicles[i] diff 0, [f_ok]);
+              temp = UnitFilter(vehs, [f_inarea,[base_legion_minor,base_russians_minor,base_us_minor][i]]);
+              enemies = FilterUnitsInArea([AllSeekLeftCentre,1,AllSeekRightCentre][i], [f_side, 2]);
+
+              if temp > 0 then
+              begin
+                   temp2 = [[44,60],[],[187,59]][i];
+                   ComMoveXY(temp, temp2[1], temp2[2]);
+              end
+              else
+                  if enemies > 0 then
+                     ComAttackUnit(vehs, NearestUnitToUnit(enemies, vehs[1]) );
+
+              if vehs = 0 or UnitFIlter(enemies, [f_ok]) = 0 then
+              begin
+                   temp_list = mb_vehicles[i];
+
+                   for j = 1 to mb_re_vehicles[i] do
+                       if mb_re_vehicles[i][j] > 0 then
+                       begin
+                            if not IsOk(mb_re_vehicles[i][j]) then
+                               temp_list = Replace(temp_list, j, 0)
+                            else
+                                temp_list = Replace(temp_list, j, mb_re_vehicles[i][j]);
+                       end;
+
+                   mb_re_vehicles = Replace(mb_re_vehicles, i, [0,0,0,0,0,0]);
+                   mb_vehicles = Replace(mb_vehicles, i, temp_list);
+                   mb_re_timer = Replace(mb_re_timer, i, [4$0,2$0,1$0][difficulty]);
+                   break;
+              end;
+         end;
+enable;
+end;
+
+
+//bazookers in minor base
+//pick two to fire special amunition
+every 0$1+0$0.3 trigger 2 in mb_bases do
+var i, temp1, temp2, temp_list, enemies, baz1, baz2, barracks;
+begin
+
+     temp_list = UnitFilter(mb_people[2], [f_class,class_bazooker]);
+
+     if temp_list = 0 then
+        exit
+     else
+         baz1 = temp_list[1];
+
+     if temp_list > 1 then
+        baz2 = temp_list[2];
+
+     if IsInUnit(baz1) then
+        barracks = IsInUnit(baz1)
+     else
+         barracks = baz1;
+
+
+     enemies = FilterAllUnits([[f_enemy,3],[f_dist,barracks,25],[f_not,[f_chassis,ar_hovercraft]],[f_ok], [f_not,[f_inarea,base_russians_minor]]]);
+
+     for i in enemies do
+         if not See(3,i) then
+            enemies = enemies diff i;
+
+
+     if temp_list > 1 and enemies > 0 then
+        if enemies = 1 then
+        begin
+             ComTimeShift(baz1, GetX(enemies[1]), GetY(enemies[1]));
+             ComSpaceShift(baz2, GetX(enemies[1]), GetY(enemies[1]));
+        end
+        else
+            begin
+                 //fire at the centre of the group
+                 {
+                 temp1 = 0;
+                 temp2 = 0;
+
+                 for i in enemies do
+                 begin
+                      temp1 = temp1 + GetX(i);
+                      temp2 = temp2 + GetY(i);
+                 end;
+
+                 temp1 = temp1 / enemies;
+                 temp2 = temp2 / enemies;
+                 
+                 ComTimeShift(baz1, temp1, temp2);
+                 ComSpaceShift(baz2, temp1, temp2);
+                 }
+
+                 //fire in front of the nearest unit
+
+                 temp1 = NearestUnitToUnit(enemies, barracks);
+                 temp_list = [GetX(temp1), GetY(temp1)];
+
+                 temp2 = AI_GetTurnDirection(GetX(temp1),GetY(temp1), GetX(barracks),GetY(barracks));
+
+                 ComTimeShift(baz1, ShiftX(GetX(temp1), temp2, 2), ShiftY(GetY(temp1), temp2, 2));
+                 ComSpaceShift(baz2, ShiftX(GetX(temp1), temp2, 2), ShiftY(GetY(temp1), temp2, 2));
+            end;
+
+enable;
+end;
+      
+//conditions for minor base evacuation:
+// unconditional: damaged depot or no energy
+//                2/3 of the soldiers dead
+//                2/3 of bunkers + vehicles (count 2 vehicles as 1 bunker)
+// joined conditions: half soldiers + all vehicles dead,
+//                    half soldiers + half bunkers dead
+every 0$1 trigger mb_bases > 0 do
+var i, j, temp, defences, soldiers, vehicles, escaping, EscHexes;
+var StartSolCount, StartDefCount, count;
+begin
+     escaping = 0;     //holds the number of base to trigger evacuation
+     EscHexes = [[[35,53],[38,61],[42,69],[47,81],[54,95],[59,105],[65,117],[71,130],[83,143]],
+     [[155,138],[159,146],[163,154],[168,165],[171,171],[176,181],[182,188]],
+     [[191,54],[195,64],[197,72],[200,81],[203,88],[207,99],[209,107],[212,115],[216,124],[220,133]]];
+
+     StartSolCount = [10, 0 ,10];
+     StartDefCount = [10, 0, 10];  //bunkers and barracks + vehicles/2                                    
+
+     for i in mb_bases do
+     begin
+          temp = 0;
+          j = UnitFilter(mb_buildings[i], [[f_btype, b_depot],[f_ok]]);
+
+          if j > 0 then
+             temp = j[1];                          //if depot is compromised
+
+          if i = 2 then
+             if temp = 0 then
+                escaping = i                                                                          
+             else
+                 continue;
+
+
+          if temp = 0 then            
+             escaping = i
+          else
+              if GetEnergy(GetBase(temp))[4] = 0 then
+                 escaping = i;
+
+                                                                                               
+          soldiers = UnitFilter(mb_people[i], [f_or, [f_class, class_soldier], [f_class, class_mortar], [f_class, class_bazooker], [f_class, class_sniper]]);
+          defences = UnitFilter(mb_buildings[i], [f_or, [f_btype, b_barracks], [f_btype, b_armoury], [[f_btype, b_bunker], [f_not, [f_bweapon, ar_radar]]], [[f_btype, b_turret], [f_not, [f_bweapon, us_radar]]] ]);
+          vehicles = mb_vehicles[i] ^ mb_re_vehicles[i] diff -1 ^ 0;
+
+
+          count = 0;
+          for j = 1 to soldiers do                                       //if 2/3 soldiers are dead
+              count = count + 1;
+          if count <= StartSolCount[i] * 0.33 then
+             escaping = i;
+
+                                                                         //if half the soldiers are dead and either all vehicles or half the bunkers are dead
+          if count <= StartSolCount[i] * 0.5 and (vehicles = 0 or defences <= StartDefCount[i] * 0.5) then
+             escaping = i;
+
+
+          count = 0;                                                     //if 2/3 bunkers and vehicles are dead
+          for j = 1 to defences do
+              count = count + 1;
+          for j = 1 to vehicles do
+              count = count + 0.5;
+          if count <= StartDefCount[i] * 0.33 then
+             escaping = i;
+
+
+          if escaping > 0 then
+             break;
+     end;
+
+
+
+     if escaping > 0 then
+     begin
+          mb_evacuating_base = mb_evacuating_base ^ escaping;
+
+          if escaping = 2 then
+             mb_evacuating_units = mb_evacuating_units ^ [mb_people[escaping]]
+          else
+              mb_evacuating_units = mb_evacuating_units ^ [mb_people[escaping] ^ mb_vehicles[escaping]];
+
+          mb_evacuating_path = mb_evacuating_path ^ [EscHexes[escaping]];
+          mb_bases = mb_bases diff escaping;
+
+          if escaping = 1 then
+             for i = 1 to ai_mines do
+                 if InArea(ai_mines[i][1], ai_mines[i][2], MineArea6) or InArea(ai_mines[i][1], ai_mines[i][2], MineArea7) then
+                    ai_mines = Replace(ai_mines, i, 0);
+
+          temp = UnitFilter(mb_people[escaping], [f_type, unit_human]);
+          temp = temp[Rand(1,temp)];
+
+          if GetSex(temp) = sex_male then
+             Say(temp, 'cap_minor_M')
+          else
+              Say(temp, 'cap_minor_F');
+     end;
+
+enable;
+end;
+
+
+every 0$1 trigger mb_evacuating_base > 0 do
+var i, j, k, temp;
+begin
+     for i = 1 to mb_evacuating_base do
+     begin
+          for j = 1 to mb_evacuating_units[i] do
+          begin
+               temp = [];
+  
+               if not IsOk(mb_evacuating_units[i][j]) then
+               begin
+                    mb_evacuating_units = Replace(mb_evacuating_units, i, mb_evacuating_units[i] diff mb_evacuating_units[i][j]);
+                    break;
+               end;
+        
+               for k in mb_evacuating_path[i] do
+                   if k[2] - 5 > GetY(mb_evacuating_units[i][j]) then
+                   begin
+                        temp = k;
+                        break;
+                   end;
+
+               if temp > 0 then
+                  ComMoveXY(mb_evacuating_units[i][j], temp[1], temp[2])
+               else
+                   begin
+                        if GetType(mb_evacuating_units[i][j]) = unit_vehicle then
+                           ai_vehicles_defend = Replace(ai_vehicles_defend, mb_evacuating_base[i], ai_vehicles_defend[mb_evacuating_base[i]] ^ mb_evacuating_units[i][j])
+                        else
+                            case GetClass(mb_evacuating_units[i][j]) of
+                                 class_engineer : ai_engineers = Replace(ai_engineers, mb_evacuating_base[i], ai_engineers[mb_evacuating_base[i]] ^ mb_evacuating_units[i][j]);
+                                 class_mechanic : ai_mechanics_defend = Replace(ai_mechanics_defend, mb_evacuating_base[i], ai_mechanics_defend[mb_evacuating_base[i]] ^ mb_evacuating_units[i][j]);
+                                 class_scientistic : ai_scientists = Replace(ai_scientists, mb_evacuating_base[i], ai_scientists[mb_evacuating_base[i]] ^ mb_evacuating_units[i][j]);
+                                 else ai_soldiers = Replace(ai_soldiers, mb_evacuating_base[i], ai_soldiers[mb_evacuating_base[i]] ^ mb_evacuating_units[i][j]);
+                            end;
+
+                        mb_evacuating_units = Replace(mb_evacuating_units, i, mb_evacuating_units[i] diff mb_evacuating_units[i][j]);
+                        break;
+                   end;
+          end;
+
+
+          if mb_evacuating_units[i] = 0 then
+          begin
+               mb_evacuating_base = delete(mb_evacuating_base, i);
+               mb_evacuating_units = delete(mb_evacuating_units, i);
+               mb_evacuating_path = delete(mb_evacuating_path, i);
+               break;
+          end;
+
+     end;
+
+enable;
+end;
+

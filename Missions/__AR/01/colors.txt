@@ -1,0 +1,12 @@
+begin
+? type grass
+ ! hue 4
+ ! all 80
+ ! contr 83
+ ! sat 89
+new
+? inident "STree: list-kastan"
+ ! rgb 110 122 64
+new
+ ! rgb 77 91 100
+end

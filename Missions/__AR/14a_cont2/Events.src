@@ -1,0 +1,1051 @@
+
+Export Function GetApes(side);
+     begin
+          result = FilterAllUnits([[f_side,side],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+     end;
+
+Export Function GetMainPlayerCharacters;
+     begin
+          result = UnitFilter([Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam],[f_side,you]);
+     end;
+
+Export Function GetNonmainPlayerCharacters;
+     begin
+          result = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff (GetApes(you) ^ GetMainPlayerCharacters);
+     end;
+       
+
+//Computer levels up with regular intervals.
+//If the player takes over Farmer's base all levels gain a small boost to compensate for the player
+//gaining a fully built and easy-to-defend base.
+//See also the "Crates" module.
+//Defensive levels.
+Every 0$1 do
+     var time, surplus, has_boosted;
+     begin
+          has_boosted = false;
+                       
+          time = [20$0,14$0,11$0][difficulty];
+          time = time - time_that_has_passed;
+
+          if time > 0$0 then
+               begin
+                    surplus = 0$0;
+               end
+          else
+               begin
+                    surplus = -1*time;
+                    time = 0$0;
+               end;
+          
+          repeat
+          wait(0$1);
+
+          if not has_boosted and farmer_defeated then
+               begin
+                    has_boosted = true;
+                    surplus = surplus + 8$0;
+               end;
+
+          if surplus > 0$0 then
+               begin
+                    time = time - surplus;
+
+                    if time > 0$0 then
+                         begin
+                              surplus = 0$0;
+                         end
+                    else
+                         begin
+                              surplus = -1*time;
+                              time = 0$0;
+                         end;
+               end;
+
+          time = time - 0$1;
+
+          until time <= 0$0;  
+          
+         
+          //base_time = RoundDouble([65$0,50$0,40$0][difficulty] / computer_level_features_1);
+                 
+          repeat
+          
+          time = base_time_features_1;
+
+          if not has_boosted and farmer_defeated then
+               begin
+                    has_boosted = true;
+                    surplus = surplus + 8$0;
+               end;
+
+          if surplus > 0$0 then
+               begin
+                    time = time - surplus;
+
+                    if time > 0$0 then
+                         begin
+                              surplus = 0$0;
+                         end
+                    else
+                         begin
+                              surplus = -1*time;
+                              time = 0$0;
+                         end;
+               end;
+
+          repeat
+          wait(0$1);
+          time = time - 0$1;
+          until time <= 0$0 or ( not has_boosted and farmer_defeated );
+          
+          if time <= 0$0 then
+               ComputerLvlUp(1)
+          else
+               surplus = surplus + (base_time_features_1 - time);
+
+          until false;
+     end;
+//Offensive levels.
+Every 0$1 do
+     var time, surplus, has_boosted;
+     begin
+          has_boosted = false;
+          surplus = time_that_has_passed;
+
+          //base_time = RoundDouble([80$0,70$0,60$0][difficulty] / computer_level_features_2);
+
+          repeat
+
+          time = base_time_features_2;
+
+          if not has_boosted and farmer_defeated then
+               begin
+                    has_boosted = true;
+                    surplus = surplus + 8$0;
+               end;
+
+          if surplus > 0$0 then
+               begin
+                    time = time - surplus;
+
+                    if time > 0$0 then
+                         begin
+                              surplus = 0$0;
+                         end
+                    else
+                         begin
+                              surplus = -1*time;
+                              time = 0$0;
+                         end;
+               end;
+
+          repeat
+          wait(0$1);
+          time = time - 0$1;
+          until time <= 0$0 or ( not has_boosted and farmer_defeated );
+
+          if time <= 0$0 then
+               ComputerLvlUp(2)
+          else
+               surplus = surplus + (base_time_features_2 - time);
+
+          until false;
+     end;
+
+
+//When Heike sees Farmer the first time or after some time.
+Every 0$1+0$0.1 do
+     var start_time;
+     begin
+          start_time = tick;
+
+          repeat
+          wait(0$0.5);
+
+          if heike_farmer_dialogue_started then
+               exit;
+
+          until ContactTime([you,farmer_side]) < 0$1 or tick - start_time >= 0$45;
+
+          HeikeFarmerDialogue(ContactTime([you,farmer_side]) < 0$1,false);
+     end;
+Function HeikeFarmerDialogue(was_seen,give_destroy_russians_objective);
+     var un, i, temp_list;
+     begin
+          heike_farmer_dialogue_started = true;
+
+          DialogueOn;
+
+          if was_seen then
+               begin
+                    //Find a unit attacking a player unit.
+                    un = 0;
+                    for i in FilterAllUnits([f_side,farmer_side]) do
+                         if Attacks(i) > 0 then
+                              begin
+                                   un = i;
+                                   break;
+                              end;
+
+                    if un > 0 then
+                         if GetType(un) = unit_human and IsInUnit(un) > 0 then
+                              CenterOnUnits(IsInUnit(un))
+                         else
+                              CenterOnUnits(un);
+               end
+          else
+               begin
+                    SayRadio(Farmer,'D5-Fa-1a');
+               end;
+
+          SayRadio(Farmer,'D5-Fa-2');
+          Say(Heike,'D5-H-1');
+          SayRadio(Farmer,'D5-Fa-3');
+          Say(Heike,'D5-H-2');
+          SayRadio(Farmer,'D5-Fa-4');
+
+          DialogueOff;
+
+          //Wait until the player is not under attack anymore.
+          repeat
+          wait(0$1);
+          until ContactTime(you) >= 0$6;
+
+          heike_farmer_dialogue_done = true;
+
+          if not hiding_player_units_found then
+               HeikeFarmerDialogueEvaluation(was_seen,give_destroy_russians_objective);
+     end;
+Function HeikeFarmerDialogueEvaluation(was_seen,give_destroy_russians_objective);
+     var un, i, temp_list;
+     begin
+          temp_list = UnitFilter((GetMainPlayerCharacters ^ GetNonmainPlayerCharacters) diff Heike,[f_ok]);
+
+          if temp_list > 0 then  //should be the case
+               begin
+                    DialogueOn;
+
+                    un = temp_list[Rand(1,temp_list)];
+                    case un of
+                         Olaf: Say(un,'D5-Ola-1');
+                         Sonya: Say(un,'D5-So-1');
+                         Oswald: Say(un,'D5-Os-1');
+                         Ralph: Say(un,'D5-Ra-1');
+                         Kowalski: Say(un,'D5-Ko-1');
+                         Suze: Say(un,'D5-Su-1');
+                         MarkB: Say(un,'D5-Mark-1');
+                         Kurt: Say(un,'D5-Ku-1');
+                         Martin: Say(un,'D5-Mart-1');
+                         Louis: Say(un,'D5-Lo-1');
+                         Khattam: Say(un,'D5-Kh-1');
+                         else
+                              if GetSex(un) = sex_male then
+                                   Say(un,'D5-SomeM-1')
+                              else
+                                   Say(un,'D5-SomeF-1');
+                    end;
+
+                    Say(Heike,'D5-H-3');
+
+                    un = temp_list[Rand(1,temp_list)];
+                    case un of
+                         Olaf: Say(un,'D5-Ola-2');
+                         Sonya: Say(un,'D5-So-2');
+                         Oswald: Say(un,'D5-Os-2');
+                         Ralph: Say(un,'D5-Ra-2');
+                         Kowalski: Say(un,'D5-Ko-2');
+                         Suze: Say(un,'D5-Su-2');
+                         MarkB: Say(un,'D5-Mark-2');
+                         Kurt: Say(un,'D5-Ku-2');
+                         Martin: Say(un,'D5-Mart-2');
+                         Louis: Say(un,'D5-Lo-2');
+                         Khattam: Say(un,'D5-Kh-2');
+                         else
+                              if GetSex(un) = sex_male then
+                                   Say(un,'D5-SomeM-2')
+                              else
+                                   Say(un,'D5-SomeF-2');
+                    end;
+
+                    Say(Heike,'D5-H-4');
+
+                    DialogueOff;
+               end;
+
+          wait(0$0.2);
+
+          if not hiding_player_units_found then
+               if give_destroy_russians_objective then
+                    begin
+                         rus_obj_given_before_survivors_found = true;
+                         ChangeMissionObjectives('M3AndDestroyRus');
+                    end
+               else
+                    ChangeMissionObjectives('M3');
+     end;
+
+//Farmer sends a kamikaze apeman squad against Heike. He has biodetection so he knows
+//exactly where she is.
+Every 0$1+0$0.3 do
+     var ape_list, i, dialogue_played, temp_list, un, temp_list_2, temp_unit;
+     begin
+          repeat
+          wait(0$1);
+          until heike_farmer_dialogue_done;
+
+          wait(Rand(0$30,1$0));
+
+          ape_list = CreateApemenWithClass(difficulty,class_apeman_kamikaze,farmer_side);
+
+          for i in ape_list do
+               begin
+                    SetAttr(i,attr_speed,[10,11,12][difficulty]);  //All move equally fast
+                    PlaceUnitXYR(i,77,21,3,false);  //Northwestern part of Farmer's base
+               end;
+
+          dialogue_played = false;
+
+          repeat
+          wait(0$1);
+
+          ape_list = UnitFilter(ape_list,[f_alive]);
+          if ape_list = 0 then
+               exit;
+
+          if not dialogue_played then
+               begin
+                    temp_list_2 = UnitFilter(ape_list,[f_see,you]);
+                    if temp_list_2 > 0 then
+                         begin
+                              temp_list = UnitFilter((GetMainPlayerCharacters ^ GetNonmainPlayerCharacters) diff Heike,[f_ok]);
+
+                              if temp_list > 0 then  //should be the case
+                                   begin
+                                        dialogue_played = true;
+                                        CenterOnUnits(temp_list_2);
+                                        DialogueOn;
+
+                                        un = temp_list[Rand(1,temp_list)];
+                                        case un of
+                                             Olaf: Say(un,'D8-Ola-1');
+                                             Sonya: Say(un,'D8-So-1');
+                                             Oswald: Say(un,'D8-Os-1');
+                                             Ralph: Say(un,'D8-Ra-1');
+                                             Kowalski: Say(un,'D8-Ko-1');
+                                             Suze: Say(un,'D8-Su-1');
+                                             MarkB: Say(un,'D8-Mark-1');
+                                             Kurt: Say(un,'D8-Ku-1');
+                                             Martin: Say(un,'D8-Mart-1');
+                                             Louis: Say(un,'D8-Lo-1');
+                                             Khattam: Say(un,'D8-Kh-1');
+                                             else
+                                                  if GetSex(un) = sex_male then
+                                                       Say(un,'D8-SomeM-1')
+                                                  else
+                                                       Say(un,'D8-SomeF-1');
+                                        end;
+
+                                        Say(Heike,'D8-H-1');
+
+                                        DialogueOff;
+                                   end;
+                         end;
+               end;
+
+          for i in ape_list do
+               begin
+                    temp_list = FilterAllUnits([[f_enemy,farmer_side],[f_type,unit_human],[f_dist,i,14],[f_see,farmer_side]]);
+                    if temp_list > 0 then
+                         begin
+                              temp_unit = AllNearestUnitToUnit(temp_list,i);
+                              ComAttackUnit(i,temp_unit);
+                         end
+                    else
+                         begin
+                              temp_list = FindNonhumansNearUnit(farmer_side,i,20,true);
+                              if temp_list > 0 then
+                                   begin
+                                        temp_unit = AllNearestUnitToUnit(temp_list,i);
+                                        ComAttackUnit(i,temp_unit);
+                                   end
+                              else
+                                   begin
+                                        temp_list = FindNonhumansNearUnit(farmer_side,i,20,false);
+                                        if temp_list > 0 then
+                                             begin
+                                                  temp_unit = AllNearestUnitToUnit(temp_list,i);
+                                                  ComAttackUnit(i,temp_unit);
+                                             end
+                                        else
+                                             if IsLive(Heike) then
+                                                  ComMoveXY(i,GetX(Heike),GetY(Heike));
+                                   end;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//When the Russians see Heike the first and the second time.
+Every 0$1+0$0.1 do
+     begin
+          repeat
+          wait(0$0.5);
+          until ContactTime([you,russians]) < 0$1;
+
+          if IsOk(Kozlov) then
+               begin
+                    DialogueOn;
+
+                    SayRadio(Kozlov,'D6-Ko-1');
+
+                    if IsOk(Farmer) then
+                         begin
+                              SayRadio(Farmer,'D6-Fa-1');
+                              SayRadio(Kozlov,'D6-Ko-2');
+                              SayRadio(Farmer,'D6-Fa-2');
+                         end
+                    else
+                         begin
+                              dwait(0$1.5);
+                              SayRadio(Kozlov,'D6-Ko-2b');
+                         end;
+
+                    if not hiding_player_units_found then
+                         begin
+                              Say(Heike,'D6-H-1');
+                         end;
+
+                    DialogueOff;
+               end;
+
+          if not heike_farmer_dialogue_started then
+               HeikeFarmerDialogue(false,not hiding_player_units_found)
+          else
+               if not hiding_player_units_found then
+                    begin
+                         rus_obj_given_before_survivors_found = true;
+                         wait(0$0.2);
+                         ChangeMissionObjectives('MDestroyRussians');
+                    end;
+
+          wait(10$0);
+
+          repeat
+          wait(0$0.5);
+          until ContactTime([you,russians]) < 0$1;
+
+          if IsOk(Farmer) and IsOk(Kozlov) and not kozlov_captured and not kozlov_has_teleported then
+               begin
+                    DialogueOn;
+
+                    SayRadio(Kozlov,'D9-Ko-1');
+                    SayRadio(Farmer,'D9-Fa-1');
+                    SayRadio(Kozlov,'D9-Ko-2');
+                    SayRadio(Farmer,'D9-Fa-2');
+
+                    DialogueOff;
+               end;
+     end;
+
+
+//The player finds the survivors in the woods.
+Every 0$1+0$0.2 do
+     var un, temp_list;
+     begin
+          repeat
+          wait(0$0.5);
+          until UnitFilter(hiding_player_units,[f_see,you]) > 0;
+
+          hiding_player_units_found = true;
+
+          ChangeSideFog(you_alt,you);
+          temp_list = hiding_player_units;
+          CenterOnUnits(temp_list);
+
+          DialogueOn;
+          
+          un = temp_list[Rand(1,temp_list)];
+          case un of
+               Olaf: Say(un,'D7-Ola-1');
+               Sonya: Say(un,'D7-So-1');
+               Oswald: Say(un,'D7-Os-1');
+               Ralph: Say(un,'D7-Ra-1');
+               Kowalski: Say(un,'D7-Ko-1');
+               Suze: Say(un,'D7-Su-1');
+               MarkB: Say(un,'D7-Mark-1');
+               Kurt: Say(un,'D7-Ku-1');
+               Martin: Say(un,'D7-Mart-1');
+               Louis: Say(un,'D7-Lo-1');
+               Khattam: Say(un,'D7-Kh-1');
+               else
+                    if GetSex(un) = sex_male then
+                         Say(un,'D7-SomeM-1')
+                    else
+                         Say(un,'D7-SomeF-1');
+          end;
+
+          Say(Heike,'D7-H-1');
+
+          un = temp_list[Rand(1,temp_list)];
+          case un of
+               Olaf: Say(un,'D7-Ola-2');
+               Sonya: Say(un,'D7-So-2');
+               Oswald: Say(un,'D7-Os-2');
+               Ralph: Say(un,'D7-Ra-2');
+               Kowalski: Say(un,'D7-Ko-2');
+               Suze: Say(un,'D7-Su-2');
+               MarkB: Say(un,'D7-Mark-2');
+               Kurt: Say(un,'D7-Ku-2');
+               Martin: Say(un,'D7-Mart-2');
+               Louis: Say(un,'D7-Lo-2');
+               Khattam: Say(un,'D7-Kh-2');
+               else
+                    if GetSex(un) = sex_male then
+                         Say(un,'D7-SomeM-2')
+                    else
+                         Say(un,'D7-SomeF-2');
+          end;
+
+          Say(Heike,'D7-H-2');
+
+          un = temp_list[Rand(1,temp_list)];
+          case un of
+               Olaf: Say(un,'D7-Ola-3');
+               Sonya: Say(un,'D7-So-3');
+               Oswald: Say(un,'D7-Os-3');
+               Ralph: Say(un,'D7-Ra-3');
+               Kowalski: Say(un,'D7-Ko-3');
+               Suze: Say(un,'D7-Su-3');
+               MarkB: Say(un,'D7-Mark-3');
+               Kurt: Say(un,'D7-Ku-3');
+               Martin: Say(un,'D7-Mart-3');
+               Louis: Say(un,'D7-Lo-3');
+               Khattam: Say(un,'D7-Kh-3');
+               else
+                    if GetSex(un) = sex_male then
+                         Say(un,'D7-SomeM-3')
+                    else
+                         Say(un,'D7-SomeF-3');
+          end;
+
+          Say(Heike,'D7-H-3');
+
+          if Sonya in temp_list and Ralph = 0 and Ralph_alive then
+               begin
+                    Say(Sonya,'D7-So-4');
+                    Say(Heike,'D7-H-4');
+               end;
+
+          DialogueOff;
+
+          SetSide(temp_list,you);
+          
+          if rus_obj_given_before_survivors_found then
+               begin
+                    wait(0$0.2);
+                    ChangeMissionObjectives('MCaptureKozlov');
+               end
+          else
+               if heike_farmer_dialogue_done then
+                    begin
+                         wait(0$0.2);
+                         ChangeMissionObjectives('M4');
+                    end
+               else
+                    begin
+                         HeikeFarmerDialogueEvaluation(false,false);
+                         ChangeMissionObjectives('MFull');
+                    end;
+
+          wait(0$0.2);
+          Query('QCaptureKozlovInfo');
+     end;
+
+
+//The first time the player sees Farmer's reinforcements in the Russians's base.
+Every 0$1+0$0.8 do
+     var temp_list;
+     begin
+          repeat
+          wait(0$0.5);
+          temp_list = FilterAllUnits([[f_side,farmer_side],[f_nation,nation_arabian],[f_inarea,Ru_base],[f_see,you]]);
+          until temp_list > 0;
+
+          CenterOnUnits(temp_list);
+          DialogueOn;
+          ForceSay(Heike,'D12-H-1');
+          DialogueOff;
+     end;
+
+
+//Kozlov tries to escape through the teleporter if the Russian base is near destruction.
+Every 0$1+0$0.3 do
+     var temp_list, cooldown;
+     begin
+          cooldown = [-1,0$25,0$15][difficulty];
+
+          repeat
+          wait(0$1);
+
+          if difficulty = 1 then
+               exit;
+
+          if IsDead(Kozlov) or kozlov_teleport_event_over or kozlov_has_teleported or IsDead(Farmer) then
+               begin
+                    kozlov_trying_to_escape = false;
+
+                    if IsLive(Kozlov) and not kozlov_has_teleported and not kozlov_teleport_event_over then
+                         begin
+                              temp_list = ai_scientists[1] union Kozlov;
+                              ai_scientists = Replace(ai_scientists,1,temp_list);
+                         end;
+
+                    exit;
+               end;
+           
+          if not kozlov_trying_to_escape then
+               if FilterAllUnits([[f_side,you],[f_inarea,kozlov_scared_area],[f_ok],[f_not,[f_weapon,ar_selfpropelled_bomb]],[f_not,[f_class,class_apeman_kamikaze]]]) >= [-1,2,1][difficulty] then
+                    begin
+                         cooldown = cooldown - 0$1;
+                    end;
+
+          if cooldown > 0$0 then
+               continue;
+
+          kozlov_trying_to_escape = true;
+
+          if not IsOk(Kozlov) then
+               begin
+                    temp_list = ai_heal_these_humans[1] union Kozlov;
+                    ai_heal_these_humans = Replace(ai_heal_these_humans,1,temp_list);
+
+                    continue;
+               end;
+
+          if not IsOk(ai_teleporter[1]) then
+               begin
+                    temp_list = ai_scientists[1] union Kozlov;
+                    ai_scientists = Replace(ai_scientists,1,temp_list);
+
+                    continue;
+               end;
+
+          RemoveHumanFromVariables(1,Kozlov,false,false);
+
+          case GetType(IsInUnit(Kozlov)) of
+               unit_building: ComExitBuilding(Kozlov);
+               unit_vehicle: ComExitVehicle(Kozlov);
+               else
+                    ComEnterUnit(Kozlov,ai_teleporter[1]);
+          end;
+
+          until false;
+     end;
+
+
+//If the player captures Kozlov.
+//He is captured if he is brought to red life and then healed back up by the player.
+//He then follows the player unit closest to him but if there are no player units in his vicinity he
+//goes back to being not-captured and tries to escape.
+Every 0$1+0$0.4 do
+     var temp_list, i;
+     var trying_to_escape, dialogue_played;
+     begin
+          //Event "UnitGoesFromRed" doesn't work with humans...
+          dialogue_played = false;
+          trying_to_escape = false;
+
+          repeat
+          
+          if kozlov_gained then
+               exit;
+
+          if IsDead(Kozlov) then
+               begin
+                    kozlov_captured = false;
+                    exit;
+               end;
+
+          if GetSide(Kozlov) <> russians_alt then
+               begin
+                    if not trying_to_escape then
+                         begin
+                              //Check if the player captures Kozlov.
+                              while GetLives(Kozlov) > 250 do
+                                   wait(1);
+
+                              repeat
+                              wait(1);
+                              until GetLives(Kozlov) > 250 or IsDead(Kozlov);
+
+                              if IsDead(Kozlov) then
+                                   begin
+                                        kozlov_captured = false;
+                                        exit;
+                                   end;
+
+                              if (FilterAllUnits([[f_not,[f_side,you]],[f_class,class_scientistic],[f_dist,Kozlov,2]]) diff Kozlov) > 0 then  //Another scientist not controlled by the player has probably healed Kozlov
+                                   continue;  //If this happens after the player has captured Kozlov one time he will never be given any orders. Kinda stupid but it will probably never happen.
+
+                              SetSide(Kozlov,russians_alt);
+                              RemoveHumanFromVariables(1,Kozlov,true,true);
+                              RemoveHumanFromVariables(3,Kozlov,true,true);  //Could have taken the teleporter to Farmer's base (see event above).
+                              kozlov_captured = true;
+                              kozlov_teleport_event_over = true;
+
+                              ComStop(Kozlov);  //To remove any previous commands given to him by AI
+
+                              if not dialogue_played then
+                                   begin
+                                        dialogue_played = true;
+
+                                        CenterOnUnits(Kozlov);
+                                        DialogueOn;
+
+                                        Say(Kozlov,'D10-Ko-1');
+                                        Say(Heike,'D10-H-1');
+
+                                        if IsDead(Farmer) then  //automatically gains Kozlov
+                                             begin
+                                                  ForceSay(Heike,'D11-2-H-1');
+                                                  Say(Kozlov,'D11-2-Ko-1');
+                                                  ForceSay(Heike,'D11-2-H-2');
+                                                  Say(Kozlov,'D11-2-Ko-2');
+                                                  ForceSay(Heike,'D11-2-H-3');
+                                                  Say(Kozlov,'D11-2-Ko-3');
+                                                  ForceSay(Heike,'D11-2-H-4');
+                                                  Say(Kozlov,'D11-2-Ko-4');
+                                                  ForceSay(Heike,'D11-2-H-5');
+                                                  Say(Kozlov,'D11-2-Ko-5');
+                                                  ForceSay(Heike,'D11-2-H-6');
+                                                  dwait(0$2);
+                                                  Say(Kozlov,'D11-2-Ko-6b');
+
+                                                  dwait(0$0.2);
+                                                  kozlov_gained = true;
+                                                  SetSide(Kozlov,you);
+
+                                                  DialogueOff;
+                                                  exit;
+                                             end;
+
+                                        DialogueOff;
+                                   end;
+                         end
+                    else
+                         begin
+                              //Try to escape.
+                              repeat
+                              wait(0$0.5);
+
+                              if GetLives(Kozlov) <= 250 then
+                                   begin
+                                        trying_to_escape = false;
+                                        break;
+                                   end;
+
+                              if not IsInArea(Kozlov,kozlov_escape_area) then
+                                   ComMoveToArea(Kozlov,kozlov_escape_area)
+                              else
+                                   begin
+                                        RemoveUnit(Kozlov);
+                                        kozlov_escaped = true;
+                                        exit;
+                                   end;
+
+                              until false;
+                         end;
+               end
+          else
+               begin
+                    //Follow the nearest player unit.
+                    repeat
+                    wait(0$1);
+
+                    if kozlov_gained then
+                         exit;
+
+                    temp_list = [];
+                    for i in FilterAllUnits([[f_side,you],[f_dist,Kozlov,12],[f_not,[f_inside]],[f_not,[f_driving]]]) do
+                         case GetType(i) of
+                              unit_human: if IsOk(i) or GetTech(tech_stimdrugs,you) = state_researched then
+                                   temp_list = temp_list ^ i;
+                              unit_vehicle: if IsOk(i) then
+                                   case GetControl(i) of
+                                        control_manual: if IsDrivenBy(i) > 0 then
+                                             temp_list = temp_list ^ i;
+                                        control_apeman, control_computer: temp_list = temp_list ^ i;
+                                        control_remote: if IsControledBy(i) > 0 then
+                                             temp_list = temp_list ^ i;
+                                   end;
+                         end;
+
+                    if temp_list = 0 then
+                         begin
+                              trying_to_escape = true;
+                              kozlov_captured = false;
+                              SetSide(Kozlov,russians);
+
+                              break;
+                         end;
+
+                    i = NearestUnitToUnit(temp_list,Kozlov);
+                    if GetDistUnits(Kozlov,i) > 2 then
+                         ComMoveXY(Kozlov,GetX(i),GetY(i));
+
+                    until false;
+               end;
+
+          until false;
+     end;
+
+
+//The player destroys the Russians.
+Every 0$1+0$0.6 do
+     begin
+          repeat
+          wait(0$1);
+          until not 1 in ai_bases and not 2 in ai_bases;
+
+          ChangeMissionObjectives('MOutDestroyRus');
+          russians_defeated = true;
+     end;
+
+
+//Heike lures Farmer to the Russian base using Kozlov.
+Every 0$1+0$0.9 do
+     var temp_list;
+     begin
+          repeat
+          wait(0$1);
+
+          if kozlov_has_teleported or not 3 in ai_bases or IsDead(Farmer) or ai_teleporter[3] = 0 then
+               exit;
+
+          until not 1 in ai_bases and kozlov_captured and IsOk(Kozlov);
+
+          DialogueOn;
+
+          ForceSay(Heike,'D11-H-1');
+
+          dwait(0$0.2);
+          if Query('QLureFarmer') = 2 then  //No
+               exit;
+          
+          dwait(0$0.2);
+          case Query('QKozlovPersuade') of
+               1: begin  //Offer him insigt into your technologies
+                    ForceSay(Heike,'D11-1-H-1');
+                    Say(Kozlov,'D11-1-Ko-1');
+                    ForceSay(Heike,'D11-1-H-2');
+                    Say(Kozlov,'D11-1-Ko-2');
+
+                    DialogueOff;
+                    exit;
+               end;
+               2: begin  //Promise him revenge on Platonov
+                    ForceSay(Heike,'D11-2-H-1');
+                    Say(Kozlov,'D11-2-Ko-1');
+                    ForceSay(Heike,'D11-2-H-2');
+                    Say(Kozlov,'D11-2-Ko-2');
+                    ForceSay(Heike,'D11-2-H-3');
+                    Say(Kozlov,'D11-2-Ko-3');
+                    ForceSay(Heike,'D11-2-H-4');
+                    Say(Kozlov,'D11-2-Ko-4');
+                    ForceSay(Heike,'D11-2-H-5');
+                    Say(Kozlov,'D11-2-Ko-5');
+                    ForceSay(Heike,'D11-2-H-6');
+                    dwait(0$2);
+                    Say(Kozlov,'D11-2-Ko-6a');
+                    SayRadio(Farmer,'D11-2-Fa-1');
+
+                    dwait(0$0.2);
+                    kozlov_gained = true;
+                    SetSide(Kozlov,you);
+
+                    DialogueOff;
+               end;
+               3: begin  //Threaten him
+                    ForceSay(Heike,'D11-3-H-1');
+                    Say(Kozlov,'D11-3-Ko-1');
+                    ForceSay(Heike,'D11-3-H-2');
+                    Say(Kozlov,'D11-3-Ko-2');
+                    SayRadio(Farmer,'D11-3-Fa-1');
+
+                    ai_vehicle_attack_delay = Replace(ai_vehicle_attack_delay,1,0$0);
+                    DialogueOff;
+                    exit;
+               end;
+          end;
+
+          //Farmer enters his vehicle and goes through the teleporter.
+          RemoveHumanFromVariables(3,Farmer,false,false);
+          farmer_luring_used = true;
+
+          repeat
+          wait(0$1);
+
+          if ai_teleporter[3] = 0 or IsDead(Farmer) then
+               exit;
+
+          if farmer_has_teleported then
+               break;
+
+          if IsOk(farmer_vehicle) and GetSide(farmer_vehicle) = farmer_side and IsInUnit(Farmer) <> farmer_vehicle then
+               begin
+                    case GetType(IsInUnit(Farmer)) of
+                         unit_vehicle: ComExitVehicle(Farmer);
+                         unit_building: ComExitBuilding(Farmer);
+                         else
+                              ComEnterUnit(Farmer,farmer_vehicle);
+                    end;
+
+                    continue;
+               end;
+
+          if not IsOk(ai_teleporter[3]) then
+               continue;
+
+          ComEnterUnit(Farmer,ai_teleporter[3]);
+
+          until false;
+
+          Wait(0$1.5);
+          DialogueOn;
+          ForceSay(Farmer,'D11-2-Fa-2');
+          DialogueOff;
+
+          //Tries desperately to get back to his base again. Uses the Russian teleporter if it's there.
+          repeat
+          wait(0$1);
+
+          if IsDead(Farmer) then
+               exit;
+
+          if IsOk(ai_teleporter[1]) then
+               ComEnterUnit(Farmer,ai_teleporter[1])
+          else
+               ComMoveXY(Farmer,ai_human_pullback_hex[3][1],ai_human_pullback_hex[3][2]);
+
+          until IsInArea(Farmer,Farmer_base);
+
+          temp_list = ai_soldiers[3] ^ Farmer;
+          ai_soldiers = Replace(ai_soldiers,3,temp_list);
+
+          //When the player isn't looking we remove his vehicle so it doesn't block stuff.
+          repeat
+          wait(0$1);
+
+          if IsDead(farmer_vehicle) then
+               exit;
+
+          until not See(you,farmer_vehicle) and IsDrivenBy(farmer_vehicle) = 0;
+
+          DestroyUnit(farmer_vehicle);
+     end;
+
+
+//When Farmer dies his men run away.
+Every 0$1+0$0.8 do
+     var temp_list, folks_list, i, k, dist, h, g;
+     var waypoints;
+     begin
+          repeat
+          wait(0$1);
+          until IsDead(Farmer);
+
+          //Take a snapshot of Farmers base. How bad does it look? (For medal).
+          k = 0;
+          for i in ai_buildings_locations[3] do
+               begin
+                    g = HexInfo(i[1],i[2]);
+                    if not IsOk(g) or GetType(g) <> unit_building or IsConstructed(g) then
+                         k = k + 1;
+               end;
+          num_damaged_or_destroyed_buildings_farmer_base = k;
+          
+          wait(0$2);
+          
+          for i in ai_imported_units[3] do
+               RemoveUnitFromExportImport(3,i);
+          ai_bases = ai_bases diff 3;
+
+          folks_list = FilterAllUnits([[f_side,farmer_side],[f_type,unit_human]]);  //May include Kozlov
+
+          temp_list = UnitFilter(folks_list,[f_ok]) diff (GetApes(farmer_side) ^ Gordon ^ Willard ^ Kozlov);
+          if temp_list > 0 then
+               begin
+                    DialogueOn;
+
+                    if GetSex(temp_list[1]) = sex_male then
+                         SayRadio(temp_list[1],'D13-SomeM-1')
+                    else
+                         SayRadio(temp_list[1],'D13-SomeF-1');
+
+                    DialogueOff;
+               end;
+
+          ChangeMissionObjectives('MOutRecapture');
+          farmer_defeated = true;
+
+          waypoints = [[101,42],[90,33],[78,23],[67,14],[58,6]];
+
+          repeat
+          wait(0$0.6);
+
+          folks_list = UnitFilter(folks_list,[[f_placed],[f_alive]]);
+
+          if kozlov_captured then
+               folks_list = folks_list diff Kozlov;
+
+          if folks_list = 0 then
+               exit;
+
+          for i in folks_list do
+               begin
+                    if not IsInArea(i,farmer_escape_area) then
+                         begin
+                              case GetType(IsInUnit(i)) of
+                                   unit_vehicle: ComExitVehicle(i);
+                                   unit_building: ComExitBuilding(i);
+                                   else
+                                        begin
+                                             //Old waypoint system. Find the closest waypoint and take the next.
+                                             dist = 999999;
+                                             h = -1;
+                                             for g = 1 to waypoints do
+                                                  begin
+                                                       k = GetDistUnitXY(i,waypoints[g][1],waypoints[g][2]);
+                                                       if k < dist then
+                                                            begin
+                                                                 dist = k;
+                                                                 h = g;
+                                                            end;
+                                                  end;
+
+                                             if h = waypoints then
+                                                  ComMoveToArea(i,farmer_escape_area)
+                                             else
+                                                  ComMoveXY(i,waypoints[h+1][1],waypoints[h+1][2]);
+                                        end;
+                              end;
+                         end
+                    else
+                         begin
+                              if i in [Gordon,Willard,Kozlov] then
+                                   begin
+                                        RemoveUnit(i);
+
+                                        if i = Kozlov then
+                                             kozlov_escaped = true;
+                                   end
+                              else
+                                   DestroyUnit(i);
+                         end;
+               end;
+
+          until false;
+     end;

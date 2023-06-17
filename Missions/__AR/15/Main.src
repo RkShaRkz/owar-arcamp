@@ -1,0 +1,1633 @@
+Export Heike,Omar,Gensher, Olaf,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Dwayne,Khattam,Makise,Gonzo,others,others2,SavedUPF,Snake;
+Export AllPlayerPeople, SecondGroup, TeamHeike, TeamOmar, TeamBurlak, OtherTeam;
+Export Roth, Gossudarov, Burlak, Masha, Alliance_soldiers, Alliance_bazookers, Alliance_snipers, Alliance_sci, Alliance_engs, Alliance_mechs, Alliance_crane;
+Export All_depot, All_fac1, All_fac2, All_lab1, All_lab2, All_lab3, All_Rubarracks, All_Ambarracks, All_bunkers, damaged_buildings, damaged_people, damaged_crane;
+Export testing, AllianceDestroyed, BurlakDestroyed, BurlakCountdown, ContaminationDialogueOn, ContaminationCutsceneHexes, ContaminationCutsceneSoldiers;
+Export Transport_whole, ArtMeasurement_done, EnableMovingToNextMap, cutscene_done;
+Export StrikeForce_humans, StrikeForce_drivers, StrikeForce_vehicles, StrikeForce_tigers;
+Export ArtTechDoneCount;
+
+Export OlafIsLeader, OswaldIsLeader, RalphIsLeader, SonyaIsLeader, AviradzeIsLeader, KowalskiIsLeader, EvelynIsLeader, SwanssonIsLeader, DwayneIsLeader, KhattamIsLeader, MakiseIsLeader, SnakeIsLeader, GensherIsLeader;
+Export OlafIsSupport, OswaldIsSupport, RalphIsSupport, SonyaIsSupport, AviradzeIsSupport, KowalskiIsSupport, EvelynIsSupport, SwanssonIsSupport, DwayneIsSupport, KhattamIsSupport, MakiseIsSupport, SnakeIsSupport;
+Export HeadScientist, SibLab, ATech_SibPlant, ATech_Beh, ATech_TimeLapse, ATech_Laser, ATech_SuperStim, ATech_SPBomb, ArtResearchCount, ArtResearchList, ArtInfo;
+
+Starting
+Begin
+     testing = false;
+
+     music_nat = 4;
+
+     LoadPeople;       //There should be 14 main characters (+ Gonzo), 1 main character going west, and about 50 random people left
+                       //assumming the same values as in 15a: 14 mains + [6, 4, 2] additional random people for the player,
+                       //          sending 1 main and about 15-20 as possible backup later on
+     PrepareBase;
+
+     Alliance;
+     AllianceDestroyed = 0;
+
+     Russians;
+     BurlakDestroyed = 0;
+     BurlakCountdown = [25$0,20$0,15$0][difficulty];
+
+
+     ContaminationDialogueOn = 0;        //will control when the dialogue can be triggered, should be after the Russian attack
+     HeadScientist = 0;                  //the one used in contamination dialogue. Createa random one if there is no mian character
+
+     ArtTechDoneCount = 0;
+
+     Animals;
+     Intro;
+end;
+
+
+{
+        State of enemy bases on next map depends on the amount of preparation here:
+
+vehicle preparation levels:
+
+        vehicle count:
+        medium weap = +1
+        SP bomb     = +2
+
+        lvl 0:  <= 8 vehicles
+        lvl 1:  <= 16
+        lvl 2:  <= 24
+        lvl 3:  <= 32
+        lvl 4:  > 32
+
+defences:
+         lvl 0: -3 bunkers on every base entrance
+         lvl 1: -2
+         lvl 2: -1
+         lvl 3: -1
+         lvl 4: 0
+
+         corresponds to vehicle preparation levels (for russians: x2 for development, +6 for first artifact, + 4 for the second)
+         +1 lvl for every art tech
+
+         progresses during the mission at 1 lvl every [20,15,10][diff] min
+         difficulty level will affect the Btype and weapon
+
+technologies:
+             lvl 0: 2 basic, 1 weap, 1 comp, 1 opt, 1 bio, 1 sib, 1 ST
+             lvl 1: +3 basic
+             lvl 2: +2 comp +2 opt +2 bio
+             lvl 3: +2 weap +2 ST +2 sib
+             lvl 4: +3 comp +3 opt +3 bio
+             lvl 5: +3 weap +3 sib
+             lvl 6: +3 ST
+
+             corresponds to vehicle preparation levels * 0.5
+             +0.5 lvl for every art tech
+             +0.5 lvl for medium difficulty
+             +1 lvl for hard difficulty
+             rounding down
+
+             progresses during the mission at 1 lvl every [20,15,10][diff] min
+
+enemy vehicles:
+               use the same team for patrol as for attacking other bases
+               if destroyed by other enemies 2x shorter respawn
+
+               movement patterns together with weapons type,
+               depends only on art tech (+1 each) and destroying alliance (+2):
+
+               lvl 0: no patrol team
+               lvl 1: only for main base defending
+               lvl 2: goes only as far as the minor base
+               lvl 3: patrol goes everywhere
+
+               progresses during the mission at 1 lvl every [20,15,10][diff] min
+}
+
+
+
+
+
+Function LoadPeople;                                                       //TeamOmar spawns at the base - non sel mains and others, about 20
+var temp, i, count, required, others_present;                              //TeamHeike comes in - Selected people, others, SavedUPF
+begin
+     Randomize;
+
+     if testing then
+     begin
+          Transport_whole = 1;
+          ArtMeasurement_done = 1;
+
+          ATech_SibPlant = 1;                 //Tech status: 0 - disabled, 1 - enabled, 2 - selected for researched, 3 - researched
+          ATech_Beh = 1;
+          ATech_TimeLapse = 1;
+          ATech_Laser = 1;
+          ATech_SuperStim = 1;
+          ATech_SPBomb = 1;
+
+          uc_side = 2;
+          uc_nation = nation_arabian;
+
+          InitHc;
+          hc_class=class_soldier; hc_attr=[10,12]; hc_skills=[10,5,8,7]; hc_sex=2; hc_gallery='ru'; hc_face_number=24; hc_name = 'Heike'; Heike=CreateHuman;
+          hc_class=class_soldier; hc_attr=[12,11]; hc_skills=[10,8,5,10]; hc_sex=1; hc_gallery='ru'; hc_face_number=46; hc_name = 'Omar Ali'; Omar=CreateHuman;
+          hc_class=class_soldier; hc_attr=[10,10]; hc_skills=[10,5,7,5]; hc_sex=1; hc_gallery='ru'; hc_face_number=26; hc_name = 'Dietrich Gensher'; Gensher=CreateHuman;
+
+          hc_class=class_mechanic; hc_attr=[12,10]; hc_skills=[5,6,9,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=2; hc_name = 'Olaf'; Olaf=CreateHuman;
+          hc_class=class_soldier; hc_attr=[11,10]; hc_skills=[10,6,6,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=15; hc_name = 'Oswald'; Oswald=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[8,5,10,6]; hc_sex=1; hc_gallery='ar'; hc_face_number=5; hc_name = 'Ralph'; Ralph=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[9,11]; hc_skills=[5,6,9,10]; hc_sex=2; hc_gallery='ar'; hc_face_number=6; hc_name = 'Sonya'; Sonya=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[10,12]; hc_skills=[5,6,7,10]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=1; hc_name = 'Aviradze'; Aviradze=CreateHuman;
+          hc_class=class_soldier; hc_attr=[11,10]; hc_skills=[9,6,7,4]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=2; hc_name = 'Kowalski'; Kowalski=CreateHuman;
+          hc_class=class_engineer; hc_attr=[9,10]; hc_skills=[6,10,7,6]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=5; hc_name = 'Evelyn'; Evelyn=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[7,5,10,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=31; hc_name = 'Swansson'; Swansson=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[10,11]; hc_skills=[9,5,9,6]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=13; hc_name = 'Dwayne'; Dwayne=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[10,9]; hc_skills=[4,6,5,9]; hc_sex=1; hc_gallery='us'; hc_face_number=10; hc_name = 'Khattam'; Khattam=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[9,9]; hc_skills=[4,8,8,10]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=34; hc_name = 'Makise'; Makise=CreateHuman;
+          hc_class=class_soldier; hc_attr=[13,12]; hc_skills=[10,4,7,7]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=36; hc_name = 'Iroquois Pliskin'; Snake=CreateHuman;
+          uc_nation=nation_nature;hc_class=class_apeman_soldier; hc_attr=[16,12]; hc_skills=[10,10,1,1]; hc_sex=1; hc_gallery=''; hc_name = 'Gonzo'; Gonzo=CreateHuman; uc_nation=nation_arabian;
+            
+          TeamHeike = [Heike, Olaf, Oswald, Ralph, Sonya, Aviradze, Kowalski, Snake, Gensher, Gonzo];
+          TeamOmar = [Omar, Evelyn, Swansson, Dwayne, Khattam, Makise];
+
+          InitHc;
+
+          others = [];                                                                       
+
+          for i = 1 to 7 do
+          begin                                    
+               PrepareSoldier(false,7);
+               others = others ^ createhuman;
+          end;
+
+          for i = 1 to 7 do
+          begin
+               PrepareMechanic(false,7);
+               others = others ^ createhuman;
+          end;
+
+          TeamOmar = TeamOmar ^ others;
+
+          others = [];
+
+
+          PrepareScientist(false,7);
+          others = others ^ createhuman;
+
+          for i = 1 to 2 do
+          begin
+               PrepareSoldier(false,7);
+               others = others ^ createhuman;
+          end;
+
+          for i = 1 to 2 do
+          begin
+               PrepareMechanic(false,7);
+               others = others ^ createhuman;
+          end;
+
+          TeamHeike = TeamHeike ^ others;
+
+     end
+     else
+
+     begin
+          uc_side = 2;
+          uc_nation = nation_arabian;
+
+          Heike = LoadCharacter('Heike_14_cont2',0,0);
+          Omar = LoadCharacter('Omar_14',0,0);
+          Gensher = LoadCharacter('Gensher_14_cont2',0,0);
+          Snake = LoadCharacter('Snake_14_cont2',0,0);
+
+          Olaf=LoadCharacter('Olaf_14_cont2',0,0);
+          Oswald=LoadCharacter('Oswald_14_cont2',0,0);
+          Ralph=LoadCharacter('Ralph_14_cont2',0,0);
+          Sonya=LoadCharacter('Sonya_14_cont2',0,0);
+          Aviradze=LoadCharacter('Aviradze_14_cont2',0,0);                         
+          Kowalski=LoadCharacter('Kowalski_14_cont2',0,0);
+          Evelyn=LoadCharacter('Evelyn_14_cont2',0,0);
+          Swansson=LoadCharacter('Swansson_14_cont2',0,0);
+          Dwayne=LoadCharacter('Dwayne_14_cont2',0,0);
+          Khattam=LoadCharacter('Khattam_14_cont2',0,0);
+          Makise=LoadCharacter('Makise_14_cont2',0,0);
+          Gonzo=LoadCharacter('Gonzo_14_cont2',0,0);
+
+          others=CreateCharacterSet('Others_14_cont2');       //those are the others that are with heike in 14cont2
+          SavedUPF=CreateCharacterSet('UPF_14_cont2');
+
+
+          TeamHeike = [Heike, Gensher, Olaf,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Dwayne,Khattam,Makise,Gonzo,Snake] ^ others diff 0;
+
+          TeamOmar = Omar;
+          if TestVariable('Olaf_Escort_14_cont') then               //Main characters: some come with Heike, some stayed with Omar, some returned with the convoy
+             TeamOmar = TeamOmar ^ Olaf;
+          if TestVariable('Oswald_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Oswald;
+          if TestVariable('Ralph_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Ralph;
+          if TestVariable('Sonya_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Sonya;
+          if TestVariable('Aviradze_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Aviradze;
+          if TestVariable('Kowalski_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Kowalski;
+          if TestVariable('Evelyn_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Evelyn;
+          if TestVariable('Swansson_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Swansson;
+          if TestVariable('Dwayne_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Dwayne;
+          if TestVariable('Khattam_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Khattam;
+          if TestVariable('Makise_Escort_14_cont') then
+             TeamOmar = TeamOmar ^ Makise;              
+
+          if not TestVariable('Transport_Teleported_14_cont') then
+             TeamOmar = TeamOmar ^ Snake;
+
+
+          others2 = [];
+          others2 = CreateCharacterSet('convoy_others_14_cont2');     //before and after the exp reward
+          if others2 = [] then
+             others2 = CreateCharacterSet('Others_Escort_14_cont');
+
+          TeamOmar = TeamOmar ^ others2;
+
+          TeamHeike = TeamHeike diff TeamOmar;
+                                                                                     
+
+          if Olaf = 0 then
+          begin
+               Olaf = LoadCharacter('Olaf_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Olaf;
+          end;                       
+          if Oswald = 0 then
+          begin
+               Oswald = LoadCharacter('Oswald_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Oswald;
+          end;
+          if Ralph = 0 then
+          begin
+               Ralph = LoadCharacter('Ralph_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Ralph;
+          end;
+          if Sonya = 0 then
+          begin
+               Sonya = LoadCharacter('Sonya_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Sonya;
+          end;
+          if Aviradze = 0 then
+          begin
+               Aviradze = LoadCharacter('Aviradze_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Aviradze;
+          end;
+          if Kowalski = 0 then
+          begin
+               Kowalski = LoadCharacter('Kowalski_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Kowalski;
+          end;
+          if Evelyn = 0 then
+          begin
+               Evelyn = LoadCharacter('Evelyn_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Evelyn;
+          end;
+          if Swansson = 0 then
+          begin
+               Swansson = LoadCharacter('Swansson_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Swansson;
+          end;
+          if Dwayne = 0 then
+          begin
+               Dwayne = LoadCharacter('Dwayne_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Dwayne;
+          end;
+          if Khattam = 0 then
+          begin
+               Khattam = LoadCharacter('Khattam_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Khattam;
+          end;
+          if Makise = 0 then
+          begin
+               Makise = LoadCharacter('Makise_14_not_sel',0,0);
+               TeamOmar = TeamOmar ^ Makise;
+          end;
+
+          TeamOmar = TeamOmar diff 0;
+          
+          others2=CreateCharacterSet('Others_14_not_sel');  //others2 will come with TeamOmar but needs to be adjusted
+
+          TeamOmar = TeamOmar ^ others2;
+
+          while TeamOmar > 20 do
+          begin
+               temp = others2;
+               i = temp[rand(1,temp)];
+               others2 = others2 diff i;
+               TeamOmar = TeamOmar diff i;
+          end;
+
+          while TeamOmar < 20 do
+          begin
+               case rand(1,2) of
+                    1: PrepareSoldier(false,7);
+                    2: PrepareMechanic(false,7);
+               end;
+
+               TeamOmar = TeamOmar ^ createhuman;
+          end;
+
+
+          Transport_whole = LoadVariable('Transport_Teleported_14_cont',0);
+          ArtMeasurement_done = LoadVariable('Artifact_measurement_done_13',0);
+
+          if LoadVariable('SibPlantDeveloped_07_cont', 0) then
+             ATech_SibPlant = 1;
+
+          if LoadVariable('Extra_documents_stolen_09', 0) then
+             ATech_Beh = 1;
+
+          if LoadVariable('Investigated_time_shifting_10', 0) then
+             ATech_TimeLapse = 1;
+
+          if Khattam > 0 or LoadVariable('AllGensherPeopleSaved_11_cont', 0) then
+             ATech_Laser = 1;
+
+          if LoadVariable('Contaminating_sci_brought_to_lab_12_cont2', 0) then
+             ATech_SuperStim = 1;
+
+          if LoadVariable('Implosion_vehicle_dismantled_12_cont2', 0) then
+          begin
+               ATech_SPBomb = 1;
+               SetTech(72,2,state_enabled);                  //72 is sib implosion
+          end
+             else
+                 SetTech(72,2,state_disabled);
+
+     end;
+
+
+     ChangeSideFog(5,2);
+
+
+     if SavedUPF = 0 then                                          //Recreate some UPF people in case they weren't saved
+     begin
+          SavedUPF = [];
+
+          for i = 1 to 6 do
+          begin
+               PrepareSoldier(false,10);
+               SavedUPF = SavedUPF ^ Createhuman;
+          end;
+
+          SetClass([SavedUPF[1], SavedUPF[3], SavedUPF[5]], class_mortar);
+
+          PrepareScientist(false,10);
+          SavedUPF = SavedUPF ^ Createhuman;
+
+          for i = 1 to 3 do
+          begin
+               PrepareMechanic(false,10);
+               SavedUPF = SavedUPF ^ Createhuman;
+          end;
+
+     end;
+
+     SecondGroup = [];
+     for i = 1 to SavedUPF do                                  //Some already have been sent away
+         if i in [1,2,3,10] then
+            SecondGroup = SecondGroup ^ SavedUPF[i];
+
+     SavedUPF = SavedUPF diff SecondGroup;      //remember this is for later
+     TeamHeike = TeamHeike ^ SavedUPF;
+end;
+
+
+Function PrepareBase;
+var i,lab,oil,arm,workshop,arm2,dep;
+var temp, everyone,j;
+var depot, armoury, cargos;
+var crates, oilbarrels, sib;
+begin
+     Randomize;
+
+     SetTech(tech_artifact,2,state_disabled);
+
+     SetClass(Omar,class_engineer);
+
+     depot = hexinfo(102,87);
+     armoury = hexinfo(92,66);
+
+
+{    from previous mission  (resources added for medal in 14 are a part of this)
+
+              crates (-250)    sib (-100)
+     easy     500 - 750        150 - 250
+     medium   600 - 1000       200 - 300
+     hard     750 - 1250       250 - 400
+
+
+     previous medals
+
+     artifact measurement done - 13
+     crates + 250
+     sib    + 100
+
+     transport teleported - 14
+     crates + 250
+     sib    + 100
+
+
+     values caped at [2000, 1750, 1500, (1250)][difficulty] crates    and    [600, 500, 400, (350)][difficulty] sib
+     Omar brings
+
+              crates         sib
+     easy     1000           250
+     medium   500            100
+     hard     0              0
+
+
+     TOTAL            (Omar + Player + medal1 + medal2)
+
+          easy        min                                       max                            (cap all)
+              crates: 1000 + 500 + 0 + 0 = 1500                 1000 + 750 + 250 + 250 = 2250
+              sib:    250  + 150 + 0 + 0 = 400                  250  + 250 + 100 + 100 = 700
+              
+          medium:     min                                       max
+              crates: 500  + 600 + 0 + 0 = 1100 (cap at 1500)   500 + 1000 + 250 + 250 = 2000
+              sib:    100  + 200 + 0 + 0 = 300                  100  + 300 + 100 + 100 = 600
+
+          hard:       min                                       max
+              crates: 0    + 750 + 0 + 0 = 750  (cap at 1250)   0   + 1250 + 250 + 250 = 1750
+              sib:    0    + 250 + 0 + 0 = 250                  0   + 400  + 100 + 100 = 600
+}
+
+
+     temp = LoadVariable('Resources_gathered_14_cont', [0,0,0]); 
+
+     crates = temp[1];
+     if crates < [500, 600, 750][difficulty] then
+        crates = [500, 600, 750][difficulty];
+
+     if crates > [750, 1000, 1250][difficulty] or testing then
+        crates = [750, 1000, 1250][difficulty];
+
+     crates = crates + [1000, 500, 0][difficulty];    // + amount gathered by Omar
+
+
+     sib = temp[3];
+     if sib < [150, 200, 250][difficulty] then
+        sib = [150, 200, 250][difficulty];
+
+     if sib > [250, 300, 400][difficulty] or testing then
+        sib = [250, 300, 400][difficulty];
+
+     sib = sib + [250, 100, 0][difficulty];           // + amount gathered by Omar
+
+
+     if Transport_whole then
+     begin
+          crates = crates + 250;
+          sib = sib + 100;
+     end;
+
+     if ArtMeasurement_done then
+     begin
+          crates = crates + 250;
+          sib = sib + 100;
+     end;
+
+     oilbarrels = 300;
+
+
+     addresourcetype(GetBase(depot), mat_cans, crates);
+     addresourcetype(GetBase(depot), mat_oil, oilbarrels);
+     addresourcetype(GetBase(depot), mat_siberit, sib);
+
+
+     //assign people for the intro:
+
+     everyone = TeamOmar;
+     lab = [];
+     workshop = [];
+     oil = [];
+     arm = [];
+     arm2 = [];
+     dep = [];
+
+
+     temp = [Sonya, Aviradze, Khattam, Makise] diff TeamHeike;             //some build the lab with Omar
+
+     while temp > 0 and lab < 3 do
+     begin
+          j = rand(1,temp);
+          lab = lab ^ temp[j];
+          temp = temp diff temp[j];
+     end;
+
+     if lab < 3 then
+     begin
+          temp = TeamOmar diff [Omar, Sonya, Aviradze, Khattam, Makise, Oswald, Kowalski, Swansson, Olaf, Dwayne, Ralph, Evelyn, Snake];
+
+          while lab < 3 do
+          begin
+               j = rand(1, temp);
+               lab = lab ^ temp[j];
+               temp = temp diff temp[j];
+          end;
+     end;
+
+     lab = lab ^ Omar;
+     everyone = everyone diff lab;
+     setclass(lab, class_engineer);
+
+
+
+     temp = [Olaf, Dwayne, Ralph, Evelyn] diff TeamHeike;                //others build workshop
+
+     if temp > 0 then
+        workshop = workshop ^ temp;
+
+     if workshop < 4 then
+     begin
+          temp = TeamOmar diff [Omar, Sonya, Aviradze, Khattam, Makise, Oswald, Kowalski, Swansson, Olaf, Dwayne, Ralph, Evelyn, Snake] ^ lab;
+
+          while workshop < 4 do
+          begin
+               j = rand(1, temp);
+               workshop = workshop ^ temp[j];
+               temp = temp diff temp[j];
+          end;
+     end;
+
+     everyone = everyone diff workshop;
+     setclass(workshop, class_engineer);
+
+
+
+     temp = [Sonya, Aviradze, Khattam, Makise] diff TeamHeike ^ lab;               //or an oil tower
+
+     if temp > 0 then
+        oil = oil ^ temp;
+
+     temp = TeamOmar diff [Omar, Sonya, Aviradze, Khattam, Makise, Oswald, Kowalski, Swansson, Olaf, Dwayne, Ralph, Evelyn, Snake] ^ lab ^ workshop;
+
+     while oil < 2 do
+     begin
+          j = rand(1,temp);
+          oil = oil ^ temp[j];
+          temp = temp diff temp[j];
+     end;
+
+     everyone = everyone diff oil;
+     setclass(oil[1], class_scientistic);
+     setclass(oil[2], class_engineer);
+
+
+
+     temp = [Oswald, Kowalski, Swansson] diff TeamHeike;              //some go into the armoury
+
+     if temp > 0 then
+        arm = arm ^ temp;
+
+     temp = TeamOmar diff [Omar, Sonya, Aviradze, Khattam, Makise, Oswald, Kowalski, Swansson, Olaf, Dwayne, Ralph, Evelyn, Snake] ^ lab ^ workshop ^ oil;
+
+     while arm < 6 do
+     begin
+          j = rand(1,temp);
+          arm = arm ^ temp[j];
+          temp = temp diff temp[j];
+     end;
+
+     everyone = everyone diff arm;
+     setclass(arm, class_soldier);
+
+
+
+     if Snake in TeamOmar then                       //and stand on the other hill
+        arm2 = arm2 ^ Snake;
+
+     temp = TeamOmar diff [Omar, Sonya, Aviradze, Khattam, Makise, Oswald, Kowalski, Swansson, Olaf, Dwayne, Ralph, Evelyn, Snake] ^ lab ^ workshop ^ oil ^ arm;
+
+     while arm2 < 2 do
+     begin
+          j = rand(1,temp);
+          arm2 = arm2 ^ temp[j];
+          temp = temp diff temp[j];
+     end;
+
+     everyone = everyone diff arm2;
+     setclass(arm2, class_soldier);
+
+    
+
+     temp = TeamOmar diff [Omar, Sonya, Aviradze, Khattam, Makise, Oswald, Kowalski, Swansson, Olaf, Dwayne, Ralph, Evelyn, Snake] ^ lab ^ workshop ^ oil ^ arm ^ arm2;
+
+     while dep < 2 do                               //some go into the depot or just stand about
+     begin
+          j = rand(1,temp);
+          dep = dep ^ temp[j];
+          temp = temp diff temp[j];
+     end;
+
+     everyone = everyone diff dep;
+
+
+
+     //Placing:
+
+     if everyone > 0 then
+        for i in everyone do
+            PlaceUnitArea(i,start,false);                          
+
+     for i in lab do
+         PlaceUnitXYR(i,94,89,2,false);
+
+     for i in workshop do
+         PlaceunitXYR(i,111,97,3,false);
+
+     for i in oil do
+         PlaceUnitXYR(i,78,93,2,false);
+
+     for i in arm do
+         PlaceHumanInUnit(i,armoury);
+
+     PlaceUnitXYR(arm2[1],120,79,2,false);
+     PlaceUnitXYR(arm2[2],120,79,2,false);
+
+     for i in dep do
+         PlaceHumanInUnit(i,depot);
+
+
+
+     cargos = [];
+
+     uc_side = 2;
+     uc_nation = nation_arabian;
+     vc_chassis = ar_half_tracked;
+     vc_weapon = ar_cargo_bay;
+     vc_engine = engine_combustion;
+     vc_control = control_manual;
+
+     temp = CreateVehicle;                //the cargo with artifact
+     SetDir(temp, 5);
+     SetFuel(temp, 80);
+     SetCargo(temp, mat_artifact, 40);
+     PlaceUnitXY(temp, 91,80, false);
+
+
+     for i = 1 to 9 do
+     begin
+          if i < 5 then
+             vc_control = control_manual
+          else
+              vc_control = control_apeman;
+
+          vc_engine = [engine_siberite, engine_combustion][rand(1,2)];
+
+          cargos = cargos ^ createvehicle;
+     end;
+
+     for i = 1 to 5 do
+     begin
+          vc_weapon = [ar_gatling_gun,ar_gun,ar_rocket_launcher][rand(1,3)];
+          vc_engine = [engine_combustion,engine_siberite][rand(1,2)];
+          vc_control = [control_manual,control_apeman][rand(1,2)];
+
+          cargos = cargos ^ createvehicle;
+     end;
+
+     for i in cargos do
+     begin
+          SetDir(i, rand(0,5));
+          PlaceUnitXYR(i, 91, 106, 9, false);
+
+          case rand(1,6) of
+               1,2,3: AddCargo(i, mat_cans, 100);
+                 4,5: AddCargo(i, mat_siberit, 100);
+                   6: AddCargo(i, mat_oil, 100);
+          end;
+     end;
+
+
+     ComBuild(Omar,b_lab,89,84,2);
+     ComBuild(workshop,b_workshop,119,97,4);
+     ComBuild(oil[2],b_oil_mine,73,92,1);
+                                                                                     
+end;
+
+
+Function Alliance;
+var i,temp;
+begin
+     Randomize;
+
+     if difficulty >= 1 then
+     begin
+          SetTech(tech_tech1,7,state_researched);
+          SetTech(tech_tech2,7,state_researched);
+          SetTech(tech_tech3,7,state_researched);
+
+          SetTech(tech_weap1,7,state_researched);
+
+          SetTech(tech_comp1,7,state_researched);
+
+          SetTech(tech_sib1,7,state_researched);
+          SetTech(tech_sib2,7,state_researched);
+
+          SetTech(tech_opto1,7,state_researched);
+          SetTech(tech_opto2,7,state_researched);
+
+          SetTech(tech_st1,7,state_researched);
+
+          SetTech(tech_taufield,7,state_researched);
+          SetTech(tech_taurad,7,state_researched);
+          SetTech(tech_SpacAnom,7,state_researched);
+          SetTech(tech_limteleport,7,state_researched);
+          SetTech(tech_lapser,7,state_researched);
+     end;
+
+     if difficulty >= 2 then
+     begin
+          SetTech(tech_weap2,7,state_researched);
+          SetTech(tech_comp2,7,state_researched);
+          SetTech(tech_opto3,7,state_researched);
+          SetTech(tech_st2,7,state_researched);
+     end;
+
+     if difficulty = 3 then
+     begin
+          SetTech(tech_weap3,7,state_researched);
+          SetTech(tech_comp3,7,state_researched);
+          SetTech(tech_st3,7,state_researched);
+     end;
+
+
+     All_depot = HexInfo(21,14);
+     All_fac1 = HexInfo(26,9);            
+     All_fac2 = HexInfo(23,36);
+     All_lab1 = HexInfo(10,6);
+     All_lab2 = HexInfo(13,20);
+     All_lab3 = HexInfo(32,4);
+     All_Rubarracks = HexInfo(44,35);
+     All_Ambarracks = HexInfo(34,41);
+     All_bunkers = FilterAllUnits([[f_side,7],[f_btype,b_bunker]]);
+
+     Alliance_soldiers = [];
+     Alliance_bazookers = [];
+     Alliance_snipers = [];
+     Alliance_sci = [];
+     Alliance_engs = [];
+     Alliance_mechs = [];
+     Alliance_crane = 0;
+
+     damaged_buildings = [];
+     damaged_people = [];
+     damaged_crane = 0;
+
+     for i in FilterAllunits([f_side,7]) do
+         SetBLevel(i,[6,8,10][difficulty]);
+
+     InitUc;
+     InitHc;
+
+     uc_side = 7;
+
+     Roth = NewCharacter('Roth');
+     SetClass(Roth,class_scientistic);
+
+     if testing then
+        Gossudarov = NewCharacter('Gossudarov')
+     else
+         Gossudarov = CreateCharacter('Gossudarov_10');
+
+     If Gossudarov then
+        SetClass(Gossudarov,class_scientistic);
+
+
+     for i = 1 to 5 do
+     begin
+          uc_nation = [nation_american, nation_russian][rand(1,2)];
+
+          PrepareSoldier(false,7);
+          Alliance_soldiers = Alliance_soldiers ^ createhuman;
+     end;
+
+     for i = 1 to 3 do
+     begin
+          uc_nation = [nation_american, nation_russian][rand(1,2)];
+
+          PrepareSoldier(false,10);
+          temp = createhuman;
+          SetClass(temp, class_bazooker);
+          Alliance_bazookers = Alliance_bazookers ^ temp;
+     end;
+
+     for i = 1 to 2 do
+     begin
+          uc_nation = [nation_american, nation_russian][rand(1,2)];
+
+          PrepareSoldier(false,10);
+          temp = createhuman;
+          SetClass(temp, class_sniper);
+          Alliance_snipers = Alliance_snipers ^ temp;
+     end;
+
+     for i = 1 to 11 do
+     begin
+          uc_nation = [nation_american, nation_russian][rand(1,2)];
+
+          PrepareScientist(false,8);
+          Alliance_sci = Alliance_sci ^ createhuman;
+     end;
+
+     for i = 1 to 3 do
+     begin
+          uc_nation = [nation_american, nation_russian][rand(1,2)];
+
+          PrepareEngineer(false,10);
+          Alliance_engs = Alliance_engs ^ createhuman;
+     end;
+
+     for i = 1 to 6 do
+     begin
+          uc_nation = [nation_american, nation_russian][rand(1,2)];
+
+          PrepareMechanic(false,9);
+          Alliance_mechs = Alliance_mechs ^ createhuman;
+     end;
+
+     {case rand(1,2) of
+          1: begin
+                  uc_nation = nation_american;
+                  vc_weapon = us_crane;
+                  vc_chassis = us_medium_tracked;
+             end;
+
+          2: begin
+                  uc_nation = nation_russian;
+                  vc_weapon = ru_crane;
+                  vc_chassis = ru_medium_tracked;
+             end;
+     end;        }
+
+     uc_nation = nation_russian;
+     vc_weapon = ru_crane;
+     vc_chassis = ru_medium_tracked;
+
+     vc_engine = engine_siberite;
+     vc_control = control_computer;
+
+     Alliance_crane = createvehicle;;
+
+
+
+     temp = Alliance_crane ^ Roth ^ Gossudarov diff 0;
+     temp = temp ^ Alliance_soldiers ^ Alliance_bazookers ^ Alliance_snipers ^ Alliance_sci ^ Alliance_engs ^ Alliance_mechs;
+
+     for i in temp do
+         PlaceUnitArea(i, AllianceSpawn, false);
+
+end;
+
+
+Function Russians;
+var i, temp;
+var heavyguns, guns, lapsers, small_rockets, gatlings, large_rockets;
+begin
+     SetTech(tech_tech1,3,state_researched);
+     SetTech(tech_tech2,3,state_researched);
+     SetTech(tech_tech3,3,state_researched);
+
+     SetTech(tech_weap1,3,state_researched);
+
+     SetTech(tech_comp1,3,state_researched);
+
+     SetTech(tech_sib1,3,state_researched);
+     SetTech(tech_sib2,3,state_researched);
+
+     SetTech(tech_st1,3,state_researched);
+     SetTech(tech_st2,3,state_researched);
+
+     SetTech(tech_lapser,3,state_researched);
+
+     if difficulty >= 2 then
+     begin
+          SetTech(tech_weap2,3,state_researched);
+          SetTech(tech_comp2,3,state_researched);
+     end;
+
+     if difficulty = 3 then
+     begin
+          SetTech(tech_weap3,3,state_researched);
+          SetTech(tech_comp3,3,state_researched);
+     end;
+
+
+     InitHc;
+     uc_nation = nation_russian;
+     uc_side = 3;
+
+     Burlak = NewCharacter('Burlak');
+
+     SetSkill(Burlak, skill_combat, 6);
+     SetSkill(Burlak, skill_engineering, 9);
+     SetSkill(Burlak, skill_mechanical, 10);
+     SetSkill(Burlak, skill_scientistic, 5);
+
+     vc_engine = engine_siberite;
+     vc_control = control_manual;
+     vc_chassis = ru_heavy_tracked;
+     vc_weapon = ru_heavy_gun;
+
+     Masha = CreateVehicle;
+     setmark(masha,1);
+     PlaceHumanInUnit(Burlak, Masha);
+
+
+     //TeamBurlak: Masha, 6 other heavy guns, 4 guns, 3 lapsers, 2 small rockets, 2 gatlings, 4 big rockets
+
+     vc_engine = engine_combustion;
+     vc_control = control_computer;
+     heavyguns = CreateVehicle ^ CreateVehicle ^ CreateVehicle ^ CreateVehicle ^ CreateVehicle ^ CreateVehicle;        //6 heavy guns (all computer)
+
+     vc_weapon = ru_rocket;
+     large_rockets = CreateVehicle ^ CreateVehicle;   //[2,3,4] rockets
+     if difficulty > 1 then
+        large_rockets = large_rockets ^ CreateVehicle;
+     if difficulty = 3 then
+        large_rockets = large_rockets ^ CreateVehicle;
+
+     vc_chassis = ru_medium_wheeled;
+     vc_weapon = ru_time_lapser;
+   {  if difficulty > 1 then
+        lapsers = CreateVehicle;           // [0,1,3] lapsers
+     if difficulty = 3 then
+        lapsers = lapsers ^ CreateVehicle ^ CreateVehicle;       }      //too difficult
+
+     vc_control = control_manual;
+     vc_weapon = ru_rocket_launcher;
+     small_rockets = CreateVehicle ^ CreateVehicle;                     //2 rocket launchers
+
+     vc_weapon = ru_gatling_gun;
+     gatlings = CreateVehicle ^ CreateVehicle;                          //2 gatlings
+
+     vc_weapon = ru_gun;
+     guns = CreateVehicle ^ CreateVehicle;
+
+     vc_control = control_computer;                                       //4 guns (2 manual and 2 computer)
+     guns = guns ^ CreateVehicle ^ CreateVehicle;
+
+
+     {TeamBurlak = Masha ^ heavyguns[1] ^ guns[1] ^ heavyguns[2] ^ gatlings[1] ^ heavyguns[3] ^ guns[2]   //mix them up a little for a better formation
+                        ^ heavyguns[4] ^ gatlings[2] ^ heavyguns[5] ^ guns[3] ^ heavyguns[6] ^ guns[4]
+                        {^ lapsers} ^ small_rockets  ^ large_rockets; }
+
+
+     //Split them into groups: all guns and small rockets, 3 heavy guns Masha and gatlings, 3 heavy guns and big rockets
+
+     TeamBurlak = [guns ^ small_rockets,
+                   Masha ^ heavyguns[1] ^ heavyguns[2] ^ heavyguns[3] ^ gatlings,
+                   heavyguns[4] ^ heavyguns[5] ^ heavyguns[6] ^ large_rockets];
+
+
+
+     //other drivers
+     for i in small_rockets ^ gatlings ^ guns do
+         if IsDrivenBy(i) = 0 then
+         begin
+              PrepareMechanic(false, [6,7,8][difficulty]);
+              temp = CreateHuman;
+              PlaceHumanInUnit(temp, i);
+         end;
+
+end;
+
+
+Function Intro;
+var i, temp, temp_list, temp_list2, required, others_all, un_list, scout, cargos;
+var LeaderChange, SupportSent, Leader, Support;
+begin
+     Randomize;
+
+     InitHc;
+     uc_side = 2;
+     uc_nation = nation_arabian;
+     preparesoldier(false,10);
+     scout = createhuman;
+
+     RevealFogArea(2,revealintro);
+     RevealFogArea(2,revealalliance);
+     CenterOnXY(123,136);
+     game_speed = 6;
+
+     LeaderChange = 0;
+     SupportSent = 0;
+
+     InGameOn;
+
+     TeamHeike = TeamHeike diff [Heike, Gensher];
+     TeamHeike = [Heike, Gensher] ^ TeamHeike;
+
+     for i in TeamHeike do
+     begin
+          PlaceUnitArea(i,heikeincomming,false);
+
+          ComMoveXY(i, GetX(i) - 8, GetY(i) - 16);     //each of them will move straight up
+          AddComMoveXY(i, GetX(i) - 16, GetY(i) - 32);
+
+          wait(rand(0$0.1,0$0.5));
+     end;
+
+     ComMoveXY(Heike,97,93);
+     AddComTurnUnit(Heike,Omar);
+     ComMoveXY(Gensher,99,93);
+     AddComTurnUnit(Gensher,Omar);
+
+     CenterOnXY(GetX(Heike) - 5,GetY(Heike) - 10);
+
+     wait(0$5);
+
+     while GetDistUnits(Heike, Omar) > 7 and IsConstructed(HexInfo(89,84)) do
+     begin
+          wait(0$2);
+
+          if GetDistUnits(Heike, Omar) > 10 then
+             CenterOnXY(GetX(Heike) - 5,GetY(Heike) - 10);
+
+          if temp < 2 then
+          begin
+               temp = temp + 1;
+               SetWorkingProgress(HexInfo(90,84),1);
+          end;
+     end;
+
+     Say(Heike, 'Br_Heike_01');
+
+     AddComTurnUnit(Omar,Heike);
+     wait(0$0.5);
+     ComMoveXY(Omar,97,91);
+     AddComTurnUnit(Omar,Heike);
+     Say(Omar, 'Br_Omar_01');
+     Say(Omar, 'Br_Omar_02');
+
+     i = 0;
+
+     repeat
+           wait(0$0.5);
+           i = i + 0$0.5;
+
+     until (GetDistUnitXY(Heike,97,93) = 0 and GetDistUnitXY(Gensher,99,93) = 0 and GetDistUnitXY(Omar,97,91) = 0) or i >= 0$5;
+
+     game_speed = 4;
+     CenterOnUnits(Omar);
+
+     temp = TeamHeike diff [Heike, Gensher];
+
+     for i = 1 to temp do                 //just for appearances: make half the people stand still, and the other engineers into lab
+         if i in [2,4,6,8,10,12,14,16,18,20,22,24,26,28,30] then
+            ComHold(temp[i]);
+
+     temp = FilterAllUnits([[f_type,unit_human],[f_distxy,90,84,7]]) diff Heike ^ Omar ^ Gensher;      //engineers building lab should enter it once finished
+     for i in temp do
+         SetTaskList(i,[['h',90,84,HexInfo(90,84),0,0,0],['M',91,86,0,0,0,0],['e',0,0,HexInfo(90,84),0,0,0]]);
+
+     ComTurnUnit(Gensher,Omar);
+     ComTurnUnit(Omar,Heike);
+     Say(Omar, 'Br_Omar_1');
+     Say(Heike, 'Br_Heike_1');
+     Say(Omar, 'Br_Omar_2');
+     Say(Heike, 'Br_Heike_2');
+
+     if ArtMeasurement_done then
+        Say(Omar, 'Br_Omar_3a')
+     else
+         Say(Omar, 'Br_Omar_3b');         
+
+     Say(Omar, 'Br_Omar_4');                                         
+
+     Say(Omar, 'Br_Omar_5');
+     ComTurnUnit(Omar,Gensher);
+     Say(Omar, 'Br_Omar_6');
+     Say(Gensher,'Br_Gensher_1');
+     Say(Omar, 'Br_Omar_7');
+     ComTurnUnit(Omar,Heike);
+     ComTurnUnit(Gensher,Heike);
+     Say(Heike, 'Br_Heike_3');
+     Say(Omar, 'Br_Omar_8');
+     Say(Heike, 'Br_Heike_4');
+     Say(Omar, 'Br_Omar_9');
+
+     ComTurnUnit(Omar,Gensher);
+     ComTurnUnit(Heike,Gensher);
+     Say(Gensher,'Br_Gensher_2');
+
+     //Say(Heike, 'Br_Heike_5');
+     ComTurnUnit(Gensher,Heike);
+     ComTurnUnit(Omar,Heike);
+
+     Say(Heike, 'Br_TRHeike');
+     ComTurnUnit(Heike,Omar);
+     ComTurnUnit(Gensher,Omar);
+     If Transport_whole then
+        Say(Omar, 'Br_TROmara')
+     else
+         Say(Omar, 'Br_TROmarb');
+
+     Say(Heike, 'Br_Heike_6');
+     Say(Omar, 'Br_Omar_10');
+     Say(Omar, 'Br_Omar_11');
+     Say(Gensher,'Br_Gensher_3');
+     ComTurnUnit(Omar,Gensher);
+     ComTurnUnit(Heike,Gensher);
+
+     if GetSex(scout) = sex_male then   
+          SayRadio(scout, 'Br_UPFScoutM')
+     else
+           SayRadio(scout, 'Br_UPFScoutF');
+     
+     Say(Gensher,'Br_Gensher_4');
+
+     Say(Heike, 'Br_Heike_7');
+
+
+     ComTurnUnit(Gensher,Omar);
+     ComTurnUnit(Heike,Omar);
+     Say(Omar, 'Br_Omar_12');
+     CenterOnXY(33,25);
+     Say(Omar, 'Br_Omar_13');
+     CenterOnUnits(Omar);
+
+     Say(Gensher,'Br_Gensher_5');
+     Say(Heike, 'Br_Heike_8');
+
+     ComTurnUnit(Gensher,Heike);
+     Say(Gensher,'Br_Gensher_6');
+
+     ComTurnUnit(Heike, Gensher);
+     ComMoveXY(Gensher, 99, 98);
+     wait(0$1);
+
+     temp_list = [1,2,3];
+
+     temp = [Oswald, Kowalski, Dwayne, Ralph, Swansson] diff 0;
+     if temp = 0 then
+        temp_list = temp_list diff 1;
+
+     temp = [Olaf,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Dwayne,Khattam,Makise,Snake] diff 0;
+     if temp < 1 then
+        temp_list = temp_list diff 2;
+
+     wait(0$0.2);
+
+     case SelectiveQuery('leadership_choice', temp_list) of
+          1: begin
+                  Say(Heike, 'Lead_Heike_1.1');
+                  ComTurnUnit(Gensher, Heike);
+                  Say(Gensher, 'Lead_Gensher_1.1');
+                  Say(Heike, 'Lead_Heike_1.2');
+
+                  LeaderChange = 1;
+                  SupportSent = 1;
+             end;
+
+          2: begin
+                  Say(Heike, 'Lead_Heike_2.1');
+                  ComTurnUnit(Gensher, Heike);
+                  Say(Gensher, 'Lead_Gensher_2.1');
+                  Say(Heike, 'Lead_Heike_2.2');
+
+                  GensherIsLeader = 1;
+                  SupportSent = 1;
+             end;
+
+          3: GensherIsLeader = 1;
+     end;
+
+     wait(0$0.5);
+
+     if LeaderChange then
+        ChooseLeader;
+
+     temp_list = [Olaf, Oswald, Ralph, Sonya, Aviradze, Kowalski, Evelyn, Swansson, Dwayne, Khattam, Makise, Snake, Gensher];
+     temp_list2 = [OlafIsLeader, OswaldIsLeader, RalphIsLeader, SonyaIsLeader, AviradzeIsLeader, KowalskiIsLeader, EvelynIsLeader, SwanssonIsLeader, DwayneIsLeader, KhattamIsLeader, MakiseIsLeader, SnakeIsLeader, GensherIsLeader];
+
+     for i = 1 to temp_list2 do
+         if temp_list2[i] = 1 then
+            Leader = temp_list[i];
+
+     wait(0$0.2);
+
+     if SupportSent then
+     begin
+          temp = [];
+
+          temp_list = [Olaf,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Dwayne,Khattam,Makise,Snake] diff 0 ^ Leader;
+
+          if temp_list > 0 then
+             temp = temp ^ 2;
+
+          if temp_list > 1 then
+             temp = temp ^ 1;
+
+          if not GensherIsLeader then
+             temp = temp ^ 3;
+
+          if temp > 0 then
+             if not temp[1] = 3 then
+                case SelectiveQuery('choice_support', temp) of       //the choice is:  1: 2 people,  2: 1 person, 3: none
+                     1: ChooseSupport(2);
+                     2: ChooseSupport(1);
+                end;
+     end;
+
+
+     ComTurnUnit(Heike, Leader);
+     ComTurnUnit(Leader, Heike);
+     Say(Heike, 'Br_Heike9');
+     case Leader of
+          Gensher: Say(Gensher, 'Br_Gensher7');
+          Oswald: Say(Oswald, 'Br_Oswald');
+          Swansson: Say(Swansson, 'Br_Swansson');
+          Dwayne: Say(Dwayne, 'Br_Dwayne');
+          Ralph: Say(Ralph, 'Br_Ralph');
+          Kowalski: Say(Kowalski, 'Br_Kowalski');
+     end;
+
+
+     Support = [];
+     temp_list = [Olaf, Oswald, Ralph, Sonya, Aviradze, Kowalski, Evelyn, Swansson, Dwayne, Khattam, Makise, Snake];
+     temp_list2 = [OlafIsSupport, OswaldIsSupport, RalphIsSupport, SonyaIsSupport, AviradzeIsSupport, KowalskiIsSupport, EvelynIsSupport, SwanssonIsSupport, DwayneIsSupport, KhattamIsSupport, MakiseIsSupport, SnakeIsSupport];
+
+     for i = 1 to temp_list2 do
+         if temp_list2[i] = 1 then
+            Support = Support ^ temp_list[i];
+
+
+     required = 0;
+     temp = [Heike,Omar, Olaf,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Dwayne,Khattam,Makise,Snake] diff Leader ^ Support ^ 0;
+
+     if not GensherIsLeader then
+        temp = temp ^ Gensher;
+
+     if temp < 8 then
+        required = 8 - temp;
+
+     required = required + [6,4,2][difficulty];
+
+     others_all = TeamHeike ^ TeamOmar diff [Heike,Omar,Gensher, Olaf,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Dwayne,Khattam,Makise,Snake, Gonzo];
+
+     un_list = CharacterSelection('',required,required, [sel_not_hired,sel_dont_change_class,sel_not_changeable] ^ Leader ^ Support ^ [sel_hired,sel_change_class,sel_not_changeable] ^ temp ^ [sel_changeable,sel_not_hired] ^ others_all, [class_soldier, class_mortar, class_mechanic, class_engineer, class_scientistic]);
+
+
+
+     cargos = FilterAllUnits([[f_nation,nation_arabian],[f_type,unit_vehicle]]) diff HexInfo(91, 80);
+     temp_list = unitfilter(cargos,[f_control,control_manual]);
+
+     SetSide(Leader ^ Support ^ cargos ^ others_all diff un_list, 5);
+
+     OtherTeam = SecondGroup ^ others_all diff un_list;
+
+     Commovexy( filterallunits([f_side,5]), 72, 136);
+
+     for i in temp_list do
+     begin
+          temp = NearestUnitToUnit(others_all diff un_list, i);
+          ComEnterUnit(temp, i);
+          AddComMoveXy(temp, 72, 136);
+
+          others_all = others_all diff temp;
+     end;
+
+
+     IngameOff;
+
+     wait(0$0.5);
+     ChangeMissionObjectives('main_goals_intro');
+
+     SaveForQuickRestart;
+end;
+
+
+Function ChooseLeader;
+var list1;
+begin
+
+     list1 = [1,2,3,4,5];
+     if Oswald = 0 then
+        list1 = list1 diff 1;
+     if Swansson = 0 then
+        list1 = list1 diff 2;
+     if Dwayne = 0 then
+        list1 = list1 diff 3;
+     if Ralph = 0 then
+        list1 = list1 diff 4;
+     if Kowalski = 0 then
+        list1 = list1 diff 5;
+
+
+     case SelectiveQuery('character_selection3',list1) of
+          1: begin
+                  OswaldIsLeader = 1;
+                  Say(Heike, 'L_1Heike');
+                  Say(Oswald, 'L_1Oswald');
+             end;
+          2: begin
+                  SwanssonIsLeader = 1;
+                  Say(Heike, 'L_2Heike');
+                  Say(Swansson, 'L_2Swansson');
+             end;
+          3: begin
+                  DwayneIsLeader = 1;
+                  Say(Heike, 'L_3Heike');
+                  Say(Dwayne, 'L_3Dwayne');
+             end;
+          4: begin
+                  RalphIsLeader = 1;
+                  Say(Heike, 'L_4Heike');
+                  Say(Ralph, 'L_4Ralph');
+             end;
+          5: begin
+                  KowalskiIsLeader = 1;
+                  Say(Heike, 'L_5Heike');
+                  Say(Kowalski, 'L_5Kowalski');
+             end;
+     end;
+
+end;
+
+
+Function ChooseSupport(val);
+var list1, list2, temp_val;
+begin
+     temp_val = val;
+
+     //list1 = [Olaf, Oswald, Ralph, Sonya, Aviradze, Kowalski];
+     list1 = [];
+
+     if not OlafIsLeader and Olaf > 0 then
+        list1 = list1 ^ 1;
+     if not OswaldIsLeader and Oswald > 0 then
+        list1 = list1 ^ 2;
+     if not RalphIsLeader and Ralph > 0 then
+        list1 = list1 ^ 3;
+     if not SonyaIsLeader and Sonya > 0 then
+        list1 = list1 ^ 4;
+     if not AviradzeIsLeader and Aviradze > 0 then
+        list1 = list1 ^ 5;
+     if not KowalskiIsLeader and Kowalski > 0 then
+        list1 = list1 ^ 6;
+
+     list1 = list1 ^ 7;
+
+     //list2 = [Evelyn, Swansson, Dwayne, Khattam, Makise, Snake];
+     list2 = [];
+
+     if not EvelynIsLeader and Evelyn > 0 then
+        list2 = list2 ^ 1;
+     if not SwanssonIsLeader and Swansson > 0 then
+        list2 = list2 ^ 2;
+     if not DwayneIsLeader and Dwayne > 0 then
+        list2 = list2 ^ 3;
+     if not KhattamIsLeader and Khattam > 0 then
+        list2 = list2 ^ 4;
+     if not MakiseIsLeader and Makise > 0 then
+        list2 = list2 ^ 5;
+     if not SnakeIsLeader and Snake > 0 then
+        list2 = list2 ^ 6;
+
+     list2 = list2 ^ 7;
+
+
+     if list1[1] = 7 then
+     begin
+          list1 = [];
+          list2 = list2 diff 7;
+     end;
+
+     if list2[1] = 7 then
+     begin
+          list2 = [];
+          list1 = list1 diff 7;
+     end;
+
+     repeat
+           wait(0$0.1);
+
+           if list2 > 0 then
+              if list2[1] = 7 then
+              begin
+                   list2 = [];
+                   list1 = list1 diff 7;
+              end;
+
+           if list1 > 0 then
+              case SelectiveQuery('character_selection1',list1) of
+                1: begin
+                        OlafIsSupport = 1;
+                        list1 = list1 diff 1;
+                        temp_val = temp_val - 1;
+                   end;
+
+                2: begin
+                        OswaldIsSupport = 1;
+                        list1 = list1 diff 2;
+                        temp_val = temp_val - 1;
+                   end;
+
+                3: begin
+                        RalphIsSupport = 1;
+                        list1 = list1 diff 3;
+                        temp_val = temp_val - 1;
+                   end;
+                4: begin
+                        SonyaIsSupport = 1;
+                        list1 = list1 diff 4;
+                        temp_val = temp_val - 1;
+                   end;
+                5: begin
+                        AviradzeIsSupport = 1;
+                        list1 = list1 diff 5;
+                        temp_val = temp_val - 1;
+                   end;
+                6: begin
+                        KowalskiIsSupport = 1;
+                        list1 = list1 diff 6;
+                        temp_val = temp_val - 1;
+                   end;
+              end;
+
+           if list1 > 0 then
+              if list1[1] = 7 then
+              begin
+                   list1 = [];
+                   list2 = list2 diff 7;
+              end;
+
+           if temp_val = 0 then
+              break;
+
+           if list2 > 0 then
+              case SelectiveQuery('character_selection2',list2) of
+                1: begin
+                        EvelynIsSupport = 1;
+                        list2 = list2 diff 1;
+                        temp_val = temp_val - 1;
+                   end;
+                2: begin
+                        SwanssonIsSupport = 1;
+                        list2 = list2 diff 2;
+                        temp_val = temp_val - 1;
+                   end;
+                3: begin
+                        DwayneIsSupport = 1;
+                        list2 = list2 diff 3;
+                        temp_val = temp_val - 1;
+                   end;
+                4: begin
+                        KhattamIsSupport = 1;
+                        list2 = list2 diff 4;
+                        temp_val = temp_val - 1;
+                   end;
+                5: begin
+                        MakiseIsSupport = 1;
+                        list2 = list2 diff 5;
+                        temp_val = temp_val - 1;
+                   end;
+                6: begin
+                        SnakeIsSupport = 1;
+                        list2 = list2 diff 6;
+                        temp_val = temp_val - 1;
+                   end;
+              end;
+
+     until temp_val = 0;
+end;
+
+On Command(com) do
+var i,j;
+begin
+     for i in FilterAllUnits([f_side,2]) do
+         if HasTask(i) then
+            for j = 1 to GetTaskList(i) do
+            begin
+                 if GetSide(GetTaskList(i)[j][4]) = 5 then
+                 begin
+                      SetTaskList(i,[]);
+                      break;
+                 end;
+
+                 if FilterAllUnits([[f_side,5],[f_distxy, GetTaskList(i)[j][2],GetTaskList(i)[j][3], 4]]) > 0 then
+                    if not GetTaskList(i)[j][3] in FilterAllUnits([[f_side,2],[f_type,unit_building]]) then
+                    begin
+                         SetTaskList(i,[]);
+                         break;
+                    end;
+
+                 if GetTaskList(i)[j][2] = 13 and GetTaskList(i)[j][3] = 9 then
+                 begin
+                      SetTaskList(i,[]);
+                      break;
+                 end;
+            end;
+end;
+
+every 0$1 trigger FilterAllUnits([[f_side,5],[f_placed]]) > 0 do
+var i;
+begin
+     for i in FilterAllUnits([[f_side,5],[f_placed]]) do
+         if GetDistUnitXY(i, 72, 136) < 5 then
+            RemoveUnit(i);
+enable;
+end;
+
+Function Animals;
+var i, temp;
+begin
+     Randomize;
+
+     InitUc;             
+     InitHc;
+
+     uc_side = 0;
+     uc_nation = nation_nature;
+     hc_class = class_apeman;
+
+     for i = 1 to 3 do
+     begin
+          hc_agressivity = Rand(-30, 30);
+          hc_attr = [rand(15,18),12];
+          hc_sex = Rand(sex_male,sex_female);
+
+          temp = rand(7,10);
+          hc_skills = [temp,temp,0,0];
+
+          PlaceUnitArea(CreateHuman,ApeArea,false);
+     end;
+
+     hc_attr=[10,10];
+     hc_skills=[0,0,0,0];
+
+     for i = 1 to 8 do
+     begin
+          if rand(1,2) = 1 then
+          begin
+               hc_gallery='nature_foreg'; hc_face_number=1; hc_class=class_phororhacos;
+          end
+          else
+              begin
+                   hc_gallery='nature_foreg'; hc_face_number=4; hc_class=class_baggie;
+              end;
+
+          PlaceUnitArea(CreateHuman, AnimalArea, false);
+     end;
+
+     for i = 1 to 2 do
+     begin
+          hc_agressivity = 0;
+          hc_class = class_tiger;
+          hc_attr = [16,11];
+          hc_skills = [5,5,5,5];
+          hc_gallery = 'nature_foreg';
+          hc_face_number = 3;
+
+          PlaceUnitArea(CreateHuman, AnimalArea, false);
+     end;
+
+     //Mastodon
+     vc_weapon = 61;
+     vc_chassis = 31;
+     vc_control = control_rider;
+     vc_engine = engine_siberite;
+
+     hc_agressivity = 0;
+
+     PlaceUnitXYR(CreateVehicle,69,101,5,0);
+
+     InitHc;
+     InitUc;
+     InitVc;
+end;
+
+every 0$1 do
+var temp;
+begin
+     temp = FilterAllUnits([f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze],[f_class,class_apeman_engineer]]);
+
+     if FilterAllUnits([[f_side,0],[f_class,class_apeman],[f_ok]]) = 0 and temp < [10,8,6][difficulty] then
+     begin
+          wait(rand(0$3,0$8));
+
+          uc_side = 0;
+          uc_nation = nation_nature;
+          hc_class = class_apeman;
+
+          hc_agressivity = Rand(-30, 30);
+          hc_attr = [rand(15,18),12];
+          hc_sex = Rand(sex_male,sex_female);
+
+          temp = rand(7,10);
+          hc_skills = [temp,temp,0,0];
+
+          PlaceUnitArea(CreateHuman,ApeArea,false);
+     end;
+
+enable;
+end;
+

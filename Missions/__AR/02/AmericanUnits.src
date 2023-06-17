@@ -1,0 +1,251 @@
+export ape, amlab, amdep, amworkshop, amarmoury;
+Export americans_in_the_field;
+export going_to_be_healed, lab_scientists, spare_mechanics, spare_mechanics_working_on, am_vehicle_groups, base_engineers;
+Export base_outside_soldiers, base_inside_soldiers, vehicles_being_repaired;
+
+
+export function units_create;
+var builds, people_base, people_field, apemans, cars, i, tmp, j, temp_list;
+begin
+  apemans:=[[105,67,4],
+            [117,59,3],
+            [67,2,0],
+            [62,36,1],
+            [39,48,1],
+            [18,22,5],
+            [82,52,5],
+            [94,37,1],
+            [90,11,4],
+            [22,24,1],
+            [101,34,2],
+            [20,3,2]];
+
+  builds:=[[52,23,4,b_depot,4],
+           [45,13,3,b_lab,4,b_lab_basic,b_lab_basic],
+           [34,22,1,b_armoury,4],
+           [43,26,0,b_workshop,4]];
+
+  cars:=[[46,22,1,us_light_wheeled,us_machine_gun,engine_solar,control_manual,100],
+         [37,18,2,us_light_wheeled,us_machine_gun,engine_solar,control_manual,100]];
+
+  people_base:=[[-1,-1,0,class_engineer], //Into depot
+
+                [69,27,3,class_soldier], //Right cliff
+                [68,23,5,class_soldier],  //Right cliff
+                [60,38,3,class_soldier],  //Middle cliff
+                [61,41,0,class_soldier],  //Middle cliff
+                [-1,-1,0,class_soldier], //for armoury
+                [-1,-1,0,class_soldier], //for armoury
+
+                [-1,-1,0,class_mechanic],  //into amcar1
+                [-1,-1,0,class_mechanic],  //into amcar2
+                [-1,-1,0,class_mechanic],  //into workshop
+
+                [-1,-1,0,class_scientistic], //into lab
+                [-1,-1,0,class_scientistic]]; //into lab
+
+  //scientists in the field and their protectors
+  people_field = [ [[124,74,1,class_scientistic],
+                    [126,76,4,class_soldier],
+                    [122,71,5,class_soldier]],
+
+                   [[15,9,5,class_scientistic],
+                    [16,11,5,class_apeman]],
+
+                   [[24,31,2,class_scientistic],
+                    [23,28,1,class_soldier]],
+
+                   [[81,43,4,class_scientistic],
+                    [81,41,3,class_soldier],
+                    [82,42,4,class_apeman]],
+
+                   [[79,8,2,class_scientistic],
+                    [81,10,0,class_soldier],
+                    [80,9,0,class_apeman]]
+                 ];
+
+  InitUc;
+  InitVc;
+  InitHc;
+  uc_side:=americans;
+  uc_nation:=nation_american;
+
+  for i in builds do begin
+      uc_direction:=i[3];
+      bc_type:=i[4];
+      bc_level:=i[5];
+      case bc_type of
+        b_lab, b_lab_half, b_lab_full: begin
+           bc_kind1:=i[6];
+           bc_kind2:=i[7];
+           //uc_name := 'AmLab' & i;
+           tmp = CreateBuilding;
+           AmLab = tmp;
+        end;
+        b_depot: begin
+           tmp = CreateBuilding;
+           AmDep = tmp;
+           SetBName(AmDep,'delta');
+        end;
+        b_workshop: begin
+           tmp = CreateBuilding;
+           amworkshop = tmp;
+        end;
+        b_armoury: begin
+           tmp = CreateBuilding;
+           amarmoury = tmp;
+        end;
+      end;
+      PlaceUnitXY(tmp, i[1], i[2], false);
+  end;
+
+  am_vehicle_groups = [];
+  for i = 1 to 2 do begin
+      uc_direction:=cars[i][3];
+      vc_chassis:=cars[i][4];
+      vc_weapon:=cars[i][5];
+      vc_engine:=cars[i][6];
+      vc_control:=cars[i][7];
+      vc_fuel_battery:=cars[i][8];
+
+      tmp = CreateVehicle;
+      am_vehicle_groups = am_vehicle_groups ^ [[tmp,0]];
+
+      PlaceUnitXY(tmp, cars[i][1], cars[i][2], false);
+      ComRemember(tmp);
+  end;
+
+  spare_mechanics = [];
+  lab_scientists = [];
+  base_engineers = [];
+  base_inside_soldiers = [];
+  base_outside_soldiers = [];
+  for i in people_base do begin
+      uc_direction:=i[3];
+      case i[4] of
+           class_soldier: PrepareSoldier(false,difficulty+1);
+           class_engineer: PrepareEngineer(false,difficulty+1);
+           class_mechanic: PrepareMechanic(false,difficulty+1);
+           class_scientistic: PrepareScientist(false,difficulty+1);
+      end;
+
+      tmp = CreateHuman;
+
+      case i[4] of
+           class_soldier:
+                if i[1] > -1 then
+                     begin
+                          PlaceUnitXY(tmp, i[1], i[2], false);
+
+                          if IsInArea(tmp,near_am_base) then
+                               begin
+                                    ComRemember(tmp);
+                                    base_outside_soldiers = base_outside_soldiers ^ tmp;
+                               end;
+                     end
+                else
+                     begin
+                          PlaceHumanInUnit(tmp,amarmoury);
+                          base_inside_soldiers = base_inside_soldiers ^ tmp;
+                     end;
+           class_engineer: begin
+                PlaceHumanInUnit(tmp,amdep);
+                base_engineers = base_engineers ^ tmp;
+           end;
+           class_mechanic: begin
+                j = false;
+                for i = 1 to am_vehicle_groups do
+                     if IsDrivenBy(am_vehicle_groups[i][1]) = 0 then
+                          begin
+                               PlaceHumanInUnit(tmp,am_vehicle_groups[i][1]);
+
+                               temp_list = Replace(am_vehicle_groups[i],2,tmp);
+                               am_vehicle_groups = Replace(am_vehicle_groups,i,temp_list);
+
+                               j = true;
+                               break;
+                          end;
+
+                if not j then
+                     begin
+                          PlaceHumanInUnit(tmp,amworkshop);
+                          spare_mechanics = spare_mechanics ^ tmp;
+                     end;
+           end;
+           class_scientistic:
+                if i[1] > -1 then
+                     PlaceUnitXY(tmp,i[1],i[2],false)
+                else
+                     begin
+                          PlaceHumanInUnit(tmp,amlab);
+                          lab_scientists = lab_scientists ^ tmp;
+                     end;
+      end;
+  end;
+
+  //Create Tim Gladstone
+  hc_name = 'Gladstone'; //from CharName.wri
+  hc_gallery = 'us';
+  hc_face_number = 13;
+  hc_sex = sex_male;
+  hc_basic_skills = [0,1,0,3];
+  hc_skills = [0,2,1,5];
+  hc_attr = [10,10];
+  Gladstone = CreateHuman;
+  PlaceHumanInUnit(Gladstone,amlab);
+  lab_scientists = lab_scientists ^ Gladstone;
+
+  InitHc;
+
+  americans_in_the_field = [];
+  for j in people_field do
+       begin
+            temp_list = [];
+            for i in j do
+                 begin
+                      uc_direction:=i[3];
+                      case i[4] of
+                           class_soldier: begin
+                                uc_nation = nation_american;
+                                PrepareSoldier(false,difficulty+1);
+                           end;
+                           class_scientistic: begin
+                                uc_nation = nation_american;
+                                PrepareScientist(false,difficulty+1);
+                           end;
+                           class_apeman: begin
+                                uc_nation = nation_nature;
+                                InitHc;
+                                hc_attr:=[Rand(10,12),Rand(10,11)];
+                                hc_sex:=Rand(sex_male,sex_female);
+                                hc_agressivity:=Rand(-20,-5);
+                                hc_class:=class_apeman;
+                           end;
+                      end;
+
+                      tmp = CreateHuman;
+                      PlaceUnitXY(tmp,i[1],i[2],false);
+
+                      case i[4] of
+                           class_scientistic: temp_list = Insert(temp_list,1,tmp);  //The single scientist goes first in the list
+                           class_soldier, class_apeman: temp_list = temp_list ^ tmp;
+                      end;
+                 end;
+
+            americans_in_the_field = americans_in_the_field ^ [temp_list];
+       end;
+
+  uc_side:=nature;
+  uc_nation:=nation_nature;
+  ape = [];
+  for i in apemans do begin
+      uc_direction:=i[3];
+      hc_attr:=[Rand(10,12),Rand(10,11)];
+      hc_sex:=Rand(sex_male,sex_female);
+      hc_agressivity:=Rand(-20,-5);
+      hc_class:=class_apeman;
+      tmp = CreateHuman;
+      ape = ape ^ tmp;
+      PlaceUnitXY(tmp, i[1], i[2], false);
+  end;
+end;

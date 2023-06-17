@@ -1,0 +1,35 @@
+
+//Whole map. No crates in the forbidden area.
+Every 0$1 + 0$0.5 do
+     var hex;
+     begin
+          wait( Rand(1$45,2$15) );
+
+          repeat
+               hex = RandHex(false);
+               if InArea(hex[1],hex[2],no_crate_area) then
+                    hex = [];
+
+          until hex > 0;
+
+          CreateCratesXY(Rand(3,5),hex[1],hex[2],true);
+
+          enable;
+     end;
+
+//At player's base
+Every 0$1 + 0$25.2 do
+     var time;
+     begin
+          case tick of
+               0$0..5$0: time = Rand(1$30,2$30);
+               5$0..20$0: time = Rand(2$30,3$30);
+               else time = Rand(3$30,5$0);
+          end;
+
+          wait(time);
+
+          CreateCratesXYR(Rand(3,5),103,12,30,true);
+
+          enable;
+     end;

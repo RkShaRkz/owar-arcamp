@@ -1,0 +1,530 @@
+Export ru1_breastwork, ru1_barracks, ru1_workshop, ru1_depot, ru2_breastwork, ru2_lab, ru2_depot;
+Export ru1_sol, ru1_mech, ru1_eng, ru2_sol, ru2_sci, ru2_eng, sol_positon, player_seen_tick;
+Export patrol1, patrol2, patrol1tick, patrol1_hex, patrol2tick;
+Export blockade_veh, blockade_driver, blockade_sol, blockade_sci;
+
+//Create and spawn units
+Export Function SpawnEnemy;
+var i, temp;
+begin
+     ru1_breastwork = FilterUnitsInArea(ru1, [f_btype, b_breastwork])[1];
+     ru1_barracks = FilterUnitsInArea(ru1, [f_btype, b_armoury])[1];
+     ru1_workshop = FilterUnitsInArea(ru1, [f_btype, b_workshop])[1];
+     ru1_depot = FilterUnitsInArea(ru1, [f_btype, b_depot])[1];
+     ru2_breastwork = FilterUnitsInArea(ru2, [f_btype, b_breastwork])[1];
+     ru2_lab = FilterUnitsInArea(ru2, [f_btype, b_lab])[1];
+     ru2_depot = FilterUnitsInArea(ru2, [f_btype, b_depot])[1];
+
+     AddResourceType(GetBase(ru1_depot), mat_cans, 400);
+     AddResourceType(GetBase(ru1_depot), mat_oil, 30);
+     AddResourceType(GetBase(ru2_depot), mat_cans, 400);
+
+     uc_side = 3;
+     uc_nation = nation_russian;
+
+     ru1_sol = [];
+     ru1_mech = [];
+     ru1_eng = [];
+     ru2_sol = [];
+     ru2_sci = [];
+     ru2_eng = [];
+
+     patrol1 = [];
+     patrol2 = [];
+     patrol1tick = 0;
+     patrol1_hex = 1;
+     patrol2tick = 1$0;
+
+     //top base
+     for i = 1 to 7 do
+     begin
+          PrepareSoldier(false, difficulty - 1);
+
+          if i <= 5 then
+             ru1_sol = ru1_sol ^ CreateHuman
+          else
+              patrol1 = patrol1 ^ CreateHuman;
+     end;
+
+     for i = 1 to 3 do
+     begin
+          PrepareMechanic(false, difficulty - 1);
+          ru1_mech = ru1_mech ^ CreateHuman;
+     end;
+
+     PrepareEngineer(false, difficulty - 1);
+     ru1_eng = ru1_eng ^ CreateHuman;
+
+     //bottom base
+     for i = 1 to difficulty + 1 do
+     begin
+          PrepareSoldier(false, difficulty - 1);
+          ru2_sol = ru2_sol ^ CreateHuman;
+     end;
+
+     PrepareScientist(false, difficulty - 1);
+     ru2_sci = ru2_sci ^ CreateHuman;
+
+     PrepareEngineer(false, difficulty - 1);
+     ru2_eng = ru2_eng ^ CreateHuman;
+
+     for i in ru1_sol ^ ru1_mech ^ ru1_eng ^ patrol1 do
+         PlaceUnitXYR(i, 118, 19, 5, false);
+
+     for i in ru2_sol ^ ru2_sci ^ ru2_eng do
+         PlaceUnitXYR(i, 138, 73, 5, false);
+
+     Randomize;
+     sol_positon = [];
+
+     for i = 1 to FilterAllUnits([[f_side, 3],[f_class, class_soldier]]) + 1 do
+         sol_positon = sol_positon ^ [[Rand(tick+0$30, tick + 1$15), Rand(1,5)]];
+
+     //blockade
+     vc_chassis = ru_medium_wheeled;
+     vc_engine = engine_combustion;
+     vc_control = control_manual;
+     vc_weapon = ru_heavy_machine_gun;
+
+     blockade_veh = CreateVehicle;
+     PlaceUnitXY(blockade_veh, 90, 91, 0);
+     SetDir(blockade_veh, 5);
+
+     PrepareMechanic(false, difficulty - 1);
+     blockade_driver = CreateHuman;
+     PlaceHumanInUnit(blockade_driver, blockade_veh);
+
+     blockade_sol = [];
+
+     for i = 1 to [1,2,3][difficulty] do
+     begin
+          PrepareSoldier(false, difficulty - 1);
+          blockade_sol = blockade_sol ^ CreateHuman;
+          PlaceUnitXYR(blockade_sol[i], 87, 94, 3, 0);
+     end;
+
+     PrepareScientist(false, difficulty - 1);
+     blockade_sci = CreateHuman;
+     PlaceUnitXYR(blockade_sci, 87, 94, 3, 0);
+end;
+
+//ai: send people to buildings, soldiers move around the base, sci and eng will fix damaged units if player is not around
+every 0$1 do
+var i, temp, ru1_sol_br, ru1_sol_bar, hexes1, hexes2, damaged, pos1, pos2;
+begin
+     hexes1 = [[119,20],[114,11],[112,18],[124,28],[126,17]];
+     hexes2 = [[143,74],[135,61],[152,82],[135,75],[149,68]];
+
+     pos1 = [];
+     pos2 = [];
+
+     for i = 1 to sol_positon do
+         if i <= ru1_sol then
+            pos1 = pos1 ^ [sol_positon[i]]
+         else
+             pos2 = pos2 ^ [sol_positon[i]];
+
+     temp = [];
+     ru1_sol_bar = [];
+
+     //top base
+     for i = 1 to 3 do
+         if (ru1_sol diff temp) > 0 then
+         begin
+              temp = temp ^ ru1_sol[i];
+
+              case i of
+                   1: ru1_sol_br = ru1_sol[i];
+                   2,3: ru1_sol_bar = ru1_sol_bar ^ ru1_sol[i];
+              end;
+         end;
+
+     for i = 1 to ru1_sol do
+         if ru1_sol[i] = ru1_sol_br then
+         begin
+              if not IsInUnit(ru1_sol[i]) then
+                 ComEnterUnit(ru1_sol[i], ru1_breastwork);
+         end
+         else
+             if ru1_sol[i] in ru1_sol_bar then
+             begin
+                  if not IsInUnit(ru1_sol[i]) then
+                     ComEnterUnit(ru1_sol[i], ru1_barracks);
+             end
+             else
+                 if FilterUnitsInArea(ru1, [f_side,2]) > 0 and player_seen_tick + 0$5 >= tick then
+                    ComAttackUnit(ru1_sol[i], Heike)
+                 else
+                 begin
+                      temp = [hexes1[pos1[i][2]][1], hexes1[pos1[i][2]][2]];
+
+                      if GetDistUnitXY(ru1_sol[i], temp[1], temp[2]) > 5 then
+                         ComMoveXY(ru1_sol[i], temp[1], temp[2]);
+                 end;
+
+     damaged = UnitFilter(ru1_breastwork ^ ru1_barracks ^ ru1_workshop ^ ru1_depot, [f_not, [f_lives, 1000]]);
+
+     for i in ru1_eng do
+         if damaged > 0 and player_seen_tick + 0$5 < tick then
+         begin
+              if IsInUnit(i) then
+                 ComExitBuilding(i)
+              else
+                  ComRepairBuilding(i, damaged[1]);
+         end
+         else
+             if not IsInUnit(i) then
+                ComEnterUnit(i, ru1_depot);
+
+     for i in ru1_mech do
+         if not IsInUnit(i) then
+            ComEnterUnit(i, ru1_workshop);
+
+
+     //bottom base
+     for i = 1 to ru2_sol do
+         if i = 1 then
+         begin
+              if not IsInUnit(ru2_sol[i]) then
+                 ComEnterUnit(ru2_sol[i], ru2_breastwork);
+         end
+         else
+             if UnitFilter(ru2_sci, [f_ok]) > 0 and GetLives(ru2_sol[i]) < 500 then
+             begin
+                  if GetDistUnitXY(ru2_sol[i], 139, 70) > 5 then
+                     ComMoveXY(ru2_sol[i], 139, 70);
+             end
+             else
+                 if FilterUnitsInArea(ru2, [f_side,2]) > 0 and player_seen_tick + 0$5 >= tick then
+                    ComAttackUnit(ru2_sol[i], Heike)
+                 else
+                 begin
+                      temp = [hexes2[pos2[i][2]][1], hexes2[pos2[i][2]][2]];
+
+                      if GetDistUnitXY(ru2_sol[i], temp[1], temp[2]) > 5 then
+                         ComMoveXY(ru2_sol[i], temp[1], temp[2]);
+                 end;
+
+     damaged = UnitFilter(ru2_sol ^ ru2_eng, [[f_not, [f_lives, 1000]],[f_distxy, 139, 70, 10]]);
+
+     for i in ru2_sci do
+         if damaged > 0 and player_seen_tick + 0$5 < tick then
+         begin
+              if IsInUnit(i) then
+                 ComExitBuilding(i)
+              else
+                  ComHeal(i, damaged[1]);
+         end
+         else
+             if not IsInUnit(i) then
+                ComEnterUnit(i, ru2_lab);
+
+     damaged = UnitFilter(ru2_breastwork ^ ru2_lab ^ ru2_depot, [f_not, [f_lives, 1000]]);
+
+     for i in ru2_eng do
+         if damaged > 0 and player_seen_tick + 0$5 < tick then
+         begin
+              if IsInUnit(i) then
+                 ComExitBuilding(i)
+              else
+                  ComRepairBuilding(i, damaged[1]);
+         end
+         else
+             if not IsInUnit(i) then
+                ComEnterUnit(i, ru2_depot);
+
+enable;
+end;
+
+//randomize the position for every soldier
+every 0$1 do
+var i;
+begin
+     for i = 1 to sol_positon do
+         if tick > sol_positon[i][1] then
+            sol_positon = Replace(sol_positon, i, [Rand(tick, tick + 1$15), Rand(1,5)]);
+
+enable;
+end;
+
+//note when player was spotted
+every 0$1 do
+begin
+     if FilterAllUnits([[f_side,2],[f_see,3]]) > 0 then
+        player_seen_tick = tick;
+
+enable;
+end;
+
+//the patrol that moves along the road, they attack spotted player, repair vehicles, and difficulty determines how often do they move
+every 0$1 trigger patrol1 > 0 do
+var i, vehs, x, y, current_hex, target_hex, drivers, enemy, temp;
+begin
+     Randomize;
+     x = 0;
+     y = 0;
+
+     patrol1 = UnitFilter(patrol1, [f_lives, 1]);
+     drivers = UnitFilter(patrol1, [f_class,class_mechanic]);
+     vehs = UnitFilter(patrol1, [f_type, unit_vehicle]);
+
+     for i = 1 to drivers do
+         if i > vehs then
+         begin
+              patrol1 = patrol1 diff drivers[i];
+              ru1_mech = ru1_mech ^ drivers[i];
+              break;
+         end;
+
+     temp = patrol1 diff drivers;
+
+     for i in temp do
+     begin
+          x = x + GetX(i);
+          y = y + GetY(i);
+     end;
+
+     current_hex = [x/temp, y/temp];
+     target_hex = [[121,40],[109,57],[95,64],[77,64]][patrol1_hex];
+
+     enemy = FilterAllUnits([[f_side,2],[f_distxy, current_hex[1], current_hex[2], 15]]);
+
+     if player_seen_tick + 0$15 > tick and enemy > 0 then
+     begin
+          ComAttackUnit(patrol1, enemy[1]);
+
+          for i = 1 to drivers do
+              if not IsInUnit(drivers[i]) then
+                 ComEnterUnit(drivers[i], vehs[i]);
+     end
+     else
+         if UnitFilter(patrol1, [[f_type, unit_vehicle],[f_not, [f_lives, 1000]]]) then
+         begin
+              for i = 1 to vehs do
+                  if not GetLives(vehs[i]) = 1000 then
+                     if IsInUnit(drivers[i]) then
+                        ComExitVehicle(drivers[i]);
+
+              if vehs > 0 then
+                 temp = [GetX(vehs[1]), GetY(vehs[1])]
+              else
+                  temp = target_hex;
+
+              for i in patrol1 diff drivers do
+                   if GetDistUnitXY(i, temp[1], temp[2]) > 5 then
+                      ComMoveXY(i, temp[1], temp[2]);
+         end
+         else
+             if tick > patrol1tick then
+             begin
+                  patrol1tick = tick + [1$30,1$0,0$30][difficulty];
+                  temp = [1,2,3,4] diff patrol1_hex;
+
+                  patrol1_hex = temp[Rand(1,temp)];
+             end
+             else
+             begin
+                  for i = 1 to drivers do
+                      if not IsInUnit(drivers[i]) then
+                         ComEnterUnit(drivers[i], vehs[i]);
+
+                  for i in patrol1 diff drivers do
+                      if GetDistUnitXY(i, target_hex[1], target_hex[2]) > 7 then
+                         ComMoveXY(i, target_hex[1], target_hex[2]);
+             end;
+
+enable;
+end;
+
+//construct vehicles for the patrol
+every 0$1 trigger olaf_enabled do
+begin
+     ComConstruct(ru1_workshop, ru_medium_wheeled, control_manual, engine_combustion, ru_heavy_machine_gun);
+     wait(10$0);
+     ComConstruct(ru1_workshop, ru_medium_wheeled, control_manual, engine_combustion, ru_heavy_machine_gun);
+end;
+
+On VehicleConstructed(vehicle, building) Do
+var d;
+begin
+     d = IsDrivenBy(vehicle);
+     patrol1 = patrol1 ^ vehicle ^ d;
+     ru1_mech = ru1_mech diff d;
+end;
+
+//auto fuel
+every 1 do
+var i;
+begin
+     for i in FilterAllUnits([[f_side,3],[f_type, unit_vehicle]]) do
+         if GetFuel(i) < 10 then
+            SetFuel(i, 10);
+
+enable;
+end;
+
+//second patrol, take soldiers from bottom base and send them around the forest every now and then
+every 0$1 trigger tick > patrol2tick do
+var i, temp, hexes, h_list;
+begin
+     Randomize;
+
+     h_list = [[107,78],[92,79],[109,91],[110,101],[120,96]];
+     hexes = [];
+
+     for i = 1 to 3 do
+     begin
+          temp = Rand(1,h_list);
+          hexes = hexes ^ [h_list[temp]];
+          h_list = Delete(h_list, temp);
+     end;
+
+     patrol2 = UnitFilter(ru2_sol, [f_not, [f_inside]]);
+
+     if patrol2 = 0 then
+        exit;
+
+     ru2_sol = ru2_sol diff patrol2;
+     patrol2tick = tick + [5$0,4$0,3$0][difficulty];
+
+     ComAgressiveMove(patrol2, 141, 72);  
+
+     while UnitFilter(patrol2, [f_not,[f_distxy, 141, 72, 3]]) > 0 do
+           wait(0$1);
+
+     ComAgressiveMove(patrol2, 126, 92);
+     AddComAgressiveMove(patrol2, hexes[1][1], hexes[1][2]);
+     AddComAgressiveMove(patrol2, hexes[2][1], hexes[2][2]);
+     AddComAgressiveMove(patrol2, hexes[3][1], hexes[3][2]);
+     AddComAgressiveMove(patrol2, 126, 92);
+     AddComAgressiveMove(patrol2, 141, 72);
+
+     wait(0$30);
+
+     repeat
+           wait(0$1);
+     until UnitFilter(patrol2, [f_or, [f_not, [f_ok]], [f_distxy, 141, 72, 10]]) = patrol2;
+
+     ru2_sol = ru2_sol ^ patrol2;
+     patrol2 = [];
+
+enable;
+end;
+
+//blockade
+every 0$1 do
+var i, temp, hex, enemy;
+begin
+     hex = [88,92];
+     enemy = FilterAllUnits([[f_side,2],[f_distxy, hex[1], hex[2], 16]]);
+
+     for i in blockade_sol ^ blockade_veh do
+         if GetDistUnitXY(i, hex[1], hex[2]) > 8 then
+            ComMoveXY(i, hex[1], hex[2])
+         else
+             if player_seen_tick + 0$15 > tick and enemy > 0 then
+                ComAttackUnit(i, enemy[1])
+             else
+                 if FilterAllUnits([[f_side,1],[f_distxy, hex[1], hex[2], 10]]) > 0 then
+                    ComAttackUnit(i, FilterAllUnits([[f_side,1],[f_distxy, hex[1], hex[2], 10]])[1])
+                 else
+                     if GetDistUnitXY(blockade_veh, 90, 91) > 1 then
+                        ComMoveXY(blockade_veh, 90, 91);
+
+
+     if player_seen_tick + 0$15 > tick and enemy > 0 then
+     begin
+          if not IsInUnit(blockade_driver) then
+             ComEnterUnit(blockade_driver, blockade_veh);
+     end
+     else
+         if GetLives(blockade_veh) < 1000 and FilterAllUnits([[f_side,1],[f_distxy, hex[1], hex[2], 10]]) = 0 then
+         begin
+              if IsInUnit(blockade_driver) then
+                 ComExitVehicle(blockade_driver);
+         end
+         else
+             if not IsInUnit(blockade_driver) then
+                ComEnterUnit(blockade_driver, blockade_veh);
+
+     temp = UnitFilter(blockade_sol, [f_not, [f_lives, 1000]]);
+
+     if not IsInUnit(blockade_driver) then
+        temp = temp ^ UnitFilter(blockade_driver, [f_not, [f_lives, 1000]]);
+
+     if temp > 0 then
+        ComHeal(blockade_sci, temp[1])
+     else
+         if GetDistUnitXY(blockade_sci, hex[1], hex[2]) > 8 then
+            ComMoveXY(blockade_sci, hex[1], hex[2]);
+
+enable;
+end;
+
+//am vehicle
+every 0$1 trigger enable_recon do
+var i, temp;
+begin
+     wait(1$0);
+     PrepareRecon;
+
+     while not PlaceUnitXYR(recon_vehicle, 30, 57, 1, 0) do
+           wait(0$1);
+
+     ComAgressiveMove(recon_vehicle, 105, 114);
+
+     wait(0$5);
+
+     repeat
+           wait(1);
+
+           if GetLives(recon_vehicle) <= 375 or GetDistUnitXY(recon_vehicle, 105, 114) < 5 or GetDistUnitXY(recon_driver, 105, 114) < 5 then
+           begin
+                ComMoveXY(recon_vehicle ^ recon_driver, 30, 57);
+
+                if GetLives(recon_vehicle) < 250 and IsInUnit(recon_driver) then
+                   ComExitVehicle(recon_driver);
+           end;
+
+           if GetDistUnitXY(recon_driver, 30, 57) < 2 or GetLives(recon_driver) = 0 then
+           begin
+                if GetDistUnitXY(recon_driver, 30, 57) < 2 then
+                   RemoveUnit(recon_driver);
+
+                 recon_driver = 0;
+           end;
+
+           if GetDistUnitXY(recon_vehicle, 30, 57) < 3 or GetLives(recon_vehicle) = 0 or not GetSide(recon_vehicle) = 1 then
+           begin
+                if GetDistUnitXY(recon_vehicle, 30, 57) < 3 then
+                   RemoveUnit(recon_vehicle);
+
+                recon_vehicle = 0;
+                recon_driver = 0;
+           end;
+
+     until recon_driver = 0 and recon_vehicle = 0;
+
+     wait(1$0);
+
+enable;
+end;
+
+
+Function PrepareRecon;
+begin
+     uc_nation = nation_american;
+     uc_side = 1;
+
+     PrepareMechanic(sex_male,[0,1,1][difficulty]);
+     recon_driver = CreateHuman;
+
+     uc_direction = 1;
+     vc_chassis = us_light_wheeled;
+     vc_engine = engine_combustion;
+     vc_control = control_manual;
+     vc_weapon = us_machine_gun;
+
+     recon_vehicle = CreateVehicle;
+     PlaceHumanInUnit(recon_driver, recon_vehicle);
+end;

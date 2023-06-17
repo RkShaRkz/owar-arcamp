@@ -1,0 +1,134 @@
+
+//Crate spawning whole map.
+Every 0$1 + 0$0.4 do
+     begin
+
+          repeat
+          wait( Rand(1$10,2$40) );
+
+          CreateCratesAnywhere(Rand(3,5),true);
+
+          //Chance of extra crates with little delay
+          if Rand(1,4) = 1 then
+               begin
+                    wait( Rand(0$5,0$20) );
+                    CreateCratesAnywhere(Rand(2,4),true);
+               end;
+
+          until false;
+     end;
+
+//Crate spawning where player can get them.
+//Greater chance in the beginning of the game.
+Every 0$1+0$0.5 do
+     var count, time;
+     begin
+          count = 0;
+
+          repeat
+          time = [1$15,1$20,1$25][difficulty] + ( 0$50 * count/(count+[15,13,12][difficulty]) );
+
+          wait(Rand(time,time+0$30));
+
+          CreateCratesArea(Rand(3,5),player_crate_area,true);
+
+          count = count + 1;
+
+          until false;
+     end;
+
+//Crate spawning where player can easily get them.
+//Greater chance in the beginning of the game.
+Every 0$1+0$0.5 do
+     var count, time;
+     begin
+          count = 0;
+
+          repeat
+          time = [1$30,1$50,2$10][difficulty] + ( 1$0 * count/(count+6) );
+
+          wait(Rand(time,time+0$30));
+
+          CreateCratesArea(Rand(3,5),player_base,true);
+
+          count = count + 1;
+
+          until count = [8,6,4][difficulty];
+     end;
+
+Export Function PrepareCrates;
+     var all, i;
+     begin
+          //Create initial crates for the map
+
+          //Anywhere
+          all = [30,20,10][difficulty];
+          repeat
+               if all >= 5 then
+                    i = Rand(2,5)
+               else i = all;
+
+               all = all - i;
+
+               CreateCratesAnywhere(i,false);
+
+          until all <= 0;
+
+          //Near the player's base
+          all = [30,20,15][difficulty];
+          repeat
+               if all >= 5 then
+                    i = Rand(2,5)
+               else i = all;
+
+               all = all - i;
+
+               CreateCratesArea(i,player_crate_area,false);
+
+          until all <= 0;
+
+          //In the player's base
+          if difficulty > 1 then
+               exit;
+
+          all = 5;
+          repeat
+               if all >= 5 then
+                    i = Rand(2,5)
+               else i = all;
+
+               all = all - i;
+
+               CreateCratesArea(i,player_base,false);
+
+          until all <= 0;
+     end;
+
+//Remove crates from places where just a few could block the entire road and the Americans would pick them up.
+Every 0$1+0$0.8 do
+     var crates_list, temp_list, c;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if not 1 in ai_bases then
+               exit;
+
+          temp_list = GetListOfCratesInArea(no_crates_area);
+          if temp_list = 0 then
+               continue;
+
+          c = 1;
+          crates_list = [];
+          repeat
+               crates_list = crates_list ^ [[temp_list[c],temp_list[c+1]]];
+               c = c + 2;
+          until c > temp_list;
+
+          for c in crates_list do
+               if not SeeXY(you,c[1],c[2]) then
+                    ChangeResourceAmountXY(c[1],c[2],0);
+
+          until false;
+     end;

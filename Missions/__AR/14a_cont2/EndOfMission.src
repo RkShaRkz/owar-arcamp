@@ -1,0 +1,92 @@
+
+Every 0$1+0$0.2 trigger russians_defeated and farmer_defeated and ( IsDead(Kozlov) or kozlov_captured or kozlov_escaped or kozlov_gained ) do
+     begin
+          EndMission;
+     end;
+
+Function EndMission;
+     var val, all_list, un_list, name_list;
+     var i, temp_list;
+     begin
+          //Medals
+          //Quick breakthrough through the Russian blockade (14a_cont).
+          if time_determined_situation = 1 then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('Breakthrough',val);
+
+          //Kozlov captured
+          if kozlov_captured or kozlov_gained then
+               val = 1
+          else
+               if kozlov_escaped then
+                    val = -1
+               else
+                    if IsDead(Kozlov) then
+                         val = -2
+                    else
+                         val = -3;
+
+          AddMedal('KozlovCapture',val);
+
+          //Minimal damage to Farmer's base.
+          //This is a little tricky since the player could take over Farmer's base first so we use
+          //a snapshot of how the base was just when the player captured it.
+          if num_damaged_or_destroyed_buildings_farmer_base = 0 then
+               val = 1
+          else
+               if num_damaged_or_destroyed_buildings_farmer_base <= 5 then
+                    val = 2
+               else
+                    val = -1;
+
+          AddMedal('MinimalDamage',val);
+
+          GiveMedals('Medals');
+
+                
+          //Variables
+          SaveVariable(kozlov_gained,'Kozlov_gained_14a_cont2');
+          SaveVariable(kozlov_captured,'Kozlov_captured_14a_cont2');
+          SaveVariable(kozlov_escaped,'Kozlov_escaped_14a_cont2');
+          SaveVariable(val > -1,'Base_OK_14a_cont2');
+
+          //Save what the player's base looks like
+          temp_list = [];
+          for i in FilterAllUnits([[f_side,you],[f_type,unit_building]]) do
+               temp_list = Insert(temp_list,1,[GetX(i),GetY(i),GetDir(i),GetBType(i),GetLabKind(i,1),GetLabKind(i,2),GetBWeapon(i)]);
+
+          SaveVariable(temp_list,'Player_buildings_14a_cont2');
+                 
+
+          //Reward and save people
+          all_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_alive]]) diff (GetApes(you) ^ Kozlov);
+
+          RewardPeople(all_list);
+
+          all_list = all_list union UnitFilter(hiding_player_units,[f_alive]);  //If the player doesn't find the survivors (very unlikely, though).
+
+          SaveCharacters(Heike,'Heike_14a_cont2');
+
+          un_list = [Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam];
+          name_list = ['Olaf', 'Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Suze', 'MarkB', 'Kurt', 'Martin', 'Louis', 'Khattam'];
+          for val = 1 to un_list do
+               if un_list[val] in all_list then
+                    SaveCharacters(un_list[val],name_list[val] & '_14a_cont2');
+
+          SaveCharacters(all_list diff (un_list ^ Heike),'Others_14a_cont2');
+
+          if GetLives(Gordon) > 0 then
+               SaveCharacters(Gordon,'Gordon_14a_cont2');
+
+          if GetLives(Willard) > 0 then
+               SaveCharacters(Willard,'Willard_14a_cont2');
+
+          if GetLives(Kozlov) > 0 then
+               SaveCharacters(Kozlov,'Kozlov_14a_cont2');
+
+
+          YouWin;
+     end;

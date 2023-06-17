@@ -1,0 +1,913 @@
+
+Export testing;              
+
+Export you, russians, nature, you_alt, russians_alt;
+
+Export Heike, Dwayne, Oswald, Kurt, Gonzo;
+Export Stanimir, Barovnin, Yefibachev, Yakov, Natalya, Mikhail, good_pat, bad_pat, Dmitri, Sergei, Yann;
+Export poker_eng, poker_sol, poker_mec;
+
+Export ai_soldiers, ai_engineers, ai_mechanics_defend, ai_mechanics_attack, ai_scientists, ai_commander, ai_depot, ai_labs, ai_siberite_mines;
+Export ai_power_plants, ai_buildings_locations, ai_vehicles_defend, ai_vehicles_attack, ai_vehicle_pullback_hexes, ai_human_pullback_hex;
+Export ai_building_under_construction, ai_heal_these_humans, ai_all_buildings, ai_building_constructor, ai_vehicle_being_moved;
+Export ai_upcoming_building_data, ai_facts, ai_armouries, ai_bunkers, ai_oil_mine, ai_fact_extensions, ai_retreating_vehicles_defend;
+Export {ai_near_base_dist,} ai_going_to_attack_this_base, ai_refuel_vehicles_list, ai_vehicles_being_repaired;
+Export ai_vehicle_attack_delay, ai_bases, ai_has_switched_base_target, ai_cargo_bay, ai_cargo_bay_under_construction, ai_apemen_engineers;
+Export ai_attacking_soldiers, ai_attacking_scientists, ai_humans_ready_to_attack, ai_retreating_attacking_humans, ai_human_attack_delay;
+Export ai_vehicles_having_been_moved, ai_turrets, ai_captured_buildings;
+
+Export oswald_is_substitute, kurt_is_substitute, heike_parking_spot, cargo_bay_parking_spots, war_vehicle_parking_spots, the_archive;
+Export code_red, code_black, patrols, patrols_path, patrols_subpaths, halt_internal_patrol, terminate_internal_patrol, heike_undercover;
+Export entrance_guard_dialogue_played, code_black_soldiers, depot_north, patrols_path_hex_index;
+Export player_units_in_russian_buildings, recent_not_went_inside_units, engineers_vehicles_to_move_drivers;
+Export heike_undercover_entered_war_vehicle, recent_player_units_enter_russian_buildings, leader_office, leader_office_location;
+Export found_depot_document, send_sol_from_office_to_archive, sol_office_to_archive, the_cargo_bay_captured;
+Export num_documents_stolen, archive_found, mission_can_end, cargo_bays_origin, send_guard_from_entrance_to_office;
+Export entrance_guard_to_office, heike_arrived_to_base_in_this_cargo_bay, boyfriend_identified, dont_park_cargo_bay;
+Export heike_last_exit_building_tick, reenter_building_cooldown, except_Dmitri, except_Yakov, Yakov_to_archive, Yakov_luring;
+Export intel_party_vehicles, workshop_messenger, intel_soldier_to_archive, intel_party_leave, except_Yefibachev, in_out_russian_units;
+Export entrance_guard_dialogue_started, num_sabotaged_cargo_bays, last_known_enemy_hex, cargo_bays_being_moved, code_black_renew;
+Export start_display_guards_distracted_hint, max_num_documents_stealable;
+
+
+Starting
+begin
+     RandomizeAll;
+     ResetFog;
+
+     testing = false;  //Testing mission or real campaign?
+
+     ai_bases = [1];  //One Russian base is controlled by AI
+     ai_soldiers = [[],[]];  //Soldiers for computer sides
+     ai_attacking_soldiers = [[],[]];  //Soldiers who are attacking
+     ai_engineers = [[],[]]; //Engineers for computer sides
+     ai_mechanics_defend = [[],[]];  //Mechanics for computer sides (in the base)
+     ai_mechanics_attack = [[],[],[]];  //Mechanics for computer sides (attacking in vehicles)
+     ai_scientists = [[],[]];  //Scientists for computer sides
+     ai_attacking_scientists = [[],[]];  //Scientists who are attacking
+     ai_apemen_engineers = [[],[]];  //Apemen engineers for computer sides
+     ai_depot = [0,0];  //The depot of each computer side
+     ai_labs = [[],[]];  //The lab of each computer side
+     ai_facts = [[],[]];  //The factory of each computer side
+     ai_armouries = [[],[]];  //The armouries of each computer side
+     ai_bunkers = [[],[]];  //The bunkers of each computer side
+     ai_turrets = [[],[]];  //The turrets of each computer side
+     ai_oil_mine = [0,0];  //The oil mine of each computer side
+     ai_siberite_mines = [[],[]];  //The siberite mines of each computer side/base
+     ai_fact_extensions = [[],[]];  //The factory extensions of each computer side
+     ai_power_plants = [[],[]];  //The power plants of each computer side
+     ai_buildings_locations = [[],[]];  //The locations of all buildings for each side. Data looking like [x,y,dir,btype,labkind1,labkind2,bweapon] (CF. function "ScanBuildings")
+     ai_captured_buildings = [[],[]];  //Identifiers of the buildings each base has lost because someone captured them. Will be recaptured if possible.
+     ai_vehicles_defend = [[],[]];  //Vehicles of each computer side (in the base)
+     ai_vehicles_attack = [[],[]];  //Vehicles of each computer side (attacking the enemy)
+     ai_retreating_vehicles_defend = [[],[]];  //The defending vehicles which need to retreat during an attack on the base.
+     ai_vehicles_being_repaired = [[],[]];  //The vehicles which are going to be or are being repaired.
+     ai_refuel_vehicles_list = [[],[]];  //(defending) vehicles needing to be refueled
+     ai_vehicle_pullback_hexes = [[],[]];  //Hexes where vehicles can be parked
+     ai_human_pullback_hex = [[58,25],[]];  //Hex where humans can safely retreat to (center of the base)
+     ai_building_under_construction = [0,0];  //Identifier of building under construction (only 1 building at a time)
+     ai_heal_these_humans = [[],[]];  //Humans needing to be healed
+     ai_all_buildings = [[],[]];  //Identifiers of all buildings for each computer side
+     ai_building_constructor = [0,0];  //Identifier of the engineer who are going to build a building
+     ai_vehicle_being_moved = [0,-1,0];  //Identifier of vehicle which is being moved away from building site
+     ai_vehicles_having_been_moved = [[],[]];  //Identifiers of the vehicles which have been moved away from building site. Don't move them again until construction has started
+     ai_upcoming_building_data = [[],[]];  //Holds the data (building_location syntax) of the building which is going to be build. Isn't reset until the building is completely done.
+     //ai_near_base_dist = 40;  //Distance within base where the computer scans for enemies to determine if the base is under attack (so this distance also decides how far away from the base retreating attackers will be pursued).
+     ai_vehicle_attack_delay = [0$0,0$0];  //The time which will pass from the side is ready to attack (with vehicles) until the attack actually commences (cf. function "ResetVehicleAttackDelay").
+     ai_human_attack_delay = [0$0,0$0];  //The time which will pass from the side is ready to attack (with humans) until the attack actually commences (cf. function "ResetHumanAttackDelay").
+     ai_cargo_bay = [0,0];  //holds the identifier of the (automatic) cargo bay
+     ai_cargo_bay_under_construction = [false,false];  //True if the base is currently constructing a cargo bay
+     ai_humans_ready_to_attack = [false,false];  //True when all attacking humans are ready (gathered)
+     ai_retreating_attacking_humans = [[],[]];  //Holds the attacking humans who are retreating.
+
+
+     oswald_is_substitute = false;  //True if Oswald died in an earlier mission and thus has been substituted with someone else in this misson.
+     kurt_is_substitute = false;  //Same as oswald_is_substitue but for Kurt.
+     heike_parking_spot = Rand(1,3);  //The parking spot Heike is told to park her cargo bay. Changes from game to game.
+     cargo_bay_parking_spots = [];  //Holds the coordinates of where the cargo bays are parked
+     war_vehicle_parking_spots = [];  //Holds the coordinates of where the war vehicles are parked
+     the_archive = -1;  //Holds the identifier of the lab which is The Archive. Randomizes each time.
+     code_red = false;  //Tells if the Russian base is in a state of Code Red (external danger).
+     code_black = false;  //Tells if the Russian base is in a state of Code Black (internal danger).
+     patrols = [[],[]];  //[[id1,id2,id3],[id4,id5,id6]] - Holds the identifiers of soldiers who are searching for the mercenary scum
+     patrols_path = [[],[]];  //[ [[x1,y1],[x2,y2],...] , [[x9,y9],[x10,y10],...] ] - holds the patrolling path for patrols. Patrol with index 1 uses path with index 1 and so on.
+     patrols_path_hex_index = [1,1];  //The index in "patrols_path" the patrolling units in "patrols" are going for next
+
+     //Holds the path fragments from which a patrol path is constructed randomly. The first number in the beginning of each path-list is the path-type-id of that path.
+     //The following list contains numbers which dictate the path-types you can combine with this one (put after). Hereafter follows the hexes defining the path.
+     //So a possible path would be (only looking at the path-types): 1000-1001-1002-1003-1008-1009-1010-1011-1007 , or the reverse (all hexes reversed)
+     //See function "CreateControlPath" in module "AI".
+     patrols_subpaths = [
+                         [1000,[1001],[27,7],[19,20],[27,38],[37,62]],
+                         [1000,[1001],[47,48],[45,62]],
+                         [1001,[1002],[51,79],[61,99],[64,115],[76,107]],
+                         [1001,[1002],[61,80],[75,95]],
+                         [1002,[1003],[95,109],[107,107],[114,99]],
+                         [1002,[1003],[95,109],[97,100],[102,95],[114,99]],
+                         [1003,[1006,1008],[113,85],[106,69],[119,60]],
+                         [1003,[1006,1008],[129,85],[130,69]],
+                         [1003,[1004],[136,109]],
+                         [1004,[1005,1009],[156,111],[171,108],[163,89]],
+                         [1004,[1005,1009],[148,99],[146,83]],
+                         [1005,[1006],[130,69]],
+                         [1006,[1007],[119,49],[105,26]],
+                         [1007,[],[92,23]],  //Path ends here
+                         [1007,[],[95,15],[87,4],[92,23]],  //Path ends here
+                         [1008,[1009],[142,76]],
+                         [1009,[1010],[159,74]],
+                         [1010,[1011],[141,54]],
+                         [1010,[1011],[151,58],[145,37],[141,54]],
+                         [1011,[1007],[121,40],[105,26]]
+                        ];
+
+     halt_internal_patrol = 0;  //If 0 the guards patrol the Russian base as usual. If anything else they act like normal soldiers. 1 if halted by the every controlling soldiers generically (module "AI"). 2 if halted by a cutscene.
+     terminate_internal_patrol = false;  //Switch to true to stop the two guards from patrolling the Russian base permanently. Switching back to false will not reverse the effect.
+     heike_undercover = 0;  //0 if Heike has not attacked anything/anyone on the Russian base (can go undercover), 1 if she is seen (undercover will be blown on sight), 2 if she is undercover, 3 if she is undercover but had status 1 before, 4 if her undercover was blown
+     entrance_guard_dialogue_played = false;  //Tells if the dialogue at the entrance of the base (Heike is undercover) has happened.
+     code_black_soldiers = [];  //The soldiers who directly fights the intruders when base is in code black
+     depot_north = 0;  //The norhtern depot in the base
+     player_units_in_russian_buildings = [];  //[[un1,building1],[un2,building1],[un3,building2]] - keeps track of which of the player's units are inside which Russian buildings
+     recent_not_went_inside_units = [];  //[[un1,time1],[un2,time2]] - Units which had to option to enter a building, but didn't enter, shouldn't have the option for a short time to prevent spamming the player.
+     engineers_vehicles_to_move_drivers = [];  //Index is id of vehicle (cargo bay) to be moved. Value is id of the driver to park the vehicle. Necessary as global variable since cargo bay could have been captured by the player and then abandoned (vehicles change ID when captured).
+     heike_undercover_entered_war_vehicle = false;  //Turns true if Heike captured a Russian war vehicle while she was under cover.
+     recent_player_units_enter_russian_buildings = [];  //[[un1,building1],[un2,building1],[un3,building2]] - keeps track of which of the player's units recently entered a Russian building.
+     leader_office = 0;  //Identifier of Yefibachev's office
+     leader_office_location = [];  //Location [x,y] of Yefibachev's office. Necessary to update "leader_office" if the building is destroyed and rebuilt.
+     found_depot_document = false;  //Turns true if Heike picks up the document in the northern depot.
+     send_sol_from_office_to_archive = false;  //Turns true if the player has handed in the document from the northern depot to Yefibachev so he send a soldier from his office to the archive with the document.
+     sol_office_to_archive = 0;  //Identifier of the soldier who are sent to the archive with the document Heike handed in.
+     the_cargo_bay_captured = 0;  //Identifier of the captured cargo bay
+     num_documents_stolen = -1;  //How many documents the player has stolen from the archive
+     archive_found = false;  //Turns true when player finds the archive (a player unit is inside)
+     mission_can_end = false;  //Turns true when the player can end the mission by walking to the designated area (when enough documents have been stolen).
+     cargo_bays_origin = [];  //Index is cargo bay identifier, value is origin (1 for West, 3 for East). Keeps track of where the cargo bays driving through the area came from. For use when Heike is asked where the goods come from at the entrance of the base (module "OtherEvents");
+     send_guard_from_entrance_to_office = false;  //Turns true if Heike was asked why her cargo bay was damaged and she answered she was attacked. Then one of the guards at the entrance goes to Yefibachevs office and tells this which results in Yefibachev sending a non-code-red patrol to scout the area (keeping things quiet)
+     entrance_guard_to_office = 0;  //Identifier of the soldier who goes to Yefibachev's office to tell that Heike was attacked.
+     heike_arrived_to_base_in_this_cargo_bay = 0;  //Identifier of the cargo bay Heike is inside when the entrance dialogue is played.
+     boyfriend_identified = false;  //Turns true when Heike learns about Yakov.
+     dont_park_cargo_bay = 0;  //Identifier of the cargo bay the engineers of the base shouldn't try to park
+     heike_last_exit_building_tick = 0;  //Holds the tick for last time Heike exit a (Russian) building
+     reenter_building_cooldown = 0$5;  //The time we wait before enabling asking if a unit should enter a building if the unit declined last time we asked
+     except_Dmitri = false;  //True if the ordinary soldier controlling code should ignore Dmitri.
+     except_Yakov = false;  //True if the ordinary mechanic controlling code should ignore Yakov.
+     Yakov_to_archive = false;  //True if Yakov is on his way to the archive and the to Yefibachev's office (cf. module "OtherEvents" the every controlling what's happening when player units enter buildings).
+     Yakov_luring = 0;  //1 if Heike uses the strategy with luring Yakov away and forcing him to spill the location of the archive. Flips to 2 if Heike in this event chooses to make Yakov follow her to the archive and increments to 3 when she chooses to leave the archive while Yakov is with her inside. 4 when the event is over. CF. module "OtherEvents" the every taking vare of making player units exit buildings and the every handling the Yakov luring event.
+     intel_party_vehicles = [];  //Identifiers of the vehicles of the intel party coming to the base if Heike stays inside the workshop for a longer period of time (cf. module "OtherEvents").
+     workshop_messenger = 0;  //Identifier of the soldier who goes to the workshop with news about the intel party
+     intel_party_leave = false;  //Turns true when the intel party leaves the base
+     except_Yefibachev = false;  //True if the ordinary soldier controlling code should ignore Yefibachev
+     in_out_russian_units = [];  //The mechanics and vehicles driving in and out of the map from time to time.
+     entrance_guard_dialogue_started = false;  //Turns true when the dialogue at the entrance of the base starts
+     num_sabotaged_cargo_bays = 0;  //The number of cargo bays the player has sabotaged (destroyed)
+     last_known_enemy_hex = ai_human_pullback_hex[1];  //The hex of the last seen enemy within the Russian base. For use to make code black units camp around this hex rather than the human pullback hex.
+     cargo_bays_being_moved = [];  //Identifiers of the cargo bays which are being parked properly, cf. module "AI" (engineers)
+     code_black_renew = false;  //true if code black has been triggered again (e.g. by a blowing mine) while code black was still active.
+     start_display_guards_distracted_hint = false;  //On easy and medium we tell the player if the Archive Guards are distracted so Heike can safely enter the Archive. Turns true when this hint should begin to show.
+     max_num_documents_stealable = 50;  //The maximum number of documents the player can steal from the Archive.
+
+
+     PrepareSides;
+     PrepareNature;
+     PrepareArabians;
+     ScanBuildings;
+     PrepareComputerSides;
+   
+
+     Action;
+end;
+
+
+Function PrepareSides;
+     begin
+          //Who is who and decide initial attitudes
+          nature = 0;
+          you = 2;
+          russians = 3;
+          you_alt = 5;
+          russians_alt = 6;
+
+          SetAttitude(you,russians,att_enemy,true);
+          SetAttitude(you,you_alt,att_friend,true);
+          SetAttitude(you,russians_alt,att_enemy,true);
+          SetAttitude(russians,you_alt,att_enemy,true);
+          SetAttitude(russians,russians_alt,att_friend,true);
+          SetAttitude(you_alt,russians_alt,att_enemy,true);
+     end;
+
+Function PrepareNature;
+     var i, spots, num, agres, count, temp_unit;
+     begin
+          spots = [[19,26],[34,51],[53,86],[77,95],[88,115],[65,111],[142,108],[161,107],
+                   [171,99],[146,88],[151,66],[146,38],[117,42],[89,6]];
+
+          InitUc;
+          InitHc;
+
+          uc_side = nature;
+          uc_nation = nation_nature;
+
+          agres = -10 + difficulty * 20;
+
+           //Tigers
+           count = [1,2,3][difficulty];
+           hc_gallery = 'nature_foreg';
+           hc_face_number = 3;
+           hc_class = class_tiger;
+           hc_sex = sex_male;
+           for i = 1 to count do
+                begin
+                     if spots = 0 then
+                          exit;
+
+                     uc_direction = Rand(0,5);
+                     hc_agressivity = Rand(0,agres);
+                     hc_attr = [Rand(11,12),Rand(10,11)];
+                     hc_skills = [Rand(1,difficulty),0,0,0];
+
+                     num = Rand(1,spots);
+                     PlaceUnitXYR(CreateHuman,spots[num][1],spots[num][2],5,false);
+                     spots = Delete(spots,num);
+                end;
+
+           //Baggies
+           count = Rand(3,5);
+           hc_face_number = 4;
+           hc_class = class_baggie;
+           for i = 1 to count do
+                begin
+                     if spots = 0 then
+                          exit;
+
+                     uc_direction = Rand(0,5);
+                     hc_agressivity = Rand(0,50) - 50;
+                     hc_attr = [Rand(8,10),Rand(9,11)];
+                     hc_skills = [0,0,0,0];
+
+                     num = Rand(1,spots);
+                     PlaceUnitXYR(CreateHuman,spots[num][1],spots[num][2],5,false);
+                     spots = Delete(spots,num);
+                end;
+     end;
+
+Function PrepareArabians;
+     var i;
+     begin
+          InitHc;
+          InitUc;
+          uc_side = you;
+          uc_nation = nation_arabian;
+
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_08');
+                    SetClass(Heike,class_soldier);
+
+                    Oswald = 0;
+                    if TestCharacters('Oswald_07_sel') then
+                         begin
+                              if TestCharacters('Oswald_07_cont') then
+                                   Oswald = CreateCharacter('Oswald_07_cont');
+                         end
+                    else if TestCharacters('Oswald_07_not_sel') then
+                         Oswald = CreateCharacter('Oswald_07_not_sel')
+                    else if TestCharacters('Oswald_05_sel') then
+                         begin
+                              if TestCharacters('Oswald_05_cont') then
+                                   Oswald = CreateCharacter('Oswald_05_cont');
+                         end
+                    else if TestCharacters('Oswald_04') then
+                         Oswald = CreateCharacter('Oswald_04');
+
+                    if Oswald = 0 then  //Oswald has died at some point
+                         begin
+                              hc_name = '';
+                              hc_gallery = '';
+                              PrepareSoldier(sex_male,5);
+                              Oswald = CreateHuman;
+                              oswald_is_substitute = true;
+                         end;
+
+                    SetClass(Oswald,class_soldier);
+
+                    Kurt = 0;
+                    if TestCharacters('Kurt_07_cont') then
+                         Kurt = CreateCharacter('Kurt_07_cont');
+
+                    if Kurt = 0 then  //Kurt has died at some point
+                         begin
+                              hc_name = '';
+                              hc_gallery = '';
+                              PrepareSoldier(sex_male,5);
+                              Kurt = CreateHuman;
+                              kurt_is_substitute = true;
+                         end;
+
+                    SetClass(Kurt,class_soldier);
+               end
+          else
+               begin
+                    InitHc;
+
+                    PrepareSoldier(sex_female,7);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+
+                    PrepareSoldier(sex_male,6);
+                    hc_name = 'Oswald';
+                    Oswald = CreateHuman;
+
+                    PrepareSoldier(sex_male,6);
+                    hc_name = 'Kurt';
+                    Kurt = CreateHuman;
+               end;
+
+          Dwayne = NewCharacter('Dwayne');
+
+          uc_nation = nation_nature;
+          hc_name = 'Gonzo';
+          hc_gallery = 'ar_new';
+          hc_face_number = 41;
+          hc_class = class_apeman_soldier;
+          hc_sex = sex_male;
+          hc_attr = [16,12];
+          hc_basic_skills = [4,1,0,0];
+          hc_skills = [5,4,1,0];
+          Gonzo = CreateHuman;
+          hc_name = '';
+          hc_gallery = '';
+     end;
+
+Function ScanBuildings;
+     var side, i, temp_list, base, area;
+     begin
+          side = russians;
+
+          for base in ai_bases do
+               begin
+                    case base of
+                         1: area = ru_base_area;
+                    end;
+                    ai_all_buildings = Replace(ai_all_buildings,base, FilterAllUnits([[f_side,side],[f_type,unit_building],[f_inarea,area]]) );
+
+                    depot_north = UnitFilter(ai_all_buildings[base],[f_btype,b_depot])[1];
+                    for i in ai_all_buildings[base] diff depot_north do
+                         UpdateBuildingBasicVariables(base,i,true);
+
+                    //Decide which lab is The Archive
+                    temp_list = ai_labs[base];
+                    the_archive = temp_list[Rand(1,temp_list)];
+
+                    //Oil power plants belong to northern depot (at least at the beginning - if they
+                    //are destroyed they may change to the main depot).
+                    for i in ai_power_plants[base] do
+                         if GetBType(i) = b_oil_power then
+                              AddComLinkToBase(depot_north,i);
+
+                    //Link all labs to the main depot
+                    for i in ai_labs[base] do
+                         AddComLinkToBase(ai_depot[base],i);
+
+                    //Yefibachev's office
+                    for i in ai_armouries[base] do
+                         if GetBType(i) = b_barracks then
+                              begin
+                                   leader_office = i;
+                                   leader_office_location = [GetX(i),GetY(i)];
+                                   break;
+                              end;
+
+                    //Prioritated order
+                    temp_list = [];
+                    //for i in (ai_depot[base] ^ ai_armouries[base] ^ ai_bunkers[base] ^ depot_north ^ ai_power_plants[base] ^ ai_turrets[base] ^ ai_labs[base] ^ ai_facts[base] ^ ai_fact_extensions[base] ^ ai_siberite_mines[base] ^ ai_oil_mine[base]) diff 0 do
+                    for i in ai_all_buildings[base] do
+                         temp_list = temp_list ^ [ [GetX(i),GetY(i),GetDir(i),GetBType(i),GetLabKind(i,1),GetLabKind(i,2),GetBWeapon(i)] ];
+
+                    ai_buildings_locations = Replace(ai_buildings_locations,base,temp_list);
+                    SortBuildingLocationsListInCorrectOrder(base);
+
+                    //Make sources visible
+                    for i in ai_siberite_mines[base] ^ ai_oil_mine[base] do
+                         SetResourceVisibility(GetX(i),GetY(i),side);
+               end;
+     end;
+Export Function UpdateBuildingBasicVariables(base,un,add);
+     var temp_list;
+     begin
+          //un - unit to add/remove from basic building variables
+          //add - boolean (true for add units, false for remove)
+
+          case GetBType(un) of
+               b_depot,b_warehouse:
+                    if add then
+                         ai_depot = Replace(ai_depot,base,un)
+                    else
+                         if un = ai_depot[base] then
+                              ai_depot = Replace(ai_depot,base,0);
+               b_lab,b_lab_half,b_lab_full: begin
+                    if add then
+                         temp_list = ai_labs[base] ^ un
+                    else temp_list = ai_labs[base] diff un;
+                    ai_labs = Replace(ai_labs,base,temp_list);
+               end;
+               b_factory,b_workshop: begin
+                    if add then
+                         temp_list = ai_facts[base] ^ un
+                    else temp_list = ai_facts[base] diff un;
+                    ai_facts = Replace(ai_facts,base,temp_list);
+               end;
+               b_armoury,b_barracks: begin
+                    if add then
+                         temp_list = ai_armouries[base] ^ un
+                    else temp_list = ai_armouries[base] diff un;
+                    ai_armouries = Replace(ai_armouries,base,temp_list);
+               end;
+               b_breastwork,b_bunker: begin
+                    if add then
+                         temp_list = ai_bunkers[base] ^ un
+                    else temp_list = ai_bunkers[base] diff un;
+                    ai_bunkers = Replace(ai_bunkers,base,temp_list);
+               end;
+               b_turret: begin
+                    if add then
+                         temp_list = ai_turrets[base] ^ un
+                    else temp_list = ai_turrets[base] diff un;
+                    ai_turrets = Replace(ai_turrets,base,temp_list);
+               end;
+               b_oil_mine:
+                    if add then
+                         ai_oil_mine = Replace(ai_oil_mine,base,un)
+                    else
+                         if un = ai_oil_mine[base] then
+                              ai_oil_mine = Replace(ai_oil_mine,base,0);
+               b_siberite_mine: begin
+                    if add then
+                         temp_list = ai_siberite_mines[base] ^ un
+                    else temp_list = ai_siberite_mines[base] diff un;
+                    ai_siberite_mines = Replace(ai_siberite_mines,base,temp_list);
+               end;
+               b_ext_gun,b_ext_noncombat,b_ext_laser,b_ext_computer,b_ext_radar,b_ext_rocket,b_ext_siberium,b_ext_track,b_ext_stitch: begin
+                    if add then
+                         temp_list = ai_fact_extensions[base] ^ un
+                    else temp_list = ai_fact_extensions[base] diff un;
+                    ai_fact_extensions = Replace(ai_fact_extensions,base,temp_list);
+               end;
+               b_solar_power,b_oil_power,b_siberite_power: begin
+                    if add then
+                         temp_list = ai_power_plants[base] ^ un
+                    else temp_list = ai_power_plants[base] diff un;
+                    ai_power_plants = Replace(ai_power_plants,base,temp_list);
+               end;
+          end;
+     end;
+Function SortBuildingLocationsListInCorrectOrder(base);
+     var i, temp_list, p;
+     begin
+         temp_list = [];
+
+         for i in ai_buildings_locations[base] do
+              begin
+                   //Prioritated order in which buildings should be (re-)build.
+                   case i[4] of
+                        b_depot, b_warehouse: p = 100;
+                        b_armoury, b_barracks, b_fort: p = 99;
+                        b_solar_power, b_oil_power, b_siberite_power: p = 98;
+                        b_breastwork: p = 97;
+                        b_factory, b_workshop: p = 96;
+                        b_ext_gun, b_ext_noncombat, b_ext_laser, b_ext_computer,
+                        b_ext_radar, b_ext_rocket, b_ext_siberium, b_ext_track, b_ext_stitch: p = 95;
+                        b_bunker: p = 94;
+                        b_control_tower: p = 93;
+                        b_turret: p = 92;
+                        b_lab, b_lab_half, b_lab_full: p = 91;
+                        b_teleport: p = 90;
+                        b_siberite_mine: p = 89;
+                        b_oil_mine: p = 88;
+                   end;
+
+                   temp_list = temp_list ^ p;
+              end;
+
+          temp_list = SortListByListDesc(ai_buildings_locations[base],temp_list);
+          ai_buildings_locations = Replace(ai_buildings_locations,base,temp_list);
+     end;
+
+Function PrepareComputerSides;
+     var i, temp_list, side, base, max, num, temp_list_2, temp_list_3, j, dir, other_guard;
+     begin
+          side = russians;
+
+          for base in ai_bases do
+               begin
+                    InitUc;
+                    InitHc;
+
+                    uc_side = side;
+                    case side of
+                         russians: uc_nation = nation_russian;
+                    end;
+
+
+                    //Soldiers - 4 in Eastern armoury, 4 in Western (+ Yefibachev), 2 guards at entrance (one is Stanimir).
+                    ai_soldiers = Replace(ai_soldiers,base, CreateUnitsWithClass(4+4,class_soldier,false,'',side) );
+
+
+                    //Engineers - the main depot is also the poker club so there's only space for 3 engineers (3 poker players)
+                    ai_engineers = Replace(ai_engineers,base, CreateUnitsWithClass(2,class_engineer,false,'',side) );
+                    ai_apemen_engineers = Replace(ai_apemen_engineers,base, CreateApemenWithClass(1,class_apeman_engineer) );
+
+                    //Adapt the level of buildings to the highest engineering skill.
+                    temp_list = [];
+                    for i in ai_engineers[base] do
+                         temp_list = temp_list ^ GetSkill(i,skill_engineering);
+                    max = BestFromListByList(temp_list,temp_list);
+                    for i in ai_all_buildings[base] do
+                         SetBLevel(i,max);
+
+
+                    //Mechanics - 7 all in all, 1 poker player (always in main depot, never factory), Natalya, Mikhail, Yakov
+                    ai_mechanics_defend = Replace(ai_mechanics_defend,base, CreateUnitsWithClass(3,class_mechanic,false,'',side) );
+
+
+                    //Scientists - 3 to 4 in each lab + Barovnin
+                    num = 0;
+                    for i = 1 to ai_labs[base] do
+                         num = num + Rand(3,4);
+                    ai_scientists = Replace(ai_scientists,base, CreateUnitsWithClass(num,class_scientistic,false,'',side) );
+
+
+                    //Resources
+                    SetResourceType(GetBase(ai_depot[base]),mat_cans,300);
+                    SetResourceType(GetBase(ai_depot[base]),mat_oil,0);
+                    SetResourceType(GetBase(ai_depot[base]),mat_siberit,300);
+                    SetResourceType(GetBase(depot_north),mat_cans,150);
+                    SetResourceType(GetBase(depot_north),mat_oil,300);
+                    SetResourceType(GetBase(depot_north),mat_siberit,0);
+               end;
+
+          //Important Russian characters
+          //Wicked sick scientist - always in The Archive
+          Barovnin = NewCharacter('Barovnin');
+          ai_scientists = Replace(ai_scientists,1,ai_scientists[1] ^ Barovnin);
+
+          //The leader of the base
+          Yefibachev = NewCharacter('Yefibachev');
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ Yefibachev);
+
+          //Mikhail from am02
+          Mikhail = NewCharacter('Mikhail');
+          ai_mechanics_defend = Replace(ai_mechanics_defend,1,ai_mechanics_defend[1] ^ Mikhail);
+
+          //The boyfriend
+          Yakov = NewCharacter('Yakov');
+          ai_mechanics_defend = Replace(ai_mechanics_defend,1,ai_mechanics_defend[1] ^ Yakov);
+
+          //Leader of the mechanics
+          Natalya = CreateUnitsWithClass(1,class_mechanic,sex_female,'Natalya',side)[1];  //'Natalya' refers to "CharName.wri"
+          SetSkill(Natalya,skill_mechanical,10);
+          ai_mechanics_defend = Replace(ai_mechanics_defend,1,ai_mechanics_defend[1] ^ Natalya);
+
+          //The three guys at the weapon testing area
+          Dmitri = NewCharacter('Dmitri');
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ Dmitri);
+
+          Sergei = NewCharacter('Sergei');
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ Sergei);
+
+          Yann = NewCharacter('Yann');
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ Yann);
+
+          //The three folks playing poker in the main depot
+          poker_mec = CreateUnitsWithClass(1,class_mechanic,sex_male,'',side)[1];
+          ai_mechanics_defend = Replace(ai_mechanics_defend,1,ai_mechanics_defend[1] ^ poker_mec);
+
+          poker_eng = CreateUnitsWithClass(1,class_engineer,sex_female,'Aporia',side)[1];  //'Aporia' refers to "CharName.wri"
+          ai_engineers = Replace(ai_engineers,1,ai_engineers[1] ^ poker_eng);
+
+          poker_sol = CreateUnitsWithClass(1,class_soldier,sex_male,'Boris',side)[1];  //'Boris' refers to "CharName.wri"
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ poker_sol);
+
+          //The two patrolling soldiers in the base. It's easiest if they have the same speed.
+          good_pat = CreateUnitsWithClass(1,class_soldier,sex_male,'',side)[1];
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ good_pat);
+
+          bad_pat = CreateUnitsWithClass(1,class_soldier,sex_male,'',side)[1];
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ bad_pat);
+
+          SetAttr([good_pat,bad_pat],attr_speed,[9,10,11][difficulty]);
+
+          //The two guards at the main entrance of the base (the breastworks)
+          Stanimir = NewCharacter('Stanimir');
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ Stanimir);
+
+          other_guard = CreateUnitsWithClass(1,class_soldier,sex_male,'',side)[1];
+          ai_soldiers = Replace(ai_soldiers,1,ai_soldiers[1] ^ other_guard);
+
+
+          //Place units
+          for base in ai_bases do
+               for i in ai_soldiers[base] ^ ai_engineers[base] ^ ai_mechanics_defend[base] ^ ai_scientists[base] ^ ai_apemen_engineers[base] do
+                    PlaceUnitXYR(i,62,47,7,false);
+
+
+          //Detect where to park war vehicles and cargo bays (that's where there are vehicles on the map right now).
+          //The cargo bay spot nearest the main depot is number 1, the one to the right of that is number 2 and so on.
+          //The war vehicle nearest the workshop is number 1, the one under that is number 2 and so on.
+          temp_list = FilterAllUnits([[f_side,russians],[f_type,unit_vehicle],[f_weapon,ru_cargo_bay]]);
+          temp_list_2 = FilterAllUnits([[f_side,russians],[f_type,unit_vehicle]]) diff temp_list;
+
+          temp_list_3 = [];
+          for i in temp_list do
+               begin
+                    cargo_bay_parking_spots = cargo_bay_parking_spots ^ [[GetX(i),GetY(i)]];
+                    temp_list_3 = temp_list_3 ^ GetX(i);
+               end;
+          cargo_bay_parking_spots = SortListByListAsc(cargo_bay_parking_spots,temp_list_3);
+
+          temp_list_3 = [];
+          for i in temp_list_2 do
+               begin
+                    war_vehicle_parking_spots = war_vehicle_parking_spots ^ [[GetX(i),GetY(i)]];
+                    temp_list_3 = temp_list_3 ^ GetY(i);
+               end;
+          war_vehicle_parking_spots = SortListByListAsc(war_vehicle_parking_spots,temp_list_3);
+          ai_vehicle_pullback_hexes = Replace(ai_vehicle_pullback_hexes,1,war_vehicle_parking_spots);  //for use in AI
+
+          //Remove two cargo bays so the player can determine from the one left where Heike should park.
+          //Remove the war vehicle on a parking spot that fits the spot Heike is assigned so the player may be tempted to
+          //park here (of course that is wrong and will cause trouble). If Heike is assigned number 1 then remove number 1,
+          //if number 2 remove number 2 and so forth.
+          case heike_parking_spot of
+               1: temp_list_3 = [1,2];
+               2: temp_list_3 = [2,Rand(1,2)*2-1]; //number 2 and either 1 or 3
+               3: temp_list_3 = [2,3];
+          end;
+
+          for i in temp_list_3 do
+               DestroyUnit(HexInfo(cargo_bay_parking_spots[i][1],cargo_bay_parking_spots[i][2]));
+
+          DestroyUnit(HexInfo(war_vehicle_parking_spots[heike_parking_spot][1],war_vehicle_parking_spots[heike_parking_spot][2]));
+
+          //Load the remaining war vehicles into the AI variables (not the cargo bay).
+          //Randomize the weapons of the war vehicles.
+          uc_side = russians;
+          uc_nation = nation_russian;
+          vc_chassis = ru_medium_wheeled;
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          temp_list = [];
+          for i in war_vehicle_parking_spots do
+               begin
+                    num = HexInfo(i[1],i[2]);
+                    if num > 0 then
+                         begin
+                              dir = DestroyUnit(num);
+
+                              temp_list_2 = [ru_heavy_machine_gun];
+                              for j = 1 to difficulty do
+                                   temp_list_2 = temp_list_2 ^ [ru_gun,ru_gatling_gun];
+                              vc_weapon = temp_list_2[Rand(1,temp_list_2)];
+
+                              num = CreateVehicle;
+                              temp_list = temp_list ^ num;
+                              SetDir(num,dir);
+                              PlaceUnitXY(num,i[1],i[2],false);
+                         end;
+               end;
+          ai_vehicles_defend = Replace(ai_vehicles_defend,1,temp_list);
+
+          //To make sure Heike won't shoot at everything and everyone inside the Russian base per default
+          //we help the player and sets all Russian units to "Do not shoot".
+          for i in FilterAllUnits([f_side,russians]) do
+               DoNotAttack(you,i);
+     end;
+Export Function CreateUnitsWithClass(num_units,un_class,sex,name,side);
+     var i, overskill, temp_diffi;
+     begin
+          result = [];
+
+          InitUc;
+          InitHc;
+          hc_name = name;
+          uc_nation = nation_russian;
+          uc_side = side;
+
+          overskill = difficulty + 4;
+
+          for i = 1 to num_units do
+               begin
+                    if Rand(1,3) = 1 then
+                         PrepareHuman(sex,un_class,-overskill+1)
+                    else PrepareHuman(sex,un_class,overskill);
+
+                    result = result ^ CreateHuman;
+               end;
+     end;
+Export Function CreateApemenWithClass(num_units,un_class);
+     var i;
+     begin
+          result = [];
+
+          InitUc;
+          InitHc;
+          uc_side = russians;
+          uc_nation = nation_nature;
+          hc_class = un_class;
+
+          for i = 1 to num_units do
+               begin
+                    hc_attr = [Rand(11,13),Rand(10,11)];
+                    hc_sex = Rand(sex_male,sex_female);
+                    hc_skills = [Rand(0,1),Rand(0,1),0,0];
+
+                    result = result ^ CreateHuman;
+               end;
+     end;
+
+Function Action;
+     var temp_list, i;
+     begin
+          //Make all nature stand still so Heike and her friends won't be attacked during the intro
+          for i in FilterAllUnits([f_side,nature]) do
+               ComStand(i);  //apparently nature units can't ComHold
+
+          InGameOn;
+
+          CenterNowOnXY(54,99);
+
+          wait(2);  //wait for center
+          Query('QCutsceneInfo');
+
+          for i in [Heike,Oswald,Kurt,Dwayne] do
+               PlaceUnitXYR(i,54,99,2,false);
+
+          for i in [Heike,Oswald,Kurt,Dwayne] do
+               begin
+                    ComMoveXY(i,67,103);
+                    AddComHold(i);
+               end;
+         
+          Say(Dwayne,'D1-Dw-1');
+
+          if not kurt_is_substitute then
+               Say(Kurt,'D1-Ku-1')
+          else Say(Kurt,'D1-Ku_sub-1');
+
+          Wait(0$1.5);
+          Say(Heike,'D1-H-1');
+          if oswald_is_substitute then
+               Say(Oswald,'D1-Os_sub-1')
+          else if LoadVariable('vehicle_01_cont',[1,1,1,4]) = 0 then  //Heike arrived on foot in mission 02
+               Say(Oswald,'D1-Os-1a')
+          else if LoadVariable('Begging_07',false) then  //Heike begged Abdul for mission 07_cont
+               Say(Oswald,'D1-Os-1b')
+          else Say(Oswald,'D1-Os-1c');
+
+          wait(0$1);
+          if not oswald_is_substitute then
+               Say(Oswald,'D1-Os-2')
+          else Say(Oswald,'D1-Os_sub-2');
+
+          Say(Heike,'D1-H-2');
+
+          if not oswald_is_substitute then
+               Say(Oswald,'D1-Os-3')
+          else Say(Oswald,'D1-Os_sub-3');
+
+          if LoadVariable('Heike_surrendered_08',true) then  //If Heike surrendered in last mission
+               begin
+                    if not oswald_is_substitute then
+                         Say(Oswald,'D1-Os-4b')
+                    else Say(Oswald,'D1-Os_sub-4b');
+               end
+          else
+               begin
+                    if not oswald_is_substitute then
+                         Say(Oswald,'D1-Os-4a')
+                    else Say(Oswald,'D1-Os_sub-4a');
+               end;
+
+          if not oswald_is_substitute then
+               Say(Oswald,'D1-Os-5')
+          else Say(Oswald,'D1-Os_sub-5');
+
+          Say(Heike,'D1-H-3');
+
+          if not oswald_is_substitute then
+               Say(Oswald,'D1-Os-6')
+          else Say(Oswald,'D1-Os_sub-6');
+
+          Say(Dwayne,'D1-Dw-2');
+
+          if not oswald_is_substitute then
+               Say(Oswald,'D1-Os-7')
+          else Say(Oswald,'D1-Os_sub-7');
+
+          Say(Heike,'D1-H-4');
+
+          if not oswald_is_substitute then
+               Say(Oswald,'D1-Os-8')
+          else Say(Oswald,'D1-Os_sub-8');
+
+          Say(Heike,'D1-H-5');
+
+          if not oswald_is_substitute then
+               Say(Oswald,'D1-Os-9')
+          else Say(Oswald,'D1-Os_sub-9');
+
+          Say(Heike,'D1-H-6');
+          Say(Dwayne,'D1-Dw-3');
+
+          if LoadVariable('Heike_surrendered_08',true) then  //If Heike surrendered in last mission
+               Say(Heike,'D1-H-7b')
+          else Say(Heike,'D1-H-7a');
+
+          if not oswald_is_substitute then
+               begin
+                    Say(Oswald,'D1-Os-10');
+                    Say(Oswald,'D1-Os-11');
+               end
+          else
+               begin
+                    Say(Oswald,'D1-Os_sub-10');
+                    Say(Oswald,'D1-Os_sub-11');
+               end;
+
+          Say(Dwayne,'D1-Dw-4');
+          Say(Heike,'D1-H-8');
+
+          if not kurt_is_substitute then
+               Say(Kurt,'D1-Ku-2')
+          else Say(Kurt,'D1-Ku_sub-2');
+
+          Say(Dwayne,'D1-Dw-5');
+          Say(Heike,'D1-H-9');
+
+          wait(0$1.5);
+          SetSide(Gonzo,you_alt);
+          PlaceUnitXYR(Gonzo,79,115,1,false);
+          ComMoveXY(Gonzo,GetX(Dwayne),GetY(Dwayne));
+          AddComStand(Gonzo);  //nature can't ComHold
+
+          repeat
+          wait(3);
+          until See(you,Gonzo);
+
+          wait(0$0.5);
+          CenterOnUnits(Gonzo);
+
+          Say(Dwayne,'D1-Dw-6');
+          Say(Gonzo,'D1-Gonzo-1');
+
+          CenterOnUnits(Dwayne);
+
+          Say(Dwayne,'D1-Dw-7');
+
+          wait(0$2);
+          Say(Dwayne,'D1-Dw-8');
+          Say(Heike,'D1-H-10');
+
+          wait(0$0.2);
+          Query('QMessage');
+
+          wait(0$0.2);
+          Say(Heike,'D1-H-11');
+          Say(Dwayne,'D1-Dw-9');
+          Say(Gonzo,'D1-Gonzo-2');
+          Say(Heike,'D1-H-12');
+          Say(Dwayne,'D1-Dw-10');
+          Say(Heike,'D1-H-13');
+
+          if not kurt_is_substitute then
+               begin
+                    Say(Kurt,'D1-Ku-3');
+                    Say(Heike,'D1-H-14a');
+               end
+          else
+               begin
+                    Say(Kurt,'D1-Ku_sub-3');
+                    Say(Heike,'D1-H-14b');
+               end;
+
+          InGameOff;
+
+          SetSide(Gonzo,you);
+
+          for i in [Heike,Dwayne,Oswald,Kurt,Gonzo] do
+               ComFree(i);
+
+          //Nature may move freely again
+          for i in FilterAllUnits([f_side,nature]) do
+               ComFree(i);
+
+          wait(0$0.2);
+          SaveForQuickRestart;
+
+          wait(0$1);
+          ChangeMissionObjectives('M1');
+
+          wait(0$1);
+          Query('QEnterExitBuildingsInfo');
+
+          //wait(0$2);
+          //Hint('Explosives');
+     end;

@@ -1,0 +1,54 @@
+begin
+? type grass
+? subtype 4
+ ! contr 140
+ ! all 59
+new
+? inident keriky
+ ! hue -51
+ ! sat 77
+new
+? inident smrcky
+ ! hue -25
+new
+? type terrain
+ ! all 99
+ ! contr 102
+ ! sat 95
+new
+? ident "STree: list-dub"
+ ! contr 110
+ ! all 90
+new
+? ident "STree: parez"
+ ! contr 116
+new
+? ident "STree: ker-rosti"
+ ! contr 120
+new
+? ident "STree: list-kastan"
+ ! contr 133
+new
+? ident "STree: ker-husty"
+ ! contr 124
+ ! add 24 004000
+new
+? ident "STree: list-akat-maly"
+ ! contr 115
+new
+? ident "STree: jehl-smrk-stredni"
+ ! contr 126
+new
+? ident "STree: jehl-smrk-silny"
+ ! contr 115
+new
+? ident "Boulder: ker"
+ ! contr 122
+new
+? ident "STree: jehl-smrk-maly"
+ ! contr 133
+new
+? ident "STree: list-vrba-zluta"
+ ! contr 122
+ ! all 77
+end

@@ -1,0 +1,4053 @@
+
+//This module contains all other events than events linked (directly) to code red or code black
+
+{
+Ways Heike can obtain the documents:
+
+- If you can determine what lab is the archive you can then lure the scientists out of the archive by hurting someone
+in the base (actually all scientists from all labs will run straight to the wounded person). This is perhaps easiest
+done using remote mines. When Heike has entered the archive the scientists won't notice her when they return.
+Furthermore on easy difficulty you can safely enter the archive if the base is in code red or code black (the scientists
+are distracted. On medium difficulty this goes only for code black. On easy and medium you also have a displayed string
+telling you when the archive scientists are distracted.
+You can find the lab by
+* By observing the wandering scientists one can determine which lab is the archive (the lab almost every scientist
+walks to and from) (this is hinted in the dialogue with the poker players in the warehouse).
+* When speaking with the guys at the weapon testing area one can get vague information about the archive's position.
+* When Heike is forced to repair vehicles (happens if she stays long enough inside the factory) the squad leader heads
+directly towards the archive.
+* Picking up the document in the Northern depot and delivering it to Yefibachev causes a soldier from Yefibachev's office
+to be sent to the archive (to archive the document). Just follow the guy.
+* Luring Yakov into a dark corner of the base (see below), force him to tell which building is the archive and then shoot him.
+* Making Yakov collect some documents from the archive (if the base goes into Code Black he will abandon
+the duty for that period giving the player some time before he hands over the documents to Yefibachev thereby revealing that
+something is amiss).
+
+- One of the guys at the weapon testing area is slightly girl crazy (Dmitri) so Heike can talk him into showing her the archive.
+The good thing is that the scientists won't kick Heike out because she is together with Dmitri (who frequently delivers reports
+to the archive). The downside is that he is quite pushy so Heike is ultimately faced with the option of shooting him or let him
+run away. In the first case the gunshot is of course heard and the alarm will be raised. In the latter case Dmitri runs to
+Yefibachev which also causes the hunt on Heike to begin. In both cases one can delay the alarm by causing the base to enter
+Code Black state, that is hurting someone or something inside the base. Think of it as Yefibachev is too preoccupied with the
+Code Black matter to listen to the scientist/Dmitri.
+
+- If the player finds out that Tatiana (the woman who's identity Heike has stolen) had a boyfriend named Yakov (a mechanic) the
+player can ask for him when entering the factory. If he is present you have two options: Tell him that Yefibachev wants him to
+fetch some documents from the archive or lure him away and force him to reveal the location of the archive. The situations not
+mentioned above are if the player lures Yakov away and either makes him follow Heike or spares his life.
+The former allows Heike to enter the archive without the scientists kicking her out but has a risk since Yakov may suddenly
+find his courage and rise the alarm. However he won't if the base is in Code Black.
+The latter is similar to letting Dmitri run.
+}
+
+//If Heike is close to some Russians for a longer period of time they will remember her making it
+//impossible to go under cover.
+Every 0$1+0$0.3 do
+     var times_seen, un;
+     begin
+          times_seen = 0;
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [1,2,3,4] then
+               exit;
+
+          un = IsInUnit(Heike);
+          if un = 0 then
+               un = Heike;
+
+          if FilterAllUnits([[f_side,russians],[f_type,unit_human],[f_dist,un,10]]) > 0 then  //10 is soldier shooting range on flat ground
+               times_seen = times_seen + 1
+          else
+               if times_seen > 0 then
+                    times_seen = times_seen - 1;
+
+          if times_seen >= 3 then
+               begin
+                    ChangeHeikeUndercoverStatus(1);
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//When the player spots the Russian base.
+Every 0$1+0$0.7 do
+     var temp_list;
+     begin
+
+          repeat
+          wait(0$0.3);
+
+          if heike_undercover in [2,3,4] then  //If the player knows what to do he/she might capture a cargo bay before discovering the base
+               exit;
+
+          temp_list = FilterAllUnits([[f_side,russians],[f_see,you],[f_inarea,ru_base_area],[f_type,unit_building]]);
+          if temp_list > 0 then
+               begin
+                    CenterOnUnits(temp_list);
+                    DialogueOn;
+
+                    Say(Dwayne,'D2-Dw-1');
+                    Say(Heike,'D2-H-1');
+
+                    DialogueOff;
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//This is Russian territory so vehicles drive back and forth from time to time. Until Heike infiltrates
+//the base all vehicles are cargo bays. Hereafter some vehicles are war vehicles. Being seen by any
+//of these do not trigger a code red (these traveling units doesn't belong to the base so perhaps
+//they don't consider it as much of a threat as Yefibachev does).
+//Very regrettably I can't get PlayMusicXY working. If I could I would play the sound of a Russian vehicle
+//a few seconds before it appeared thereby warning the player. Instead the player is warned by some hexes
+//ligtning up (area markings) (kinda like an airport runway). The markings are only 1 hex so they should
+//not be visible on the minimap and they will only be shown if the player can see the hexes.
+Every 0$1+0$0.1 do
+     var i, driver_sex, temp_list, k, cargo_bay, path, name;
+     var vehicle, driver, path_east_west, path_west_east, countdown, chosen_path, path_index;
+     begin
+          //Only one vehicle at a time
+          vehicle = 0;
+          driver = 0;
+
+          path_east_west = [[172,90],[168,88],[161,85],[155,84],[149,82],[143,78],[137,74],[121,60],[112,59],[106,65],
+                            [106,74],[77,75],[74,85],[66,85],[52,74],[43,68],[34,63]];
+
+          path_west_east = [];
+          for i in path_east_west do
+               path_west_east = Insert(path_west_east,1,i);
+
+          path_east_west = Delete(path_east_west,1);
+          path_west_east = Delete(path_west_east,1);
+
+          chosen_path = [];
+          path_index = 1;  //which waypoint we are going for
+
+          countdown = Rand(0$10,0$20);
+
+          repeat
+          wait(0$1);
+
+          if IsDead(vehicle) then
+               begin
+                    in_out_russian_units = in_out_russian_units diff vehicle;
+                    vehicle = 0;
+               end;
+
+          if IsDead(driver) then
+               begin
+                    in_out_russian_units = in_out_russian_units diff [driver,vehicle];
+                    driver = 0;
+                    vehicle = 0;
+               end;
+
+          if driver = 0 then
+               begin
+                    if countdown > 0$0 then
+                         begin
+                              countdown = countdown - 0$1;
+                              continue;
+                         end;
+
+                    //Time to spawn a vehicle and driver
+                    driver_sex = false;
+                    name = '';
+                    if heike_undercover in [0,1] then
+                         begin
+                              cargo_bay = true;
+                              driver_sex = sex_female;
+                              name = ' ';  //no name (hidden)
+                         end
+                    else
+                         if Rand(1,2) = 1 then
+                              cargo_bay = true
+                         else
+                              cargo_bay = false;
+
+                    vehicle = CreateRussianVehicle(cargo_bay);
+                    driver = CreateUnitsWithClass(1,class_mechanic,driver_sex,name,russians_alt)[1];
+
+                    path = Rand(1,2);
+                    if path = 1 then
+                         chosen_path = path_east_west
+                    else
+                         chosen_path = path_west_east;
+
+                    if cargo_bay then
+                         if path = 1 then
+                              cargo_bays_origin = Replace(cargo_bays_origin,vehicle,3)
+                         else
+                              cargo_bays_origin = Replace(cargo_bays_origin,vehicle,1);
+
+                    //Make highlighting
+                    if path = 1 then
+                         temp_list = [east1,east2,east3]
+                    else
+                         temp_list = [west1,west2,west3];
+
+                    for k = 4 to 9 do
+                         temp_list = temp_list ^ temp_list[k-3];
+
+                    for k = 1 to temp_list do
+                         begin
+                              if k > 1 then
+                                   SetAreaMapShow(temp_list[k-1],0);
+
+                              if SeeArea(you,temp_list[k]) then
+                                   SetAreaMapShow(temp_list[k],3);
+
+                              wait(0$1);
+                         end;
+                    SetAreaMapShow(temp_list[temp_list+0],0);
+
+                    //Place the units
+                    if path = 1 then
+                         begin
+                              k = in_out_area_east;
+                              SetDir(vehicle,4);
+                         end
+                    else
+                         begin
+                              k = in_out_area_west;
+                              SetDir(vehicle,1);
+                         end;
+
+                    PlaceHumanInUnit(driver,vehicle);
+                    while not PlaceUnitArea(vehicle,k,false) do
+                         wait(0$1);
+
+                    in_out_russian_units = in_out_russian_units ^ [driver,vehicle];
+
+                    //Reset timer
+                    if heike_undercover in [0,1] then
+                         countdown = Rand(0$10,0$20)
+                    else
+                         countdown = Rand(0$20,0$40);
+               end;
+
+          //Control the vehicle and driver
+          //If the vehicle is under attack we expand the distance to the waypoints
+          //to avoid the player being able to block the vehicle.
+          k = false;
+          for i in FilterAllUnits([f_side,you]) do
+               if Attacks(i) in [vehicle,driver] then
+                    begin
+                         k = true;
+                         break;
+                    end;
+
+          if k then
+               i = 6
+          else
+               i = 2;
+
+          if GetDistUnitXY(driver,chosen_path[path_index][1],chosen_path[path_index][2]) <= i then
+               begin
+                    path_index = path_index + 1;
+
+                    if path_index > chosen_path then
+                         begin
+                              //End of the line
+                              path_index = 1;
+
+                              k = IsInUnit(driver);
+                              in_out_russian_units = in_out_russian_units diff driver;
+                              DestroyUnit(driver);
+
+                              if k > 0 then
+                                   begin
+                                        in_out_russian_units = in_out_russian_units diff k;
+                                        DestroyUnit(k);  //vehicle could have been destroyed
+                                   end;
+                              
+                              driver = 0;
+                              vehicle = 0;
+                              continue;
+                         end;
+               end;
+
+          if not IsOk(vehicle) and IsLive(vehicle) then
+               begin
+                    //Repair
+                    ComRepairVehicle(driver,vehicle);
+               end
+          else
+               if IsOk(vehicle) and IsInUnit(driver) <> vehicle then
+                    begin
+                         case GetType(IsInUnit(driver)) of
+                              unit_building: ComExitBuilding(driver);
+                              unit_vehicle: ComExitVehicle(driver);
+                              else
+                                   ComEnterUnit(driver,vehicle);
+                         end;
+                    end
+               else
+                    if IsInUnit(driver) = vehicle and IsOk(vehicle) then  //IsInUnit returns 0 if not inside any unit
+                         begin
+                              ComAgressiveMove(vehicle,chosen_path[path_index][1],chosen_path[path_index][2]);
+                              if path_index + 1 <= chosen_path then
+                                   AddComAgressiveMove(vehicle,chosen_path[path_index+1][1],chosen_path[path_index+1][2]);  //to avoid the vehicle stopping at a waypoint
+                         end
+                    else  //on foot
+                         ComMoveXY(driver,chosen_path[path_index][1],chosen_path[path_index][2]);
+
+          until false;
+     end;
+Function CreateRussianVehicle(cargo_bay_boolean);
+     begin
+          uc_side = russians_alt;
+          uc_nation = nation_russian;
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          vc_chassis = ru_medium_wheeled;
+
+          if cargo_bay_boolean then
+               vc_weapon = ru_cargo_bay
+          else
+               if Rand(1,3) = 1 then
+                    begin
+                         if Rand(1,1+difficulty) = 1 then
+                              vc_weapon = ru_heavy_machine_gun
+                         else vc_weapon = ru_gatling_gun;
+                    end
+               else
+                    vc_weapon = ru_gun;
+
+          result = CreateVehicle;
+     end;
+
+//When player captures a cargo bay.
+//When Heike enters the captured cargo bay.
+Every 0$1+0$0.6 do
+     var temp_unit;
+     var cargo_bay_has_been_captured, old_Heike;
+     begin
+          cargo_bay_has_been_captured = false;
+
+          repeat
+          wait(0$0.5);
+
+          if not cargo_bay_has_been_captured then
+               begin
+                    if IsDead(the_cargo_bay_captured) then
+                         the_cargo_bay_captured = 0;
+
+                    if the_cargo_bay_captured = 0 then
+                         continue;
+
+                    if not IsOk(the_cargo_bay_captured) then
+                         continue;
+
+                    cargo_bay_has_been_captured = true;
+
+                    DialogueOn;
+
+                    Say(Dwayne,'D3-Dw-1');
+                    Say(Heike,'D3-H-1');
+
+                    if IsOk(Kurt) and not kurt_is_substitute then
+                         begin
+                              Say(Kurt,'D3-Ku-1a');
+                              Say(Heike,'D3-H-2a');
+                              Say(Kurt,'D3-Ku-2a');
+                         end
+                    else
+                         begin
+                              Say(Dwayne,'D3-Dw-2b');
+                              Say(Heike,'D3-H-2b');
+
+                              if oswald_is_substitute then
+                                   Say(Oswald,'D3-Os_sub-1b')
+                              else
+                                   Say(Oswald,'D3-Os-1b');
+
+                              //Kurt is substitute
+                              Say(Kurt,'D3-Ku_sub-1b');
+                         end;
+
+                    Say(Heike,'D3-H-3');
+                    Say(Heike,'D3-H-4');
+
+                    DialogueOff;
+
+                    wait(0$0.2);
+                    ChangeMissionObjectives('MAddSabotage');
+
+                    if difficulty < 3 then
+                         start_display_guards_distracted_hint = true;
+
+                    //Objective may already have been completed
+                    if num_sabotaged_cargo_bays >= 3 then
+                         ChangeMissionObjectives('MOutSabotage');
+               end
+          else
+               begin
+                    //We check if Heike has entered any Russian cargo bay rather than the cargo bay saved in
+                    //"the_cargo_bay_captured" because the player could have captured multiple cargo bays.
+                    temp_unit = IsInUnit(Heike);
+                    if temp_unit > 0 and GetType(temp_unit) = unit_vehicle and GetWeapon(temp_unit) = ru_cargo_bay then
+                         begin
+                              //Heike changes to Russian mechanic outfit. There is no function to change a
+                              //character's nation so we have to create a "new" Heike based on the "old".
+                              //If the "old" Heike has laid a remote mine then remove it.
+                              RemoveMineOfUnit(Heike);
+                              
+                              PrepareNewCharacter('Heike');
+                              uc_side = you;
+                              uc_nation = nation_russian;
+                              hc_class = class_mechanic;
+
+                              old_Heike = Heike;
+                              Heike = CreateHuman;
+
+                              hc_importance = 0;  //InitHc does not reset this one and it persists over missions
+                              
+                              CopySkills(old_Heike,Heike);
+
+                              RemoveUnit(old_Heike);
+                              PlaceHumanInUnit(Heike,temp_unit);
+
+                              SetLives(Heike,GetLives(old_Heike));
+
+
+                              DialogueOn;
+
+                              Say(Dwayne,'D4-Dw-1');
+                              Say(Heike,'D4-H-1');
+                              SayNoName(Yakov,'D4-boyfriend-1');
+
+                              if IsOk(Oswald) and not oswald_is_substitute then
+                                   begin
+                                        Say(Oswald,'D4-Os-1a');
+                                        Say(Heike,'D4-H-2');
+                                        Say(Oswald,'D4-Os-2a');
+                                   end
+                              else
+                                   begin
+                                        Say(Dwayne,'D4-Dw-2b');
+                                        Say(Heike,'D4-H-2');
+                                        Say(Dwayne,'D4-Dw-3b');
+                                        Say(Heike,'D4-H-3b');
+                                   end;
+
+                              Say(Dwayne,'D4-Dw-4');
+
+                              DialogueOff;
+
+                              if heike_undercover = 0 then
+                                   ChangeHeikeUndercoverStatus(2)
+                              else  //heike_undercover = 1
+                                   ChangeHeikeUndercoverStatus(3);
+
+                              exit;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//Display strings telling if the Archive Guards (the scientists) are distratced so Heike can safely enter the lab.
+Every 0$1+0$0.5 trigger start_display_guards_distracted_hint do
+     begin
+          repeat
+          wait(0$1);
+
+          DeleteDisplayStrings('#Ar09-ArchiveGuardsDistractedY');
+          DeleteDisplayStrings('#Ar09-ArchiveGuardsDistractedN');
+
+          if ArchiveGuardsDistracted then
+               AddOrUpdateDisplayStrings('#Ar09-ArchiveGuardsDistractedY',[])
+          else
+               AddOrUpdateDisplayStrings('#Ar09-ArchiveGuardsDistractedN',[]);
+
+          until num_documents_stolen = max_num_documents_stealable;
+
+          DeleteDisplayStrings('#Ar09-ArchiveGuardsDistractedY');
+          DeleteDisplayStrings('#Ar09-ArchiveGuardsDistractedN');
+     end;
+//Function which tells if archive scientists are distracted, i.e. will let Heike inside the archive dispite there being
+//scientists in the archive (depends on difficulty).
+Function ArchiveGuardsDistracted;
+     begin
+          result = false;
+
+          case difficulty of
+               1: begin
+                    if ( code_red or code_black ) and heike_undercover = 2 then
+                         result = true;
+               end;
+               2: begin
+                    if code_black and heike_undercover = 2 then
+                         result = true;
+               end;
+               3: begin
+
+               end;
+          end;
+     end;
+
+//If Heike under cover is shot at by or shoots at Russians while inside a war vehicle, her cover
+//is (silently) blown.
+Every 0$1+0$0.4 do
+     var veh, un;
+     begin
+
+          repeat
+          wait(0$0.5);
+
+          if heike_undercover_entered_war_vehicle then  //Heike captured Russian (side 3) war vehicle - an every in module "CodeEvents" will take care of this
+               exit;
+
+          if heike_undercover in [0,1] then
+               continue
+          else
+               if heike_undercover = 4 then
+                    exit;
+
+          veh = IsInUnit(Heike);
+          if veh > 0 and GetType(veh) = unit_vehicle and GetWeapon(veh) <> ru_cargo_bay then
+               begin
+                    //If Heike in war vehicle is shot at (only cargo bays change to DoNotAttack when Heike is under cover)
+                    for un in FilterAllUnits([f_side,russians]) do
+                         if Attacks(un) = veh then
+                              begin
+                                   ChangeHeikeUndercoverStatus(4);
+                                   exit;
+                              end;
+
+                    //If Heike in war vehicle shoots at some Russian
+                    if GetSide(Attacks(veh)) = russians then
+                         begin
+                              ChangeHeikeUndercoverStatus(4);
+                              exit;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//If Heike under cover shoots at external patrols her cover
+//is (silently) blown.
+Every 0$1+0$0.3 do
+     var i, un, temp_list;
+     begin
+
+          repeat
+          wait(0$0.5);
+
+          if heike_undercover = 4 then
+               exit;
+
+          if heike_undercover in [0,1] then
+               continue;
+
+          un = Attacks(Heike);
+          if un > 0 then
+               begin
+                    temp_list = [];
+                    for i in patrols do
+                         temp_list = temp_list ^ i;
+
+                    temp_list = UnitFilter(temp_list,[f_not,[f_inarea,ru_base_area]]);  //If in the base an every in module "CodeEvents" triggers a code black instead
+                    if un in temp_list then
+                         begin
+                              ChangeHeikeUndercoverStatus(4);
+                              exit;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//If Heike under cover doesn't enter the base within some time limit, her cover is indirectly blown
+//because Yefibachev receives intel that a cargo bay has been stolen.
+//This is necessary so the player won't abuse Heike being "immune" to the Russians while under cover
+//to scout.
+Every 0$1+0$0.5 do
+     var val;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover = 4 then
+               exit;
+
+          if heike_undercover in [0,1] then
+               continue;
+
+          wait(1$30);
+
+          if not entrance_guard_dialogue_started and heike_undercover in [2,3] then
+               begin
+                    val = 'a';
+                    if cargo_bays_origin >= the_cargo_bay_captured then
+                         if cargo_bays_origin[the_cargo_bay_captured] = 3 then
+                              val = 'b';
+
+                    DialogueOn;
+                    SayRadio(Yefibachev,'D23-'&val&'-Leader-1');
+                    DialogueOff;
+
+                    ChangeHeikeUndercoverStatus(4);
+               end;
+          
+          exit;
+
+          until false;
+     end;
+
+//Heike in cargo bay arrives at the entrance of the base.
+//We are guaranteed there are soldiers at the base entrance, cf. module "AI" the every controlling soldiers.
+Every 0$1+0$0.1 do
+     var stu, other_guard, temp_list, i, vehicle;
+     begin
+
+          repeat
+          wait(0$0.5);
+
+          if heike_undercover = 0 then
+               continue
+          else
+               if heike_undercover in [1,3,4] then
+                    exit;
+
+          vehicle = IsInUnit(Heike);
+          if GetWeapon(vehicle) = ru_cargo_bay and GetDistUnitXY(Heike,75,64) <= 3 then
+               begin
+                    entrance_guard_dialogue_started = true;
+
+                    temp_list = [];
+                    for i in ai_bunkers[1] do
+                         temp_list = temp_list ^ UnitsInside(i);
+
+                    stu = 0;
+                    other_guard = 0;
+                    for i in temp_list do
+                         if stu = 0 and i = Stanimir then
+                              stu = i
+                         else
+                              if other_guard = 0 then
+                                   other_guard = i
+                              else  //Stu could have been killed (unthinkable :P)
+                                   stu = i;
+
+                    CenterOnUnits(vehicle);
+
+                    DialogueOn;
+                    Say(stu,'D5-GuardStu-1');   //"Halt"
+                    DialogueOff;
+
+                    //Player has to stop the vehicle
+                    i = 0;
+                    repeat
+                         wait(0$0.5);
+
+                         if HasTask(vehicle) then
+                              i = i + 1
+                         else
+                              break;
+
+                         case i of
+                              4: begin
+                                   DialogueOn;
+                                   Say(stu,'D5-a-GuardStu-1');
+                                   DialogueOff;
+                              end;
+                              8: begin
+                                   DialogueOn;
+
+                                   if IsInArea(Heike,ru_base_area) then
+                                        begin
+                                             Say(stu,'D5-aa-GuardStu-1');
+
+                                             if code_black then
+                                                  code_black_renew = true
+                                             else
+                                                  code_black = true;
+                                        end
+                                   else
+                                        begin
+                                             Say(stu,'D5-ab-GuardStu-1');
+                                             code_red = true;
+                                             CreateCodeRedPatrols(difficulty-1);
+                                        end;
+
+                                   ChangeHeikeUndercoverStatus(4);
+
+                                   DialogueOff;
+                                   exit;
+                              end;
+                         end;
+
+                    until false;
+
+                    heike_arrived_to_base_in_this_cargo_bay = vehicle;
+
+                    DialogueOn;
+
+                    Say(stu,'D5-b-GuardStu-1');
+                    DWait(0$1);
+                    Say(stu,'D5-b-GuardStu-2');
+
+                    DWait(0$0.2);
+                    //1 = A. I. Yegorov (WEST), 2 = A. I. Rykov (Does not exist), 3 = Y. E. Yakir (EAST)
+                    if Query('QGoods') <> cargo_bays_origin[vehicle] then  //answer is wrong
+                         begin
+                              Say(stu,'D5-wrong-GuardStu-1');
+                              DWait(0$0.2);
+                              YouLost('HeikeCaptive');
+                              DWait(0$1);
+                         end;
+                    
+                    if GetLives(vehicle) >= 500 then
+                         begin
+                              case heike_parking_spot of
+                                   1: Say(other_guard,'D5-right_a-GuardOther-1a');
+                                   2: Say(other_guard,'D5-right_a-GuardOther-1b');
+                                   3: Say(other_guard,'D5-right_a-GuardOther-1c');
+                              end;
+                         end
+                    else
+                         begin
+                              Say(other_guard,'D5-right_b-GuardOther-1');
+
+                              DWait(0$0.2);
+                              case Query('QGuardTrouble') of
+                                   1: begin
+                                        Say(Heike,'D5-right_b1-H-1');
+
+                                        case heike_parking_spot of
+                                             1: Say(other_guard,'D5-right_b1-GuardOther-1a');
+                                             2: Say(other_guard,'D5-right_b1-GuardOther-1b');
+                                             3: Say(other_guard,'D5-right_b1-GuardOther-1c');
+                                        end;
+                                   end;
+                                   2: begin
+                                        Say(Heike,'D5-right_b2-H-1');
+                                        Say(other_guard,'D5-right_b2-GuardOther-1');
+
+                                        case heike_parking_spot of
+                                             1: Say(other_guard,'D5-right_b2-GuardOther-2a');
+                                             2: Say(other_guard,'D5-right_b2-GuardOther-2b');
+                                             3: Say(other_guard,'D5-right_b2-GuardOther-2c');
+                                        end;
+
+                                        send_guard_from_entrance_to_office = true;
+                                   end;
+                                   3: begin
+                                        Say(Heike,'D5-right_b3-H-1');
+
+                                        case heike_parking_spot of
+                                             1: Say(other_guard,'D5-right_b1-GuardOther-1a');
+                                             2: Say(other_guard,'D5-right_b1-GuardOther-1b');
+                                             3: Say(other_guard,'D5-right_b1-GuardOther-1c');
+                                        end;
+                                   end;
+                              end;
+                         end;
+
+                    DialogueOff;
+
+                    entrance_guard_dialogue_played = true;
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//Every taking care of managing if one of the entrance guards goes to Yefibachev's office to tell him
+//that Heike was attacked one her way here (cargo bay was damaged).
+//If the base goes in code red or code black the guard forgets all about this and the every terminates.
+Every 0$1+0$0.2 do
+     var i;
+     var sol;
+     begin
+          sol = 0;  //temporary storage of the chosen soldier
+
+          repeat
+          wait(0$1);
+
+          if not send_guard_from_entrance_to_office then
+               continue;
+
+          if code_red or code_black then
+               begin
+                    entrance_guard_to_office = 0;
+                    exit;
+               end;
+
+          if entrance_guard_to_office in ai_heal_these_humans[1] or not IsOk(leader_office) then
+               begin
+                    if entrance_guard_to_office > 0 then
+                         begin
+                              sol = entrance_guard_to_office;
+                              entrance_guard_to_office = 0;
+                         end;
+
+                    continue;
+               end;
+
+          if sol > 0 then
+               begin
+                    entrance_guard_to_office = sol;
+                    sol = 0;
+               end;
+
+          //Pick a soldier from one of the breastworks.
+          if entrance_guard_to_office = 0 then
+               begin
+                    for i in ai_bunkers[1] do
+                         if UnitsInside(i) > 0 then
+                              begin
+                                   entrance_guard_to_office = UnitsInside(i)[1];
+                                   break;
+                              end;
+
+                    if entrance_guard_to_office = 0 then
+                         continue;
+               end;
+
+          if IsInUnit(entrance_guard_to_office) <> leader_office then
+               begin
+                    case GetType(IsInUnit(entrance_guard_to_office)) of
+                         unit_building: ComExitBuilding(entrance_guard_to_office);
+                         unit_vehicle: ComExitVehicle(entrance_guard_to_office);
+                         else
+                              ComEnterUnit(entrance_guard_to_office,leader_office);
+                    end;
+               end
+          else
+               begin
+                    //Stay in the office for a short while.
+                    for i = 1 to 5 do
+                         begin
+                              if code_red or code_black then
+                                   begin
+                                        entrance_guard_to_office = 0;
+                                        exit;
+                                   end;
+
+                              wait(0$1);
+                         end;
+
+                    entrance_guard_to_office = 0;
+
+                    //After a short while make a non-code-red patrol
+                    wait(0$5);
+
+                    if not code_red and not code_black then
+                         CreateCodeRedPatrols([0,1,1][difficulty]);
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//If Heike drives around the base (in the cargo bay she arrived in) for some time the
+//internal patrolling guards address her.
+//If Heike parks any cargo bay wrongly and the internal patrolling guards see her she is
+//told to park it properly.
+//If Heike wanders around the base (or drives in another cargo bay than the one she arrived in)
+//and the internal patroling guards see her, she is told to get back to work. They are losing
+//patience little by little, though.
+Every 0$1+0$0.3 do
+     var i, val;
+     var arrival_cargo_bay_parked, before_parking_seen_tick, before_parking_dialogue_num, cargo_bay;
+     var pats_know_about_boyfriend, times_heike_seen_after_parking, reprimand_tick;
+     begin
+          arrival_cargo_bay_parked = false;  //has Heike parked the cargo bay she arrived in?
+          before_parking_seen_tick = 0;  //the time at which the patrols sees Heike the first time after her arrival (before she parks the cargo bay)
+          before_parking_dialogue_num = 0;  //keeps track of which dialogue is next (Heike has not parked the cargo bay)
+          cargo_bay = 0;  //identifier of the cargo bay Heike is inside at the moment
+          pats_know_about_boyfriend = false;  //If the guards "know" Heike is Yakov's girlfriend
+          times_heike_seen_after_parking = 0;  //How many times the guards have seen Heike (after she has parked the cargo bay she arrived in)
+          reprimand_tick = 0;  //The tick last time guards gave Heike a reprimand.
+
+          repeat
+          wait(0$0.5);
+
+          if heike_undercover in [3,4] or IsDead(bad_pat) or IsDead(good_pat) or terminate_internal_patrol then
+               exit;
+
+          if heike_arrived_to_base_in_this_cargo_bay = 0 then
+               continue;
+
+          until true;
+
+          cargo_bay = heike_arrived_to_base_in_this_cargo_bay;
+
+          repeat
+          if cargo_bay = 0 then
+               begin
+                    val = IsInUnit(Heike);
+                    if val > 0 and GetType(val) = unit_vehicle and GetWeapon(val) = ru_cargo_bay then
+                         cargo_bay = val;
+               end;
+
+          wait(0$0.5);
+
+          if not arrival_cargo_bay_parked then
+               if IsInUnit(Heike) = 0 then
+                    arrival_cargo_bay_parked = true;
+
+          if heike_undercover in [3,4] or IsDead(bad_pat) or IsDead(good_pat) or terminate_internal_patrol then
+               exit;
+
+          if halt_internal_patrol = 1 or code_black then
+               continue;
+
+          //Heike exits cargo bay - check if guards are near and cargo bay isn't parked correctly
+          if IsInUnit(Heike) = 0 and cargo_bay > 0 then
+               begin
+                    if not IsInArea(cargo_bay,cargo_bay_parking) and GuardsCanSeeHeike then
+                         begin
+                              dont_park_cargo_bay = cargo_bay;
+                              halt_internal_patrol = 2;
+
+                              ComTurnUnit(good_pat,Heike);
+                              ComturnUnit(bad_pat,Heike);
+                              wait(25);  //wait for turn
+
+                              CenterOnUnits([good_pat,bad_pat]);
+
+                              DialogueOn;
+
+                              Say(bad_pat,'D10-PatBad-1');
+                              Say(Heike,'D10-H-1');
+                              Say(bad_pat,'D10-PatBad-2');
+
+                              if pats_know_about_boyfriend then
+                                   Say(good_pat,'D10-PatGood-1');
+
+                              DialogueOff;
+
+                              //Player must enter the cargo bay again
+                              //Guards to towards each other (talking)
+                              ComTurnUnit(good_pat,bad_pat);
+                              ComTurnUnit(bad_pat,good_pat);
+
+                              val = GetDistUnits(Heike,cargo_bay);
+                              i = 0;
+                              repeat
+                                   wait(0$0.5);
+                                   i = i + 1;
+
+                                   if halt_internal_patrol = 1 or code_black then
+                                        break;
+
+                                   if IsInUnit(Heike) = cargo_bay then
+                                        break;
+
+                                   if GetDistUnits(Heike,cargo_bay) >= val + 2 then
+                                        begin
+                                             ComTurnUnit(bad_pat,Heike);
+                                             wait(3);
+
+                                             DialogueOn;
+
+                                             Say(bad_pat,'D10-PatBad-3');
+                                             Say(bad_pat,'D10-PatBad-4');
+
+                                             DWait(0$0.5);
+                                             YouLost('HeikeCaptive');
+
+                                             DialogueOff;
+                                        end;
+
+                                   if i = 10 then
+                                        begin
+                                             ComTurnUnit(bad_pat,Heike);
+                                             wait(3);
+
+                                             DialogueOn;
+
+                                             Say(bad_pat,'D10-PatBad-5');
+
+                                             DialogueOff;
+
+                                             ComTurnUnit(bad_pat,good_pat);
+                                        end;
+
+                                   if i = 20 then
+                                        begin
+                                             ComTurnUnit(bad_pat,Heike);
+                                             wait(3);
+
+                                             DialogueOn;
+
+                                             Say(bad_pat,'D10-PatBad-6');
+
+                                             DWait(0$0.5);
+                                             YouLost('HeikeCaptive');
+
+                                             DialogueOff;
+                                        end;
+
+                              until false;
+
+                              if halt_internal_patrol = 2 then
+                                   halt_internal_patrol = 0;
+
+                              dont_park_cargo_bay = 0;
+                              cargo_bay = 0;
+
+                              reprimand_tick = tick;
+
+                              continue;
+                         end
+                    else
+                         cargo_bay = 0;
+               end;
+
+          if not arrival_cargo_bay_parked then
+               begin
+                    if GuardsCanSeeHeike then
+                         begin
+                              if before_parking_seen_tick = 0 then
+                                   begin
+                                        before_parking_seen_tick = tick;
+                                        continue;
+                                   end;
+
+                              if tick - before_parking_seen_tick >= 0$25 and before_parking_dialogue_num = 0 then
+                                   begin
+                                        before_parking_dialogue_num = 1;
+                                        before_parking_seen_tick = tick;
+                                        reprimand_tick = tick;
+
+                                        halt_internal_patrol = 2;
+
+                                        ComTurnUnit(good_pat,Heike);
+                                        ComturnUnit(bad_pat,Heike);
+                                        wait(25);  //wait for turn
+
+                                        CenterOnUnits([good_pat,bad_pat]);
+
+                                        DialogueOn;
+
+                                        Say(good_pat,'D9-PatGood-1');
+
+                                        DWait(0$0.3);
+                                        case Query('QPatrolHeikeInVehicle') of
+                                             1: begin
+                                                  Say(Heike,'D9-1-H-1');
+                                                  Say(good_pat,'D9-1-PatGood-1');
+                                                  Say(Heike,'D9-1-H-2');
+                                                  Say(bad_pat,'D9-1-PatBad-1');
+                                                  Say(Heike,'D9-1-H-3');
+
+                                                  DWait(0$0.8);
+                                                  Say(good_pat,'D9-1-PatGood-2');
+                                                  Say(good_pat,'D9-1-PatGood-3');
+                                                  Say(Heike,'D9-1-H-4');
+                                                  Say(good_pat,'D9-1-PatGood-4');
+
+                                                  boyfriend_identified = true;
+                                                  pats_know_about_boyfriend = true;
+                                             end;
+                                             2: begin
+                                                  case heike_parking_spot of
+                                                       1: Say(Heike,'D9-2-H-1a');
+                                                       2: Say(Heike,'D9-2-H-1b');
+                                                       3: Say(Heike,'D9-2-H-1c');
+                                                  end;
+
+                                                  Say(good_pat,'D9-2-PatGood-1');
+                                                  Say(Heike,'D9-2-H-2');
+                                             end;
+                                             3: begin
+                                                  Say(Heike,'D9-3-H-1');
+                                                  Say(good_pat,'D9-3-PatGood-1');
+                                                  Say(Heike,'D9-3-H-2');
+                                             end;
+                                        end;
+
+                                        DialogueOff;
+
+                                        if halt_internal_patrol = 2 then
+                                             halt_internal_patrol = 0;
+
+                                        continue;
+                                   end;
+
+                              if tick - before_parking_seen_tick >= 1$0 and before_parking_dialogue_num = 1 then
+                                   begin
+                                        halt_internal_patrol = 2;
+
+                                        ComTurnUnit(good_pat,Heike);
+                                        ComturnUnit(bad_pat,Heike);
+                                        wait(25);  //wait for turn
+
+                                        CenterOnUnits([good_pat,bad_pat]);
+
+                                        DialogueOn;
+
+                                        Say(bad_pat,'D9-PatBad-1');
+
+                                        DWait(0$0.5);
+                                        YouLost('HeikeCaptive');
+
+                                        DialogueOff;
+
+                                        if halt_internal_patrol = 2 then
+                                             halt_internal_patrol = 0;
+                                   end;
+                         end;
+               end
+          else
+               begin
+                    //If Heike is repairing vehicles for the intel party (see somewhere below) don't scold her.
+                    if intel_party_vehicles > 0 and not intel_party_leave then
+                         reprimand_tick = tick;
+
+                    if GuardsCanSeeHeike and tick - reprimand_tick >= 0$30 and tick - heike_last_exit_building_tick >= reenter_building_cooldown + 0$3 then
+                         begin
+                              if times_heike_seen_after_parking > 0 then
+                                   begin
+                                        halt_internal_patrol = 2;
+
+                                        ComTurnUnit(good_pat,Heike);
+                                        ComturnUnit(bad_pat,Heike);
+                                        wait(25);  //wait for turn
+                                   end;
+
+                              case times_heike_seen_after_parking of
+                                   0: begin
+                                        DialogueOn;
+
+                                        if Rand(1,2) = 1 then
+                                             begin
+                                                  Say(bad_pat,'D19-a-PatBad-1');
+                                                  Say(good_pat,'D19-a-PatGood-1');
+                                             end
+                                        else
+                                             begin
+                                                  Say(bad_pat,'D19-b-PatBad-1');
+                                                  Say(good_pat,'D19-b-PatGood-1');
+                                             end;
+
+                                        DialogueOff;
+                                   end;
+                                   1: begin
+                                        CenterOnUnits([good_pat,bad_pat]);
+
+                                        DialogueOn;
+
+                                        if Rand(1,2) = 1 then
+                                             Say(bad_pat,'D19-c-PatBad-1')
+                                        else
+                                             Say(bad_pat,'D19-d-PatBad-1');
+
+                                        DialogueOff;
+                                   end;
+                                   2: begin
+                                        CenterOnUnits([good_pat,bad_pat]);
+
+                                        DialogueOn;
+
+                                        if Rand(1,2) = 1 then
+                                             Say(bad_pat,'D19-e-PatBad-1')
+                                        else
+                                             Say(bad_pat,'D19-f-PatBad-1');
+
+                                        DialogueOff;
+                                   end;
+                                   3: begin
+                                        CenterOnUnits([good_pat,bad_pat]);
+
+                                        DialogueOn;
+
+                                        Say(bad_pat,'D19-g-PatBad-1');
+
+                                        DWait(0$0.5);
+                                        YouLost('HeikeCaptive');
+
+                                        DialogueOff;
+                                   end;
+                              end;
+
+                              times_heike_seen_after_parking = times_heike_seen_after_parking + 1;
+                              reprimand_tick = tick;
+
+                              if halt_internal_patrol = 2 then
+                                   halt_internal_patrol = 0;
+                         end;
+               end;
+
+          until false;
+     end;
+Function GuardsCanSeeHeike;
+     var i;
+     begin
+          //Check if the guards can see Heike by checking if Heike can see them.
+          //On flat ground units can see approximately 13 hexes distance - we take less
+          //for safety (and guards probably don't take notice of Heike if she is very far
+          //away anyway).
+          result = false;
+          for i in [good_pat,bad_pat] do
+               if See(you,i) and GetDistUnits(i,Heike) <= [8,9,10][difficulty] then  //GetDistUnits return 99999 if one of the units aren't placed on the map (Heike inside Russian building - see every below)
+                    begin
+                         result = true;
+                         exit;
+                    end;
+     end;
+
+//The guys at the gun testing area.
+//The used hex [59,13] must be the hex where the guys gather, cf. module "AI" the
+//every controlling the guys.
+Every 0$1+0$0.6 do
+     var i, max_dist, min_dist, temp_list, un;
+     var first_time;
+     begin
+          first_time = true;  //If it's the first time Heike wanders by
+
+          repeat
+          wait(0$1);
+
+          if UnitFilter([Dmitri,Sergei,Yann],[f_alive]) < 3 or heike_undercover in [3,4] then
+               exit;
+
+          if UnitFilter([Dmitri,Sergei,Yann],[[f_ok],[f_distxy,59,13,2]]) < 3 or code_black or heike_undercover in [0,1] or not Yakov_luring in [0,4] or not IsOk(the_archive) then
+               continue;
+
+          temp_list = [];
+          for i in patrols do
+               temp_list = temp_list ^ i;
+          if (temp_list diff [Dmitri,Sergei,Yann]) < temp_list then
+               continue;
+
+          if first_time then
+               begin
+                    if IsInUnit(Heike) = 0 and GetDistUnitXY(Heike,59,13) <= 8 then
+                         begin
+                              first_time = false;
+
+                              DialogueOn;
+
+                              Say(Dmitri,'D11-Dmitri-1');
+                              Say(Sergei,'D11-Sergei-1');
+
+                              DialogueOff;
+                         end;
+               end
+          else
+               begin
+                    if IsInUnit(Heike) = 0 and GetDistUnitXY(Heike,59,13) <= 3 then
+                         begin
+                              F_InGameOn;
+
+                              ComTurnXY(Heike,59,13);
+                              for i in [Dmitri,Sergei,Yann] do
+                                   ComTurnUnit(i,Heike);
+
+                              wait(0$0.5);
+                              CenterOnXY(59,13);
+                              DialogueOn;
+
+                              Say(Dmitri,'D11-Dmitri-2');
+                              Say(Heike,'D11-H-1');
+                              Say(Dmitri,'D11-Dmitri-3');
+
+                              dwait(0$0.3);
+                              case Query('QShootingGalleryName') of
+                                   1: begin
+                                        Say(Heike,'D11-1-H-1');
+                                        Say(Yann,'D11-1-SolOtherShooting-1');
+                                        Say(Dmitri,'D11-1-Dmitri-1');
+                                        Say(Yann,'D11-1-SolOtherShooting-2');
+                                        Say(Sergei,'D11-1-Sergei-1');
+                                        Say(Dmitri,'D11-1-Dmitri-2');
+                                        Say(Yann,'D11-1-SolOtherShooting-3');
+                                        Say(Heike,'D11-1-H-2');
+                                        Say(Dmitri,'D11-1-Dmitri-3');
+
+                                        boyfriend_identified = true;
+
+                                        DialogueOff;
+                                        F_InGameOff;
+
+                                        for i in [Yann,Dmitri,Sergei] do
+                                             ComTurnXY(i,59,13);
+
+                                        exit;
+                                   end;
+                                   2: begin
+                                        Say(Heike,'D11-2-H-1');
+                                        Say(Sergei,'D11-2-Sergei-1');
+                                        Say(Dmitri,'D11-2-Dmitri-1');
+                                        Say(Heike,'D11-2-H-2');
+                                        Say(Dmitri,'D11-2-Dmitri-2');
+
+                                        //Continues below
+                                   end;
+                                   3: begin
+                                        Say(Heike,'D11-3-H-1');
+                                        Say(Dmitri,'D11-3-Dmitri-1');
+
+                                        dwait(0$0.3);
+                                        if Query('QShootingGalleryCompetition') = 2 then
+                                             begin
+                                                  Say(Heike,'D11-32-H1');
+                                                  Say(Sergei,'D11-32-Sergei-1');
+
+                                                  DialogueOff;
+                                                  F_InGameOff;
+
+                                                  exit;
+                                             end;
+
+                                        Say(Heike,'D11-31-H-1');
+                                        Say(Yann,'D11-31-SolOtherShooting-1');
+                                        Say(Dmitri,'D11-31-Dmitri-1');
+
+                                        //Shooting time
+                                        CenterOnXY(63,11);
+                                        DialogueOff;
+                                        ExclusiveOn;
+                                        
+                                        ComAttackPlace(Dmitri,65,14);
+                                        repeat
+                                        wait(0$0.2);
+                                        until GetResourceAmountXY(65,14) = 0;
+
+                                        ComAttackPlace(Dmitri,67,14);
+                                        repeat
+                                        wait(0$0.2);
+                                        until GetResourceAmountXY(67,14) = 0;
+
+                                        wait(0$0.5);
+                                        ComTurnUnit(Dmitri,Heike);
+                                        wait(0$0.5);
+
+                                        //We simulate Heike only uses one shot per barrel
+                                        ComAttackPlace(Heike,61,7);
+                                        repeat
+                                        wait(1);
+                                        until Attacks(Heike) = -1; //aims at barrels
+                                        wait(40);  //wait for the shot
+                                        ChangeResourceAmountXY(61,7,0);
+                                        MineExplosion(61,7,0);
+
+                                        wait(0$0.5);
+                                        ComAttackPlace(Heike,62,6);
+                                        repeat
+                                        wait(1);
+                                        until Attacks(Heike) = -1;
+                                        wait(40);
+                                        ChangeResourceAmountXY(62,6,0);
+                                        MineExplosion(62,6,0);
+
+                                        wait(0$0.5);
+                                        ComTurnUnit(Heike,Dmitri);
+                                        wait(0$1.5);  //wait for turning and explosion
+
+                                        //Dialogue goes on
+                                        DialogueOn;
+
+                                        Say(Sergei,'D11-31-Sergei-1');
+                                        Say(Dmitri,'D11-31-Dmitri-2');
+                                        Say(Heike,'D11-31-H-2');
+                                        Say(Dmitri,'D11-31-Dmitri-3');
+
+                                        //Continues below
+                                   end;
+                              end;
+                              
+                              Say(Dmitri,'D11-2-Dmitri-3');
+
+                              temp_list = [];
+                              for i in ai_labs[1] do
+                                   temp_list = temp_list ^ GetDistUnitXY(i,59,13);
+                              temp_list = SortListByListAsc(ai_labs[1],temp_list);
+
+                              max_dist = GetDistUnitXY(temp_list[temp_list+0],59,13);  //We know there is at least 1 lab - the archive
+                              min_dist = GetDistUnitXY(temp_list[1],59,13);  
+
+                              temp_list = [];
+                              i = GetDistUnitXY(the_archive,59,13);
+                              if i < max_dist then
+                                   temp_list = temp_list ^ 1;
+                              if i > min_dist then
+                                   temp_list = temp_list ^ 2;
+
+                              if temp_list[Rand(1,temp_list)] = 1 then
+                                   Say(Sergei,'D11-2-Sergei-2a')  //Archive is not the lab furthest away
+                              else
+                                   Say(Sergei,'D11-2-Sergei-2b');  //Archive is not the closest lab
+
+                              Say(Dmitri,'D11-2-Dmitri-4');
+
+                              DWait(0$0.3);
+                              if Query('QShootingGalleryOpportunity') = 2 then
+                                   begin
+                                        Say(Heike,'D11-22-H-1');
+                                        Say(Sergei,'D11-22-Sergei-1');
+                                        Say(Dmitri,'D11-22-Dmitri-1');
+                                        Say(Yann,'D11-22-SolOtherShooting-1');
+
+                                        DialogueOff;
+                                        ExclusiveOn;
+
+                                        for i in [Yann,Dmitri,Sergei] do
+                                             ComTurnXY(i,59,13);
+
+                                        //Get Heike out of the weapon testing area
+                                        i = 0;
+                                        repeat
+                                        ComMoveXY(Heike,56,15);
+                                        wait(0$0.5);
+                                        i = i + 1;
+                                        until not IsInArea(Heike,weapon_test_area) or i >= 10;
+
+                                        F_InGameOff;
+
+                                        exit;
+                                   end;
+
+                              Say(Heike,'D11-21-H-1');
+                              Say(Dmitri,'D11-21-Dmitri-1');
+                              Say(Heike,'D11-21-H-2');
+
+                              //Simultanious whistling
+                              async;
+                              Say(Sergei,'D11-21-Sergei-1');
+                              sync;
+                              SayNoFace(Yann,'D11-21-SolOtherShooting-1');
+
+                              Say(Dmitri,'D11-21-Dmitri-2');
+
+                              DialogueOff;
+                              ExclusiveOn;
+
+                              //Going to the archive.
+                              repeat
+                              CenterOnUnits(Heike);
+
+                              ComEnterUnit(Dmitri,the_archive);
+                              i = AI_InvertDirection(GetDir(Dmitri));
+                              ComMoveXY(Heike,ShiftX(GetX(Dmitri),i,1),ShiftY(GetY(Dmitri),i,1));  //follow Dmitri
+
+                              //If the archive is full then make a sci exit (not Barovnin)
+                              if GetDistUnits(Dmitri,the_archive) <= 6 then
+                                   begin
+                                        temp_list = UnitsInside(the_archive);
+                                        if temp_list = 6 then
+                                             begin
+                                                  un = 0;
+                                                  for i in temp_list do
+                                                       if i <> Barovnin then
+                                                            begin
+                                                                 un = i;
+                                                                 break;
+                                                            end;
+
+                                                  ComExitBuilding(un);
+                                                  wait(3);  //for time shifting - the ordinary controlling code will make the unit enter again
+                                             end;
+                                   end;
+
+                              wait(0$1);
+
+                              until IsInUnit(Dmitri) = the_archive;
+
+                              for i in [Yann,Sergei] do
+                                   ComTurnXY(i,59,13);
+
+                              //Simulate Heike going inside (cf. Every below taking care of this normally)
+                              player_units_in_russian_buildings = player_units_in_russian_buildings ^ [[Heike,the_archive]];
+                              RemoveUnit(Heike);
+                              PlaceSeeing(GetX(the_archive),GetY(the_archive),you,-7);
+
+                              wait(3);
+                              DialogueOn;
+
+                              Say(Dmitri,'D11-21-Dmitri-3');
+                              Say(Heike,'D11-21-H-3');
+                              Say(Dmitri,'D11-21-Dmitri-4');
+                              Say(Heike,'D11-21-H-4');
+                              Say(Dmitri,'D11-21-Dmitri-5');
+                              Say(Heike,'D11-21-H-5');
+                              Say(Dmitri,'D11-21-Dmitri-6');
+
+                              dwait(0$0.3);
+                              if Query('QShootingGalleryKill') = 1 then  //Kill him
+                                   begin
+                                        RemoveHumanFromVariables(1,Dmitri,true);
+                                        DestroyUnit(Dmitri);  //If we KillUnit he will exit the building and die outside
+
+                                        SayEffect('D11-211-Effect-1');
+                                        dwait(0$1);
+                                        temp_list = UnitsInside(the_archive);
+                                        if Barovnin in temp_list then
+                                             Say(Barovnin,'D11-211-Doc-1')
+                                        else
+                                             if temp_list > 0 then
+                                                  if GetSex(temp_list[1]) = sex_male then
+                                                       Say(temp_list[1],'D11-211-SciM-1')
+                                                  else
+                                                       Say(temp_list[1],'D11-211-SciF-1');
+
+                                        archive_found = true;
+
+                                        DialogueOff;
+                                        F_InGameOff;
+
+                                        if temp_list > 0 then
+                                             begin
+                                                  wait(0$5);
+
+                                                  DialogueOn;
+
+                                                  if Barovnin in temp_list then
+                                                       begin
+                                                            Say(Barovnin,'D11-211-Doc-2');
+                                                            temp_list = Replace(temp_list,1,Barovnin);
+                                                       end
+                                                  else
+                                                       if GetSex(temp_list[1]) = sex_male then
+                                                            Say(temp_list[1],'D11-211-SciM-2')
+                                                       else
+                                                            Say(temp_list[1],'D11-211-SciF-2');
+
+                                                  DialogueOff;
+
+                                                  repeat
+                                                  wait(0$2);
+                                                  until not code_black;
+
+                                                  if IsDead(temp_list[1]) then
+                                                       exit;
+
+                                                  if heike_undercover <> 4 then
+                                                       begin
+                                                            DialogueOn;
+                                                            SayRadio(Yefibachev,'D7-Leader-2b');
+                                                            DialogueOff;
+
+                                                            ChangeHeikeUndercoverStatus(4);
+                                                       end;
+
+                                                  code_black = true;
+                                             end;
+
+                                        exit;
+                                   end;
+
+                              //Heike let's Dmitri go
+                              Say(Heike,'D11-212-H-1');
+                              Say(Dmitri,'D11-212-Dmitri-1');
+
+                              archive_found = true;
+                              except_Dmitri = true;
+
+                              DialogueOff;
+                              F_InGameOff;
+
+
+                              //Dmitri runs for Yefibachev's office
+                              repeat
+                              wait(0$1);
+
+                              if IsDead(Dmitri) then
+                                   exit;
+
+                              un = IsInUnit(Dmitri);
+                              if un = leader_office then
+                                   break
+                              else
+                                   if un > 0 then
+                                        begin
+                                             case GetType(un) of
+                                                  unit_vehicle: ComExitVehicle(Dmitri);
+                                                  unit_building: ComExitBuilding(Dmitri);
+                                             end;
+
+                                             continue;
+                                        end;
+
+                              if IsOk(leader_office) then
+                                   ComEnterUnit(Dmitri,leader_office)
+                              else
+                                   begin
+                                        if GetDistUnitXY(Dmitri,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) <= 3 then
+                                             break;
+
+                                        ComMoveXY(Dmitri,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                                   end;
+
+                              //Make space for the guy in the barracs
+                              if GetDistUnits(Dmitri,leader_office) <= 4 then
+                                   begin
+                                        temp_list = UnitsInside(leader_office);
+                                        if temp_list = 6 then
+                                             begin
+                                                  un = 0;
+                                                  for i in temp_list do
+                                                       if i <> Yefibachev then
+                                                            begin
+                                                                 un = i;
+                                                                 break;
+                                                            end;
+
+                                                  ComExitBuilding(un);
+                                                  wait(3);  //for time shifting - the ordinary controlling code will make the unit enter again
+                                             end;
+                                   end;
+
+                              until false;
+
+                              repeat
+                              wait(0$2);
+                              until not code_black;
+
+                              if IsDead(Dmitri) then
+                                   exit;
+
+                              if heike_undercover <> 4 then
+                                   begin
+                                        DialogueOn;
+                                        SayRadio(Yefibachev,'D7-Leader-2b');
+                                        DialogueOff;
+
+                                        ChangeHeikeUndercoverStatus(4);
+                                   end;
+
+                              code_black = true;
+                              except_Dmitri = false;
+
+                              exit;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//Heike is not allowed to enter the weapon testing area. This is mainly because the player can pick up the oil barrels with a cargo bay
+//and spread caos with them inside the base (blocking stuff, blowing them up etc.)
+Every 0$1.1 do
+     var count;
+     begin
+          count = 0;
+
+          repeat
+          wait(0$0.5);
+
+          if heike_undercover in [3,4] then
+               exit;
+
+          if IsInArea(Heike,weapon_test_area) then
+               begin
+                    DialogueOn;
+
+                    case count of
+                         0: begin
+                              Say(Dmitri,'D24-Dmitri-1');
+                              count = count + 1;
+                         end;
+                         1: begin
+                              Say(Dmitri,'D24-Dmitri-2');
+                              count = count + 1;
+                              ChangeHeikeUndercoverStatus(4);
+                              code_black = true;
+                         end;
+                    end;
+
+                    DialogueOff;
+
+                    case count of
+                         1: wait(0$2);
+                         2: exit;
+                    end;
+               end;
+
+          until false;
+     end;
+
+//If Heike stays inside the workshop for a longer period of time an intel party shows up
+//in the base. They need their vehicles repaired and guess who gets the job...
+Every 0$1+0$0.9 do
+     var i, val, temp_list, k, temp_list_2, all_soldiers;
+     var timer, f_sol, other_sols, heike_times_wander_away, heike_times_enter_vehicle, heike_wander_away_cooldown;
+     var heike_enter_vehicle_cooldown, attack_tolerance;
+     begin
+          timer = 0$22;
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [3,4] or IsDead(Yefibachev) or IsDead(Natalya) or (ai_soldiers[1] diff [Stanimir,Yefibachev,good_pat,bad_pat,Dmitri,Sergei,Yann,poker_sol]) <= 4 then
+               exit;
+
+          if HeikeInWorkshop and heike_undercover = 2 and not code_red and not code_black and Yakov_luring in [0,4] and IsInUnit(Yefibachev) = leader_office then
+               timer = timer - 0$1
+          else
+               timer = 0$15;  //reset
+
+          until timer <= 0$0;
+
+          //Pick a soldier from the armoury or the barracks to be the messenger
+          val = 0;
+          for i in ai_armouries[1] do
+               begin
+                    temp_list = UnitsInside(i);
+                    for k in temp_list do
+                         if not k in [Stanimir,Yefibachev,good_pat,bad_pat,Dmitri,Sergei,Yann,poker_sol] then
+                              begin
+                                   val = k;
+                                   break;
+                              end;
+
+                    if val > 0 then
+                         break;
+               end;
+
+          //If no soldier could be found inside the armoury or barracks then pick some from the outside
+          //(could just have been code red/black and units haven't entered buildings yet).
+          if val = 0 then
+               begin
+                    for i in ai_soldiers[1] do
+                         if not i in [Stanimir,Yefibachev,good_pat,bad_pat,Dmitri,Sergei,Yann,poker_sol] then
+                              begin
+                                   val = i;
+                                   break;
+                              end;
+
+                    if val = 0 then  //should not happen
+                         exit;
+               end;
+
+          workshop_messenger = val;
+
+          //Move the soldier to the workshop
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [3,4] or IsDead(Yefibachev) or IsDead(Natalya) then
+               begin
+                    workshop_messenger = 0;
+                    exit;
+               end;
+
+          if not ( HeikeInWorkshop and heike_undercover = 2 and not code_red and not code_black and Yakov_luring in [0,4] and IsInUnit(Yefibachev) = leader_office ) then
+               begin
+                    workshop_messenger = 0;
+                    exit;
+               end;
+
+          if IsDead(workshop_messenger) then
+               begin
+                    workshop_messenger = 0;
+                    exit;
+               end;
+
+          if workshop_messenger in ai_heal_these_humans[1] then
+               continue;
+
+          k = IsInUnit(workshop_messenger);
+          if k in ai_facts[1] then
+               break;
+
+          case GetType(k) of
+               unit_vehicle: ComExitVehicle(workshop_messenger);
+               unit_building: ComExitBuilding(workshop_messenger);
+               else
+                    if ai_facts[1] > 0 then  //Workshop must be OK - else Heike wouldn't be inside, but extra check anyway
+                         begin
+                              //Get a mechanic out of the workshop if it's full
+                              if GetDistUnits(workshop_messenger,ai_facts[1][1]) <= 5 then
+                                   begin
+                                        temp_list = UnitsInside(ai_facts[1][1]);
+                                        if temp_list = 6 then
+                                             begin
+                                                  k = 0;
+                                                  for i in temp_list do
+                                                       if i <> Natalya then
+                                                            begin
+                                                                 k = i;
+                                                                 break;
+                                                            end;
+
+                                                  ComExitBuilding(k);
+                                                  wait(3);  //for time shifting - the ordinary controlling code will make the unit enter again
+                                             end;
+                                   end;
+
+                              ComEnterUnit(workshop_messenger,ai_facts[1][1]);
+                         end;
+          end;
+
+          until false;
+
+          CenterOnUnits(ai_facts[1][1]);
+          DialogueOn;
+
+          if GetSex(workshop_messenger) = sex_male then
+               Say(workshop_messenger,'D14-SolM1-1')
+          else
+               Say(workshop_messenger,'D14-SolF1-1');
+
+          Say(Natalya,'D14-Natalya-1');
+
+          if GetSex(workshop_messenger) = sex_male then
+               Say(workshop_messenger,'D14-SolM1-2')
+          else
+               Say(workshop_messenger,'D14-SolF1-2');
+
+          Say(Natalya,'D14-Natalya-2');
+
+          DialogueOff;
+
+          //Spawn the intel party
+          for i = 1 to 3 do
+               begin
+                    val = CreateRussianVehicle(false);
+
+                    SetLives(val,Rand(700,900));
+                    SetDir(val,Rand(0,5));
+                    PlaceUnitXYR(val,59,43,5,false);
+
+                    DoNotAttack(you,val);
+
+                    intel_party_vehicles = intel_party_vehicles ^ val;
+               end;
+
+          f_sol = CreateUnitsWithClass(1,class_soldier,sex_female,'',russians_alt)[1];
+          other_sols = CreateUnitsWithClass(2,class_soldier,sex_male,'',russians_alt);
+
+          for i in f_sol ^ other_sols do
+               begin
+                    PlaceUnitXYR(i,59,43,4,false);
+                    DoNotAttack(you,i);
+               end;
+
+          //Yefibachev is in his office - we "fetch" him.
+          RemoveUnit(Yefibachev);
+          PlaceUnitXYR(Yefibachev,59,43,4,false);
+          except_Yefibachev = true;
+
+          ComTurnUnit(Yefibachev,f_sol);
+          ComTurnUnit(f_sol,Yefibachev);
+
+          //Heike follows the messenger to the intel party.
+          F_InGameOn;
+          ExclusiveOff;
+          
+          GetPlayerUnitsOutOfBuilding(ai_facts[1][1]);
+          ComExitBuilding(workshop_messenger);
+          
+          wait(5);  //wait for exit
+          ExclusiveOn;
+
+          repeat
+          ComMoveXY([Heike,workshop_messenger],59,43);
+          CenterOnUnits([Heike,workshop_messenger]);
+
+          wait(0$1);
+
+          until GetDistUnitXY(Heike,59,43) <= 5;
+
+          workshop_messenger = 0;
+          CenterOnXY(59,43);
+
+          DialogueOn;
+          Say(f_sol,'D14-SolF2-1');
+          DialogueOff;
+
+          ComFree([f_sol,Yefibachev]);
+          except_Yefibachev = false;
+
+          F_InGameOff;
+
+          //The ordinary soldier controlling code (module "AI") will make Yefibachev re-enter his office.
+          //Make the female soldier enter the archive and go back again. The player should be able to
+          //figure out, if not directly see, which lab is the archive.
+          RaiseSailEvent(f_sol);
+
+          //The remaining soldiers stays near the vehicles - chatting and just doing nothing.
+          //If Heike wanders away from the vehicles they tell her to get back and start working.
+          //If Heike enters one of the vehicles they get pretty angry.
+          //If Heike attacks them it triggers a code black.
+          //If the base goes in code black or code red the intel party leaves the base immediately.
+          heike_times_wander_away = 0;
+          heike_wander_away_cooldown = 0$0;
+          heike_times_enter_vehicle = 0;
+          heike_enter_vehicle_cooldown = 0$0;
+          attack_tolerance = 0;
+
+          repeat
+          wait(0$0.5);
+
+          if code_red or code_black then
+               begin
+                    intel_party_leave = true;
+                    break;
+               end;
+
+          //Make sure Heike can't enter Russian buildings
+          val = false;
+          for i = 1 to recent_not_went_inside_units do
+               if recent_not_went_inside_units[i][1] = Heike then
+                    begin
+                         val = true;
+                         if recent_not_went_inside_units[i][2] <= 0$4 then
+                              recent_not_went_inside_units = Replace(recent_not_went_inside_units,i,[Heike,0$6]);
+                    end;
+
+          if not val then
+               recent_not_went_inside_units = recent_not_went_inside_units ^ [[Heike,0$6]];
+
+          //Heike enters vehicle
+          if IsInUnit(Heike) in intel_party_vehicles then
+               begin
+                    if heike_enter_vehicle_cooldown > 0$0 then
+                         begin
+                              heike_enter_vehicle_cooldown = heike_enter_vehicle_cooldown - 0$1;
+                              continue;
+                         end;
+
+                    case heike_times_enter_vehicle of
+                         0: begin
+                              DialogueOn;
+                              Say(other_sols[1],'D14-SolM2-4');
+                              DialogueOff;
+                         end;
+                         1: begin
+                              DialogueOn;
+                              Say(other_sols[1],'D14-SolM2-5');
+
+                              dwait(0$0.5);
+                              YouLost('HeikeCaptive');
+                              DialogueOff;
+                         end;
+                    end;
+
+                    heike_enter_vehicle_cooldown = 0$5;
+                    heike_times_enter_vehicle = heike_times_enter_vehicle + 1;
+
+                    continue;
+               end;
+
+          //Heike wanders away
+          if GetDistUnitXY(Heike,59,43) > 7 then
+               begin
+                    if heike_wander_away_cooldown > 0$0 then
+                         begin
+                              heike_wander_away_cooldown = heike_wander_away_cooldown - 0$1;
+                              continue;
+                         end;
+
+                    case heike_times_wander_away of
+                         0: begin
+                              DialogueOn;
+                              Say(other_sols[1],'D14-SolM2-1');
+                              Say(other_sols[1],'D14-SolM2-2');
+                              DialogueOff;
+                         end;
+                         1: begin
+                              DialogueOn;
+                              Say(other_sols[1],'D14-SolM2-3');
+
+                              dwait(0$0.5);
+                              YouLost('HeikeCaptive');
+                              DialogueOff;
+                         end;
+                    end;
+
+                    heike_wander_away_cooldown = 0$5;
+                    heike_times_wander_away = heike_times_wander_away + 1;
+
+                    continue;
+               end;
+
+          //Heike attacks them
+          if Attacks(Heike) in intel_party_vehicles ^ other_sols ^ f_sol then
+               begin
+                    attack_tolerance = attack_tolerance + 1;
+                    if attack_tolerance >= 4 then
+                         begin
+                              if heike_undercover <> 4 then
+                                   begin
+                                        DialogueOn;
+                                        SayRadio(Yefibachev,'D7-Leader-2b');
+                                        DialogueOff;
+
+                                        ChangeHeikeUndercoverStatus(4);
+                                   end;
+
+                              intel_party_leave = true;
+                              if code_black then
+                                   code_black_renew = true
+                              else
+                                   code_black = true;
+
+                              break;
+                         end;
+               end
+          else
+               attack_tolerance = 0;
+
+          until intel_party_leave;
+
+          //The intel party leaves the base (to the west)
+          repeat
+          wait(0$0.5);
+
+          //When in exit area
+          for i in other_sols ^ f_sol do
+               begin
+                    val = IsInUnit(i);
+                    k = val;
+                    if val = 0 then
+                         val = i;
+
+                    if IsInArea(val,in_out_area_west) then
+                         begin
+                              if k > 0 then
+                                   begin
+                                        intel_party_vehicles = intel_party_vehicles diff k;
+                                        DestroyUnit(k);
+                                   end;
+
+                              if i = f_sol then
+                                   f_sol = 0
+                              else
+                                   other_sols = other_sols diff i;
+
+                              DestroyUnit(i);
+                         end;
+               end;
+
+          //We don't repair burning vehicles so just leave them
+          intel_party_vehicles = UnitFilter(intel_party_vehicles,[f_ok]);
+
+          if other_sols = 0 and f_sol = 0 then  //don't mind the vehicles - humans could be dead
+               exit;
+
+          all_soldiers = other_sols ^ f_sol;
+
+          //Enter vehicle (if possible)
+          temp_list = UnitFilter(intel_party_vehicles,[f_empty]);
+          if temp_list > 0 then
+               begin
+                    //Find the soldiers not inside a vehicle
+                    temp_list_2 = [];
+                    for i in all_soldiers do
+                         if IsInUnit(i) = 0 then  //can't be inside a building
+                              temp_list_2 = temp_list_2 ^ i;
+
+                    while temp_list_2 > 0 do
+                         begin
+                              if temp_list = 0 then
+                                   break;
+
+                              val = AllNearestUnitToUnit(temp_list_2,temp_list[1]);
+                              if val = 0 then  //function error
+                                   break;
+
+                              ComEnterUnit(val,temp_list[1]);
+
+                              temp_list_2 = temp_list_2 diff val;
+                              all_soldiers = all_soldiers diff val;
+                              temp_list = Delete(temp_list,1);
+                         end;
+               end;
+
+          //Go for the exit area
+          //We just give the soldiers orders - works fine if they are inside vehicles
+          //(we can't be sure they are inside a vehicle).
+          for i in all_soldiers do
+               if GetDistUnitArea(i,in_out_area_west) <= 3 then
+                    ComMoveToArea(i,in_out_area_west)
+               else
+                    ComAgressiveMove(i,34,64);
+
+          until false;
+     end;
+Function HeikeInWorkshop;
+     var i;
+     begin
+          result = false;
+          for i in player_units_in_russian_buildings do
+               if i[1] = Heike and i[2] in ai_facts[1] then
+                    begin
+                         result = true;
+                         exit;
+                    end;
+     end;
+On SailEvent(sol) do
+     var val, i, temp_list, un;
+     var been_in_archive, not_full_repair_dialogue_played;
+     begin
+          been_in_archive = false;
+          not_full_repair_dialogue_played = false;
+
+          repeat
+          wait(0$1);
+
+          if code_red or code_black then
+               exit;
+
+          if not IsOk(the_archive) then
+               continue;
+
+          if not been_in_archive then
+               begin
+                    //Soldier is side russian_alt so she can't enter side 3 buildings.
+                    //We simulate by removing her from the map when she reaches the lab.
+                    i = GetDir(the_archive);
+                    temp_list = [ShiftX(GetX(the_archive),i,3),ShiftY(GetY(the_archive),i,3)];
+
+                    if GetDistUnitXY(sol,temp_list[1],temp_list[2]) <= 1 then
+                         begin
+                              RemoveUnit(sol);
+                              been_in_archive = true;
+                              wait(0$4);  //stay a short while "in" the archive
+
+                              while not PlaceUnitXYR(sol,temp_list[1],temp_list[2],1,false) do
+                                   wait(0$0.5);
+                         end
+                    else
+                         case GetType(IsInUnit(sol)) of
+                              unit_vehicle: ComExitVehicle(sol);
+                              unit_building: ComExitBuilding(sol);
+                              else
+                                   ComMoveXY(sol,temp_list[1],temp_list[2]);
+                         end;
+               end
+          else
+               begin
+                    //Return to the vehicles
+                    if GetDistUnitXY(sol,59,43) <= 5 then
+                         begin
+                              //Check if vehicles are fully repaired
+                              val = true;
+                              for i in intel_party_vehicles do
+                                   if GetLives(i) < 1000 then
+                                        begin
+                                             val = false;
+                                             break;
+                                        end;
+
+                              if not val then
+                                   begin
+                                        if not not_full_repair_dialogue_played then
+                                             begin
+                                                  DialogueOn;
+                                                  Say(sol,'D14-SolF2-2');
+                                                  DialogueOff;
+
+                                                  not_full_repair_dialogue_played = true;
+                                             end;
+
+                                        continue;
+                                   end;
+
+                              if not_full_repair_dialogue_played then
+                                   begin
+                                        DialogueOn;
+                                        Say(sol,'D14-SolF2-3');
+                                        DialogueOff;
+                                   end;
+
+                              intel_party_leave = true;
+                              exit;
+                         end
+                    else
+                         case GetType(IsInUnit(sol)) of
+                              unit_vehicle: ComExitVehicle(sol);
+                              unit_building: ComExitBuilding(sol);
+                              else
+                                   ComMoveXY(sol,59,43);
+                         end;
+               end;
+
+          until false;
+     end;
+
+//If Heike under cover tries to exit the base through guarded entrances the guards call her back.
+//If she doesn't obey she triggers a code red and her cover is blown.
+//She can, however, exit the base freely using the non-guarded entrances. If she does so and tries
+//to enter the base again using guarded entrances the guards are surprised to se her outside but
+//just tells her to get back inside.
+Every 0$1+0$0.3 do
+     var i, temp_list, val, temp_list_2, def_buildings, speaker;
+     var initial_cooldown, heike_in_base, dialogue_level, dialogue_cooldown;
+     begin
+          initial_cooldown = 0$5;  //This every starts when Heike has entered the base in cargo bay so we wait a little so she can get inside
+          heike_in_base = false;  //If heike is inside the Russian base
+          dialogue_level = 0;  //Determines what dialogues should be played
+          dialogue_cooldown = 0$0;  //Cooldown on dialogues - Heike is granted some time to better herself
+
+          repeat
+          heike_in_base = IsInArea(Heike,ru_base_area);
+
+          if heike_in_base then
+               dialogue_level = 0;
+
+          wait(0$0.5);
+
+          if heike_undercover in [3,4] then
+               exit;
+
+          if heike_undercover in [0,1] or not entrance_guard_dialogue_played then
+               continue;
+
+          if initial_cooldown > 0$0 then
+               begin
+                    initial_cooldown = initial_cooldown - 0$0.5;
+                    continue;
+               end;
+          
+          if dialogue_cooldown > 0$0 then
+               begin
+                    dialogue_cooldown = dialogue_cooldown - 0$0.5;
+                    continue;
+               end;
+
+          if not ( IsInArea(Heike,just_outside_rus_base) or ( dialogue_level > 0 and not IsInArea(Heike,ru_base_area) ) ) then  //Also works if she is inside a vehicle
+               continue;
+
+
+          //Find someone to say something. Preferably one from the defensive building near Heike.
+          //Never Russian "main characters" which have their own personaly voice.
+          //We may not find a speaker - then there's nothing to do about it.
+          speaker = 0;
+
+          def_buildings = ai_armouries[1] ^ ai_bunkers[1];
+          if def_buildings > 0 then
+               begin
+                    temp_list = [];
+                    for i in def_buildings do
+                         temp_list = temp_list ^ GetDistUnits(i,Heike);
+
+                    val = WorstFromListByList(def_buildings,temp_list);
+
+                    if val in ai_bunkers[1] then
+                         temp_list = ai_bunkers[1]
+                    else
+                         temp_list = [val];
+
+                    temp_list_2 = [];
+                    for i in temp_list do
+                         temp_list_2 = temp_list_2 ^ UnitsInside(i);
+
+                    temp_list_2 = temp_list_2 diff [Stanimir, Yefibachev, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_sol];
+
+                    if temp_list_2 > 0 then
+                         speaker = temp_list_2[1]
+                    else
+                         //Just take someone from any defensive building
+                         begin
+                              temp_list_2 = [];
+                              for i in def_buildings do
+                                   temp_list_2 = temp_list_2 ^ UnitsInside(i);
+
+                              temp_list_2 = temp_list_2 diff [Stanimir, Yefibachev, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_sol];
+
+                              if temp_list_2 > 0 then
+                                   speaker = temp_list_2[1];
+                         end;
+               end;
+
+          if speaker = 0 then
+               begin
+                    //Just take any soldier (still not main characters)
+                    temp_list_2 = ai_soldiers[1] diff [Stanimir, Yefibachev, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_sol];
+
+                    if temp_list_2 > 0 then
+                         speaker = temp_list_2[1];
+               end;
+
+          DialogueOn;
+
+          case dialogue_level of
+               0: begin
+                    if heike_in_base then  //If Heike moves outside the base
+                         begin
+                              if GetSex(speaker) = sex_male then
+                                   Say(speaker,'D21-SolM-1')
+                              else
+                                   Say(speaker,'D21-SolF-1');
+
+                              dialogue_cooldown = 0$4;
+                         end
+                    else  //If Heike moves towards the base from the outside
+                         begin
+                              if GetSex(speaker) = sex_male then
+                                   Say(speaker,'D21-SolM-4')
+                              else
+                                   Say(speaker,'D21-SolF-4');
+
+                              dialogue_cooldown = 0$5;
+                         end;
+               end;
+               1: begin
+                    if GetSex(speaker) = sex_male then
+                         Say(speaker,'D21-SolM-2')
+                    else
+                         Say(speaker,'D21-SolF-2');
+
+                    dialogue_cooldown = 0$4;
+               end;
+               2: begin
+                    if GetSex(speaker) = sex_male then
+                         Say(speaker,'D21-SolM-3')
+                    else
+                         Say(speaker,'D21-SolF-3');
+
+                    code_red = true;
+                    CreateCodeRedPatrols(difficulty-1);
+                    ChangeHeikeUndercoverStatus(4);
+
+                    DialogueOff;
+
+                    exit;
+               end;
+          end;
+
+          DialogueOff;
+
+          dialogue_level = dialogue_level + 1;
+
+          until false;
+     end;
+
+//Check if one of the player's units stands at a Russian building's entrance.
+//Query if the unit should go inside.
+//Human units cannot enter buildings belonging to other sides than their own
+//so we have to simulate this by removing the unit from the map. A sideeffect
+//is that the unit also disappears from the player's unit panel.
+//Note that the every above taking care of the weapon testing area event also
+//simulates this (when Heike enters the archive) so changes made here should
+//also be made there.
+Every 0$1+0$0.4 do
+     var b, temp_list, hex_list, forbidden_units, i;
+     begin
+
+          repeat
+               wait(0$0.5);
+
+               forbidden_units = [];
+               i = 1;
+               while i <= recent_not_went_inside_units do
+                    begin
+                         temp_list = Replace(recent_not_went_inside_units[i],2,recent_not_went_inside_units[i][2]-0$0.5);
+
+                         if temp_list[2] <= 0$0 then
+                              begin
+                                   recent_not_went_inside_units = Delete(recent_not_went_inside_units,i);
+                              end
+                         else
+                              begin
+                                   recent_not_went_inside_units = Replace(recent_not_went_inside_units,i,temp_list);
+                                   forbidden_units = forbidden_units ^ temp_list[1];
+                                   i = i + 1;
+                              end;
+                    end;
+
+               for b in UnitFilter(ai_depot[1] ^ depot_north ^ ai_labs[1] ^ ai_facts[1] ^ ai_armouries[1],[f_ok]) do
+                    begin
+                         hex_list = GetBuildingEntranceHexes(b);  //entrance hexes
+
+                         temp_list = [];  //player units on the entrance hexes
+                         for i in hex_list do
+                              temp_list = temp_list ^ HexInfo(i[1],i[2]);
+
+                         //Only Heike under cover can enter armouries/barrackses.
+                         //Apemen can't enter buildings at all.
+                         temp_list = UnitFilter(temp_list,[[f_type,unit_human],[f_side,you],[f_not,[f_hastask]],[f_ok]]) diff Gonzo;
+                         if b in ai_armouries[1] then
+                              begin
+                                   if heike_undercover = 2 and Heike in temp_list and not Heike in forbidden_units then
+                                        temp_list = [Heike]
+                                   else
+                                        temp_list = [];
+                              end
+                         else
+                              temp_list = temp_list diff forbidden_units;
+
+                         if temp_list > 0 then
+                              begin
+                                   if Query('QEnterBuilding') = 1 then  //"yes"
+                                        begin
+                                             for i in temp_list do
+                                                  begin
+                                                       player_units_in_russian_buildings = player_units_in_russian_buildings ^ [[i,b]];
+                                                       RemoveUnit(i);
+                                                       recent_player_units_enter_russian_buildings = recent_player_units_enter_russian_buildings ^ [[i,b]];
+                                                  end;
+
+                                             //Place a seeing at the buildings coordinates as if the units were actually inside
+                                             PlaceSeeing(GetX(b),GetY(b),you,-7);  //has to be "radar-mode" - else the building "blocks" the view
+                                        end
+                                   else  //"no"
+                                        begin
+                                             for i in temp_list do
+                                                  recent_not_went_inside_units = recent_not_went_inside_units ^ [[i,reenter_building_cooldown]];
+                                        end;
+                              end;
+                    end;
+
+          until false;
+     end;
+Function GetBuildingEntranceHexes(building);
+     var shape, d, new_shape, b, direction, x, y, temp_list;
+     begin
+          case GetBType(building) of
+               b_armoury, b_barracks, b_fort: shape = [[-1, -3] , [0, -3] , [1, -2],[-1,-4],[0,-4],[1,-3]];
+               b_depot, b_warehouse: shape = [[-1, -4] , [0, -3] , [1, -3],[-1,-5],[0,-4],[1,-4]];
+               b_lab, b_lab_half, b_lab_full: shape = [[-1, -3] , [0, -2] , [1, -2],[-1,-4],[0,-3],[0,-4],[1,-3]];
+               b_workshop, b_factory: shape = [[-1,-3],[0,-3],[1,-2],[-1,-4],[0,-4],[1,-3]];
+          end;
+
+          direction = GetDir(building);
+
+          //For buildings in direction 0 or 5 we expand with 1 hex distance more to make
+          //it easier to go to an entrance hex without clicking on the building, accidentially
+          //shooting at it.
+          if direction in [0,5] then
+               begin
+                    temp_list = shape;
+                    for d = 1 to 3 do
+                         temp_list = Insert(temp_list,1, [shape[d][1],shape[d][2]-2]);
+                    shape = temp_list;
+               end;
+
+          new_shape = [];
+          b = 0;
+          x = GetX(building);
+          y = GetY(building);
+          for d in shape do
+               begin
+                    b = b + 1;  //so the hexes will get the same index number in "new_shape" as they have in "shape"
+                    //The algorithm below is based on observations on how an increase in the x- and y-coordinate yields and increase/decrease
+                    //in the x- and y-coordinate when using another system of coordinates (turning the existing system of coordinates
+                    //in different directions).
+                    case direction of
+                         0: new_shape = Insert(new_shape, b, [x+d[1],y+d[2]]);
+                         1: new_shape = Insert(new_shape, b, [x+(d[1]-d[2]),y+(d[1])]);
+                         2: new_shape = Insert(new_shape, b, [x+((-1)*d[2]),y+(d[1]-d[2])]);
+                         3: new_shape = Insert(new_shape, b, [x+((-1)*d[1]),y+((-1)*d[2])]);
+                         4: new_shape = Insert(new_shape, b, [x+(d[2]-d[1]),y+((-1)*d[1])]);
+                         5: new_shape = Insert(new_shape, b, [x+(d[2]),y+(d[2]-d[1])]);
+                    end;
+               end;
+
+          result = new_shape;
+     end;
+
+//When the player selects a building where some of the player's units are inside
+//prompt for letting them exit.
+//Event ActiveUnitChanged only works when selecting units from your own side.
+Every 0$1 do
+     var i, building, val;
+     begin
+
+          repeat
+          wait(0$0.2);
+
+          if Yakov_luring = 3 then
+               continue;
+
+          building = 0;
+          for i in player_units_in_russian_buildings do
+               if IsSelected(i[2]) then
+                    begin
+                         building = i[2];
+                         break;
+                    end;
+
+          if building > 0 then
+               begin
+                    if Query('QExitBuilding') = 1 then  //"yes"
+                         begin
+                              if Yakov_luring = 2 and building = the_archive then
+                                   begin
+                                        val = false;
+                                        for i in player_units_in_russian_buildings do
+                                             if i[1] = Heike and i[2] = building then
+                                                  begin
+                                                       val = true;
+                                                       break;
+                                                  end;
+
+                                        if val then
+                                             begin
+                                                  Yakov_luring = 3;
+                                                  continue;
+                                             end;
+                                   end;
+                              
+                              GetPlayerUnitsOutOfBuilding(building);
+                         end;
+
+                    DeselectUnits(building);  //So we won't spam the player
+               end;
+
+          until false;
+     end;
+//If a building with some of the player's units inside starts burning, the
+//player's units have to "exit".
+On UnitGoesToRed(un) do
+     begin
+          GetPlayerUnitsOutOfBuilding(un);
+     end;
+Function GetPlayerUnitsOutOfBuilding(building);
+     var i, hex_list, un_list, dist, val, hex;
+     begin
+          un_list = [];  //The units to exit
+          i = 1;
+          while i <= player_units_in_russian_buildings do
+               begin
+                    if building = player_units_in_russian_buildings[i][2] then
+                         begin
+                              un_list = un_list ^ player_units_in_russian_buildings[i][1];
+                              player_units_in_russian_buildings = Delete(player_units_in_russian_buildings,i);
+
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          i = 1;
+          while i <= recent_player_units_enter_russian_buildings do
+               begin
+                    if building = recent_player_units_enter_russian_buildings[i][2] then
+                         begin
+                              recent_player_units_enter_russian_buildings = Delete(recent_player_units_enter_russian_buildings,i);
+
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          if Heike in un_list then
+               heike_last_exit_building_tick = tick;
+
+          //Try and place the units on or as close to the entrance hexes as possible
+          if un_list > 0 then
+               begin
+                    hex_list = GetBuildingEntranceHexes(building);
+
+                    //Make sure the player isn't aksed if these units should go inside again just as
+                    //they exit.
+                    for i in un_list do
+                         recent_not_went_inside_units = recent_not_went_inside_units ^ [[i,reenter_building_cooldown]];
+
+                    dist = 1;
+                    while un_list > 0 do
+                         begin
+                              while un_list > 0 do
+                                   begin
+                                        val = false;
+                                        for hex in hex_list do
+                                             begin
+                                                  val = PlaceUnitXYR(un_list[1],hex[1],hex[2],dist,false);
+
+                                                  if val then
+                                                       begin
+                                                            un_list = Delete(un_list,1);
+                                                            break;
+                                                       end;
+                                             end;
+
+                                        if not val then
+                                             break;
+                                   end;
+
+                              dist = dist + 1;
+                         end;
+               end;
+
+          //Remove the seeing
+          RemoveSeeing(GetX(building),GetY(building),you);
+     end;
+
+//Every taking care of what happens when player units enter Russian buildings.
+Every 0$1+0$0.5 do
+     var i, k, temp_list, un, building;
+     var visited_buildings, num_times_heike_visited_lab, num_times_heike_visited_armoury;
+     var leader_office_choices, visited_northern_depot, visited_main_depot, visited_workshop;
+     var asked_for_boyfriend;
+     begin
+          visited_buildings = [];  //keeps track of the buildings player units have entered
+          num_times_heike_visited_lab = 0;  //how many times Heike under cover has entered a lab (not the archive)
+          num_times_heike_visited_armoury = 0;  //how many times Heike under cover has entered an armoury (not Yefibachev's office)
+          leader_office_choices = [];  //keeps track of the choices the player take when entering Yefibachev's office.
+          visited_northern_depot = false;  //turns true when Heike enters the norhtern depot
+          visited_main_depot = false;  //turns true when Heike has met the poker club in the main depot
+          visited_workshop = false;  //turns true when Heike has visited the workshop
+          asked_for_boyfriend = false;  //turns true when Heike has asked for Yakov in the workshop and he was present
+
+          repeat
+          wait(0$1);
+
+          if recent_player_units_enter_russian_buildings = 0 then
+               continue;
+
+          //Wait a little so the units properly "enter"
+          wait(0$0.5);
+
+          if recent_player_units_enter_russian_buildings = 0 then
+               continue;
+
+          //Pick units who entered the same building.
+          temp_list = [];
+          building = recent_player_units_enter_russian_buildings[1][2];
+          i = 1;
+          while i <= recent_player_units_enter_russian_buildings do
+               begin
+                    if recent_player_units_enter_russian_buildings[i][2] = building then
+                         begin
+                              temp_list = temp_list ^ recent_player_units_enter_russian_buildings[i][1];
+                              recent_player_units_enter_russian_buildings = Delete(recent_player_units_enter_russian_buildings,i);
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          //Pick one of these to do the talking. Always pick Heike is she is among them
+          //and under cover.
+          if Heike in temp_list and heike_undercover = 2 then
+               un = Heike
+          else
+               un = temp_list[1];
+
+          //Make things happen
+          if un = Heike and heike_undercover = 2 then
+               begin
+                    visited_buildings = visited_buildings union building;
+
+                    //The archive
+                    if building = the_archive and ( UnitsInside(the_archive) = 0 or Yakov_luring = 2 or ArchiveGuardsDistracted ) then  //Scientists won't kick Heike out if Yakov is with her
+                         begin
+                              if not archive_found then
+                                   begin
+                                        DialogueOn;
+                                        Say(Heike,'D20-H-1');
+                                        DialogueOff;
+
+                                        archive_found = true;
+                                   end;
+
+                              //Mark Heike as just entered the archive
+                              //so as soon as someone enters, something happens.
+                              //recent_player_units_enter_russian_buildings = recent_player_units_enter_russian_buildings ^ [[un,building]];
+
+                              continue;
+                         end;
+
+                    //A lab (perhaps including the archive)
+                    if building in ai_labs[1] then
+                         begin
+                              //If there are noone inside, nothing happens, but mark Heike as just entered this
+                              //lab so as soon as someone enters, something happens.
+                              temp_list = UnitsInside(building);
+                              if temp_list = 0 then
+                                   begin
+                                        recent_player_units_enter_russian_buildings = recent_player_units_enter_russian_buildings ^ [[un,building]];
+                                        continue;
+                                   end;
+
+                              num_times_heike_visited_lab = num_times_heike_visited_lab + 1;
+
+                              //Pick a scientist to talk - Barovnin if possible
+                              if Barovnin in temp_list then
+                                   k = Barovnin
+                              else
+                                   k = temp_list[1];
+
+                              DialogueOn;
+
+                              case num_times_heike_visited_lab of
+                                   1: begin
+                                        if k = Barovnin then
+                                             begin
+                                                  Say(Barovnin,'D17-Doc-1');
+                                             end
+                                        else
+                                             if GetSex(k) = sex_male then
+                                                  Say(k,'D17-SciM-1')
+                                             else Say(k,'D17-SciF-1');
+                                   end;
+                                   2: begin
+                                        if k = Barovnin then
+                                             begin
+                                                  Say(Barovnin,'D17-Doc-2');
+                                                  Say(Heike,'D17-H-1');
+                                                  Say(Barovnin,'D17-Doc-3');
+                                             end
+                                        else
+                                             if GetSex(k) = sex_male then
+                                                  begin
+                                                       Say(k,'D17-SciM-2');
+                                                       Say(Heike,'D17-H-1');
+                                                       Say(k,'D17-SciM-3');
+                                                  end
+                                             else
+                                                  begin
+                                                       Say(k,'D17-SciF-2');
+                                                       Say(Heike,'D17-H-1');
+                                                       Say(k,'D17-SciF-3');
+                                                  end;
+
+                                        //Heike's cover is blown
+                                        ChangeHeikeUndercoverStatus(4);
+                                        if code_black then
+                                             code_black_renew = true
+                                        else
+                                             code_black = true;
+                                   end;
+                              end;
+
+                              DWait(0$0.5);
+                              DialogueOff;
+
+                              //Heike is forced out of the lab
+                              GetPlayerUnitsOutOfBuilding(building);
+
+                              continue;
+                         end;
+
+                    //The armoury not being Yefibachev's office
+                    if building in ai_armouries[1] and building <> leader_office then
+                         begin
+                              //If there are noone inside, nothing happens, but mark Heike as just entered this
+                              //armoury so as soon as someone enters, something happens.
+                              temp_list = UnitsInside(building);
+                              if temp_list = 0 then
+                                   begin
+                                        recent_player_units_enter_russian_buildings = recent_player_units_enter_russian_buildings ^ [[un,building]];
+                                        continue;
+                                   end;
+
+                              num_times_heike_visited_armoury = num_times_heike_visited_armoury + 1;
+
+                              //Pick a soldier to talk
+                              k = temp_list[1];
+
+                              DialogueOn;
+
+                              case num_times_heike_visited_armoury of
+                                   1: begin
+                                        if GetSex(k) = sex_male then
+                                             Say(k,'D16-SolM-1')
+                                        else Say(k,'D16-SolF-1');
+                                   end;
+                                   2: begin
+                                        if GetSex(k) = sex_male then
+                                             Say(k,'D16-SolM-2')
+                                        else Say(k,'D16-SolF-2');
+                                   end;
+                                   3: begin
+                                        if GetSex(k) = sex_male then
+                                             Say(k,'D16-SolM-3')
+                                        else Say(k,'D16-SolF-3');
+
+                                        DWait(0$0.5);
+                                        YouLost('HeikeCaptive');
+                                   end;
+                              end;
+
+                              DWait(0$0.5);
+                              DialogueOff;
+
+                              //Heike is forced out of the armoury
+                              GetPlayerUnitsOutOfBuilding(building);
+
+                              continue;
+                         end;
+
+                    //Yefibachev's office
+                    if building = leader_office then
+                         begin
+                              if IsDead(Yefibachev) then
+                                   begin
+                                        DialogueOn;
+                                        Query('QLeaderDead');
+                                        DWait(0$0.5);
+                                        DialogueOff;
+
+                                        GetPlayerUnitsOutOfBuilding(building);
+                                        continue;
+                                   end;
+
+                              if IsInUnit(Yefibachev) <> leader_office then
+                                   begin
+                                        DialogueOn;
+                                        Query('QLeaderNotHereButAlive');
+                                        DWait(0$0.5);
+                                        DialogueOff;
+
+                                        GetPlayerUnitsOutOfBuilding(building);
+                                        continue;
+                                   end;
+
+                              if code_black then
+                                   begin
+                                        DialogueOn;
+                                        Say(Yefibachev,'D15-c-Leader-1');
+                                        Dwait(0$0.5);
+                                        DialogueOff;
+
+                                        GetPlayerUnitsOutOfBuilding(building);
+                                        continue;
+                                   end;
+
+                              k = true;
+                              if leader_office_choices > 0 then
+                                   if leader_office_choices[leader_office_choices+0] = 3 then
+                                        k = false;
+
+                              DialogueOn;
+
+                              if k then
+                                   Say(Yefibachev,'D15-a-Leader-1')
+                              else
+                                   Say(Yefibachev,'D15-b-Leader-1');
+
+                              DWait(0$0.2);
+                              if leader_office_choices = 0 then
+                                   begin
+                                        temp_list = [1,3];
+                                        if found_depot_document and not 2 in leader_office_choices then
+                                             temp_list = temp_list ^ 2;
+
+                                        i = SelectiveQuery('QLeaderOfficeFirstEnter',temp_list);
+                                   end
+                              else
+                                   begin
+                                        temp_list = [2];
+                                        if found_depot_document and not 2 in leader_office_choices then
+                                             temp_list = temp_list ^ 1;
+
+                                        i = 1 + SelectiveQuery('QLeaderOfficeNextEnter',temp_list);
+                                   end;
+
+                              case i of
+                                   1: begin
+                                        Say(Heike,'D15-1-H-1');
+                                        Say(Yefibachev,'D15-1-Leader-1');
+                                   end;
+                                   2: begin
+                                        Say(Heike,'D15-2-H-1');
+                                        DWait(0$1.5);
+                                        Say(Yefibachev,'D15-2-Leader-1');
+
+                                        send_sol_from_office_to_archive = true;
+                                   end;
+                                   3: begin
+                                        if k and not 3 in leader_office_choices then  //first time bad excuse
+                                             begin
+                                                  Say(Heike,'D15-3a-H-1');
+                                                  Say(Yefibachev,'D15-3a-Leader-1');
+                                                  Say(Heike,'D15-3a-H-2');
+                                                  Say(Yefibachev,'D15-3a-Leader-2');
+                                             end
+                                        else
+                                             if not k then  //last time was bad excuse
+                                                  begin
+                                                       Say(Heike,'D15-3b-H-1');
+                                                       Say(Yefibachev,'D15-3b-Leader-1');
+
+                                                       DWait(0$0.5);
+                                                       YouLost('HeikeCaptive');
+                                                  end
+                                             else  //bad excuse has been used but not last time
+                                                  begin
+                                                       Say(Heike,'D15-3c-H-1');
+                                                       Say(Yefibachev,'D15-3c-Leader-1');
+                                                  end;
+                                   end;
+                              end;
+
+                              leader_office_choices = leader_office_choices ^ i;
+
+                              DWait(0$0.5);
+                              DialogueOff;
+
+                              GetPlayerUnitsOutOfBuilding(building);
+
+                              continue;
+                         end;
+
+                    //The northern depot
+                    if building = depot_north then
+                         begin
+                              if not visited_northern_depot then
+                                   begin
+                                        visited_northern_depot = true;
+
+                                        DialogueOn;
+
+                                        Query('QDepotNorth1');
+                                        DWait(0$0.2);
+
+                                        if Query('QDepotNorth2') = 1 then
+                                             found_depot_document = true;
+
+                                        DialogueOff;
+                                   end
+                              else
+                                   if not found_depot_document then
+                                        if Query('QDepotNorth3') = 1 then
+                                             found_depot_document = true;
+
+                              continue;
+                         end;
+
+                    //The main depot
+                    if building = ai_depot[1] then
+                         begin
+                              if not visited_main_depot and Yakov_luring in [0,4] and not code_black then
+                                   begin
+                                        k = true;
+                                        for i in [poker_eng, poker_sol, poker_mec] do
+                                             if IsInUnit(i) <> ai_depot[1] then
+                                                  begin
+                                                       k = false;
+                                                       break;
+                                                  end;
+
+                                        if k then
+                                             begin
+                                                  visited_main_depot = true;
+
+                                                  DialogueOn;
+
+                                                  Say(poker_sol,'D12-SolM-1');
+                                                  Say(poker_eng,'D12-EngF-1');
+                                                  Say(poker_sol,'D12-SolM-2');
+                                                  Say(poker_mec,'D12-MecM-1');
+                                                  Say(poker_mec,'D12-MecM-2');
+
+                                                  dwait(0$0.3);
+                                                  if Query('QDepotPlay') = 2 then
+                                                       begin
+                                                            Say(Heike,'D12-2-H-1');
+                                                            Say(poker_eng,'D12-2-EngF-1');
+                                                            Say(poker_sol,'D12-2-SolM-1');
+
+                                                            DialogueOff;
+
+                                                            //Heike leaves the building
+                                                            GetPlayerUnitsOutOfBuilding(ai_depot[1]);
+
+                                                            continue;
+                                                       end;
+
+                                                  Say(poker_sol,'D12-1-SolM-1');
+                                                  Say(poker_eng,'D12-1-EngF-1');
+                                                  Say(poker_sol,'D12-1-SolM-2');
+                                                  Say(poker_mec,'D12-1-MecM-1');
+
+                                                  dwait(0$0.3);
+                                                  case Query('QDepotName') of
+                                                       1: begin
+                                                            Say(Heike,'D12-11-H-1');
+                                                            Say(poker_mec,'D12-11-MecM-1');
+                                                            Say(poker_sol,'D12-11-SolM-1');
+                                                            Say(poker_eng,'D12-11-EngF-1');
+                                                            Say(poker_sol,'D12-11-SolM-2');
+                                                            Say(poker_eng,'D12-11-EngF-2');
+                                                            Say(Heike,'D12-11-H-2');
+                                                            Say(poker_eng,'D12-11-EngF-3');
+
+                                                            boyfriend_identified = true;
+
+                                                            dwait(0$0.5);
+                                                            Say(Heike,'D12-1g-H-1');
+                                                       end;
+                                                       2: begin
+                                                            Say(Heike,'D12-12-H-1');
+                                                            Say(poker_mec,'D12-12-MecM-1');
+                                                            Say(poker_eng,'D12-12-EngF-1');
+                                                            Say(Heike,'D12-12-H-2');
+                                                            Say(poker_eng,'D12-12-EngF-2');
+                                                            Say(poker_sol,'D12-12-SolM-1');
+                                                            Say(poker_eng,'D12-12-EngF-3');
+                                                            Say(poker_sol,'D12-12-SolM-2');
+                                                            Say(poker_eng,'D12-12-EngF-4');
+
+                                                            dwait(0$0.5);
+                                                            Say(Heike,'D12-1g-H-1');
+                                                       end;
+                                                       3: begin
+                                                            dwait(0$0.5);
+                                                            Say(Heike,'D12-1g-H-1');
+                                                            Say(poker_mec,'D12-13-MecM-1');
+                                                            Say(poker_sol,'D12-13-SolM-1');
+                                                            Say(poker_eng,'D12-13-EngF-1');
+                                                            Say(poker_sol,'D12-13-SolM-2');
+                                                       end;
+                                                  end;
+
+                                                  Say(poker_mec,'D12-1x-MecM-1');
+                                                  Say(poker_sol,'D12-1x-SolM-1');
+
+                                                  dwait(0$0.3);
+                                                  case Query('QDepotArchive') of
+                                                       1: begin
+                                                            Say(Heike,'D12-1x1-H-1');
+                                                            Say(poker_sol,'D12-1x1-SolM-1');
+                                                            Say(Heike,'D12-1x1-H-2');
+                                                            Say(poker_sol,'D12-1x1-SolM-2');
+                                                            Say(poker_eng,'D12-1x1-EngF-1');
+                                                       end;
+                                                       2: begin
+                                                            Say(poker_eng,'D12-1x2-EngF-1');
+                                                       end;
+                                                  end;
+
+                                                  DWait(0$1);
+                                                  Say(poker_mec,'D12-1xx-MecM-1');
+                                                  Say(poker_eng,'D12-1xx-EngF-1');
+                                                  Say(poker_mec,'D12-1xx-MecM-2');
+                                                  Say(poker_mec,'D12-1xx-MecM-3');
+                                                  Say(poker_sol,'D12-1xx-SolM-1');
+                                                  Say(poker_mec,'D12-1xx-MecM-4');
+                                                  Say(poker_mec,'D12-1xx-MecM-5');
+                                                  Say(poker_mec,'D12-1xx-MecM-6');
+
+                                                  //Simultanious laughing
+                                                  async;
+                                                  Say(poker_eng,'D12-1xx-EngF-2');
+                                                  sync;
+                                                  Say(poker_sol,'D12-1xx-SolM-2');
+
+                                                  Say(poker_eng,'D12-1xx-EngF-3');
+                                                  Say(poker_mec,'D12-1xx-MecM-7');
+
+                                                  dwait(0$0.3);
+                                                  case Query('QDepotScientistsAndArchive') of
+                                                       1: begin
+                                                            Say(Heike,'D12-1xx1-H-1');
+                                                            Say(poker_mec,'D12-1xx1-MecM-1');
+                                                       end;
+                                                       2: begin
+                                                            Say(poker_sol,'D12-1xx2-SolM-1');
+                                                       end;
+                                                  end;
+
+                                                  Say(poker_sol,'D12-1xxx-SolM-1');
+                                                  Say(poker_eng,'D12-1xxx-EngF-1');
+                                                  Say(poker_sol,'D12-1xxx-SolM-2');
+                                                  Say(poker_eng,'D12-1xxx-EngF-2');
+                                                  Say(poker_sol,'D12-1xxx-SolM-3');
+
+                                                  dwait(0$0.3);
+                                                  case Query('QDepotLeader') of
+                                                       1: begin
+                                                            Say(Heike,'D12-1xxx1-H-1');
+                                                            Say(poker_sol,'D12-1xxx1-SolM-1');
+                                                            Say(poker_eng,'D12-1xxx1-EngF-1');
+                                                            Say(poker_sol,'D12-1xxx1-SolM-2');
+                                                            Say(poker_eng,'D12-1xxx1-EngF-2');
+                                                            Say(Heike,'D12-1xxx1-H-2_v2');
+                                                            Say(poker_sol,'D12-1xxx1-SolM-3');
+                                                            Say(Heike,'D12-1xxx1-H-3');
+                                                            Say(poker_eng,'D12-1xxx1-EngF-3');
+                                                       end;
+                                                       2: begin
+                                                            Say(Heike,'D12-1xxx2-H-1');
+                                                            Say(poker_mec,'D12-1xxx2-MecM-1');
+                                                       end;
+                                                  end;
+
+                                                  Say(poker_sol,'D12-1xxx2-SolM-1');
+
+                                                  DialogueOff;
+
+                                                  //Heike leaves the building
+                                                  GetPlayerUnitsOutOfBuilding(ai_depot[1]);
+                                             end;
+                                   end;
+
+                              continue;
+                         end;
+
+                    //The workshop
+                    if building in ai_facts[1] then
+                         begin
+                              //If the code is in code black, nothing happens, but mark Heike as just entered
+                              //so as soon as the base goes out of code black, something happens.
+                              if code_black then
+                                   begin
+                                        recent_player_units_enter_russian_buildings = recent_player_units_enter_russian_buildings ^ [[un,building]];
+                                        continue;
+                                   end;
+
+                              if boyfriend_identified and not asked_for_boyfriend then
+                                   begin
+                                        if Query('QWorkshopBoyfriend1') = 1 then
+                                             begin
+                                                  DialogueOn;
+
+                                                  Say(Heike,'D13-1-H-1');
+
+                                                  //The check for mechanics attack is necessary since it's hard to pull a picked
+                                                  //mechanic from that group (he must be replaced). Anyway it's a very rare occation
+                                                  //that Yakov is both inside the workshop and an attacking mechanic.
+                                                  if IsInUnit(Yakov) in ai_facts[1] and not Yakov in ai_mechanics_attack[1] then
+                                                       begin
+                                                            asked_for_boyfriend = true;
+
+                                                            Say(Yakov,'D13-1-boyfriend-1');
+
+                                                            temp_list = [1,2];
+                                                            if IsDead(Yefibachev) then
+                                                                 temp_list = temp_list diff 1;
+
+                                                            dwait(0$0.3);
+                                                            case SelectiveQuery('QWorkshopBoyfriend2',temp_list) of
+                                                                 1: begin
+                                                                      Say(Heike,'D13-11-H-1');
+                                                                      Say(Yakov,'D13-11-boyfriend-1');
+                                                                      Say(Heike,'D13-11-H-2');
+                                                                      Say(Yakov,'D13-11-boyfriend-2');
+
+                                                                      DialogueOff;
+
+                                                                      Yakov_to_archive = true;
+
+                                                                      continue;
+                                                                 end;
+                                                                 2: begin
+                                                                      Say(Heike,'D13-12-H-1');
+                                                                      Say(Yakov,'D13-12-boyfriend-1');
+                                                                      Say(Heike,'D13-12-H-2');
+
+                                                                      dwait(0$0.3);
+                                                                      Query('QBoyfriendLurePlan');
+
+                                                                      DialogueOff;
+
+                                                                      Yakov_luring = 1;
+
+                                                                      continue;
+                                                                 end;
+                                                            end;
+                                                       end
+                                                  else
+                                                       begin
+                                                            Say(Natalya,'D13-1-Natalya-1');
+
+                                                            DialogueOff;
+                                                       end;
+                                             end;
+                                   end;
+
+                              if not visited_workshop and IsInUnit(Natalya) in ai_facts[1] then
+                                   begin
+                                        visited_workshop = true;
+
+                                        DialogueOn;
+
+                                        Say(Natalya,'D13-2-Natalya-1');
+                                        Say(Heike,'D13-2-H-1');
+                                        Say(Natalya,'D13-2-Natalya-2');
+                                        Say(Heike,'D13-2-H-2');
+                                        Say(Natalya,'D13-2-Natalya-3');
+
+                                        DialogueOff;
+                                   end;
+
+                              continue;
+                         end;
+               end
+          else
+               begin
+                    //If the player hasn't entered this building before then the entering unit
+                    //checks if the building is the archive and says something appropriate.
+                    if not building in visited_buildings then
+                         begin
+                              visited_buildings = visited_buildings ^ building;
+
+                              DialogueOn;
+
+                              if building = the_archive then
+                                   begin
+                                        case un of
+                                             Heike: Say(Heike,'D20-H-1');
+                                             Dwayne: Say(Dwayne,'D20-Dw-1');
+                                             Oswald: begin
+                                                  if oswald_is_substitute then
+                                                       Say(Oswald,'D20-Os_sub-1')
+                                                  else Say(Oswald,'D20-Os-1');
+                                             end;
+                                             Kurt: begin
+                                                  if kurt_is_substitute then
+                                                       Say(Kurt,'D20-Ku_sub-1')
+                                                  else Say(Kurt,'D20-Ku-1');
+                                             end;
+                                        end;
+
+                                        archive_found = true;
+                                   end
+                              else
+                                   begin
+                                        //Any other building than the archive
+                                        k = Rand(1,3);
+
+                                        case un of
+                                             Heike: Say(Heike,'D18-H-' & k);
+                                             Dwayne: Say(Dwayne,'D18-Dw-' & k);
+                                             Oswald: begin
+                                                  if oswald_is_substitute then
+                                                       Say(Oswald,'D18-Os_sub-' & k)
+                                                  else Say(Oswald,'D18-Os-' & k);
+                                             end;
+                                             Kurt: begin
+                                                  if kurt_is_substitute then
+                                                       Say(Kurt,'D18-Ku_sub-' & k)
+                                                  else Say(Kurt,'D18-Ku-' & k);
+                                             end;
+                                        end;
+                                   end;
+
+                              DialogueOff;
+                         end;
+               end;
+
+
+          until false;
+     end;
+
+//Every taking care of managing if Yefibachev sends a soldier from his office to the archive with
+//the document Heike handed in (from the northern depot).
+//The soldier will not hand in the document as long as the base is in code red or code black.
+Every 0$1+0$0.1 do
+     var i, un, temp_list;
+     var sol, init_cooldown;
+     begin
+          sol = 0;  //temporary storage of the chosen soldier
+          init_cooldown = 0$5;  //Initial cooldown. The soldier doesn't go for the archive right away (Yefibachev has to give him orders)
+
+          repeat
+          wait(0$1);
+
+          if not send_sol_from_office_to_archive then
+               continue;
+
+          if init_cooldown > 0$0 then
+               begin
+                    init_cooldown = init_cooldown - 0$1;
+                    continue;
+               end;
+
+          if code_black or sol_office_to_archive in ai_heal_these_humans[1] or not IsOk(the_archive) then
+               begin
+                    if sol_office_to_archive > 0 then
+                         begin
+                              sol = sol_office_to_archive;
+                              sol_office_to_archive = 0;
+                         end;
+
+                    continue;
+               end;
+
+          if sol > 0 then
+               begin
+                    sol_office_to_archive = sol;
+                    sol = 0;
+               end;
+
+          if IsDead(sol_office_to_archive) then
+               sol_office_to_archive = 0;
+
+          //Pick a soldier from the office. Never one of the 'main' Russian characters - they
+          //could be occupied with other things.
+          if sol_office_to_archive = 0 then
+               begin
+                    if not IsOk(leader_office) then
+                         continue;
+
+                    for i in UnitsInside(leader_office) do
+                         if not i in [Stanimir, Barovnin, Yefibachev, Yakov, Natalya, Mikhail, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_eng, poker_sol, poker_mec] then
+                              begin
+                                   sol_office_to_archive = i;
+                                   break;
+                              end;
+
+                    if sol_office_to_archive = 0 then
+                         continue;
+               end;
+
+          if IsInUnit(sol_office_to_archive) <> the_archive then
+               begin
+                    case GetType(IsInUnit(sol_office_to_archive)) of
+                         unit_building: ComExitBuilding(sol_office_to_archive);
+                         unit_vehicle: ComExitVehicle(sol_office_to_archive);
+                         else
+                              begin
+                                   //Make a unit exit if building is full (not Barovnin)
+                                   if GetDistUnits(sol_office_to_archive,the_archive) <= 6 then
+                                        begin
+                                             temp_list = UnitsInside(the_archive);
+                                             if temp_list = 6 then
+                                                  begin
+                                                       un = 0;
+                                                       for i in temp_list do
+                                                            if i <> Barovnin then
+                                                                 begin
+                                                                      un = i;
+                                                                      break;
+                                                                 end;
+
+                                                       ComExitBuilding(un);
+                                                       wait(3);  //for time shifting - the ordinary controlling code will make the unit enter again
+                                                  end;
+                                        end;
+
+                                   ComEnterUnit(sol_office_to_archive,the_archive);
+                              end;
+                    end;
+               end
+          else
+               begin
+                    //Stay in the archive for a short while.
+                    for i = 1 to 5 do
+                         begin
+                              if code_red or code_black then  //skip the waiting if the base comes under attack
+                                   begin
+                                        sol_office_to_archive = 0;
+                                        exit;
+                                   end;
+
+                              wait(0$1);
+                         end;
+
+                    sol_office_to_archive = 0;
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//Yakov goes to the archive and then to Yefibachev's office.
+//When he reaches Yefibachev the base goes in code black and
+//Heike's cover is blown.
+Every 0$1+0$0.9 do
+     var un, temp_list, i;
+     var been_in_archive;
+     begin
+          been_in_archive = false;  //turns true when Yakov has been in the archive and retrieved the document
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [3,4] or IsDead(Yakov) or IsDead(Yefibachev) then
+               exit;
+
+          until Yakov_to_archive;
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [3,4] or IsDead(Yakov) or IsDead(Yefibachev) then
+               exit;
+
+          if code_black {or code_red} or Yakov in ai_mechanics_attack[1] or Yakov in ai_heal_these_humans[1] then
+               begin
+                    except_Yakov = false;
+                    continue;
+               end;
+
+          except_Yakov = true;
+
+          if not been_in_archive then
+               begin
+                    if not IsOk(the_archive) then
+                         begin
+                              except_Yakov = false;
+                              continue;
+                         end;
+
+                    un = IsInUnit(Yakov);
+                    if un <> the_archive then
+                         begin
+                              case GetType(un) of
+                                   unit_vehicle: ComExitVehicle(Yakov);
+                                   unit_building: ComExitBuilding(Yakov);
+                                   else
+                                        begin
+                                             //Make a unit exit if building is full (not Barovnin)
+                                             if GetDistUnits(Yakov,the_archive) <= 6 then
+                                                  begin
+                                                       temp_list = UnitsInside(the_archive);
+                                                       if temp_list = 6 then
+                                                            begin
+                                                                 un = 0;
+                                                                 for i in temp_list do
+                                                                      if i <> Barovnin then
+                                                                           begin
+                                                                                un = i;
+                                                                                break;
+                                                                           end;
+
+                                                                 ComExitBuilding(un);
+                                                                 wait(3);  //for time shifting - the ordinary controlling code will make the unit enter again
+                                                            end;
+                                                  end;
+
+                                             ComEnterUnit(Yakov,the_archive);
+                                        end;
+                              end;
+                         end
+                    else
+                         begin
+                              been_in_archive = true;
+
+                              //wait here for a moment
+                              wait(0$4);
+                         end;
+               end
+          else
+               begin
+                    if not IsOk(leader_office) then
+                         begin
+                              except_Yakov = false;
+                              continue;
+                         end;
+
+                    un = IsInUnit(Yakov);
+                    if un <> leader_office then
+                         begin
+                              case GetType(un) of
+                                   unit_vehicle: ComExitVehicle(Yakov);
+                                   unit_building: ComExitBuilding(Yakov);
+                                   else
+                                        begin
+                                             //Force a unit outside if building is full (not Yefibachev)
+                                             if GetDistUnits(Yakov,leader_office) <= 5 then
+                                                  begin
+                                                       temp_list = UnitsInside(leader_office);
+                                                       if temp_list = 6 then
+                                                            begin
+                                                                 un = 0;
+                                                                 for i in temp_list do
+                                                                      if i <> Yefibachev then
+                                                                           begin
+                                                                                un = i;
+                                                                                break;
+                                                                           end;
+
+                                                                 ComExitBuilding(un);
+                                                                 wait(3);  //for time shifting - the ordinary controlling code will make the unit enter again
+                                                            end;
+                                                  end;
+
+                                             ComEnterUnit(Yakov,leader_office);
+                                        end;
+                              end;
+                         end
+                    else
+                         begin
+                              //wait here for a moment
+                              wait(0$4);
+
+                              while code_black do
+                                   wait(0$2);
+
+                              //Hell breaks loose
+                              if heike_undercover <> 4 then
+                                   begin
+                                        DialogueOn;
+                                        SayRadio(Yefibachev,'D7-Leader-2b');
+                                        DialogueOff;
+
+                                        ChangeHeikeUndercoverStatus(4);
+                                   end;
+                              
+                              code_black = true;
+                              except_Yakov = false;
+
+                              exit;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//Heike lures Yakov outside and forces him to tell where the archive is.
+Every 0$1+0$0.6 do
+     var i, k, un, temp_list, temp_list_2, time;
+     begin
+
+          repeat
+          wait(0$1);
+         
+          if heike_undercover in [3,4] or IsDead(Yakov) then
+               exit;
+
+          until Yakov_luring = 1;
+
+          for i in player_units_in_russian_buildings do
+               if i[1] = Heike then
+                    begin
+                         GetPlayerUnitsOutOfBuilding(i[2]);
+                         break;
+                    end;
+
+          ComExitBuilding(Yakov);
+          except_Yakov = true;
+          SetAreaMapShow(dark_corner_extended,1);
+          SetAreaMapShow(dark_corner,2);
+
+          //Yakov follows Heike
+          i = 0;
+          k = false;
+          repeat
+          if IsPlaced(Heike) then  //not inside a building
+               begin
+                    un = AI_InvertDirection(GetDir(Heike));
+                    ComMoveXY(Yakov,ShiftX(GetX(Heike),un,1),ShiftY(GetY(Heike),un,1));
+               end;
+
+          wait(0$1);
+
+          if not code_black then
+               if (FilterAllUnits([[f_side,you],[f_type,unit_human],[f_dist,Yakov,10]]) diff Heike) > 0 then
+                    begin
+                         //Yakov sees one of the other player units.
+                         DialogueOn;
+                         Say(Yakov,'D13-12c-boyfriend-1');
+                         DialogueOff;
+
+                         code_black = true;
+                    end;
+
+          if code_black then
+               begin
+                    Yakov_luring = 4;
+                    except_Yakov = false;
+                    SetAreaMapShow(dark_corner,0);
+                    SetAreaMapShow(dark_corner_extended,0);
+                    exit;
+               end;
+
+          if IsInArea(Yakov,just_outside_rus_base) or IsInArea(Yakov,just_outside_rus_base_yakov) then
+               break;
+
+          if IsInArea(Heike,dark_corner) and GetDistUnits(Heike,Yakov) <= 3 then
+               begin
+                    k = true;
+                    break;
+               end;
+
+          i = i + 1;
+
+          until i = 60;
+
+          SetAreaMapShow(dark_corner,0);
+          SetAreaMapShow(dark_corner_extended,0);
+
+          if not k then  //not lured into dark corner
+               begin
+                    if IsOk(Yakov) then
+                         begin
+                              DialogueOn;
+
+                              Say(Yakov,'D13-12a-boyfriend-1');
+                              Say(Heike,'D13-12a-H-1');
+                              Say(Yakov,'D13-12a-boyfriend-2');
+                              Say(Yakov,'D13-12a-boyfriend-3');
+
+                              DialogueOff;
+                         end;
+
+                    except_Yakov = false;
+                    Yakov_luring = 4;
+
+                    exit;
+               end;
+
+          F_InGameOn;
+          CenterOnUnits([Yakov,Heike]);
+
+          ComTurnUnit(Heike,Yakov);
+          ComTurnUnit(Yakov,Heike);
+          wait(0$0.5);
+
+          DialogueOn;
+
+          Say(Yakov,'D13-12b-boyfriend-1');
+          Say(Heike,'D13-12b-H-1');
+          Say(Yakov,'D13-12b-boyfriend-2');
+          Say(Heike,'D13-12b-H-2');
+          Say(Yakov,'D13-12b-boyfriend-3');
+          Say(Heike,'D13-12b-H-3');
+          Say(Yakov,'D13-12b-boyfriend-4');
+
+          temp_list = [];
+          temp_list_2 = [];
+          for i in ai_buildings_locations[1] do
+               if i[4] in [b_lab,b_lab_half,b_lab_full] then
+                    begin
+                         temp_list = temp_list ^ [i];
+                         temp_list_2 = temp_list_2 ^ i[2];  //Y-coordinate
+                    end;
+
+          temp_list = SortListByListAsc(temp_list,temp_list_2);  //Labs from North to South
+
+          k = 0;
+          temp_list_2 = [GetX(the_archive),GetY(the_archive)];
+          for i in temp_list do
+               begin
+                    k = k + 1;
+                    if i[1] = temp_list_2[1] and i[2] = temp_list_2[2] then  //this is the archive
+                         break;
+               end;
+
+          case k of
+               1: Say(Yakov,'D13-12ba-boyfriend-1');
+               2: Say(Yakov,'D13-12bb-boyfriend-1');
+               3: Say(Yakov,'D13-12bc-boyfriend-1');
+               4: Say(Yakov,'D13-12bd-boyfriend-1');
+          end;
+
+          dwait(0$0.3);
+          case Query('QBoyfriendShoot') of
+               1: begin  //Kill him
+                    DialogueOff;
+                    ExclusiveOn;
+
+                    ComAttackUnit(Heike,Yakov);
+                    wait(40);  //wait for shoot
+                    KillUnit(Yakov);
+
+                    wait(0$2);
+
+                    F_InGameOff;
+
+                    Yakov_luring = 4;
+                    exit;
+               end;
+               2: begin  //Make him follow you
+                    Say(Heike,'D13-12b2-H-1');
+
+                    DialogueOff;
+                    F_InGameOff;
+
+                    Yakov_luring = 2;
+
+                    //Yakov follows Heike
+                    time = [1$30,0$20,0$10][difficulty] + Rand(0$0,0$10);
+                    repeat
+                    wait(0$1);
+
+                    if IsPlaced(Heike) then  //not inside a building
+                         begin
+                              un = AI_InvertDirection(GetDir(Heike));
+                              ComMoveXY(Yakov,ShiftX(GetX(Heike),un,1),ShiftY(GetY(Heike),un,1));
+                         end
+                    else
+                         begin
+                              //If Heike is inside the archive then Yakov also enters the building.
+                              un = false;
+                              for i in player_units_in_russian_buildings do
+                                   if i[1] = Heike then
+                                        begin
+                                             if i[2] = the_archive then
+                                                  un = true;
+
+                                             break;
+                                        end;
+
+                              if un then
+                                   begin
+                                        //Make a scientist exit if the building is full (not Barovnin)
+                                        temp_list = UnitsInside(the_archive);
+                                        if temp_list = 6 then
+                                             begin
+                                                  un = 0;
+                                                  for i in temp_list do
+                                                       if i <> Barovnin then
+                                                            begin
+                                                                 un = i;
+                                                                 break;
+                                                            end;
+
+                                                  ComExitBuilding(un);
+                                                  wait(3);  //for time shifting - the ordinary controlling code will make the unit enter again
+                                             end;
+
+                                        ComEnterUnit(Yakov,the_archive);
+                                   end;
+                         end;
+
+                    if IsInUnit(Yakov) = the_archive and time > 0$0 and not code_black then
+                         time = time - 0$1;
+
+                    if time <= 0$0 then
+                         begin
+                              DialogueOn;
+                              Say(Yakov,'D13-12b2-boyfriend-1');
+                              DialogueOff;
+
+                              except_Yakov = false;
+                              ChangeHeikeUndercoverStatus(4);
+                              Yakov_luring = 4;
+                              
+                              code_black = true;
+
+                              exit;
+                         end;
+
+                    if IsDead(Yakov) then
+                         begin
+                              Yakov_luring = 4;
+                              exit;
+                         end;
+
+                    until false;
+               end;
+               3: begin  //Let him go
+                    Say(Heike,'D13-12b3-H-1');
+
+                    DialogueOff;
+                    F_InGameOff;
+
+                    //Yakov runs for Yefibachev's office
+                    repeat
+                    if IsDead(Yakov) then
+                         begin
+                              Yakov_luring = 4;
+                              exit;
+                         end;
+
+                    if IsOk(leader_office) then
+                         begin
+                              if IsInUnit(Yakov) = leader_office then
+                                   break;
+
+                              ComEnterUnit(Yakov,leader_office)
+                         end
+                    else
+                         begin
+                              if GetDistUnitXY(Yakov,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) <= 3 then
+                                   break;
+
+                              ComMoveXY(Yakov,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                         end;
+
+                    wait(0$1);
+
+                    //Make space for the guy in the barracs
+                    if GetDistUnits(Yakov,leader_office) <= 4 then
+                         begin
+                              temp_list = UnitsInside(leader_office);
+                              if temp_list = 6 then
+                                   begin
+                                        un = 0;
+                                        for i in temp_list do
+                                             if i <> Yefibachev then
+                                                  begin
+                                                       un = i;
+                                                       break;
+                                                  end;
+
+                                        ComExitBuilding(un);
+                                        wait(3);  //for time shifting - the ordinary controlling code will make the unit enter again
+                                   end;
+                         end;
+
+                    until false;
+
+                    repeat
+                    wait(0$2);
+                    until not code_black;
+
+                    if IsDead(Yakov) then
+                         exit;
+
+                    if heike_undercover <> 4 then
+                         begin
+                              DialogueOn;
+                              SayRadio(Yefibachev,'D7-Leader-2b');
+                              DialogueOff;
+
+                              ChangeHeikeUndercoverStatus(4);
+                         end;
+
+                    code_black = true;
+                    except_Yakov = false;
+                    Yakov_luring = 4;
+
+                    exit;
+               end;
+          end;
+     end;
+//When Heike leaves the archive and Yakov has followed her inside, cf. the code above
+//taking care of making player units exit buildings.
+Every 0$1+0$0.1 do
+     var temp_list;
+     begin
+
+          repeat
+          wait(0$0.5);
+
+          if heike_undercover in [3,4] or IsDead(Yakov) or Yakov_luring = 4 then
+               exit;
+
+          until Yakov_luring = 3;
+
+          Yakov_luring = 4;
+
+          DialogueOn;
+
+          if Query('QBoyfriendArchive') = 1 then  //Kill him
+               begin
+                    RemoveHumanFromVariables(1,Yakov,true);
+                    DestroyUnit(Yakov);  //If we KillUnit he will exit the building and die outside
+
+                    SayEffect('D13-12b21-Effect-1');
+                    dwait(0$1);
+                    temp_list = UnitsInside(the_archive);
+                    if Barovnin in temp_list then
+                         Say(Barovnin,'D11-211-Doc-1')
+                    else
+                         if temp_list > 0 then
+                              if GetSex(temp_list[1]) = sex_male then
+                                   Say(temp_list[1],'D11-211-SciM-1')
+                              else
+                                   Say(temp_list[1],'D11-211-SciF-1');
+
+                    DialogueOff;
+
+                    GetPlayerUnitsOutOfBuilding(the_archive);
+
+                    if temp_list > 0 then
+                         begin
+                              wait(0$5);
+
+                              DialogueOn;
+
+                              if Barovnin in temp_list then
+                                   begin
+                                        Say(Barovnin,'D11-211-Doc-2');
+                                        temp_list = Replace(temp_list,1,Barovnin);
+                                   end
+                              else
+                                   if GetSex(temp_list[1]) = sex_male then
+                                        Say(temp_list[1],'D11-211-SciM-2')
+                                   else
+                                        Say(temp_list[1],'D11-211-SciF-2');
+
+                              DialogueOff;
+
+                              repeat
+                              wait(0$2);
+                              until not code_black;
+
+                              if IsDead(temp_list[1]) then
+                                   exit;
+
+                              if heike_undercover <> 4 then
+                                   begin
+                                        DialogueOn;
+                                        SayRadio(Yefibachev,'D7-Leader-2b');
+                                        DialogueOff;
+
+                                        ChangeHeikeUndercoverStatus(4);
+                                   end;
+
+                              code_black = true;
+                         end;
+
+                    exit;
+               end;
+
+          //Heike let's Yakov live (stay inside the archive)
+          Say(Heike,'D13-12b22-H-1');
+
+          DialogueOff;
+
+          GetPlayerUnitsOutOfBuilding(the_archive);
+
+          wait(0$20);
+
+          while code_black do
+               wait(0$2);
+
+          if IsLive(Yakov) then
+               begin
+                    if heike_undercover <> 4 then
+                         begin
+                              DialogueOn;
+                              SayRadio(Yefibachev,'D7-Leader-2b');
+                              DialogueOff;
+
+                              ChangeHeikeUndercoverStatus(4);
+                         end;
+
+                    code_black = true;
+                    except_Yakov = false;
+               end;
+
+          exit;
+     end;
+
+//Every taking care of counting the number of documents stolen and display it to the player.
+//Begins displaying when some player unit enters the archive.
+//Update objectives when the number of documents reaches certain limits.
+Every 0$1+0$0.8 do
+     var i, val;
+     begin
+
+          repeat
+          wait(0$0.8);
+
+          if not archive_found then
+               continue;
+
+          val = false;
+          for i in player_units_in_russian_buildings do
+               if i[2] = the_archive then
+                    begin
+                         val = true;
+                         break;
+                    end;
+
+          if not val then
+               continue;
+
+          num_documents_stolen = num_documents_stolen + 1;
+          AddOrUpdateDisplayStrings('#Ar09-DocumentsStolen',[num_documents_stolen]);
+
+          if num_documents_stolen = 20 then
+               begin
+                    wait(0$0.2);  //So the new number of documents are displayed when objectives get updated
+                    ChangeMissionObjectives('M2');
+                    mission_can_end = true;
+               end;
+
+          if num_documents_stolen = 35 then
+               begin
+                    //When no new objectives are added, the objectives screen doesn't pop up
+                    ChangeMissionObjectives('MOutStealSurplus');
+               end;
+
+          until num_documents_stolen = max_num_documents_stealable;
+     end;
+
+//When Heike is undercover, the cargo bays she enter are marked as "DoNotAttack". When any other player
+//unit than her enters a vehicle it should be marked "NormalAttack" to make sure the player can't
+//abuse this feature.
+//CF. event "VehicleCaptured" in module "AI".
+Every 0$1+0$0.9 do
+     var i, temp_unit, temp_list;
+     begin
+
+          repeat
+          wait(0$1);
+
+          temp_list = FilterAllUnits([f_side,you]);
+          if heike_undercover in [2,3] then
+               temp_list = temp_list diff Heike;
+
+          for i in temp_list do
+               begin
+                    temp_unit = IsInUnit(i);
+                    if temp_unit > 0 then
+                         if GetType(temp_unit) = unit_vehicle then
+                              begin
+                                   NormalAttack(russians,temp_unit);
+                                   NormalAttack(russians_alt,temp_unit);
+                              end;
+               end;
+
+          until false;
+     end;
+//If Heike enters a vehicle of the player's side while she is under cover the vehicle should be marked as
+//DoNotAttack. This is only relevant if the vehicle is a cargo bay and was entered by another player unit than Heike before,
+//so this is a rare occasion.
+//CF. event "VehicleCaptured" in module "AI".
+Every 0$1+0$0.2 do
+     var temp_unit;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [0,1] then
+               continue
+          else
+               if heike_undercover = 4 then
+                    exit;
+
+          temp_unit = IsInUnit(Heike);
+          if temp_unit > 0 then
+               if GetType(temp_unit) = unit_vehicle and GetWeapon(temp_unit) = ru_cargo_bay then
+                    begin
+                         DoNotAttack(russians,temp_unit);
+                         DoNotAttack(russians_alt,temp_unit);
+                    end;
+
+          until false;
+     end;
+
+//Heike and her allies are seperated so when Heike triggers an event where there are some InGameOn
+//the other player units could be under attack or the player could accidentially have told them to
+//move near an enemy. When InGameOn the game goes on but the player can't do anything = frustration.
+//So this function is used instead of just InGameOn. It sets all other player units than Heike
+//to DoNoAttack for Russians and tells the units to stand still so they won't wander off to somewhere
+//unintended. Also make Russians outside the base stand still (code red patrols and in_out_russian_units).
+Function F_InGameOn;
+     var i, temp_list;
+     begin
+          temp_list = FilterAllUnits([f_side,you]);
+          if heike_undercover in [2,3] then
+               temp_list = temp_list diff Heike;
+
+          for i in temp_list do
+               begin
+                    ComStand(i);
+                    DoNotAttack(russians,i);
+                    DoNotAttack(russians_alt,i);
+               end;
+
+          temp_list = UnitFilter(in_out_russian_units,[f_not,[f_inarea,ru_base_area]]);
+          for i in patrols do
+               temp_list = temp_list ^ UnitFilter(i,[f_not,[f_inarea,ru_base_area]]);
+
+          for i in temp_list do
+               ComStand(i);
+
+          InGameOn;
+     end;
+Function F_InGameOff;
+     var i, temp_list;
+     begin
+          temp_list = FilterAllUnits([f_side,you]);
+          if heike_undercover in [2,3] then
+               temp_list = temp_list diff Heike;
+
+          for i in temp_list do
+               begin
+                    ComFree(i);
+                    NormalAttack(russians,i);
+                    NormalAttack(russians_alt,i);
+               end;
+
+          temp_list = UnitFilter(in_out_russian_units,[f_not,[f_inarea,ru_base_area]]);
+          for i in patrols do
+               temp_list = temp_list ^ UnitFilter(i,[f_not,[f_inarea,ru_base_area]]);
+
+          for i in temp_list do
+               ComFree(i);
+
+          InGameOff;
+     end;

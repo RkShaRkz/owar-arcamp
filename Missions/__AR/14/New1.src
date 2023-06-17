@@ -1,0 +1,1223 @@
+Export testing;
+Export scientists,mechanics,engineers,soldiers,mortars;
+Export gsoldiers,gveh,apesol,apekam,apewild,newcargo,newremote,brokenveh,newvehicleslist,Dwayneveh;
+Export Heike,Omar,Gensher, Olaf,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Dwayne,Khattam,Makise,Gonzo,others;
+Export Humans,Vehicles,Frags, humans_not_sel,prisoners,spawngensherpeople,omarturn,bomb_invented;
+
+
+Starting
+begin
+     testing=false;
+
+     music_nat = 4;
+     music_class = 3;
+
+     Randomizeall;
+
+     disable(1);
+     disable(2);
+     disable(3);
+
+     Load;
+     Unload;
+     Intro;
+end;
+
+
+Function Load;
+var i,temp,temp_list;
+begin
+     Randomize;
+
+     //Preparing people for the intro
+     setresourcetype(getbase(a1_dep),mat_cans,1000);                       
+     setresourcetype(getbase(a1_dep),mat_oil,1000);
+     setresourcetype(getbase(a1_dep),mat_siberit,1000);
+
+     uc_side=2;
+     uc_nation=nation_arabian;
+
+     preparescientist(false,0); scientists=createhuman;
+     preparescientist(false,0); scientists=scientists^createhuman;
+     preparescientist(false,0); scientists=scientists^createhuman;
+     preparescientist(false,0); scientists=scientists^createhuman;
+
+     hc_skills=[0,0,10,0];
+     hc_class=class_mechanic;
+     mechanics=createhuman^createhuman^createhuman;
+     hc_skills=[0,0,0,0];
+     mechanics=mechanics^createhuman;
+     placeunitxy(createhuman,126,122,false);
+
+     preparesoldier(false,0); soldiers=createhuman;
+     preparesoldier(false,0); soldiers=soldiers^createhuman;
+     preparesoldier(false,0); soldiers=soldiers^createhuman;
+     preparesoldier(false,0); soldiers=soldiers^createhuman;
+     preparesoldier(false,0); soldiers=soldiers^createhuman;
+     preparesoldier(false,0); soldiers=soldiers^createhuman;
+
+     preparesoldier(false,0); soldiers=soldiers^createhuman;
+     preparesoldier(false,0); soldiers=soldiers^createhuman;
+     preparesoldier(false,0); soldiers=soldiers^createhuman;
+
+     preparesoldier(false,0); gsoldiers=gsoldiers^createhuman;
+     preparesoldier(false,0); gsoldiers=gsoldiers^createhuman;
+     preparesoldier(false,0); gsoldiers=gsoldiers^createhuman;
+     preparesoldier(false,0); gsoldiers=gsoldiers^createhuman;
+
+     preparehuman(false,class_mortar,0); mortars=createhuman;
+     preparehuman(false,class_mortar,0); mortars=mortars^createhuman;
+     preparehuman(false,class_mortar,0); mortars=mortars^createhuman;
+
+     uc_nation=nation_nature;
+     hc_class=class_apeman_soldier;
+     apesol=createhuman^createhuman^createhuman;
+
+     hc_class=class_apeman_kamikaze;
+     apekam=createhuman^createhuman^createhuman;
+
+     hc_class=class_apeman;
+     apewild=createhuman^createhuman^createhuman^createhuman^createhuman;
+
+     uc_nation=nation_arabian;
+     prepareengineer(false,8); engineers=createhuman;
+     prepareengineer(false,8); engineers=engineers^createhuman;
+     prepareengineer(false,8); engineers=engineers^createhuman;
+
+
+     //The actual characters
+     if testing=true then
+     begin
+          bomb_invented = 1;
+
+          uc_nation=nation_arabian;
+          uc_side=8;
+          prisoners=[];
+          while prisoners<3 do
+          begin
+               PrepareEngineer(false,0);
+               prisoners=prisoners^CreateHuman;
+          end;
+
+          uc_side=2;
+          Heike=NewCharacter('Heike');
+          Omar=NewCharacter('Omar');
+          Gensher=NewCharacter('Dietrich');
+
+          InitHc;
+          uc_nation=nation_nature; hc_class=class_apeman_soldier; Gonzo=Createhuman; uc_nation=nation_arabian;
+          hc_class=class_soldier; hc_attr=[12,12]; hc_skills=[9,4,7,6]; hc_sex=2; hc_gallery='ru'; hc_face_number=24; hc_name = 'Heike'; Heike=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[4,5,8,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=2; hc_name = 'Olaf'; Olaf=CreateHuman;                          
+          hc_class=class_soldier; hc_attr=[10,10]; hc_skills=[9,6,5,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=15; hc_name = 'Oswald'; Oswald=CreateHuman;                      
+          hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[7,5,8,5]; hc_sex=1; hc_gallery='ar'; hc_face_number=5; hc_name = 'Ralph'; Ralph=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[10,10]; hc_skills=[4,5,8,8]; hc_sex=2; hc_gallery='ar'; hc_face_number=6; hc_name = 'Sonya'; Sonya=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[10,10]; hc_skills=[4,6,6,9]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=1; hc_name = 'Aviradze'; Aviradze=CreateHuman;           
+          hc_class=class_soldier; hc_attr=[10,10]; hc_skills=[7,6,7,4]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=2; hc_name = 'Kowalski'; Kowalski=CreateHuman;               
+          hc_class=class_engineer; hc_attr=[10,10]; hc_skills=[5,9,6,5]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=5; hc_name = 'Evelyn'; Evelyn=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[7,6,8,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=31; hc_name = 'Swansson'; Swansson=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[7,5,8,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=13; hc_name = 'Dwayne'; Dwayne=CreateHuman;                
+          hc_class=class_scientistic; hc_attr=[10,10]; hc_skills=[3,6,4,8]; hc_sex=1; hc_gallery='us'; hc_face_number=10; hc_name = 'Khattam'; Khattam=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[10,10]; hc_skills=[4,7,7,10]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=34; hc_name = 'Makise'; Makise=CreateHuman;
+
+          Humans=[Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Khattam,Makise,Gonzo];
+
+          InitHc;
+          PrepareSoldier(false,8);
+          Frags=CreateHuman^CreateHuman^CreateHuman^CreateHuman;
+          PrepareMechanic(false,8);
+          Frags=Frags^CreateHuman^CreateHuman^CreateHuman^CreateHuman;
+          PrepareEngineer(false,8);
+          Frags=Frags^CreateHuman^CreateHuman^CreateHuman^CreateHuman;
+          PrepareScientist(false,8);
+          Frags=Frags^CreateHuman^CreateHuman^CreateHuman^CreateHuman;
+     end
+     else
+
+     begin
+          if LoadVariable('Implosion_vehicle_dismantled_12_cont2',0) = 1 then
+             bomb_invented = 1
+          else bomb_invented = 0;
+
+          uc_side=8;
+          prisoners=CreateCharacterSet('Prisoners_13');
+
+          uc_side=2;
+          Heike=LoadCharacter('Heike_13',0,0);
+          Omar=LoadCharacter('Omar_13',0,0);
+          Gensher=LoadCharacter('Gensher_11_cont',class_soldier,0);
+
+          Olaf=LoadCharacter('Olaf_13',0,0);                 
+          Oswald=LoadCharacter('Oswald_13',0,0);             
+          Ralph=LoadCharacter('Ralph_13',0,0);                 
+          Sonya=LoadCharacter('Sonya_13',0,0);                 
+          Aviradze=LoadCharacter('Aviradze_13',0,0);           
+          Kowalski=LoadCharacter('Kowalski_13',0,0);           
+          Evelyn=LoadCharacter('Evelyn_13',0,0);
+          Swansson=LoadCharacter('Swansson_13',0,0);
+          Dwayne=LoadCharacter('Dwayne_13',0,0);
+          Khattam=LoadCharacter('Khattam_13',0,0);
+          Makise=LoadCharacter('Makise_13',0,0);
+          Gonzo=LoadCharacter('Gonzo_13',0,0);
+          others=CreateCharacterSet('Others_13');
+
+          Humans=([Olaf,Dwayne,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Khattam,Makise,Gonzo] ^ others) diff 0;
+
+          if Olaf=0 then
+             Olaf=LoadCharacter('Olaf_12_not_sel',0,0);
+          if Oswald=0 then
+             Oswald=LoadCharacter('Oswald_12_not_sel',0,0);
+          if Ralph=0 then
+             Ralph=LoadCharacter('Ralph_12_not_sel',0,0);
+          if Sonya=0 then
+             Sonya=LoadCharacter('Sonya_12_not_sel',0,0);
+          if Aviradze=0 then
+             Aviradze=LoadCharacter('Aviradze_12_not_sel',0,0);
+          if Kowalski=0 then
+             Kowalski=LoadCharacter('Kowalski_12_not_sel',0,0);
+          if Evelyn=0 then
+             Evelyn=LoadCharacter('Evelyn_12_not_sel',0,0);
+          if Swansson=0 then
+             Swansson=LoadCharacter('Swansson_12_not_sel',0,0);
+          if Dwayne=0 then
+             Dwayne=LoadCharacter('Dwayne_12_not_sel',0,0);
+          if Khattam=0 then
+             Khattam=LoadCharacter('Khattam_12_not_sel',0,0);
+
+          humans_not_sel=[Olaf,Dwayne,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Khattam,Makise,Gonzo] diff humans;
+
+          frags=CreateCharacterSet('NewKaaba_folks_13');
+
+          while frags < 15 do
+          begin
+               PrepareHuman(false, [class_soldier,class_engineer,class_mechanic,class_scientistic][Rand(1,4)], Rand(4,6));
+               frags = frags ^ CreateHuman;
+          end;
+     end;
+
+
+     //Vehicles
+     if testing=false then
+     begin
+          temp_list=LoadVariable('Vehicles_Left_13',0);
+          vehicles=[];
+          for i in temp_list do
+          begin
+               vc_chassis=i[1]; vc_control=i[2]; vc_engine=i[3]; vc_weapon=i[4]; uc_nation=i[5];
+               vehicles=vehicles^Createvehicle;
+          end;
+     end
+     else
+     begin
+          vehicles=[];
+          repeat
+                vc_chassis=[ar_half_tracked,ar_medium_trike][rand(1,2)];
+                vc_control=control_manual;
+                vc_engine=[engine_combustion,engine_siberite][rand(1,2)];
+                vc_weapon=[ar_gun,ar_rocket_launcher,ar_gatling_gun][rand(1,3)];
+                vehicles=vehicles^createvehicle;
+          until vehicles=5;
+     end;
+
+     temp_list=unitfilter(vehicles,[f_control,control_manual]);
+
+     while temp_list>3 do
+           temp_list=delete(temp_list,rand(1,temp_list));                                       //Using only few of the vehicles in the intro because of limited space
+
+     if Dwayne>0 then
+     begin
+          temp=unitfilter(vehicles,[[f_control,control_manual],[f_empty]]) diff temp_list;
+          if temp>0 then
+             placehumaninunit(Dwayne,temp[1]);
+     end;
+
+     if Olaf>0 then
+     begin
+          temp=unitfilter(vehicles,[[f_control,control_manual],[f_empty]]) diff temp_list;
+          if temp>0 then
+             placehumaninunit(Olaf,temp[1]);
+     end;
+
+     for i in temp_list do
+     begin
+          temp=rand(1,unitfilter(Humans diff [Gonzo,Dwayne,Olaf],[f_not,[f_driving]]));
+          Placehumaninunit(unitfilter(Humans diff [Gonzo,Dwayne,Olaf],[f_not,[f_driving]])[temp], i);
+     end;
+end;
+
+Function Unload;
+var i;
+begin
+     SetBName(A1_dep,'Dammam');
+
+     placehumaninunit(soldiers[1],a1_bu1);
+     placehumaninunit(soldiers[2],a1_bu2);
+     placehumaninunit(soldiers[3],a1_bu3);
+     placehumaninunit(soldiers[4],a1_bu4);
+     placehumaninunit(soldiers[5],a1_bu5);
+     placehumaninunit(soldiers[6],a1_bu6);
+     placehumaninunit(mortars[1],a1_bar);
+     placehumaninunit(mechanics[1],a1_tov);
+     placehumaninunit(mechanics[2],a1_tov);
+     placehumaninunit(mechanics[3],a1_tov);
+     placehumaninunit(apesol[1],a1_tov);
+     placehumaninunit(scientists[1],a1_lab);
+     placehumaninunit(engineers[1],a1_dep);
+     placehumaninunit(engineers[2],a1_dep);
+     placehumaninunit(engineers[3],a1_dep);
+
+     placeunitxy(soldiers[7],102,123,false);
+     placeunitxy(soldiers[8],101,124,false);
+     placeunitxy(soldiers[9],102,126,false);
+     comturnxy(soldiers[7],102,124);
+     comturnxy(soldiers[8],102,124);
+     comturnxy(soldiers[9],103,126);
+
+     vc_chassis=ar_light_trike; vc_engine=engine_combustion;
+     vc_control=control_manual; vc_weapon=ar_double_machine_gun;
+     gveh=createvehicle;
+
+     vc_chassis=ar_half_tracked; vc_engine=engine_combustion;
+     vc_control=control_manual; vc_weapon=ar_gun;
+     brokenveh=createvehicle;
+     setdir(brokenveh,5);
+     placeunitxy(brokenveh,124,120,false);
+
+     newvehicleslist=[];
+
+     SetClass(Heike,class_soldier);
+     placeunitxyr(Heike,101,141,4,false);
+     placeunitxyr(Omar,105,142,4,false);
+     placeunitxy(Gensher,118,130,false);
+
+     for i in Vehicles do
+         if isdrivenby(i) then
+            placeunitxyr(i,98,142,7,false);
+
+     for i in Humans^Prisoners do
+     begin
+          if GetClass(i) = class_sniper then
+             SetClass(i, class_soldier);
+
+          placeunitxyr(i,98,142,5,false);
+     end;
+end;
+
+Function Intro;
+var temp_list,i,temp_list2,spoken;
+begin
+     Ingameon;
+     exclusiveoff;
+     centeronxy(110,135);
+
+     //The group isn't dismissed yet as Heike and Omar are in a hurry to talk things over with Gensher, so they are left hanging
+     if Olaf>0 then
+        commovexy(Olaf,105,132);                                       //Olaf doesn't bother leaving his vehicle
+
+     if Oswald>0 then
+     begin
+          if isinunit(Oswald) then
+             parkthecar(Oswald);
+          addcomenterunit(Oswald,a1_bar);                              //Oswald feels at home in the armoury
+     end;
+
+     temp_list=[Ralph,Sonya,Evelyn,Khattam,Gonzo] ^ others diff 0;
+     if temp_list>0 then                                               //Ralph Sonya Khattam and Evelyn stay together. Gonzo is never short on chat either. The "Others" join them or stand loosly neraby.
+     begin
+          temp_list2=[[116,141],[115,142],[117,145],[119,145],[119,143]];
+          for i in temp_list do
+              if temp_list2>0 then
+              begin
+                   if isinunit(i) then
+                      parkthecar(i);
+                   addcommovexy(i,temp_list2[1][1],temp_list2[1][2]);
+                   addcomturnxy(i,117,143);
+                   temp_list2=delete(temp_list2,1);
+              end
+              else
+              begin
+                   if isinunit(i) then
+                      parkthecar(i);
+                   addcommovexy(i,125,145);
+              end;
+     end;
+
+     if Aviradze>0 then                                                //Aviradze keeps his distance
+        if isinunit(Aviradze) then
+        begin
+             parkthecar(Aviradze);
+             addcommovexy(Aviradze,136,142);
+        end
+        else
+            commovexy(Aviradze,108,141);
+
+     temp_list=[Kowalski,Swansson] diff 0;
+     if temp_list>0 then                                               //Kowalski and Swansson aproach some other soldiers
+     begin
+          for i in temp_list do
+          begin
+               if isinunit(i) then
+                  parkthecar(i);
+               if i=Kowalski then
+                  addcomagressivemove(Kowalski,104,127)
+               else
+                   addcomagressivemove(Swansson,104,125);
+               addcomturnxy(i,102,125);
+          end;
+     end;
+      
+     if Dwayne>0 then                                                  //Dwayne uses the free moment to check on his vehicle
+     begin
+          Dwayneveh=(Isinunit(Dwayne));
+          commovexy(Dwayne,130,142);
+          addcomexitvehicle(Dwayne);
+          addcomenterunit(Dwayne,a1_tov);
+     end;
+
+     if Makise>0 then                                                  //Makise goes to the laboratory
+     begin
+          if isinunit(Makise) then
+             parkthecar(Makise);
+          addcommovexy(Makise,122,141);
+     end;
+
+
+     //Heike Omar and Gensher discuss the situation
+     addcommovexy(Heike,115,129);
+     addcommovexy(Omar,117,132);
+     addcomturnunit(heike,gensher);
+     addcomturnunit(omar,gensher);
+     comturnunit(gensher,prisoners[1]);
+
+     spoken = false;
+     repeat
+           wait(0$0.5);
+           comturnunit(gensher,prisoners[1]);
+           if getdistunits(heike,gensher)<15 and not spoken then
+           begin
+                spoken = true;
+                async;
+                say(Gensher,'In_Ge1.1');
+                sync;
+           end;
+
+           if not isat(heike,115,129) then         //give the order again in case they get stuck
+           begin
+                commovexy(Heike,115,129);
+                addcomturnunit(heike,gensher);
+           end;
+           if not isat(omar,117,132) then
+           begin
+                commovexy(Omar,117,132);
+                addcomturnunit(omar,gensher);
+           end;
+     until isat(heike,115,129) and isat(omar,117,132);
+
+     centeronxy(117,131);
+
+     comturnunit(heike,gensher);
+     comturnunit(omar,gensher);
+
+     say(heike,'In_He1');
+     comturnunit(gensher,heike);
+     say(Gensher,'In_Ge1.2');
+     
+     if LoadVariable('RescueStatus_13',0)<1 and not testing then
+        say(Gensher,'In_Ge1.4');
+     if LoadVariable('Russians_Passed_13',0)<1 and not testing then
+        say(Gensher,'In_Ge1.3');
+
+     say(Omar,'In_Om1');
+
+     spawngensherpeople=1;
+     say(Gensher,'In_Ge2');
+
+     async;
+     say(Heike,'In_He2');
+     sync;
+
+     spawngensherpeople=2;
+
+     repeat
+           wait(0$1);
+     until isat(gsoldiers[1],121,132);
+     say(gsoldiers[1],'In_sol');
+     spawngensherpeople=3;
+
+     comturnunit(Gensher,gsoldiers[1]);
+     wait(0$0.5);
+     comagressivemove(Gensher,121,130);                              //Gensher steps aside to hear reports/give orders
+     addcomturnunit(Gensher,gsoldiers[1]);
+     setdir(gveh,4);
+     placeunitxy(gveh,159,141,false);
+     placehumaninunit(gsoldiers[4],gveh);
+     commovexy(gsoldiers[4],126,137);
+     addcomexitvehicle(gsoldiers[4]);
+     addcomagressivemove(gsoldiers[4],123,130);
+     addcomturnunit(gsoldiers[4],Gensher);
+     repeat
+           wait(0$1);                  
+     until isat(Gensher,121,130);
+
+     comturnunit(Heike,Omar);
+     comturnunit(Omar,Heike);
+     say(Omar,'In_Om2');                                             //Heike and Omar continue on
+     enable(1);
+     say(Heike,'In_He3');
+     enable(2);
+     say(Omar,'In_Om3');
+     enable(3);
+     say(Omar,'In_Om4');
+
+     comagressivemove(Gensher,118,130);
+     addcomturnunit(Gensher,Heike);
+     say(Gensher,'In_Ge3');                                          //Gensher comes back
+     repeat
+           comagressivemove(Gensher,118,130);
+           addcomturnunit(Gensher,Heike);
+           wait(0$0.1);
+     until isat(Gensher,118,130);
+     comturnunit(Heike^Omar,Gensher);
+     say(Heike,'In_He4');
+     say(Gensher,'In_Ge4');
+     say(Heike,'In_He5');
+     say(Omar,'In_Om5');
+     say(Heike,'In_He6');
+     say(Gensher,'In_Ge5');
+     say(Omar,'In_Om6');
+     comturnunit(Heike,Omar);
+     say(Heike,'In_He7');
+     say(Omar,'In_Om7');
+     comturnunit(Heike,Gensher);
+     say(Gensher,'In_Ge6');
+     comenterunit(Gensher,gveh);     //Gensher leaves
+     addcommovexy(Gensher,84,94);
+
+     comturnunit(Heike,Omar);
+     comturnunit(Omar,Heike);
+
+     if LoadVariable('Cooperates_with_UPF_10',0)=1 or testing then     //if helped Gensher in mission 10
+     begin
+          wait(0$2);
+          comturnunit(Gensher,gveh);
+          wait(0$0.5);
+          comturnxy(Gensher,117,135);
+          wait(0$1);
+          comturnunit(Gensher,Heike);
+          omarturn=1;
+          say(Gensher,'In_Ge7');
+          comenterunit(Gensher,gveh);     
+          addcommovexy(Gensher,84,94);
+
+          wait(0$2);
+          say(Omar,'In_Om8');
+          comturnunit(Omar,Heike);
+          comturnunit(Heike,Omar);
+          say(Heike,'In_He8');
+     end;
+
+     wait(0$2);
+     say(Omar,'In_Om9');
+     say(Heike,'In_He9');
+     say(Omar,'In_Om10');
+     comturnxy(Heike,111,130);
+     say(Heike,'In_He10');
+
+     wait(0$1);
+     comturnunit(Heike,Omar);
+
+     if bomb_invented then            //if bomb vehicle dismantled in mission 12
+     begin
+          say(Heike,'bomb_He');
+          say(Omar,'bomb_Om');
+     end;
+
+     if loadvariable('Artifact_measurement_done_13',0)=1 or testing then
+        say(Heike,'In_He11')
+     else
+         say(Heike,'In_He12');
+     say(Omar,'In_Om11');
+     say(Heike,'In_He13');
+     say(Omar,'In_Om12');
+     say(Heike,'In_He14');
+     say(Omar,'In_Om13');
+
+     wait(0$0.5);
+     Selection;
+end;
+
+
+every 0$1 trigger omarturn do
+begin
+     wait(0$1);
+     comturnunit(Omar,Gensher);
+end;
+
+//vehicles come, get refueled, and go back
+every 0$20 do 
+var vehs,i;
+begin
+     Randomize;
+
+     initvc;
+     uc_side=2;
+     uc_nation=nation_arabian;
+     vehs=[];
+     for i=1 to 3 do
+     begin
+          vc_chassis=[ar_half_tracked,ar_medium_trike][rand(1,2)];
+          vc_control=control_manual;
+          vc_weapon=[ar_gun,ar_rocket_launcher][rand(1,2)];
+          vc_engine=engine_combustion;
+          vehs=vehs^createvehicle;
+     end;
+
+     for i in vehs do
+     begin
+          setfuel(i,80);
+          placehumaninunit(createhuman,i);
+          placeunitxyr(i,92,101,5,false);
+     end;
+
+     commovexy(vehs,100,110);
+     addcommovexy(vehs,111,122);
+     addcommoveunit(vehs,a1_dep);
+     addcomrefuel(vehs,a1_dep);
+     addcommovexy(vehs,122,130);
+
+     repeat
+           wait(0$1);
+     until getfuel(vehs[1])>90 and getfuel(vehs[2])>90 and getfuel(vehs[3])>90;
+
+     commovexy(vehs,72,85);
+end;
+
+//Prisoners go to the depot
+every 0$1 do
+var i;
+begin
+     repeat
+           wait(0$0.1);
+           commovexy(prisoners,120,127);
+           for i in prisoners do
+               if isat(i,120,127) or isat(i,119,126) or  isat(i,121,127) then
+                  removeunit(i);
+     until unitfilter(prisoners,[f_placed])=0;
+end;
+
+
+//A vehicle is being endlessly repaired
+every 0$3 do
+begin
+     setlives(brokenveh,800);
+     enable;
+end;
+
+//lab is researching
+every 0$2 do
+begin
+     comresearch(a1_lab,tech_weap2);
+end;
+
+
+//First engineer works on the factory extensions
+every 0$3 do
+var hex;
+begin
+     combuild(engineers[1],b_ext_rocket,134,133,5);
+
+     repeat
+           wait(0$1);
+     until hexinfo(134,133) and not isconstructed(hexinfo(134,133));
+
+     complaceweapon(a1_bu2,ar_rocket_launcher);
+     addcomconstruct(a1_tov,ar_half_tracked,engine_siberite,control_apeman,ar_cargo_bay);
+     addcommovexy(engineers[1],132,125);
+     addcomhold(engineers[1]);
+
+     repeat
+           wait(0$1);
+     until unitfilter(newvehicleslist,[f_weapon,ar_cargo_bay]);
+
+     comdismantle(engineers[1],hexinfo(130,125));
+     addcombuild(engineers[1],b_ext_radar,130,125,3);
+     addcomenterunit(engineers[1],a1_dep);
+end;
+
+
+//Second engineer relocates a bunker
+every 0$4 do   
+var hex;
+begin
+     comdismantle(engineers[2],a1_bu1);
+     wait(0$14);
+     comexitbuilding(soldiers[1]);
+     addcomenterunit(soldiers[1],a1_bar);
+     repeat
+           wait(0$1);
+           hex=findcrates(111,141);
+     until hex>0;
+     addcomget(engineers[2],hex[1],hex[2]);
+     addcombuild(engineers[2],b_bunker,111,135,0);
+     addcomenterunit(engineers[2],a1_dep);
+     repeat
+           wait(0$1);
+     until isinunit(engineers[2]);
+     addcomplaceweapon(hexinfo(111,135),ar_gun);
+     placehumaninunit(apesol[3],a1_bar);
+     comenterunit(apesol[3],hexinfo(111,135));
+
+     repeat
+           wait(0$1);
+     until unitfilter(newvehicleslist,[[f_type,unit_vehicle],[f_control=control_apeman]])>2;
+     addcomconstruct(a1_tov,ar_half_tracked,engine_combustion,control_manual,[ar_gun,ar_rocket_launcher][rand(1,2)]);        //Factory is ordered to produce vehicles after placing the weapon on a new bunker
+     addcomconstruct(a1_tov,ar_half_tracked,engine_combustion,control_manual,ar_control_tower);
+     addcomconstruct(a1_tov,ar_hovercraft,engine_combustion,control_remote,ar_radar);
+     addcomconstruct(a1_tov,ar_half_tracked,engine_combustion,control_manual,ar_control_tower);
+
+     repeat
+           wait(0$1);
+     until newvehicleslist=7;
+
+     addcomconstruct(a1_tov,ar_half_tracked,engine_combustion,control_manual,ar_selfpropelled_bomb);
+
+     repeat
+           wait(0$1);
+           if GetWorkingProgress(a1_tov)>50 then
+              SetWorkingProgress(a1_tov,10);
+     until a1_tov=0;
+end;
+
+
+//Scientists
+every 0$10 do   
+var i,hex;
+begin
+     for i in scientists ^ apewild ^ apesol[2] do
+         placeunitxyr(i,132,153,6,false);
+
+     comagressivemove(apesol[2] ^ scientists diff scientists[1],119,142);    //Come back from the wild with apes
+     wait(0$1);
+     for i in apewild do
+         commoveunit(i,scientists[rand(2,4)]);
+
+     repeat
+           wait(0$1);
+           for i in scientists diff scientists[1] do
+               if hastask(i)=0 and getdistunitxy(i,119,142)>5 then
+                  comagressivemove(i,119,142);
+
+     until unitfilter((scientists diff scientists[1]) ^ apewild ,[f_not,[f_distxy,119,142,5]])=0;
+
+     comenterunit(scientists^[apewild[1],apewild[2]],a1_lab);
+     comenterunit(apewild[3]^apewild[4]^apewild[5]^apesol[2],a1_bar);
+     addcomchangeprofession(apewild[3]^apewild[4]^apesol[2],class_apeman_kamikaze);      //Apes are sent to lab and barracks
+     addcommovexy(apewild[3]^apewild[4]^apesol[2],63,110);
+
+     wait(0$30);
+     repeat
+           wait(0$1);
+     until newcargo>0;
+     comcancel(a1_lab);
+     comdismantle(engineers[3],a1_lab);
+     addcomhold(engineers[3]);
+     wait(0$5);
+     comexitbuilding(scientists^apewild[2]^apewild[3]);                                  //lab is dismantled and apes go to factory
+
+     repeat
+           wait(0$1);
+           hex=findcrates(121,139);
+     until hex>0;
+
+     comenterunit(apewild[1]^apewild[2],a1_tov);
+     addcomconstruct(a1_tov,ar_half_tracked,engine_combustion,control_apeman,[ar_gun,ar_rocket_launcher][rand(1,2)]);
+     addcomconstruct(a1_tov,ar_half_tracked,engine_combustion,control_apeman,[ar_gun,ar_rocket_launcher][rand(1,2)]);
+
+     commovexy(scientists,129,136);
+     addcommovexy(scientists,139,139);
+                                                                                          //scientists leave the base but wait for the cargo to join them
+     comget(newcargo,hex[1],hex[2]);
+     addcomagressivemove(newcargo,115,123);
+     addcomhold(newcargo);
+     commovexy(engineers[3],Getx(a1_dep),GetY(a1_dep));
+
+     repeat
+           wait(0$0.2);
+           if isat(newcargo,115,123) then
+           begin
+                if getcargo(newcargo,mat_cans)<60 and not carry(engineers[3]) then
+                   settasklist(engineers[3],[['<',0,0,4,1,0,0],[5,122,130,newcargo,0,0,0]])
+                else
+                    if getcargo(newcargo,mat_oil)<30 and not carry(engineers[3]) then
+                       settasklist(engineers[3],[['<',0,0,4,2,0,0],[5,122,130,newcargo,0,0,0]])
+                    else
+                        if getcargo(newcargo,mat_siberit)<10 and not carry(engineers[3]) then
+                             settasklist(engineers[3],[['<',0,0,4,3,0,0],[5,122,130,newcargo,0,0,0]]);
+          end;
+     until getcargo(newcargo,mat_siberit)=10;                                              //cargo is filled with stuff and then moves away
+
+     comagressivemove(newcargo^engineers[3],138,139);
+     repeat
+           wait(0$1);
+     until getdistunits(newcargo,scientists[1])<5;
+
+     commovexy(scientists^engineers[3]^newcargo,162,140);
+end;
+
+//Dwayne
+every 0$1 trigger Dwayne>0 and isinunit(Dwayne)=a1_tov do
+begin
+     comchangeprofession(Dwayne,class_mechanic);
+     wait(0$10);
+     comexitbuilding(Dwayne);
+     setlives(Dwayneveh,800);
+     addcomrepairvehicle(Dwayne,Dwayneveh);
+     repeat
+           wait(0$1);
+           setlives(Dwayneveh,800);
+     until 1+1=3;
+end;
+
+//Makise
+every 0$1 trigger Makise>0 and isat(Makise,122,141) do
+begin
+     removeunit(Makise);
+     repeat
+           wait(0$1);
+     until getlives(a1_lab)<500;
+     placehumaninunit(Makise,a1_lab);
+     repeat
+           wait(0$1);
+     until isdead(a1_lab);
+     wait(0$10);
+     if hexinfo(119,143)=0 then
+        commovexy(Makise,119,143)
+     else
+         commovexy(Makise,118,141);
+     addcomturnxy(Makise,118,143);
+end;
+
+//Oswald
+every 0$1 trigger Oswald>0 and isinunit(Oswald)=a1_bar do
+begin
+     removeunit(Oswald);
+end;
+
+
+//Gensher's people
+every 0$1 trigger spawngensherpeople>0 do
+var time,x,y,d;
+begin
+     time=tick;
+     repeat
+           wait(0$1);
+     until tick>time+0$8 or spawngensherpeople=2;
+
+     setattr(gsoldiers,attr_speed,12);
+     placeunitxy(gsoldiers[1],151,141,false);                     //Some soldiers are meant to approach Gensher interrupting the conversation
+     placeunitxy(gsoldiers[2],156,142,false);
+     placeunitxy(gsoldiers[3],156,140,false);
+
+     comagressivemove(gsoldiers[1],121,132);
+     comagressivemove(gsoldiers[2],123,132);
+     comagressivemove(gsoldiers[3],123,131);
+     addcomturnunit(gsoldiers,Gensher);
+
+     repeat
+           wait(0$0.2);
+     until spawngensherpeople=2;
+
+     if getdistunitxy(gsoldiers[1],121,132)>5 then
+     begin
+          x=getx(gsoldiers[1]);
+          y=gety(gsoldiers[1]);
+          d=getdir(gsoldiers[1]);
+          removeunit(gsoldiers[1]);
+          setattr(gsoldiers[1],attr_speed,30);
+          setdir(gsoldiers[1],d);
+          placeunitxy(gsoldiers[1],x,y,false);
+
+          comagressivemove(gsoldiers[1],121,132);
+          addcomturnunit(gsoldiers[1],Gensher);
+     end;
+
+     repeat
+           wait(0$0.2);
+     until spawngensherpeople=3;
+
+     x=getx(gsoldiers[1]);
+     y=gety(gsoldiers[1]);
+     d=getdir(gsoldiers[1]);
+     removeunit(gsoldiers[1]);
+     setattr(gsoldiers[1],attr_speed,12);
+     setdir(gsoldiers[1],d);
+     placeunitxy(gsoldiers[1],x,y,false);
+     comturnunit(gsoldiers[1],Gensher);
+end;
+
+every 0$1 marked 1 do
+begin
+     comturnunit(Gensher,gsoldiers[2]);
+     wait(0$0.5);
+     comenterunit(gsoldiers[1],a1_bar);
+     addcomchangeprofession(gsoldiers[1],class_mortar);
+     addcommovexy(gsoldiers[1],63,110);
+     placehumaninunit(mortars[2],a1_bar);
+     placehumaninunit(mortars[3],a1_bar);
+     repeat
+           wait(0$1);
+     until getclass(gsoldiers[1])=class_mortar;
+     addcommovexy(mortars[2]^mortars[3],63,110);
+end;
+
+every 0$1 marked 2 do
+var i,temp;
+begin
+     comturnunit(Gensher,gsoldiers[4]);
+     wait(0$0.5);
+     comenterunit(gsoldiers[2]^gsoldiers[3],a1_dep);
+     repeat
+           wait(0$1);
+     until isinunit(gsoldiers[2])=a1_dep and isinunit(gsoldiers[3])=a1_dep;
+     wait(0$2);
+     commovexy(gsoldiers[2],84,94);
+     wait(0$0.5);
+     for i in prisoners do
+         repeat
+               wait(0$0.5);
+               temp=[[120,127],[119,126],[121,127]][rand(1,3)];
+               placeunitxy(i,temp[1],temp[2],false);
+               commovexy(prisoners,84,94);
+         until isplaced(i);
+
+     commovexy(prisoners,84,94);
+     wait(0$0.5);
+     commovexy(gsoldiers[3],84,94);
+end;
+
+every 0$1 marked 3 do
+begin
+     comturnunit(Gensher,Heike);
+     wait(0$0.5);
+     comenterunit(gsoldiers[4],a1_bar);
+     repeat
+           wait(0$1);
+     until isinunit(gsoldiers[4]);
+     wait(0$1);
+     addcomexitbuilding(gsoldiers[4]^soldiers[1]);
+     addcomplaceremotecharge(gsoldiers[4],103,138,0);
+     addcomplaceremotecharge(soldiers[1],106,141,0);
+     addcommovexy(gsoldiers[4]^soldiers[1],114,135);
+     repeat
+           wait(0$1);
+     until mineofunit(gsoldiers[4])>0 and mineofunit(soldiers[1])>0;
+     comenterunit(gsoldiers[4],a1_bar);
+     comenterunit(soldiers[1],a1_bar);
+end;
+
+
+//Orders for new vehicles
+on vehicleconstructed(veh,fac) do
+begin
+     newvehicleslist=newvehicleslist^veh;
+
+     if getweapon(veh)=ar_cargo_bay then
+        newcargo=veh
+     else
+         if newvehicleslist=2 then
+         begin
+              commovexy(veh,115,136);
+              addcommovexy(veh,106,138);
+              addcommovexy(veh,97,127);
+         end
+         else
+             if newvehicleslist=3 then
+                commovexy(veh,115,137)
+             else
+                 if newvehicleslist=4 then
+                    commovexy(veh,119,138)
+                 else
+                     if newvehicleslist=5 then
+                        commovexy(veh,115,123)
+                     else
+                         if newvehicleslist=6 then
+                            commovexy(veh,114,134)
+                         else
+                             if newvehicleslist=7 then
+                                commovexy(veh,98,100);
+
+      if getweapon(veh)=ar_control_tower and newremote=0 then
+      begin
+           placehumaninunit(mechanics[4],a1_tov);
+           newremote=isdrivenby(veh);
+      end;
+
+      if getcontrol(veh)=control_remote then
+         linkvehicletohuman(veh,newremote);
+end;
+
+
+Function FindCrates(x,y);
+var i,j,cratehex,hex_list,temp_hex;
+begin
+     for i=1 to 4 do
+     begin
+          hex_list=[[x,y]];
+          temp_hex=[x-i,y-i];
+          hex_list=hex_list^[temp_hex];
+          for j=1 to i do
+          begin
+               temp_hex=[temp_hex[1]+1,temp_hex[2]];
+               hex_list=hex_list^[temp_hex];
+          end;
+          for j=1 to i do
+          begin
+               temp_hex=[temp_hex[1]+1,temp_hex[2]+1];
+               hex_list=hex_list^[temp_hex];
+          end;
+          for j=1 to i do
+          begin
+               temp_hex=[temp_hex[1],temp_hex[2]+1];
+               hex_list=hex_list^[temp_hex];
+          end;
+          for j=1 to i do
+          begin
+               temp_hex=[temp_hex[1]-1,temp_hex[2]];
+               hex_list=hex_list^[temp_hex];
+          end;
+          for j=1 to i do
+          begin
+               temp_hex=[temp_hex[1]-1,temp_hex[2]-1];
+               hex_list=hex_list^[temp_hex];
+          end;
+          for j=1 to i do
+          begin
+               temp_hex=[temp_hex[1],temp_hex[2]-1];
+               hex_list=hex_list^[temp_hex];
+          end;
+
+          for j in hex_list do
+              if hexinfo(j[1],j[2])=-1 and not isenvironment(j[1],j[2]) then
+              begin
+                   result=[j[1],j[2]];
+                   exit;
+              end;
+     end;
+     result=0;
+end;
+
+Function ParkTheCar(driver);
+var parking;                                     
+begin
+     parking=[[135,145],[137,144],[134,142],[131,139]];
+     if parking>0 then
+     begin
+          comagressivemove(driver,parking[1][1],parking[1][2]);
+          parking=delete(parking,1);
+     end
+     else
+         commovexy(driver,142,136);
+
+     addcomexitvehicle(driver);
+end;
+
+
+//Keep constant speed in case something could break the intro. Allow to instantly skip the intro instead.
+every 1 do
+begin
+     game_speed=5;
+     enable;
+end;
+
+on dialogueskipped(p) do
+begin
+     dialogueon;
+     wait(0$0.5);
+     Selection;
+end;
+
+Function Selection;
+var un,un_list,temp_list,i,temp,name_list,temp_list2,n;
+begin
+     Randomize;
+
+     case LoadVariable('RescueStatus_13', 0) of
+          2: n = 3;
+          1: n = 2;
+          else n = 0;
+     end;
+
+     humans=humans diff gonzo;
+     un_list=CharacterSelection('',[9,8,7][difficulty],[9,8,7][difficulty] + n,[sel_not_hired,sel_dont_change_class,sel_not_changeable,Omar,Gensher] ^ [sel_hired,sel_change_class,sel_not_changeable,Heike,sel_changeable]^humans ^ [sel_not_hired]^humans_not_sel^frags,[class_soldier, class_mortar, [class_mechanic,1], [class_engineer,1], class_scientistic]);
+     
+
+     //minimum vehicles:
+     //easy  1 manual rocket, 1 ape rocket, 2 remote rockets
+     //      1 manual gatling, 1 ape gatling, 2 remote gatlings
+     //      4 bombs if invented
+
+     //medium: 1 manual rocket, 1 ape rocket, 1 remote rocket
+     //      1 manual gatling, 1 ape gatling, 1 remote gatling
+     //      3 bombs if invented
+
+     //hard: 1 manual rocket, 1 ape rocket
+     //      1 manual gatling, 1 ape gatling
+     //      2 bombs if invented
+     temp_list=[];
+
+     vc_chassis=[ar_medium_trike,ar_half_tracked][rand(1,2)]; vc_control=control_manual;            //rockets
+     vc_engine=engine_combustion; vc_weapon=ar_rocket_launcher;
+     temp_list=temp_list^createvehicle;
+
+     vc_chassis=[ar_medium_trike,ar_half_tracked][rand(1,2)]; vc_control=control_apeman;
+     temp_list=temp_list^createvehicle;
+
+     if difficulty<3 then
+     begin
+          vc_chassis=[ar_medium_trike,ar_half_tracked][rand(1,2)]; vc_control=control_remote;
+          temp_list=temp_list^createvehicle;
+     end;
+     if difficulty=1 then
+     begin
+          vc_chassis=[ar_medium_trike,ar_half_tracked][rand(1,2)];
+          temp_list=temp_list^createvehicle;
+     end;
+
+     vc_chassis=[ar_medium_trike,ar_half_tracked][rand(1,2)]; vc_control=control_manual;            //gatlings
+     vc_engine=engine_combustion; vc_weapon=ar_gatling_gun;
+     temp_list=temp_list^createvehicle;
+
+     vc_chassis=[ar_medium_trike,ar_half_tracked][rand(1,2)]; vc_control=control_apeman;
+     temp_list=temp_list^createvehicle;
+
+     if difficulty<3 then
+     begin
+          vc_chassis=[ar_medium_trike,ar_half_tracked][rand(1,2)]; vc_control=control_remote;
+          temp_list=temp_list^createvehicle;
+     end;
+     if difficulty=1 then
+     begin
+          vc_chassis=[ar_medium_trike,ar_half_tracked][rand(1,2)];
+          temp_list=temp_list^createvehicle;
+     end;
+
+     if bomb_invented then                                                                          //bombs
+        for i=1 to [4,3,2][difficulty] do
+        begin
+             vc_chassis=ar_half_tracked; vc_control=control_remote;                                    
+             vc_engine=[engine_siberite, [engine_siberite,engine_combustion][rand(1,2)], engine_combustion][difficulty];
+             vc_weapon=ar_selfpropelled_bomb;
+             temp_list=temp_list^createvehicle;
+        end;
+
+     //additional from previous mission:
+
+     un=unitfilter(vehicles,[[f_weapon,ar_cargo_bay],[f_control,control_remote]]);
+     if un>0 then
+     begin
+          temp_list=temp_list^un;                                                        //2 remote cargos if were left
+          vehicles=vehicles diff un;
+     end;
+
+     un=unitfilter(vehicles,[f_weapon,ar_control_tower]);
+     if un>0 then                                                                        //1 control tower (mandatory)
+     begin
+          temp_list=temp_list^unitfilter(vehicles,[f_weapon,ar_control_tower])[1];
+          vehicles=vehicles diff un;
+     end
+     else
+         begin
+              vc_chassis=ar_half_tracked; vc_engine=engine_combustion;
+              vc_control=control_manual; vc_weapon=ar_control_tower;
+              temp_list=temp_list^createvehicle;
+         end;
+
+     if unitfilter(vehicles,[f_weapon,ar_radar])>0 then                                  //1 radar (mandatory)
+     begin
+          un=unitfilter(vehicles,[f_weapon,ar_radar])[1];
+          temp_list=temp_list^un;
+          vehicles=vehicles diff unitfilter(vehicles,[f_weapon,ar_radar]);
+     end
+     else
+         begin
+              vc_chassis=ar_half_tracked; vc_engine=engine_combustion;
+              vc_control=control_remote; vc_weapon=ar_radar;
+              temp_list=temp_list^createvehicle;
+         end;
+                          
+     vehicles=vehicles diff unitfilter(vehicles,[f_weapon,ar_cargo_bay]);
+     vehicles=vehicles diff unitfilter(vehicles,[f_weapon,ar_control_tower]);
+
+     
+     temp_list2=unitfilter(vehicles,[[f_control,control_manual],[f_or,[f_weapon,ar_rocket_launcher],[f_weapon,ru_rocket_launcher]]]);  //add just egnough manual vehicles for the people, prioriy: rockets, random 2 of the hovercrafts, gatlings, guns, flamers, everything else
+
+     for i=1 to 2 do
+         if unitfilter(vehicles,[f_chassis,ar_hovercraft])>0 then
+         begin
+              temp=rand(1, unitfilter(vehicles,[[f_control,control_manual],[f_chassis,ar_hovercraft]]));
+              un=unitfilter(vehicles,[[f_control,control_manual],[f_chassis,ar_hovercraft]])[temp];
+              temp_list2=temp_list2^un;
+              vehicles=vehicles diff un;
+         end;
+
+     temp_list2=temp_list2^ unitfilter(vehicles,[[f_control,control_manual],[f_or,[f_weapon,ar_gatling_gun],[f_weapon,ru_gatling_gun]]]);
+     temp_list2=temp_list2^ unitfilter(vehicles,[[f_control,control_manual],[f_or,[f_weapon,ar_gun],[f_weapon,ru_gun]]]);
+     temp_list2=temp_list2^ unitfilter(vehicles,[[f_control,control_manual],[f_weapon,ar_flame_thrower]]);
+
+     vehicles=vehicles diff temp_list2;
+     temp_list2=temp_list2 ^ unitfilter(vehicles,[f_control,control_manual]);
+
+     for i=1 to un_list - unitfilter(temp_list,[f_control,control_manual]) do
+     begin
+          if i<=temp_list2 then
+             temp_list=temp_list^temp_list2[i];
+     end;
+
+     for i=1 to 2 do
+         if unitfilter(vehicles,[f_or,[f_control,control_remote],[f_control,control_apeman]])>0 then
+         begin
+              temp=rand(1,unitfilter(vehicles,[f_or,[f_control,control_remote],[f_control,control_apeman]]));
+              un=unitfilter(vehicles,[f_or,[f_control,control_remote],[f_control,control_apeman]])[temp];
+              temp_list=temp_list^un;
+              vehicles=vehicles diff un;
+         end;
+
+     {while un_list>unitfilter(temp_list,[f_control,control_manual]) do
+     begin
+          vc_chassis=ar_light_trike; vc_engine=engine_combustion;
+          vc_control=control_manual; vc_weapon=ar_multimissile_ballista;
+          temp_list=temp_list^createvehicle;
+     end; }
+
+
+     temp=[Olaf,Dwayne,Oswald,Ralph,Sonya,Aviradze,Kowalski,Evelyn,Swansson,Khattam,Makise];
+     name_list=['Olaf','Dwayne','Oswald','Ralph','Sonya','Aviradze','Kowalski','Evelyn','Swansson','Khattam','Makise'];
+     for i=1 to temp do
+         if temp[i]>0 then
+            if temp[i] in un_list then
+               SaveCharacters(temp[i],name_list[i]&'_14')
+            else
+                begin
+                     SetLastMission(temp[i],13);  //For correct xp bonus later on
+                     SaveCharacters(temp[i],name_list[i]&'_14_not_sel');
+                end;
+
+     SaveCharacters(Heike,'Heike_14');
+     SaveCharacters(Omar,'Omar_14');
+
+     if Gonzo>0 then
+        SaveCharacters(Gonzo,'Gonzo_14');
+
+     SaveCharacters(un_list diff (temp ^ Heike), 'Others_14');
+
+     temp = (others ^ frags) diff un_list;
+     SetLastMission(temp,13);  //For correct xp bonus later on
+     SaveCharacters(temp, 'Others_14_not_sel');
+
+     vehicles=[];
+     for i in temp_list do
+         vehicles=vehicles^[[GetChassis(i),GetControl(i),GetEngine(i),GetWeapon(i),GetNation(i)]];
+     SaveVariable(vehicles,'Vehicles_14');
+
+     ChangeMap('%_cont','%_cont');
+end;
+

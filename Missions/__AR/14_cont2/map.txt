@@ -1,0 +1,1059 @@
+MAIN_DEFINITIONS
+  SIZE 72 134
+  TICK 0
+  PLAYER_NUMBER 2
+  FOG_TYPE 0
+  FOGSIDES 1 2 3 4 5 6 7 8
+  MUCHY_RECT 0 0 0 0
+  EAGLES 0 50
+  WAVES 0
+  WATER_COLORS 0000 3 0000 3 0000
+END_OF_MAIN_DEFINITIONS
+
+HEXES
+  LINE 0 0 71
+    t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4
+  LINE 1 1 72
+    t4 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t4
+  LINE 2 1 72
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 3 2 73
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 4 2 73
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 5 3 74
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 6 3 74
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 7 4 75
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 8 4 75
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 9 5 76
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 10 5 76
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 11 6 77
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 12 6 77
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 13 7 78
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 14 7 78
+    t4r6so t2r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 15 8 79
+    t4r6v6sp t2r6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 16 8 79
+    t4r6vC t2r6v6sp r6v6sp r6v6sp r6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 17 9 80
+    t4r7vC t2r7vC r6vC r6v6sp r6v6sp r6v6sp r6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 18 9 80
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r6v6sp r6v6sp r6v6sp r6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 19 10 81
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sp r6v6sp r6v6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 20 10 81
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sp r6v6sp r6sp "" "" "" "" sI sI sI sJ "" "" "" "" "" "" "" so so so so so so so so so so so so so sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 21 11 82
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sp r6sp "" "" "" sI v2 v2 v2 sJ sJ "" "" "" sI sI so v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 sp sp sp sB sB "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 22 11 82
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" sH v2 v2 v2 v2 v2 sJ sJ sI sI v2 v2sY v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v1sh v1sh sB sB "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 23 12 83
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sX v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v1sh v1sh sB "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 24 12 83
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sX v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v1sh sB "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 25 13 84
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sX v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v1sh sB "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 26 13 84
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sX v6 v6 v6 v6 v6sI v6sI v6sI v6sI v6sI v6sJ v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v1sh sB "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 27 14 85
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4sG v4sG v6 v6 v6sH v8 v8sI v8sI v8sI v8sY v6sp v6sp v6sp v6sp v6 v6 v6 v6 v6 v6 v6 v1sh sC "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 28 14 85
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4 v4sG v6 v6 v6sH v8sH vA vAsI vAsI vC vC vC vC v6sp v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 29 15 86
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4 v4 v4sG v6 v6 v6sH v8sH vAsH vC vC vC vC vC vC v6sp v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 30 15 86
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4 v4 v4 v4sG v6 v6sH v8sH vAsH vC vC vC vC vC vC vC v6sp v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 31 16 87
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4 v4 v4 v4sH v6 v6sH v8sH vAsG vC vC vC vC vC vC vC v6sq v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 32 16 87
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4 v4 v4sH v6 v6sH v8 v8sG v8sW vAsG vC vC vC vC vC v6sq v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 33 17 88
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4 v4sH v6 v6 v6sG v6sG v8 v8sG v8sW vC vC vC vC vC v6sq v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 34 17 88
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq "" "" "" "" sH v2 v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4sH v6 v6 v6 v6 v6sG v6sG v6sG v6sm v6sm v6sm v6sm v6sm v6sr v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 35 18 89
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq r7 "" "" "" "" sG v2 v2 v2 v2 v2 v2 v2 v2 v2sH v4sH v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 36 18 89
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sq r6sq r7 "" "" "" "" "" sG sG sG v2 v2 v2 v2 v2 v2 v2sH v4sH v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 37 19 90
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sr r6v6sr r6sq r7 r7 "" "" "" "" "" "" "" sG sG sG sG sG v2 v2sH v4sH v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 38 19 90
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sr r6sr r6sr r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" sG v2 v2sH v4sH v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 39 20 91
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sr r6sr r7 r7 r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" sG v2 v2sX v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 v6 sr sr "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 40 20 91
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r6v6sr r6v6sr r6sr r7 r7 r7 r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" sG sG sm sm sm sm sm sm sm sm sm sm sm sm sm sm sm sm sr "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 41 21 92
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r6v6sr r6sr r6sr r7 r7 r7 r7 r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 42 21 92
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r6v6sr r6sr r7 r7 r7 r7 r7 r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 43 22 93
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r6v6sr r6sr r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 44 22 93
+    t4r7vC t2r7vC r7vC r7vC r7vC r6v6sr r6v6sr r6sq r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 45 23 94
+    t4r7vC t2r7vC r7vC r7vC r6v6sr r6v5sD r6v5sD r6si r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 46 23 94
+    t4r7vC t2r7vC r7vC r7vC r6v6sq r6v5sC r6sj r6sj r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 47 24 95
+    t4r7vC t2r7vC r7vC r6v6sq r6v5sC r6si r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 "" "" sA sA sA sB "" "" so so sp "" sA sB "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 48 24 95
+    t4r7vC t2r7vC r7vC r6v6sq r6v6 r6v5sC r6si r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7s9 r7v1sA r7v1sA r6v1sg r6sp r6so r6so r6v6so r6v6sp r6sp so v1sh sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 49 25 96
+    t4r6vCsJ t2r6vCsJ r6v8sa r6v6sJ r6v6sJ r6v5sB r6sh r6sh r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7sH r6v2sQ r6v2sY r6v6so r6v6so r6v6so r6v6so r6vC r6v6sp r6v6sp r6v6sp r6v6sp sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 50 25 96
+    t4r6vEso t2r6vEsp r6vCsJ r6v8sp r6v8sZ r6v6sp r6v5sR r6v5sR r6sh r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r6sf r6v5s9 r6v6sn r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 51 26 97
+    t4r6vK t2r6vEsp r6vEsp r6vCsJ r6vCsJ r6v8sp r6v8sp r6v5sR r6sh r6sh r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r6sf r6v5s9 r6v6sn r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 52 26 97
+    t4r6vK t2r6vK r6vK r6vEsp r6vEsp r6vEsp r6vEsp r6v8sp r6v5sR r6v5sR r6sh r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r6sf r6v5s9 r6v6sn r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6v8sa r6v6sK r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 53 27 98
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vK r6vEsp r6v8sp r6v8sp r6v5sR r6sh r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r6sf r6v5s9 r6v6sn r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6v8sa r6v2sq r6sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 54 27 98
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vK r6vK r6vEsp r6vEsp r6v8sp r6v5sR r6sh r6sh r7 r7 r7 r7 r7 r7 r7 r7 r7 r7 r6sf r6v5sX r6v9sP r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vAsK r6v4sq r6sa "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 55 28 99
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vK r6vK r6vK r6vEsp r6v8sp r6v5sR r6v5sR r6si r7 r7 r7 r7 r7 r7 r7 r7 r7 r6sf r6v5sX r6v9sP r6vCsY r6vCsZ r6vC r6vC r6vC r6vC r6vC r6vC r6vC r6vAsK r6v4sq r6sa "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 56 28 99
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vK r6vK r6vK r6vK r6vEsp r6v8sp r6v8sJ r6v2sq r7sK r7 r7 r7 r7 r7 r7 r7 r7 r6sf r6v5sX r6v9s9 r6vAsn r6vG r6vCsZ r6vC r6vC r6vC r6vC r6vC r6vC r6vAsK r6v4sq r6sa "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 57 29 100
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vK r6vK r6vK r6vK r6vEsq r6vAsa r6v4sq r7sa r7 r7 r7 r7 r7 r7 r7 r6sQ r6sQ r6v3sn r6v9sQ r6vAsI r6vCsX r6vG r6vCsa r6vC r6vAsL r6vAsG r6vC r6vC r6vC r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 58 29 100
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vK r6vK r6vK r6vK r6vFsi r6vAsi r6v4sq r7sa r7 r7 r7 r7 r7 r7 r7 r6sQ r6v3so r6v3so r6v9sQ r6vC r6vCsY r6vG r6vCsa r6vC r6vAsL r6vA r6v6sr r6v6sr r6v6sr r6v6sr r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 59 30 101
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vK r6vFsj r6vFsj r6vFsj r6vAsi r6v4sq r7sa r7 r7 r7 r7 r7 r7 r7 r6sQ r6v3so r6v9sQ r6v9sY r6vCsY r6vCsY r7vG r6vG r6vCsa r6v6sr r6v4sr r6v4sr r6sr r6sr r6sr r6sr "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 60 30 101
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vK r6vFsj r6vAsj r6vAsj r6vAsj r6v4sq r7sa r7 r7 r7 r7 r7 r7 r7 r6sQ r6v3so r6v9sP r6vCs9 r6vDsP r7vG r7vG r7vG r6vCsa r6v6sq r6sr r6sb r6sb "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 61 31 102
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r6vAsi r6v4sr r6v4sr r6v4sr r7sa r7 r7 r7 r7 r7 r7 r7 r6sQ r6v3so r6v9 r6v9sP r6vCsX r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 62 31 102
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r6vAsi r6v4sq r7v4 r7v4 r7v2sK r7sJ r7sI r7sI r7sJ r7sJ r7 r7 r6sQ r6v3so r6v9sQ r6v9sQ r6vCsX r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 63 32 103
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r6vAsi r6v4sq r7v4 r7v4 r7v2sY r6v2so r6v2so r6v2so r6v2sp r6sp r7sY r7sY r6v3so r6v9sP r6vCsI r6vCsY r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 64 32 103
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r6vAsi r6v4sq r7v4 r7v4sY r7v4sY r6v6so r6v8sY r6v8sY r6v8sY r6v6sp r7v4sJ r7v4 r7v4sA r6v5sX r6v9sf r7vEsH r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 65 33 104
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r6vAsi r6v4sq r7v4 r7v4sY r7v8 r7v8sY r7vC r7vC r7vC r7vC r6v6sq r7v4sJ r7v4sA r7v5 r6v5sX r6v9sf r7vEsH r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 66 33 104
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vAsi r6v4sp r6v4so r7v8sI r7v8sY r7vC r7vC r7vC r7vC r7v9sS r7v6sR r7v5sZ r7v5sY r6v5sY r6v9sf r7vEsH r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 67 34 105
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r6vAsh r6vAsh r6vAsg r6vAsg r7vCsQ r7vCsQ r7vCsQ r7vCsR r7vCsJ r6v9sh r6v9sh r6v9sh r6v9sg r6v9sg r7vE r7vEsH r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 68 34 105
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsC r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vEsH r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 69 35 106
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsC r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vEsH r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 70 35 106
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsC r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vEsH r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 71 36 107
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsC r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vCsW r7vCsW r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 72 36 107
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsC r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vCsK r7vC r7vCsX r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 73 37 108
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsC r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vCsJ r7vCsX r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 74 37 108
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsC r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vE r7vEsH r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 75 38 109
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsC r7vE r7vEsA r7vEsB r7vE r7vE r7vE r7vE r7vE r7vE r7vEsH r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 76 38 109
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsB r7vEsA r7vF r7vEsB r7vEsB r7vEsB r7vEsB r7vE r7vE r7vE r7vEsH r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 77 39 110
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsB r7vE r7vE r7vEsH r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 78 39 110
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vEsB r7vEsI r7vEsI r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 79 40 111
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFsA r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 80 40 111
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 81 41 112
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 82 41 112
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 83 42 113
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 84 42 113
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vCsZ r6v6sp r6v6sp r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 85 43 114
+    t4r6vK t2r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vG r7vCsZ r7vCsZ r7vCsZ r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 86 43 114
+    t4r6vEss t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 87 44 115
+    t4r6vK t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 88 44 115
+    t4r6vEsn t2r6vK r6vK r6vK r6vK r6vFsi r7vF r7vFsQ r7vFsQ r7vFsQ r7vFsQ r7vFsQ r7vFsQ r7vFsQ r7vFsQ r7vFsQ r7vFsQ r7vFsQ r7vFsR r7vF r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 89 45 116
+    t4r6vEsn t2r6vK r6vK r6vK r6vK r6vFsi r7vFsP r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vFsR r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 90 45 116
+    t4r6v8sn t2r6vEsn r6vK r6vK r6vK r6vFsi r7vF r7vFsP r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vFsS r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 91 46 117
+    t4r6vEsn t2r6vK r6vK r6vK r6vFsi r7vF r7vFsP r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vFsS r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vCsa r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 92 46 117
+    t4r6vEsn t2r6vK r6vK r6vK r6vFsi r7vF r7vFsP r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vI r7vFsS r7vF r7vF r7vFs9 r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vCsa vC r6v6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 93 47 118
+    t4r6vK t2r6vK r6vK r6vFsj r7vF r7vFsP r7vI r7vI r7vI r7vI r7vI r7vHsD r7vHs8 r7vI r7vI r7vI r7vFsT r7vFsT r7vF r7vF r7vCsT r7vCsW r7vG r7vG r7vG r7vG r7vG r7vG r7vG r7vCsa vC vC r6v6sp r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 94 47 118
+    t4r6vFse t2r6vFse r6vFse r6vFsj r7vF r7vF r7vFsO r7vFsT r7vEsb r7vEsb r7vEsb r7vEsb r7vEsO r7vEsW r7vFsO r7vFsO r7vFsT r7vCsT r7vCsT r7vCsT r7vCsT vC r7vCsW r7vG r7vCsb r7vCsb r7vCsb r7vCsb r7vCsb r7vCsb vC vC vC vC r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 95 48 119
+    t4r7vF t2r7vF r7vF r7vF r7vEsD r7vEsD r7vEsD r7vEsD r7vCsL r7vCsL r7vCsL r7vCsG r7vE r7vCsO r7vCsO r7vCsO r7vCsT vC vC vC vC vC r7vCsW r7vCsb vC vC vC vC vC vC vC vC vC vC r6v6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 96 48 119
+    t4r7vEs8 t2r7vEs8 r7vEs8 r7vEs8 r7vEsD r7vCsL r7vCsL r7vCsL r7vCsL r7vC r7vC r7vC r7vCsG r7vCsL r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 97 49 120
+    t4r7vCsG t2r7vCsG r7vCsG r7vCsG r7vCsL r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 98 49 120
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 99 50 121
+    t4r7vC t2r7vC r7vC r7vC r7vC r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 100 50 121
+    t4r7vC t2r7vC r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 101 51 122
+    t4r7vC t2r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6v6sp r6sp r6sp r6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 102 51 122
+    t4r7vC t2r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6v6sp r6v6sp r6v6sp r6sp r6sp r6sp r6sp r6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 103 52 123
+    t4r7vC t2r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6v6sp r6v6sp r6v6sp r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 104 52 123
+    t4r7vC t2r7vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 105 53 124
+    t4r7vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 106 53 124
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 107 54 125
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 108 54 125
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6sp "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 109 55 126
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 110 55 126
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 111 56 127
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 112 56 127
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 113 57 128
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sq r6sq "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 114 57 128
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6sp r6sp r6sp "" "" "" "" "" "" "" "" t2 t4
+  LINE 115 58 129
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6v6sp r6sp r6sp r6sp r6sp r6sp r6sp r6sp "" "" t2 t4
+  LINE 116 58 129
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6v6sp r6v6sp r6v6sp r6v6sp r6v6sp r6sp r6sp t2r6sp t4r6sp
+  LINE 117 59 130
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC r6v6sp r6v6sp r6v6sp t2r6v6sp t4r6v6sp
+  LINE 118 59 130
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 119 60 131
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 120 60 131
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 121 61 132
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 122 61 132
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 123 62 133
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 124 62 133
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 125 63 134
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 126 63 134
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 127 64 135
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 128 64 135
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 129 65 136
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 130 65 136
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 131 66 137
+    t4vC t2vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC vC t2vC t4vC
+  LINE 132 66 137
+    t4vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t2vC t4vC
+  LINE 133 67 138
+    t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC t4vC
+END_OF_HEXES
+
+EXTERNAL_NODES nodes.bin
+ENVIROMENT
+  SET 1 dummy
+  SET 2 list-akatojerab
+  SET 3 list-jerab-spal
+  SET 4 list-platan
+  SET 5 list-platan-spal
+  SET 6 list-mocal-koreny
+  SET 7 list-vrba
+  SET 8 list-vrba-zluta
+  SET 9 jehl-borovice
+  SET 10 jehl-borov-vysoka
+  SET 11 jehl-borovice-mala
+  SET 12 stone_set_01
+  SET 13 stone_set_02
+  SET 14 stone_set_03
+  SET 15 stone_set_04
+  SET 16 stone_set_05
+  SET 17 stone_set_06
+  SET 18 stone_set_07
+  SET 19 houby
+  SET 20 mrcha
+  SET 21 jehl-smrk-silny
+  SET 22 jehl-smrk-stredni
+  SET 23 jehl-smrk-uzky-spal
+  SET 24 jehl-smrk-stredni
+  SET 25 jehl-smrk-stredni-spal
+  SET 26 jehl-smrk-stredni-suchy
+  SET 27 list-dvoupatr
+  SET 28 list-briza
+  SET 29 list-paskvil
+  SET 30 ker
+  SET 31 jehl-borov-vysoka-spal
+  SET 32 list-akat-vysoky-spal
+  SET 33 plavun
+  SET 34 cykas
+  SET 35 list-kastan
+  SET 36 mech
+  SET 37 jehl-smrk-maly
+  SET 38 ker-husty
+  SET 39 ker-rosti
+  SET 40 list-akat-rosti
+  SET 41 list-briza-vyssi
+  SET 42 list-sahara
+  SET 43 list-akat-maly
+  SET 44 list-dvoupatr-maly
+  SET 45 parez
+  SET 46 polosuche
+  SET 47 list-dub
+  SET 48 list-kastan-vanek
+  SET 49 parezoid
+  SET 50 branka
+  SET 51 leknin
+  SET 52 monolit
+  ON_HEX 41 2
+    shi4
+  ON_HEX 59 2
+    sei2
+  ON_HEX 62 2
+    sei1
+  ON_HEX 68 2
+    shi5
+  ON_HEX 7 3
+    shi8
+  ON_HEX 14 3
+    shi4
+  ON_HEX 48 3
+    shi4
+  ON_HEX 66 3
+    shi4
+  ON_HEX 13 4
+    shi2
+  ON_HEX 25 4
+    shi5
+  ON_HEX 30 4
+    shi2
+  ON_HEX 59 4
+    sei8
+  ON_HEX 62 4
+    s2iJ
+  ON_HEX 7 5
+    shi9
+  ON_HEX 66 5
+    shi5
+  ON_HEX 71 5
+    s2iR
+  ON_HEX 6 6
+    shi6
+  ON_HEX 46 6
+    shi2
+  ON_HEX 63 6
+    sei6
+  ON_HEX 70 6
+    s2iQ
+  ON_HEX 74 9
+    shi7
+  ON_HEX 69 10
+    shi6
+  ON_HEX 70 10
+    s2iO
+  ON_HEX 66 11
+    s2iD
+  ON_HEX 74 14
+    shi8
+  ON_HEX 53 16
+    s2iG
+  ON_HEX 76 16
+    s2i8
+  ON_HEX 73 18
+    shi8
+  ON_HEX 59 19
+    s2iJ
+  ON_HEX 66 22
+    s2iJ
+  ON_HEX 47 23
+    s2iE
+  ON_HEX 57 28
+    shi5
+  ON_HEX 60 28
+    sciA
+  ON_HEX 67 28
+    s2iK
+  ON_HEX 62 29
+    s2i2
+  ON_HEX 56 30
+    s2i1
+  ON_HEX 60 31
+    sci9
+  ON_HEX 64 31
+    sci3
+  ON_HEX 65 36
+    sci5
+  ON_HEX 51 37
+    shi4
+  ON_HEX 57 38
+    sci6
+  ON_HEX 63 38
+    shi9
+  ON_HEX 84 38
+    s2iP
+  ON_HEX 89 40
+    shi3
+  ON_HEX 88 43
+    shi2
+  ON_HEX 87 44
+    shi3
+  ON_HEX 89 45
+    s2iH
+  ON_HEX 92 46
+    shi6
+  ON_HEX 60 48
+    seiA
+  ON_HEX 61 49
+    sci4
+  ON_HEX 64 52
+    sei3
+  ON_HEX 65 52
+    sci8
+  ON_HEX 47 55
+    sGiH
+  ON_HEX 71 55
+    s2iK
+  ON_HEX 66 58
+    sci5
+  ON_HEX 70 60
+    s2iF
+  ON_HEX 74 60
+    s2iC
+  ON_HEX 66 61
+    sci2
+  ON_HEX 63 62
+    sciA
+  ON_HEX 64 62
+    sci8
+  ON_HEX 59 70
+    sGiC
+  ON_HEX 67 74
+    sci7
+  ON_HEX 62 77
+    sGiN
+  ON_HEX 69 78
+    sci3
+  ON_HEX 46 80
+    sGie
+  ON_HEX 71 82
+    sci7
+  ON_HEX 73 82
+    sci1
+  ON_HEX 75 82
+    sZi3
+  ON_HEX 81 83
+    shi3
+  ON_HEX 84 84
+    s2i8
+  ON_HEX 88 84
+    shi2
+  ON_HEX 80 87
+    shi4
+  ON_HEX 78 88
+    shiA
+  ON_HEX 96 88
+    shi5
+  ON_HEX 85 89
+    shi8
+  ON_HEX 89 89
+    s2iR
+  ON_HEX 60 91
+    sGi1
+  ON_HEX 67 92
+    sGi5
+  ON_HEX 68 92
+    sGi6
+  ON_HEX 115 92
+    s2iI
+  ON_HEX 83 93
+    sci3
+  ON_HEX 88 93
+    s2i5
+  ON_HEX 96 93
+    smi6
+  ON_HEX 55 94
+    sGi3
+  ON_HEX 94 94
+    s2iD
+  ON_HEX 101 95
+    shi7
+  ON_HEX 81 96
+    sci6
+  ON_HEX 93 96
+    shiA
+  ON_HEX 105 96
+    smi6
+  ON_HEX 96 97
+    s2i4
+  ON_HEX 100 99
+    sMi5
+  ON_HEX 110 99
+    shi2
+  ON_HEX 112 99
+    s2iE
+  ON_HEX 86 100
+    sci5
+  ON_HEX 106 100
+    smi7
+  ON_HEX 85 101
+    sci5
+  ON_HEX 91 103
+    sMi1
+  ON_HEX 88 104
+    sMi4
+  ON_HEX 110 105
+    smi7
+  ON_HEX 97 106
+    sMi9
+  ON_HEX 99 106
+    sMi6
+  ON_HEX 118 106
+    sZi6
+  ON_HEX 116 108
+    sZi4
+  ON_HEX 115 110
+    sMi8
+  ON_HEX 122 112
+    sZi2
+  ON_HEX 113 118
+    sMi4
+  ON_HEX 61 119
+    sMi2
+  ON_HEX 121 120
+    sMi6
+  ON_HEX 115 121
+    sMi1
+  ON_HEX 66 122
+    sMi3
+  ON_HEX 120 123
+    sMi1
+  ON_HEX 127 123
+    sMi8
+  ON_HEX 77 124
+    sMi8
+  ON_HEX 115 124
+    sMi3
+  ON_HEX 130 124
+    sMi5
+  ON_HEX 131 125
+    sMi4
+  ON_HEX 70 126
+    sMi9
+  ON_HEX 73 126
+    sMi6
+  ON_HEX 125 127
+    sMi2
+  ON_HEX 128 127
+    sMi5
+  ON_HEX 68 128
+    sMi7
+  ON_HEX 101 128
+    sMi4
+  ON_HEX 122 128
+    sMi1
+  ON_HEX 75 129
+    sMi8
+  ON_HEX 105 129
+    sMi4
+  ON_HEX 79 130
+    sMi6
+  ON_HEX 105 130
+    sMi4
+  ON_HEX 113 131
+    sMi7
+  ON_HEX 119 131
+    sMi4
+  ON_HEX 117 132
+    sMi8
+END_OF_ENVIROMENT
+
+EXTERNAL_SECTORS sectors.bin
+ATTITUDES
+  PARAMS 8
+  1 0 0 0 0 0 0 0 0
+  0 1 2 2 2 2 2 2 2
+  0 2 1 2 2 1 2 2 2
+  0 2 2 1 2 2 2 2 2
+  0 2 2 2 1 2 2 2 2
+  0 2 1 2 2 1 2 2 2
+  0 2 2 2 2 2 1 2 2
+  0 2 2 2 2 2 2 1 2
+  0 2 2 2 2 2 2 2 1
+  FLAG 8
+  T T T T T T T T T
+END_OF_ATTITUDES
+
+TECHS
+  PARAMS 72 8
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T T T T T T T T T T T T T T F T T T T T T T T F T T
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F F F T F F T F F T F F T F F T F F T F F T F F T F F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F T T F T T F T T F F T T T T F T T F F T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F F T T T T F T T F F T T T T F T T F F T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T T T T T T T T T T T T T T T T T T T T T T T T T T
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+END_OF_TECHS
+
+RESTRICTS
+  PARAMS 0 40 8
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+  F F F F F F F F F
+END_OF_RESTRICTS
+
+MISSION_OBJECTIVES_FULL 0
+
+SPECS
+  PARAMS 0 8
+  FLAG 0 0
+END_OF_SPECS
+
+BASES
+  PARAMS T T
+
+
+END_OF_BASES
+
+
+
+RANDOMS
+  MICROLOGIC 2 0 1
+  RANDOM_SEED 1 236908386
+  RANDOM_SEED 2 236908386
+  RANDOM_SEED 3 1092182027
+  RANDOM_SEED 4 860453130
+  RANDOM_SEED 5 2133641012
+  RANDOM_SEED 6 1950300168
+  RANDOM_SEED 7 1785527855
+  RANDOM_SEED 8 951170800
+  RANDOM_SEED 9 2035324082
+  RANDOM_SEED 10 -268123735
+  RANDOM_SEED 11 1522384765
+  RANDOM_SEED 12 140621174
+  RANDOM_SEED 13 1205805281
+  RANDOM_SEED 14 1403649684
+  RANDOM_SEED 15 1782779627
+  RANDOM_SEED 16 2120284827
+  RANDOM_SEED 17 838965006
+  RANDOM_SEED 18 2086907722
+  RANDOM_SEED 19 716266105
+  RANDOM_SEED 20 1810738273
+  RANDOM_SEED 21 530261996
+  RANDOM_SEED 22 1174797216
+  WIND_TIME -1 -1 0
+  WIND_STRENGTH 36.7606167791381 52.0 53.3803083895691
+  WIND_SCATTER 24.1066377870272
+END_OF_RANDOMS
+
+NEW_UNITS
+END_OF_NEW_UNITS
+
+COLDMEAT
+END_OF_COLDMEAT
+
+FOGOBJ
+END_OF_FOGOBJ
+
+MISSILES
+END_OF_MISSILES
+
+EXPLOSIONS
+END_OF_EXPLOSIONS
+
+CRATERS_NEW
+END_OF_CRATERS_NEW
+
+LAPSER_EFECTS
+END_OF_LAPSER_EFECTS
+
+LASER_EFECTS
+END_OF_LASER_EFECTS
+
+USER_INTERFACE
+  VIEW 52 730 1062 680 1
+  MASHA_FLAG 2 F F
+END_OF_USER_INTERFACE
+
+MC_COMMANDS
+END_OF_MC_COMMANDS
+
+DEBRIEFING
+SIDE 0 10
+  LINES
+SIDE 1 10
+  LINES
+SIDE 2 10
+  LINES
+SIDE 3 10
+  LINES
+SIDE 4 10
+  LINES
+SIDE 5 10
+  LINES
+SIDE 6 10
+  LINES
+SIDE 7 10
+  LINES
+SIDE 8 10
+  LINES
+END_OF_DEBRIEFING
+
+AREAS
+  ACTIVE 7
+  LAST 8
+  AREA 1
+    NAME entry
+    COLOR 26FF58
+    SHORTCUT 1
+    LINES 97 65 24 34
+    ---+++++----------------
+    -+++++++----------------
+    +++++++++---------------
+    +++++++++---------------
+    ++++++++++--------------
+    -+++++++++--------------
+    -++++++++++-------------
+    -++++++++++-------------
+    --++++++++++------------
+    --++++++++++------------
+    --+++++++++++-----------
+    ---++++++++++-----------
+    ---+++++++++++----------
+    ---+++++++++++----------
+    ---++++++++++++---------
+    ----+++++++++++---------
+    ----++++++++++++--------
+    -----+++++++++++--------
+    -----++++++++++++-------
+    ------+++++++++++-------
+    ------++++++++++++------
+    -------+++++++++++------
+    -------++++++++++++-----
+    --------+++++++++++-----
+    ---------+++++++++++----
+    ---------+++++++++++----
+    ----------+++++++++++---
+    -----------++++++++++---
+    ------------++++++++++--
+    -------------+++++++++--
+    --------------+++++++++-
+    ----------------+++++++-
+    -----------------+++++++
+    -------------------+++++
+  AREA 2
+    NAME enter_snake
+    COLOR 3940FF
+    SHORTCUT 1
+    LINES 10 20 8 14
+    ++------
+    -+------
+    -++-----
+    --+-----
+    --++----
+    ---+----
+    ---++---
+    ----+---
+    ----++--
+    -----+--
+    -----++-
+    ------+-
+    ------++
+    -------+
+  AREA 3
+    NAME deadarea
+    COLOR 00F2FF
+    SHORTCUT 1
+    LINES 48 80 43 29
+    +++++++++----------------------------------
+    ++++++++++++++-----------------------------
+    -+++++++++++++++---------------------------
+    -+++++++++++++++++-------------------------
+    --++++++++++++++++++-----------------------
+    --++++++++++++++++++++---------------------
+    ---+++++++++++++++++++++-------------------
+    ---++++++++++++++++++++++------------------
+    ----+++++++++++++++++++++------------------
+    ----++++++++++++++++++++++-----------------
+    ----+++++++++++++++++++++++----------------
+    ----++++++++++++++++++++++++---------------
+    ----+++++++++++++++++++++++++--------------
+    -----+++++++++++++++++++++++++-------------
+    -----++++++++++++++++++++++++++------------
+    -----+++++++++++++++++++++++++++-----------
+    -----++++++++++++++++++++++++++++----------
+    -----+++++++++++++++++++++++++++++---------
+    ----+++++++++++++++++++++++++++++++--------
+    ----++++++++++++++++++++++++++++++++-------
+    ----+++++++++++++++++++++++++++++++++------
+    ----+++++++++++++++++++++++++++++++++++----
+    ----++++++++++++++++++++++++++++++++++++---
+    ----+++++++++++++++++++++++++++++++++++++--
+    -----++++++++++++++++++++++++++++++++++++--
+    ------++++++++++++++++++++++++++++++++++++-
+    -------++++++++++++++++++++++++++++++++++++
+    --------------+++++++++++++++--------------
+    ----------------------+++++++--------------
+  AREA 4
+    NAME LegionAttackNormal
+    COLOR FFBF58
+    SHORTCUT 1
+    LINES 63 126 48 8
+    +++---------------------------------------------
+    -+++++++++++++++++++++--+-----------------------
+    -++++++++++++++++++++++++++++++++++++++++++-----
+    --++++++++++++++++++++++++++++++++++++++++++++--
+    --+++++++++++++++++++++++++++++++++++++++++++++-
+    ---+++++++++++++++++++++++++++++++++++++++++++++
+    ---+++++++++++++++++++++++++++++++++++++++++++++
+    ----++++++++++++++++++++++++++++++++++++++++++++
+  AREA 5
+    NAME Areabomb
+    COLOR 00FFDF
+    SHORTCUT 1
+    LINES 56 88 10 6
+    ++++++++--
+    +++++++++-
+    ++++++++++
+    ++++++++++
+    -+++++++++
+    --++++++++
+  AREA 6
+    NAME playerinaccessible
+    COLOR FF4006
+    SHORTCUT 1
+    LINES 39 59 100 75
+    ---------------++-----------------------------------------------------------------------------------
+    ---------------+++----------------------------------------------------------------------------------
+    --------------+++++---------------------------------------------------------------------------------
+    ++----------+++++++---------------------------------------------------------------------------------
+    ++++++++-++-+++++++---------------------------------------------------------------------------------
+    -+++++++++++++++++++--------------------------------------------------------------------------------
+    ++++++++++++++++++++--------------------------------------------------------------------------------
+    +++++++++++++++++++++-------------------------------------------------------------------------------
+    +++++++++++++++++++++-------------------------------------------------------------------------------
+    ++++++++++++++++++++++------------------------------------------------------------------------------
+    -+++++++++++++++++++++------------------------------------------------------------------------------
+    --+++++++++++++++++++++-----------------------------------------------------------------------------
+    --++++++++++++++++++++++----------------------------------------------------------------------------
+    ---++++++++++++++++++++++---------------------------------------------------------------------------
+    ---++++++++++++++++++++++---------------------------------------------------------------------------
+    ----++++++++++++++++++++++--------------------------------------------------------------------------
+    ----++++++++++++++++++++++--------------------------------------------------------------------------
+    -----++++++++++++++++++++++-------------------------------------------------------------------------
+    -----++++++++++++++++++++++-------------------------------------------------------------------------
+    ------+++++++++++++++++++++-------------------------------------------------------------------------
+    ------++++++++++++++++++++++------------------------------------------------------------------------
+    -------+++++++++++++++++++++------------------------------------------------------------------------
+    -------+++++++++++++++++++++------------------------------------------------------------------------
+    --------+++++++++++++++++++++-----------------------------------------------------------------------
+    --------++++++++++++++++++++++----------------------------------------------------------------------
+    ---------++++++++++++++++++++++-+-------------------------------------------------------------------
+    ---------+++++++++++++++++++++++++------------------------------------------------------------------
+    ----------+++++++++++++++++++++++++-----------------------------------------------------------------
+    -----------+++++++++++++++++++++++++----------------------------------------------------------------
+    -----------+++++++++++++++++++++++++----------------------------------------------------------------
+    ------------+++++++++++++++++++++++++---------------------------------------------------------------
+    ------------+++++++++++++++++++++++++---------------------------------------------------------------
+    ------------++++++++++++++++++++++++++--------------------------------------------------------------
+    -----------++++++++++++++++++++++++++++-------------------------------------------------------------
+    -----------++++++++++++++++++++++++++++++-----------------------------------------------------------
+    -----------+++++++++++++++++++++++++++++++----------------------------------------------------------
+    ---------++++++++++++++++++++++++++++++++++---------------------------------------------------------
+    ---------++++++++++++++++++++++++++++++++++++-------------------------------------------------------
+    ----------++++++++++++++++++++++++++++++++++++------------------------------------------------------
+    ----------++++++++++++++++++++++++++++++++++++++----------------------------------------------------
+    -----------++++++++++++++++++++++++++++++++++++++---------------------------------------------------
+    -----------+++++++++++++++++++++++++++++++++++++++++------------------------------------------------
+    ------------++++++++++++++++++++++++++++++++++++++++++--++------------------------------------------
+    ------------++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------
+    -------------++++++++++++++++++++++++++++++++++++++++++++++++---------------------------------------
+    -------------++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------------
+    --------------++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------------
+    --------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------
+    ---------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------
+    ---------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------
+    ----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------
+    ----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------
+    -----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------
+    -----------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------
+    ------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------
+    ------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------
+    -------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------
+    -------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------
+    --------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------
+    --------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------
+    ---------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+    ---------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+    ----------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------
+    ----------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------
+    -----------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+    -----------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+    ------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+    ------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+    -------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+    -------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+    --------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+    --------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+    ---------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+    ---------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+    ----------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  AREA 7
+    NAME minearea1
+    COLOR FF40E6
+    SHORTCUT 1
+    LINES 41 52 8 11
+    +++-----
+    ++++----
+    ++++----
+    +++++---
+    ++++++--
+    +++++++-
+    ++++++++
+    ++++++++
+    ++++++++
+    ++++++++
+    ++----++
+  AREA 8
+    NAME minearea2
+    COLOR 00FFFF
+    SHORTCUT 2
+    LINES 41 63 10 4
+    +---------
+    --------+-
+    -++------+
+    --+----++-
+END_OF_AREAS
+

@@ -1,0 +1,8 @@
+SOURCE_CODES
+  ENABLED Main
+  ENABLED AI
+  ENABLED Functions
+  ENABLED New1
+  ENABLED Dialogs
+  ENABLED end_of_mission
+END_OF_SOURCE_CODES

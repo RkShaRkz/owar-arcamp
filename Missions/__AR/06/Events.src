@@ -1,0 +1,807 @@
+
+Export Function GetApes(side);
+     begin
+          result = FilterAllUnits([[f_side,side],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+     end;
+
+//When the player has passed the Russian line (the two breastworks) with just 1 human unit, initiate the Arab survivors so the corpses
+//and exploded buildings appear "fresh".
+Every 0$1+0$0.2 trigger FilterAllUnits([[f_not,[f_inarea,int_area]],[f_side,you],[f_ok],[f_type,unit_human]]) > 0 do
+     begin
+          if tick >= survivors_time then
+               begin
+                    PrepareArabBase(true);
+                    enable(3);
+               end
+          else
+               begin
+                    PrepareArabBase(false);
+                    enable(2);
+               end;
+     end;
+
+//The player finds the Arab survivors.
+//The survivors are alive (partially at least).
+Every 0$1 marked 2 do
+     var temp_list, temp_unit, temp_list_2, temp_list_3, c, premature_retreat;
+     begin
+          temp_list = FilterAllUnits([[f_see,you],[f_side,you_alt],[f_btype,b_breastwork]]);
+          if temp_list = 0 then
+               begin
+                    enable;
+                    exit;
+               end;
+
+          DialogueOn;
+
+          CenterOnUnits(temp_list);
+
+          Say(MarkB,'D2Ma1');
+          Say(Heike,'D2H2');
+          Say(MarkB,'D2Ma2');
+
+          temp_list = [Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn,Gordon,Suze,Olaf] diff 0;
+          if temp_list > 0 then
+               begin
+                    temp_unit = temp_list[Rand(1,temp_list)];
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D2So1');
+                         Oswald: Say(temp_unit,'D2Os1');
+                         Ralph: Say(temp_unit,'D2Ra1');
+                         Kowalski: Say(temp_unit,'D2Ko1');
+                         Willard: Say(temp_unit,'D2Wi1');
+                         Evelyn: Say(temp_unit,'D2Ev1');
+                         Gordon: Say(temp_unit,'D2Go1');
+                         Suze: Say(temp_unit,'D2Su1');
+                         Olaf: Say(temp_unit,'D2Ol1');
+                    end;
+               end
+          else
+               Say(Heike,'D2H3');
+
+          Say(MarkB,'D2Ma3');
+          Say(Heike,'D2H4');
+
+          temp_list = [Oswald,Ralph,Kowalski,Willard,Gordon,Suze,Olaf] diff 0;
+          if temp_list > 0 then
+               begin
+                    if temp_list > 1 then
+                         temp_list = temp_list diff temp_unit;
+
+                    temp_unit = temp_list[Rand(1,temp_list)];
+                    case temp_unit of
+                         Oswald: Say(temp_unit,'D2Os2');
+                         Ralph: Say(temp_unit,'D2Ra2');
+                         Kowalski: Say(temp_unit,'D2Ko2');
+                         Willard: Say(temp_unit,'D2Wi2');
+                         Gordon: Say(temp_unit,'D2Go2');
+                         Suze: Say(temp_unit,'D2Su2');
+                         Olaf: Say(temp_unit,'D2Ol2');
+                    end;
+               end;
+
+          DialogueOff;
+
+          survivors_found = 1;  //Russians start producing war vehicles + start countdown to fleeing Russians arrival
+
+          wait(0$0.2);
+          ChangeSideFog(you_alt,you);  //share vision with the survivors
+
+          //Show the base area and wait for the player to move all (human) units inside the base
+          SetAreaMapShow(arbase,1);
+          repeat
+               wait(0$1);
+          until FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok],[f_exceptarea,arbase]]) = 0 and FilterAllUnits([[f_or,[f_side,russians],[f_side,russians_alt]],[f_see,you],[f_ok]]) = 0;
+          SetAreaMapShow(arbase,0);
+
+          //Stop all Russian movement (war vehicles on their way, fleeing Russians and the like) + player unit movement (so a character just walking through the area won't continue)
+          for c in all_units do
+               ComStop(c);
+
+          DeselectUnits(FilterAllUnits([f_side,you]));
+          CenterOnXY(67,66);
+
+          InGameOn;
+
+          wait(0$0.5);
+          temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]);
+          temp_list_2 = FilterAllUnits([[f_side,you_alt],[f_type,unit_human]]);
+          ComExitVehicle(temp_list);
+          ComExitBuilding(temp_list_2);
+
+          wait(0$0.2);
+          ComHold(temp_list);
+          ComMoveToArea(temp_list_2,arbase);
+          AddComStand(temp_list_2);
+
+          {temp_list_2 = temp_list_2 diff MarkB;
+          temp_unit = 0;
+          if temp_list_2 > 0 then
+               begin
+                    temp_list_3 = UnitFilter(temp_list_2,[f_sex,sex_male]);
+                    if temp_list_3 > 0 then  //we have ensured there is a male (so just for safety)
+                         temp_unit = temp_list_3[1];
+               end;}
+
+          wait(0$0.4);
+          Say(Heike,'D3H1');
+          SayRadio(Abdul,'D3Ab1');
+          SayRadio(Abdul,'D3Ab2');
+
+          wait(0$0.2);
+          premature_retreat = false;
+          case Query('Q1') of
+               1: begin
+                    Say(Heike,'D3xH3');
+               end;
+               2: begin
+                    Say(Heike,'D3xH1');
+                    SayRadio(Abdul,'D3xAb1');
+
+                    wait(0$0.2);
+                    case Query('Q2') of
+                         1: begin
+                              Say(Heike,'D3xH3');
+                              wait(0$0.5);
+                              Say(Heike,'D3xH4');
+                         end;
+                         2: begin
+                              Say(Heike,'D3xH2');
+                              premature_retreat = true;
+                         end;
+                    end;
+               end;
+          end;
+
+          if premature_retreat then
+               begin
+                    wait(0$0.2);
+                    InGameOff;
+
+                    wait(0$0.2);
+                    ChangeMissionObjectives('M2b');
+                    SetSide( FilterAllUnits([f_side,you_alt]) ,you);
+
+                    MakeReadyForMissionEnd;
+
+                    for c in FilterAllUnits([[f_side,you],[f_type,unit_human]]) do
+                         ComFree(c);
+
+                    exit;
+               end;
+
+          wait(0$0.7);
+          Say(Heike,'D3H2');
+          Say(MarkB,'D3Ma1');
+
+          //if temp_unit > 0 then
+          if IsOk(Swansson) then
+               begin
+                    Say(Swansson,'D3Sw1');
+                    Say(Swansson,'D3Sw2');
+               end
+          else
+               begin
+                    Say(Heike,'D3H3b');
+                    Say(MarkB,'D3Ma2b');
+               end;
+
+          Say(MarkB,'D3Ma2');
+
+          //if temp_unit > 0 then
+          if IsOk(Swansson) then
+               Say(Swansson,'D3Sw3');
+
+          Say(Heike,'D3H3');
+          Say(MarkB,'D3Ma3');
+          Say(Heike,'D3H4');
+          Say(Heike,'D3H5');
+          Say(MarkB,'D3Ma4');
+          Say(Heike,'D3H6');
+          Say(MarkB,'D3Ma5');
+          Say(Heike,'D3H7');
+
+          //if temp_unit > 0 then
+          if IsOk(Swansson) then
+               begin
+                    Say(Swansson,'D3Sw4');
+                    Say(MarkB,'D3Ma6');
+               end
+          else
+               begin
+                    Say(MarkB,'D3Ma6b');
+                    Say(MarkB,'D3Ma7b');
+               end;
+
+          Say(Heike,'D3H8');
+
+          wait(0$0.2);
+          InGameOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M2');
+          SetSide( FilterAllUnits([f_side,you_alt]) ,you);
+
+          for c in FilterAllUnits([[f_side,you],[f_type,unit_human]]) do
+               ComFree(c);
+
+          if wave_num > 0 then  //Waves have spawned
+               begin
+                    wait(0$10);
+                    DialogueOn;
+                    SayRadio(Omar,'D5Om1b');
+                    DialogueOff;
+               end;
+
+          survivors_found = 2;
+     end;
+
+//The survivors are not alive. If the player takes too long to reach them.
+Every 0$1 marked 3 do
+     var b_list, b;
+     begin
+          //When player has seen all destroyed breastworks Heike concludes they were too late (and the player loses).
+          b_list = [[65,55],[54,62],[74,77],[82,77]];  //Position of destroyed Arab breastworks
+          while b_list > 0 do
+               begin
+                    wait(0$1);
+
+                    for b in b_list do
+                         if SeeXY(you,b[1],b[2]) then
+                              b_list = b_list diff [b];
+               end;
+
+          DialogueOn;
+
+          Say(Heike,'D2H1');
+
+          DialogueOff;
+
+          Wait(0$0.2);
+          YouLost('SurvivorsDead');
+     end;
+
+
+//When remote technology is researched Mark shortly explains how it works.
+On ResearchComplete(tech,lab) do
+     begin
+          if tech = tech_remcont then
+               if IsLive(Heike) and IsLive(MarkB) then
+                    begin
+                         DialogueOn;
+
+                         ForceSay(MarkB,'D4Ma1');
+                         ForceSay(Heike,'D4H1');
+                         ForceSay(MarkB,'D4Ma2');
+                         ForceSay(Heike,'D4H2');
+
+                         DialogueOff;
+                    end;
+     end;
+
+//Secondary objective construct and test remotely controlled vehicle complete
+Every 0$1+0$0.3 do
+     var b;
+     begin
+          for b in FilterAllUnits([[f_side,you],[f_control,control_remote]]) do
+               begin
+                    remote_built_and_tested = 1;
+                    if IsControledBy(b) > 0 then
+                         begin
+                              ChangeMissionObjectives('Moutremote');
+                              remote_built_and_tested = 2;
+                              exit;
+                         end;
+               end;
+
+          enable;
+     end;
+
+
+//Spawn and control of Russian waves (fleeing units).
+//When all waves have passed, Abdul orders Heike to pull back.
+Every 0$1+0$0.6 trigger survivors_found > 0 do
+     begin
+          repeat
+             case wave_num of
+                  0: begin
+                       //The player needs about 445 crate resources to build up a base. In best case scenario that takes
+                       //about 13,6 minutes. Worst case 22,8 minutes. Average 16,1 minutes (average is far closer to best
+                       //case because there is low chance to spawn only 3 crates, cf. module "Crates"). So on medium
+                       //difficulty we wait about this time before spawning the first wave (a little more time for
+                       //gathering the crates and building subtracted the expected time the player takes to find the survivors).
+                       //In our estimates we presume the player only gathers crates in the safe spawn area.
+                       Wait([22$0,17$0,12$0][difficulty] - survivors_time/2 - wave_warning_times[1] + 7$0);
+                       if survivors_found = 2 then
+                            begin
+                                 DialogueOn;
+                                 SayRadio(Omar,'D5Om1a');
+                                 DialogueOff;
+
+                                 enable(1);
+                                 wait( Rand(wave_warning_times[1]-0$30,wave_warning_times[1]+0$30) );
+                            end;
+                  end;
+                  1,2,3: wait( 6$0 + Rand(0$0, 2$0 - 0$30*difficulty) );
+             end;
+
+             if wave_num >= 1 and survivors_found = 2 then
+                  begin
+                       DialogueOn;
+                       SayRadio(Omar,'D5Om' & (wave_num+1));
+                       DialogueOff;
+
+                       enable(1);
+
+                       wait( Rand(wave_warning_times[wave_num+1]-0$30,wave_warning_times[wave_num+1]+0$30) );
+                  end;
+
+             wave_num = wave_num + 1;
+
+             RussianWave;
+
+          until wave_num = 4;
+
+          //Time to pull back
+          wait( Rand(1$0,2$0) );
+          DialogueOn;
+
+          SayRadio(Abdul,'D8Ab1');
+          SayRadio(Abdul,'D8Ab2');
+
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M3');
+          MakeReadyForMissionEnd;
+     end;
+Function MakeReadyForMissionEnd;
+     begin
+          SetAreaMapShow(start_leave_area,1);
+
+          //Check when all people are in the area.
+          repeat
+               wait(0$1);
+          until (FilterAllUnits([[f_side,you],[f_exceptarea,start_leave_area],[f_type,unit_human]]) diff GetApes(you)) = 0 and UnitFilter([Heike,MarkB],[f_ok]) = 2;
+
+          EndMission;
+     end;
+
+//Every executing the counter.
+Every 0$1 marked 1 do
+     var time;
+     begin
+          time = wave_warning_times[wave_num+1];
+
+          repeat
+               display_strings = ['#Ar06-RussiansETA',time];
+               wait(0$30);
+               time = time - 0$30;  //It's an ETA so it's a rough measure
+          until time < 0$0;
+
+          display_strings = [];
+     end;
+
+//Function spawning and controlling the Russian waves.
+Function RussianWave;
+     var human_list_north, human_list_south, vehicle_list_north, vehicle_list_south, temp_list, b, c, d, num, temp_list_2, temp_list_3;
+     var north_waypoints, south_waypoints, human_list, waypoints, vehicle_list, attackers, stay_together_dist, stop;
+     var excluded_units, vehicles_trying_to_occupy;
+     begin
+          //First wave comes from North-East
+          //Second from South-East
+          //Third from North-East
+          //Fourth both from North-East and South-East
+
+          //Create the wave
+          case wave_num of
+               1: begin
+                    //Only humans
+                    temp_list = PrepareRetreatingRussians(difficulty,difficulty+1,0,0);
+                    human_list_north = temp_list[1];
+                    vehicle_list_north = temp_list[2];
+                    human_list_south = [];
+                    vehicle_list_south = [];
+
+                    stay_together_dist = 5;
+               end;
+               2: begin
+                    //Humans and one vehicle.
+                    //One cargo bay.
+                    temp_list = PrepareRetreatingRussians(difficulty,difficulty+1,1,1);
+                    human_list_north = [];
+                    vehicle_list_north = [];
+                    human_list_south = temp_list[1];
+                    vehicle_list_south = temp_list[2];
+
+                    stay_together_dist = 7;
+               end;
+               3: begin
+                    //Humans and some vehicles
+                    //One cargo bay
+                    temp_list = PrepareRetreatingRussians(difficulty+1,difficulty+2,2,1);
+                    human_list_north = temp_list[1];
+                    vehicle_list_north = temp_list[2];
+                    human_list_south = [];
+                    vehicle_list_south = [];
+
+                    stay_together_dist = 8;
+               end;
+               4: begin
+                    //Lots of everything.
+                    //Two cargo bays
+                    temp_list = PrepareRetreatingRussians(difficulty+1,difficulty,2,1);
+                    human_list_north = temp_list[1];
+                    vehicle_list_north = temp_list[2];
+
+                    temp_list = PrepareRetreatingRussians(difficulty,difficulty+2,1,1);
+                    human_list_south = temp_list[1];
+                    vehicle_list_south = temp_list[2];
+
+                    stay_together_dist = 8;
+               end;
+          end;
+
+          //Place units
+          for b in vehicle_list_north ^ human_list_north do //vehicles first so we are sure there is space for them to be placed
+               PlaceUnitArea(b,start_leave_area,false);
+
+          for b in vehicle_list_south ^ human_list_south do
+               PlaceUnitArea(b,south_incoming,false);
+
+          north_waypoints = [[101,15],[95,22],[91,34],[94,46],[101,60],[110,76],[115,88],[115,100],[109,101],[102,99],[87,101],[69,96],[54,94]{,[47,93]}];
+          south_waypoints = [[150,110],[141,104],[127,96],[115,97],[102,99],[87,101],[69,96],[54,94]{,[47,93]}];
+
+          vehicles_trying_to_occupy = [];  //The vehicles we are trying to occupy
+
+          //Movement
+          //When units reach the retreat area, remove them from the map
+          repeat
+               for num = 1 to 2 do
+                    begin
+                         case num of
+                              1: begin
+                                   human_list = UnitFilter(human_list_north,[[f_not,[f_driving]],[f_ok]]);
+                                   waypoints = north_waypoints;
+                                   vehicle_list = UnitFilter(vehicle_list_north,[f_ok]);
+
+                                   //We could have captured a foreign vehicle
+                                   for b in UnitFilter(human_list_north,[f_driving]) do
+                                        begin
+                                             c = IsInUnit(b);
+                                             vehicle_list = vehicle_list union c;
+                                             vehicles_trying_to_occupy = vehicles_trying_to_occupy diff c;
+                                        end;
+                              end;
+                              2: begin
+                                   human_list = UnitFilter(human_list_south,[[f_not,[f_driving]],[f_ok]]);
+                                   waypoints = south_waypoints;
+                                   vehicle_list = UnitFilter(vehicle_list_south,[f_ok]);
+
+                                   //We could have captured a foreign vehicle
+                                   for b in UnitFilter(human_list_south,[f_driving]) do
+                                        begin
+                                             c = IsInUnit(b);
+                                             vehicle_list = vehicle_list union c;
+                                             vehicles_trying_to_occupy = vehicles_trying_to_occupy diff c;
+                                        end;
+                              end;
+                         end;
+
+                         if human_list ^ vehicle_list = 0 then
+                              continue;
+
+                         excluded_units = [];
+
+                         //If there is an empty vehicle nearby a human unit then enter it.
+                         temp_list = FilterAllUnits([[f_type,unit_vehicle],[f_control,control_manual],[f_empty]]);
+                         if temp_list > 0 then
+                              for b in human_list do
+                                   begin
+                                        temp_list_2 = UnitFilter(temp_list,[f_dist,b,8]);
+                                        if temp_list_2 > 0 then
+                                             begin
+                                                  c = AllNearestUnitToUnit(temp_list_2,b);
+                                                  if c > 0 then
+                                                       begin
+                                                            ComEnterUnit(b,c);
+                                                            excluded_units = excluded_units ^ b;
+                                                            temp_list = temp_list diff c;
+                                                            vehicles_trying_to_occupy = vehicles_trying_to_occupy union c;
+                                                       end
+                                             end;
+
+                                        if temp_list = 0 then
+                                             break;
+                                   end;
+
+                         //If there are empty vehicles they could block our path (especially near the northeastern entrance). Destroy them.
+                         c = false;
+                         for d in FilterAllUnits([f_side,you]) do
+                              if Attacks(d) in human_list ^ vehicle_list then
+                                   begin
+                                        c = true;
+                                        break;
+                                   end;
+
+                         if not c then  //Attacking the player is more important
+                              begin
+                                   for b in (human_list ^ DangerousUnits(vehicle_list)) diff excluded_units do
+                                        begin
+                                             temp_list_2 = FilterAllUnits([[f_type,unit_vehicle],[f_dist,b,12],[f_inarea,choke_area]]);
+                                             temp_list_2 = temp_list_2 diff vehicles_trying_to_occupy;
+                                             temp_list_3 = [];
+                                             for c in temp_list_2 do
+                                                  if ( GetControl(c) = control_manual and IsDrivenBy(c) = 0 ) or ( GetControl(c) = control_remote and IsControledBy(c) = 0 ) then
+                                                       temp_list_3 = temp_list_3 ^ c;
+
+                                             if temp_list_3 > 0 then
+                                                  begin
+                                                       c = AllNearestUnitToUnit(temp_list_3,b);
+                                                       if c > 0 then
+                                                            begin
+                                                                 ComAttackUnit(b,c);
+                                                                 excluded_units = excluded_units ^ b;
+                                                                 continue;
+                                                            end;
+                                                  end;
+                                        end;
+                              end;
+
+                         //Check if we are attacking anyone (since we agressive move, that is: If we are being attacked).
+                         attackers = [];
+                         for b in human_list ^ vehicle_list do
+                              begin
+                                   c = Attacks(b);
+                                   if c > 0 then
+                                        begin
+                                             attackers = attackers ^ b;
+                                             SetTag(b,c);
+                                        end;
+                              end;
+
+                         if attackers > 0 then
+                              begin
+                                   //Those not attacking: Attack whatever they others are attacking (non-dangerous vehicles should just stop moving).
+                                   temp_list = DangerousUnits(vehicle_list);
+
+                                   for b in vehicle_list diff temp_list do
+                                        ComStop(b);
+
+                                   for b in (human_list ^ temp_list) diff excluded_units do
+                                        if not b in attackers then
+                                             begin
+                                                  c = GetTag( NearestUnitToUnit(attackers,b) );
+                                                  ComAgressiveMove(b,GetX(c),GetY(c));
+                                             end;
+                              end
+                         else
+                              begin
+                                   temp_list = human_list ^ vehicle_list;
+
+                                   //What hex number should this unit move to?
+                                   for b in temp_list diff excluded_units do
+                                        SetTag(b, FindClosestHexIndex(b,waypoints) + 1 );
+                                   
+                                   for b in temp_list diff excluded_units do
+                                        begin
+                                             stop = false;
+
+                                             //Wait for others if necessary
+                                             for c in temp_list do
+                                                  begin
+                                                       if c = b then
+                                                            continue;
+
+                                                       //Choose the waypoints with the highest index
+                                                       if GetTag(b) > GetTag(c) then
+                                                            d = GetTag(b)
+                                                       else d = GetTag(c);
+
+                                                       if d <= waypoints then
+                                                            if GetDistUnitXY(c,waypoints[d][1],waypoints[d][2]) - GetDistUnitXY(b,waypoints[d][1],waypoints[d][2]) > stay_together_dist then
+                                                                 begin
+                                                                      stop = true;
+                                                                      break;
+                                                                 end;
+                                                  end;
+
+                                             if stop then
+                                                  ComStop(b)
+                                             else
+                                                  begin
+                                                       d = GetTag(b);
+                                                       if d <= waypoints then
+                                                            ComAgressiveMove(b,waypoints[d][1],waypoints[d][2])
+                                                       else ComMoveToArea(b,retreat_area);
+                                                  end;
+                                        end;
+                              end;
+                    end;
+
+               wait(0$1);
+
+               if russians_got_away and survivors_found = 2 then
+                    YouLost('RussiansGotAway');
+
+         until FilterAllUnits([[f_side,russians_alt],[f_ok],[f_type,unit_human]]) = 0;
+
+
+         if russians_got_away then
+              begin
+                   while survivors_found <> 2 do
+                        wait(0$1);
+
+                   wait(0$2);
+                   YouLost('RussiansGotAway');
+              end;
+     end;
+Every 0$0.2 do
+     var b;
+     begin
+          for b in FilterAllUnits([[f_inarea,retreat_area],[f_side,russians_alt],[f_ok],[f_or,[f_type,unit_human],[f_occupied]]]) do
+               begin
+                    russians_got_away = true;
+                    DestroyUnit(b);
+               end;
+
+          enable;
+     end;
+Function PrepareRetreatingRussians(num_soldiers,num_other_humans,num_vehicles,num_cargo_bays);
+     var human_list, vehicle_list, c, temp_unit;
+     begin
+          //Humans                                       
+          human_list = CreateUnitsWithClass(russians_alt,num_soldiers,class_soldier,true);
+                               
+                   for c = 1 to num_other_humans do
+                        human_list = human_list ^ CreateUnitsWithClass(russians_alt,1,[class_mechanic,class_engineer,class_scientistic][Rand(1,3)],true);
+
+                   //Vehicles
+                   InitUc;
+                   InitVc;
+                   uc_side = russians_alt;
+                   uc_nation = nation_russian;
+                                
+                   for c = 1 to num_vehicles do
+                        begin
+                             vc_engine = engine_combustion;
+                             vc_fuel_battery = 100;
+                             vc_control = control_manual;
+                             vc_chassis = ru_medium_tracked;
+
+                             case difficulty of
+                                  1: vc_weapon = [ru_heavy_machine_gun,ru_gatling_gun][Rand(1,2)];
+                                  2: vc_weapon = [ru_gatling_gun,ru_gun][Rand(1,2)];
+                                  3: vc_weapon = [ru_gatling_gun,ru_gun,ru_gun][Rand(1,3)];
+                             end;
+
+                             vehicle_list = vehicle_list ^ CreateVehicle;
+
+                             //Driver
+                             temp_unit = CreateUnitsWithClass(russians_alt,1,class_mechanic,true);
+                             human_list = human_list ^ temp_unit;
+                             PlaceHumanInUnit(temp_unit[1],vehicle_list[vehicle_list+0]);
+                        end;
+
+                   //Cargo bay
+                   for c = 1 to num_cargo_bays do
+                        begin
+                             vc_weapon = ru_cargo_bay;
+                             vehicle_list = vehicle_list ^ CreateVehicle;
+
+                             //Driver
+                             temp_unit = CreateUnitsWithClass(russians_alt,1,class_mechanic,true);
+                             human_list = human_list ^ temp_unit;
+                             PlaceHumanInUnit(temp_unit[1],vehicle_list[vehicle_list+0]);
+
+                             AddCargo(vehicle_list[vehicle_list+0],mat_cans,Rand(0,2)*10);
+                             AddCargo(vehicle_list[vehicle_list+0],mat_oil,Rand(2,4)*10);
+                             AddCargo(vehicle_list[vehicle_list+0],mat_siberit,Rand(1,2)*10);  //Always some crystals in the cargo bay
+                        end;
+
+          //Set lives (vehicles are slightly damaged)
+          for c in vehicle_list do
+               SetLives(c, [600,700,800][difficulty] - Rand(0,100) );
+
+          result = [human_list,vehicle_list];
+     end;
+Function FindClosestHexIndex(un,hex_list);
+     var low_dist, dist, b;
+     begin
+          low_dist = GetDistUnitXY(un,hex_list[1][1],hex_list[1][2]);
+          result = 1;  
+
+          for b = 2 to hex_list do
+               begin
+                    dist = GetDistUnitXY(un,hex_list[b][1],hex_list[b][2]);
+                    if dist < low_dist then
+                         begin
+                              low_dist = dist;
+                              result = b;
+                         end;
+               end;
+
+     end;
+
+
+//When the player spots a retreating cargo bay someone suggests to capture it rather than destroy it.
+Every 0$1+0$0.2 do
+     var temp_list, temp_unit;
+     begin
+          temp_list = FilterAllUnits([[f_side,russians_alt],[f_see,you],[f_weapon,ru_cargo_bay]]);
+          if temp_list = 0 then
+               begin
+                    enable;
+                    exit;
+               end;
+
+          CenterOnUnits(temp_list[1]);
+          DialogueOn;
+
+          temp_list = UnitFilter([Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn,Gordon,Suze],[f_ok]);
+          if temp_list > 0 then
+               begin
+                    temp_unit = temp_list[Rand(1,temp_list+0)];
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D6So1');
+                         Oswald: Say(temp_unit,'D6Os1');
+                         Ralph: Say(temp_unit,'D6Ra1');
+                         Kowalski: Say(temp_unit,'D6Ko1');
+                         Willard: Say(temp_unit,'D6Wi1');
+                         Evelyn: Say(temp_unit,'D6Ev1');
+                         Gordon: Say(temp_unit,'D6Go1');
+                         Suze: Say(temp_unit,'D6Su1');
+                    end;
+               end
+          else
+               ForceSay(Heike,'D6H1');
+
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('Maddcapturecargo');
+     end;
+
+//When the player unloads the captured cargo bay's cargo to the depot Heike spots the siberite crystals.
+//Secondary objective to bring the crystals along when they pull back.
+Every 0$1+0$0.2 do
+     var c, temp_list, temp_unit;
+     begin
+          for c in FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]) do
+               if GetResourceType(GetBase(c),mat_siberit) > 0 then
+                    begin
+                         CenterOnUnits(c);
+                         DialogueOn;
+
+                         ForceSay(Heike,'D7H1');
+
+                         temp_list = UnitFilter([Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn,Gordon,Suze],[f_ok]);
+                         if temp_list > 0 then
+                              begin
+                                   temp_unit = temp_list[Rand(1,temp_list+0)];
+                                   case temp_unit of
+                                        Sonya: Say(temp_unit,'D7So1');
+                                        Oswald: Say(temp_unit,'D7Os1');
+                                        Ralph: Say(temp_unit,'D7Ra1');
+                                        Kowalski: Say(temp_unit,'D7Ko1');
+                                        Willard: Say(temp_unit,'D7Wi1');
+                                        Evelyn: Say(temp_unit,'D7Ev1');
+                                        Gordon: Say(temp_unit,'D7Go1');
+                                        Suze: Say(temp_unit,'D7Su1');
+                                   end;
+                              end;
+
+                         ForceSay(MarkB,'D7Ma1');
+                         ForceSay(Heike,'D7H2');
+                         ForceSay(Heike,'D7H3');
+
+                         DialogueOff;
+
+                         wait(0$0.2);
+                         ChangeMissionObjectives('Maddbringsiberite');
+
+                         exit;
+                    end;
+
+          enable;
+     end;

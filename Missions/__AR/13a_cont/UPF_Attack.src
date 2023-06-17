@@ -1,0 +1,1459 @@
+
+//Functions to create UPF personnel and vehicles.
+Function CreateUPFUnitsFirstAttack;
+     var i, un, num, temp_list;
+     var base;
+     begin
+          base = 3;
+
+          //Gensher's bodyguards
+          upf_gensher_guards = CreateUnitsWithClass([0,1,2][difficulty],class_mechanic,upf);
+
+          InitUc;
+          InitVc;
+
+          uc_side = upf;
+          uc_nation = nation_arabian;
+          uc_direction = 0;
+
+          vc_engine = engine_siberite;
+          vc_chassis = ar_half_tracked;
+          vc_control = control_manual;
+
+          for i in upf_gensher_guards do
+               begin
+                    vc_weapon = [ar_gun,ar_rocket_launcher,ar_gatling_gun][Rand(1,3)];
+
+                    un = CreateVehicle;
+                    PlaceHumanInUnit(i,un);
+                    upf_gensher_guards_vehicles = upf_gensher_guards_vehicles ^ un;
+               end;
+
+
+          //Gensher himself
+          vc_weapon = ar_gun;
+          gensher_vehicle = CreateVehicle;
+          PlaceHumanInUnit(Gensher,gensher_vehicle);
+
+
+          //Remote war vehicles.
+          uc_direction = 4;
+          vc_control = control_remote;
+          vc_weapon = ar_rocket_launcher;
+          vc_chassis = ar_half_tracked;
+
+          for i = 1 to [4,6,7][difficulty] do
+               begin
+                    un = CreateVehicle;
+                    upf_vehicles_attack = upf_vehicles_attack ^ un;
+               end;
+
+
+          //Mechanics and control tower vehicles.
+          //A control tower vehicle controls at most 2 attack vehicles.
+          num = upf_vehicles_attack div 2;
+          if upf_vehicles_attack mod 2 > 0 then
+               num = num + 1;
+
+          upf_mechanics = CreateUnitsWithClass(num,class_mechanic,upf);
+
+          InitUc;
+
+          uc_side = upf;
+          uc_nation = nation_arabian;
+          uc_direction = 4;
+
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          vc_weapon = ar_control_tower;
+
+          for i in upf_mechanics do
+               begin
+                    vc_chassis = [ar_medium_trike,ar_half_tracked][Rand(1,2)];
+
+                    un = CreateVehicle;
+                    PlaceHumanInUnit(i,un);
+                    upf_vehicles_control = upf_vehicles_control ^ un;
+
+                    upf_mechanic_control_map = Replace(upf_mechanic_control_map,i,un);
+               end;
+
+
+          //Link control tower vehicles and attack vehicles.
+          for i in upf_mechanics do
+               upf_mechanic_attack_map = Replace(upf_mechanic_attack_map,i,[]);
+
+          for i = 1 to upf_vehicles_attack do
+               begin
+                    un = upf_mechanics[(i - 1) div 2 + 1];
+
+                    temp_list = upf_mechanic_attack_map[un] ^ upf_vehicles_attack[i];
+                    upf_mechanic_attack_map = Replace(upf_mechanic_attack_map,un,temp_list);
+               end;
+
+
+          //Soldiers, mortars, scientists
+          upf_soldiers_west = CreateUnitsWithClass([1,2,3][difficulty],class_soldier,upf) ^ CreateUnitsWithClass([2,4,5][difficulty],class_mortar,upf);
+          upf_soldiers_east = CreateUnitsWithClass([1,2,3][difficulty],class_soldier,upf) ^ CreateUnitsWithClass([2,4,5][difficulty],class_mortar,upf);
+          upf_scientists_west = CreateUnitsWithClass([0,1,2][difficulty],class_scientistic,upf);
+          upf_scientists_east = CreateUnitsWithClass([0,1,2][difficulty],class_scientistic,upf);
+
+          case Rand(1,3) of
+               1: begin
+                    //Nothing. Keep as is.
+               end;
+               2: begin
+                    upf_soldiers_west = upf_soldiers_west ^ upf_soldiers_east;
+                    upf_soldiers_east = [];
+
+                    upf_scientists_west = upf_scientists_west ^ upf_scientists_east;
+                    upf_scientists_east = [];
+               end;
+               3: begin
+                    upf_soldiers_east = upf_soldiers_east ^ upf_soldiers_west;
+                    upf_soldiers_west = [];
+
+                    upf_scientists_east = upf_scientists_east ^ upf_scientists_west;
+                    upf_scientists_west = [];
+               end;
+          end;
+
+          for i in upf_soldiers_west ^ upf_soldiers_east ^ upf_scientists_west ^ upf_scientists_east do
+               begin
+                    SetDir(i,3);
+               end;
+     end;
+Function CreateUPFUnitsSecondAttack;
+     var i, un, num, temp_list, mec_list, veh_list, human_list, temp_list_2;
+     var base;
+     begin
+          base = 3;
+
+          //Remote war vehicles.
+          InitUc;
+          InitVc;
+
+          uc_side = upf;
+          uc_nation = nation_arabian;
+          uc_direction = 4;
+
+          vc_engine = engine_siberite;
+          vc_control = control_remote;
+          vc_weapon = ar_rocket_launcher;
+          vc_chassis = ar_half_tracked;
+
+          veh_list = [];
+          for i = 1 to [4,6,7][difficulty] do
+               begin
+                    un = CreateVehicle;
+                    upf_vehicles_attack = upf_vehicles_attack ^ un;
+                    veh_list = veh_list ^ un;
+               end;
+
+
+          //Mechanics and control tower vehicles.
+          //A control tower vehicle controls at most 2 attack vehicles.
+          num = veh_list div 2;
+          if veh_list mod 2 > 0 then
+               num = num + 1;
+
+          mec_list = CreateUnitsWithClass(num,class_mechanic,upf);
+          upf_mechanics = upf_mechanics ^ mec_list;
+
+          InitUc;
+
+          uc_side = upf;
+          uc_nation = nation_arabian;
+          uc_direction = 4;
+
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          vc_weapon = ar_control_tower;
+
+          for i in mec_list do
+               begin
+                    vc_chassis = [ar_medium_trike,ar_half_tracked][Rand(1,2)];
+
+                    un = CreateVehicle;
+                    PlaceHumanInUnit(i,un);
+                    upf_vehicles_control = upf_vehicles_control ^ un;
+
+                    upf_mechanic_control_map = Replace(upf_mechanic_control_map,i,un);
+               end;
+
+
+          //Link control tower vehicles and attack vehicles.
+          for i in mec_list do
+               upf_mechanic_attack_map = Replace(upf_mechanic_attack_map,i,[]);
+
+          for i = 1 to veh_list do
+               begin
+                    un = mec_list[(i - 1) div 2 + 1];
+
+                    temp_list = upf_mechanic_attack_map[un] ^ veh_list[i];
+                    upf_mechanic_attack_map = Replace(upf_mechanic_attack_map,un,temp_list);
+               end;
+
+
+          //Soldiers, mortars, scientists
+          human_list = [];
+          num = Rand(1,3);  //1 = evenly distributed, 2 = all west, 3 = all east
+
+          temp_list_2 = CreateUnitsWithClass([1,3,5][difficulty],class_soldier,upf) ^ CreateUnitsWithClass([2,4,6][difficulty],class_mortar,upf);
+          if num in [1,2] then
+               upf_soldiers_west = upf_soldiers_west ^ temp_list_2
+          else
+               upf_soldiers_east = upf_soldiers_east ^ temp_list_2;
+          human_list = human_list ^ temp_list_2;
+
+          temp_list_2 = CreateUnitsWithClass([1,3,5][difficulty],class_soldier,upf) ^ CreateUnitsWithClass([2,4,6][difficulty],class_mortar,upf);;
+          if num in [1,3] then
+               upf_soldiers_east = upf_soldiers_east ^ temp_list_2
+          else
+               upf_soldiers_west = upf_soldiers_west ^ temp_list_2;
+          human_list = human_list ^ temp_list_2;
+
+          temp_list_2 = CreateUnitsWithClass([1,2,3][difficulty],class_scientistic,upf);
+          if num in [1,2] then
+               upf_scientists_west = upf_scientists_west ^ temp_list_2
+          else
+               upf_scientists_east = upf_scientists_east ^ temp_list_2;
+          human_list = human_list ^ temp_list_2;
+
+          temp_list_2 = CreateUnitsWithClass([1,2,3][difficulty],class_scientistic,upf);
+          if num in [1,3] then
+               upf_scientists_east = upf_scientists_east ^ temp_list_2
+          else
+               upf_scientists_west = upf_scientists_west ^ temp_list_2;
+          human_list = human_list ^ temp_list_2;
+
+          for i in human_list do
+               begin
+                    SetDir(i,3);
+               end;
+     end;
+
+
+//Spawns UPF vehicles and UPF personnel. Controls Gensher dialogues.
+Every 0$1+0$0.2 trigger upf_attack_status in [1,4] do
+     var i, temp_list, controller, temp_list_2, do_enable;
+     begin
+          if upf_attack_status = 1 then
+               begin
+                    CreateUPFUnitsFirstAttack;
+                    upf_start_mineclearing = true;
+               end
+          else  // = 4
+               CreateUPFUnitsSecondAttack;
+
+
+          //Control tower vehicles and attack vehicles.
+          //Spawn one control tower vehicle and it's controlled vehicles at a time and
+          //move them away from the spawn area.
+          //Link remote vehicles to control tower.
+          temp_list = [];
+
+          while UnitFilter(upf_vehicles_attack ^ upf_vehicles_control,[f_not,[f_placed]]) > 0 do
+               begin
+                    temp_list = UnitFilter(temp_list,[[f_placed],[f_inarea,enter_area_east]]);
+
+                    if temp_list = 0 then
+                         begin
+                              temp_list_2 = UnitFilter(upf_vehicles_control,[f_not,[f_placed]]);
+
+                              if temp_list_2 = 0 then
+                                   break;
+
+                              PlaceUnitArea(temp_list_2[1],enter_area_east,false);
+                              if UnitsInside(temp_list_2[1]) > 0 then  //should be the case
+                                   controller = UnitsInside(temp_list_2[1])[1]
+                              else
+                                   controller = -3;
+
+                              temp_list = [temp_list_2[1]];
+
+                              if upf_mechanic_attack_map >= controller then
+                                   begin
+                                        for i in upf_mechanic_attack_map[controller] do
+                                             begin
+                                                  PlaceUnitArea(i,enter_area_east,false);
+                                                  ComLinkTo(i,controller);
+                                             end;
+
+                                        temp_list = temp_list ^ upf_mechanic_attack_map[controller];
+                                   end;
+                         end;
+                    
+                    for i in temp_list do
+                         if GetControl(i) = control_remote then
+                              begin
+                                   if IsControledBy(i) = 0 then
+                                        ComLinkTo(i,controller)
+                                   else
+                                        ComMoveToArea(i,attack_vehicle_area);
+                              end
+                         else
+                              ComMoveToArea(i,control_vehicle_area);
+
+                    wait(0$1);
+               end;
+
+
+          //Dialogue
+          if upf_attack_status = 1 then
+               begin
+                    DialogueOn;
+
+                    SayRadio(Gensher,'D11-Ge-1');
+
+                    if IsLive(upf_deserter) and not upf_deserter_choice in [1,2] and am_scientists_escape_status <> 2 then
+                         begin
+                              SayRadio(Gensher,'D11-Ge-2a');
+
+                              if IsLive(upf_speaker) then
+                                   case upf_speaker of
+                                        Suze: ForceSay(upf_speaker,'D11-Su-1');
+                                        Kowalski: ForceSay(upf_speaker,'D11-Ko-1');
+                                        else
+                                             if GetSex(upf_speaker) = sex_male then
+                                                  Say(upf_speaker,'D11-SomeM1-1')
+                                             else
+                                                  Say(upf_speaker,'D11-SomeF1-1');
+                                   end;
+
+                              ForceSay(upf_deserter,'D11-Ro-1');
+                              ForceSay(Heike,'D11-H-1');
+
+                              gensher_accused_deserter = true;
+                         end
+                    else
+                         if UnitFilter(freelancers_leader ^ other_freelancers ^ Willard,[f_alive]) > 0 and freelancers_choice = 1 and not louis_gordon_dispute_choice in [1,2] and am_scientists_escape_status <> 2 then
+                              begin
+                                   SayRadio(Gensher,'D11-Ge-2b');
+
+                                   if IsLive(Louis) then
+                                        ForceSay(Louis,'D11-Lo-1')
+                                   else
+                                        begin
+                                             temp_list = UnitFilter(other_louis_folks,[f_alive]);
+
+                                             if temp_list > 0 then
+                                                  if GetSex(temp_list[1]) = sex_male then
+                                                       ForceSay(temp_list[1],'D11-SomeM1-1')
+                                                  else
+                                                       ForceSay(temp_list[1],'D11-SomeF1-1');
+                                        end;
+
+                                   if IsLive(freelancers_leader) then
+                                        begin
+                                             if freelancers_leader = Gordon then
+                                                  ForceSay(Gordon,'D11-Go-1')
+                                             else
+                                                  ForceSay(freelancers_leader,'D11-FLea-1');
+                                        end
+                                   else
+                                        if IsLive(Willard) then
+                                             ForceSay(Willard,'D11-Wi-1')
+                                        else
+                                             begin
+                                                  temp_list = UnitFilter(other_freelancers,[f_alive]);
+
+                                                  if temp_list > 0 then
+                                                       if GetSex(temp_list[1]) = sex_male then
+                                                            ForceSay(temp_list[1],'D11-SomeM2-1')
+                                                       else
+                                                            ForceSay(temp_list[1],'D11-SomeF2-1');
+                                             end;
+
+                                   ForceSay(Heike,'D11-H-1');
+
+                                   gensher_accused_freelancers = true;
+                              end
+                         else
+                              begin
+                                   temp_list = UnitFilter([Olaf,Oswald,Suze],[f_alive]);
+
+                                   if temp_list > 0 then
+                                        begin
+                                             i = temp_list[Rand(1,temp_list)];
+
+                                             case i of
+                                                  Olaf: ForceSay(i,'D11-Ola-1');
+                                                  Oswald: ForceSay(i,'D11-Os-1');
+                                                  Suze: ForceSay(i,'D11-Su-2');
+                                             end;
+                                        end;
+                              end;
+
+                    ForceSay(Heike,'D11-H-2');
+
+                    DialogueOff;
+               end;
+
+          //Begin attack. Little delay if the player has just defeated the Americans (so there's time to get the
+          //units back to base).
+          if upf_attack_status = 1 and am_scientists_escape_status = 2 then
+               begin
+                    wait(0$0.2);
+                    ChangeMissionObjectives('MSurviveIfFast');
+
+                    wait(1$40);
+               end;
+
+          if upf_attack_status = 6 then
+               exit;
+
+          do_enable := upf_attack_status = 1;
+          upf_attack_status = upf_attack_status + 1;
+
+          //Spawn soldiers attacking from the North. Requires short delay so they will attack at the same
+          //time as the vehicles.
+          wait(0$3);
+
+          if upf_attack_status = 6 then
+               exit;
+
+          while UnitFilter(upf_soldiers_west ^ upf_soldiers_east ^ upf_scientists_west ^ upf_scientists_east,[f_not,[f_placed]]) > 0 do
+               begin
+                    for i in UnitFilter(upf_soldiers_west,[f_not,[f_placed]]) do
+                         PlaceUnitArea(i,upf_enter_north_west,false);
+
+                    for i in UnitFilter(upf_soldiers_east,[f_not,[f_placed]]) do
+                         PlaceUnitArea(i,upf_enter_north_east,false);
+
+                    for i in UnitFilter(upf_scientists_west,[f_not,[f_placed]]) do
+                         PlaceUnitArea(i,upf_enter_north_west,false);
+
+                    for i in UnitFilter(upf_scientists_east,[f_not,[f_placed]]) do
+                         PlaceUnitArea(i,upf_enter_north_east,false);
+
+                    wait(0$1);
+               end;
+
+          if do_enable then
+               enable;
+     end;
+Every 0$1+0$0.8 trigger upf_start_mineclearing do
+     var i, minehex_soldier_list, hex, engineers_list, engineer_hex_map, engineer_time_map, working;
+     var temp_list;
+     begin
+          //Scan the area where UPF resides for mines placed by the player. If there are any we send in some engineers to remove
+          //them.
+          minehex_soldier_list = [];  //[x,y,sol]
+          engineer_hex_map = [];  //Index is id of engineer, value is hex the engineer is going for now.
+          engineer_time_map = [];  //Index is id of engineer, value is the time the engineer has waited on a hex with a mine.
+
+          for i in FilterAllUnits([[f_side,you],[f_class,class_soldier]]) do
+               begin
+                    hex = MineOfUnit(i);
+
+                    if hex > 0 then
+                         if InArea(hex[1],hex[2],upf_mine_clearing_area) or InArea(hex[1],hex[2],control_vehicle_area) then
+                              begin
+                                   minehex_soldier_list = minehex_soldier_list ^ [[hex[1],hex[2],i]];
+                              end;
+               end;
+
+          if minehex_soldier_list > 0 then
+               begin
+                    //Spawn minesweeper engineers
+                    engineers_list = CreateUnitsWithClass(3,class_engineer,upf);
+
+                    for i in engineers_list do
+                         begin
+                              SetDir(i,[0,5][Rand(1,2)]);
+                              PlaceUnitArea(i,enter_area_south,false);
+
+                              engineer_hex_map = Replace(engineer_hex_map,i,[]);
+                              engineer_time_map = Replace(engineer_time_map,i,0$0);
+                         end;
+
+
+                    //Control them. Move to a hex with a mine, stand there for a moment and then remove the mine.
+                    repeat
+                    wait(0$0.5);
+                    working = false;
+
+                    for i in engineers_list do
+                         begin
+                              if not IsLive(i) then
+                                   begin
+                                        engineers_list = engineers_list diff i;
+
+                                        if engineer_hex_map[i] > 0 then
+                                             minehex_soldier_list = minehex_soldier_list ^ [engineer_hex_map[i]];
+
+                                        continue;
+                                   end;
+
+                              //Go for the closest mine.
+                              if engineer_hex_map[i] = 0 then
+                                   begin
+                                        if minehex_soldier_list = 0 then
+                                             begin
+                                                  ComMoveToArea(i,enter_area_south);
+                                                  continue;
+                                             end;
+
+                                        temp_list = [];
+                                        for hex in minehex_soldier_list do
+                                             temp_list = temp_list ^ GetDistUnitXY(i,hex[1],hex[2]);
+                                        hex = WorstFromListByList(minehex_soldier_list,temp_list);
+
+                                        minehex_soldier_list = minehex_soldier_list diff [hex];
+                                        engineer_hex_map = Replace(engineer_hex_map,i,hex);
+                                   end;
+
+                              working = true;
+
+                              hex = engineer_hex_map[i];
+
+                              //Move foreign units away from the hex.
+                              if HexInfo(hex[1],hex[2]) <> i then
+                                   AI_GetAwayFromXY(HexInfo(hex[1],hex[2]), hex[1], hex[2], 4, false);
+
+                              //Go to the hex and "remove" the mine.
+                              if not IsAt(i,hex[1],hex[2]) then
+                                   begin
+                                        ComMoveXY(i,hex[1],hex[2]);
+                                        AddComHold(i);
+                                   end
+                              else
+                                   if engineer_time_map[i] < 0$1 then
+                                        begin
+                                             engineer_time_map = Replace(engineer_time_map,i,engineer_time_map[i]+0$0.5);
+                                        end
+                                   else
+                                        begin
+                                             //Check if the unit still has the mine layed. Could have detonated the mine.
+                                             temp_list = MineOfUnit(hex[3]);
+                                             if temp_list > 0 then
+                                                  if temp_list[1] = hex[1] and temp_list[2] = hex[2] then
+                                                       RemoveMineOfUnit(hex[3]);
+
+                                             engineer_hex_map = Replace(engineer_hex_map,i,[]);
+                                             engineer_time_map = Replace(engineer_time_map,i,0$0);
+                                        end;
+                         end;         
+
+                    until not working or engineers_list = 0;
+
+
+                    //Move control towers back to their parking area (some may have been pushed away so mined could be removed).
+                    for i in upf_vehicles_control do
+                         if not IsInArea(i,control_vehicle_area) then
+                              ComMoveToArea(i,control_vehicle_area);
+
+                    //The minesweepers exit the map.                                      
+                    repeat
+                    wait(0$0.7);
+
+                    for i in engineers_list do
+                         if not IsInArea(i,enter_area_south) then
+                              ComMoveToArea(i,enter_area_south)
+                         else
+                              begin
+                                   engineers_list = engineers_list diff i;
+                                   DestroyUnit(i);
+                              end;
+
+                    until engineers_list = 0;
+               end;
+
+
+          //Spawn Gensher and his guards. Every below controls their movements.
+          while upf_attack_status < 3 do
+               wait(0$1);
+
+          for i in UnitFilter(upf_gensher_guards_vehicles ^ gensher_vehicle,[f_not,[f_placed]]) do
+               PlaceUnitArea(i,enter_area_south,false);
+     end;
+
+
+//Controls Gensher and his bodyguards.
+Every 0$1+0$0.3 trigger upf_attack_status = 1 do
+     var temp_list, i, temp_list_2, num, humans_list, vehicles_list, under_attack;
+     var gensher_position, guards_positions, base;
+     begin
+          gensher_position = [153,106];
+          guards_positions = [[151,108],[154,113]];
+          base = 3;
+
+          //Stay put on the cliff to the south. Repair vehicles if necessary.
+          repeat
+          wait(0$0.7);
+          
+          under_attack = BaseUnderAttack(base,-1);
+          humans_list = UnitFilter(Gensher ^ upf_gensher_guards,[f_alive]);
+          vehicles_list = UnitFilter(gensher_vehicle ^ upf_gensher_guards_vehicles,[f_alive]);
+
+          if not under_attack and upf_attack_status <> 6 then
+               begin
+                    //Repair vehicles.
+                    temp_list = [];
+
+                    for i in vehicles_list do
+                         if GetLives(i) < 1000 then
+                              temp_list = temp_list ^ i;
+
+                    temp_list_2 = UnitFilter(humans_list,[f_class,class_mechanic]);
+
+                    if temp_list > 0 and temp_list_2 > 0 then
+                         begin
+                              temp_list_2 = GetHumansOutOfUnits(temp_list_2);
+                              ComRepairVehicle(temp_list_2,temp_list[1]);
+
+                              humans_list = humans_list diff temp_list_2;
+                         end;
+               end;
+
+          //Stay in your vehicle and park at your designated position.
+          //If no vehicle then just walk to that position.
+          //Pull back if the time has come to that.
+          num = 0;
+          vehicles_list = UnitFilter(vehicles_list,[f_ok]);
+
+          for i = 1 to humans_list do
+               begin
+                    if IsInUnit(humans_list[i]) = 0 and vehicles_list > 0 then
+                         begin
+                              ComEnterUnit(humans_list[i],vehicles_list[1]);
+                              ComExitVehicle(UnitsInside(vehicles_list[1]));
+                              vehicles_list = Delete(vehicles_list,1);
+                         end
+                    else
+                         begin
+                              vehicles_list = vehicles_list diff IsInUnit(humans_list[i]);
+
+                              if not under_attack then
+                                   begin
+                                        if upf_attack_status <> 6 then
+                                             begin
+                                                  if humans_list[i] = Gensher then
+                                                       begin
+                                                            if GetDistUnitXY(humans_list[i],gensher_position[1],gensher_position[2]) > 1 then
+                                                                 ComMoveXY(humans_list[i],gensher_position[1],gensher_position[2])
+                                                       end
+                                                  else
+                                                       begin
+                                                            num = num + 1;
+                                                            if GetDistUnitXY(humans_list[i],guards_positions[num][1],guards_positions[num][2]) > 1 then
+                                                                 ComMoveXY(humans_list[i],guards_positions[num][1],guards_positions[num][2]);
+                                                       end;
+                                             end
+                                        else
+                                             begin
+                                                  //Pull back
+                                                  if not IsInArea(humans_list[i],enter_area_south) then
+                                                       ComMoveToArea(humans_list[i],enter_area_south)
+                                                  else
+                                                       begin
+                                                            DestroyUnit(IsInUnit(humans_list[i]));
+
+                                                            if humans_list[i] = Gensher then
+                                                                 RemoveUnit(humans_list[i])
+                                                            else
+                                                                 DestroyUnit(humans_list[i]);
+                                                       end;
+                                             end;
+                                   end;
+                         end;
+               end;
+
+          until upf_attack_status = 6 and UnitFilter(Gensher ^ upf_gensher_guards,[f_alive]) = 0;
+     end;
+
+
+//Controls attacking procedure.
+Every 0$1+0$0.4 trigger upf_attack_status = 2 do
+     var i, temp_list, turn, attacking_soldiers, attacking_scientists, temp_value, attack_hexes, temp_list_2, attacking_units;
+     var x, y, k, temp_unit, un_list, active;
+     var retreated_vehicles, base, human_dist, vehicle_dist, side, make_reset, vehicle_attack_strategy;
+     begin
+          base = 3;
+          human_dist = 5;  //Max dist to attack hex for humans before proceeding to the next hex
+          vehicle_dist = 6;
+          side = upf;
+          make_reset = false;
+          retreated_vehicles = [];
+
+          for i in upf_soldiers_west ^ upf_soldiers_east ^ upf_scientists_west ^ upf_scientists_east ^ upf_vehicles_attack do
+               begin
+                    temp_list = Replace(ai_attacking_unit_hex_index[base],i,1);
+                    ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list);
+               end;
+
+          vehicle_attack_strategy = DetermineVehicleAttackStrategy;
+
+          repeat
+          wait(0$1);
+          
+          //This loop continues to run even between the two attacks so if the player for unknown reasons
+          //heals a UPF soldier, he/she will start fighting again. This does not go for vehicles also, though.
+
+          if upf_attack_status = 6 then
+               exit;
+
+          if upf_attack_status = 4 then
+               continue;
+
+          if upf_attack_status = 5 and not make_reset then
+               begin
+                    make_reset = true;
+                    retreated_vehicles = [];
+
+                    for i in upf_soldiers_west ^ upf_soldiers_east ^ upf_scientists_west ^ upf_scientists_east ^ upf_vehicles_attack do
+                         begin
+                              temp_list = Replace(ai_attacking_unit_hex_index[base],i,1);
+                              ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list);
+                         end;
+
+                    vehicle_attack_strategy = DetermineVehicleAttackStrategy;
+               end;
+
+          temp_list = upf_soldiers_west ^ upf_soldiers_east ^ upf_scientists_west ^ upf_scientists_east;
+          if UnitFilter(upf_vehicles_attack diff retreated_vehicles,[f_ok]) = 0 and ( UnitFilter(temp_list,[f_alive]) = 0 or ( UnitFilter(temp_list,[f_ok]) = 0 and not Researched(upf,tech_stimdrugs) ) ) then
+               begin
+                    active = false;
+
+                    if upf_attack_status = 5 then
+                         begin
+                              //Second attack has failed. Pull back.
+                              DialogueOn;
+                              SayRadio(Gensher,'D13-Ge-1');
+                              DialogueOff;
+
+                              upf_attack_status = 6;
+
+                              exit;
+                         end;
+               end
+          else
+               active = true;
+
+          for turn = 1 to 3 do
+               begin
+                    case turn of
+                         1: begin  //vehicles
+                              if upf_attack_status = 3 then
+                                   continue;
+
+                              //Determine attack path.
+                              //We assume the player has a base on the hill.
+                              if vehicle_attack_strategy = 1 then
+                                   begin
+                                        //Attack from the south
+                                        attack_hexes = [[131,68],[120,63],[100,45]];
+                                   end
+                              else
+                                   begin
+                                        //Attack from the west.
+                                        //If the player has a base anywhere else (within reasonable bounds) this attack route will find it.
+                                        attack_hexes = [[137,98],[118,92],[93,82],[87,65],[87,54],[100,45]];
+                                   end;
+
+                              attack_hexes = attack_hexes ^ [[101,27],[77,29],[91,47],[87,65],[93,82],[77,82],[49,59],ai_human_pullback_hex[1]];  //Ending in the American main base so we know the attack will be crushed at some point
+
+                              un_list = InitialVehicleCheck;
+
+                              //Pull vehicles back if damaged. Use the attack hexes in opposite direction.
+                              for i in upf_vehicles_attack diff retreated_vehicles do
+                                   if GetLives(i) <= 500 then
+                                        begin
+                                             retreated_vehicles = retreated_vehicles ^ i;
+
+                                             temp_list_2 = Replace(ai_attacking_unit_hex_index[base],i, ai_attacking_unit_hex_index[base][i]-1 );
+                                             ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list_2);
+                                        end;
+
+                              for i in retreated_vehicles do
+                                   if not IsInArea(i,attack_vehicle_area) and i in un_list then
+                                        begin
+                                             active = true;
+
+                                             if ai_attacking_unit_hex_index[base][i] = 0 then
+                                                  ComMoveToArea(i,attack_vehicle_area)
+                                             else
+                                                  if GetDistUnitXY(i,attack_hexes[ai_attacking_unit_hex_index[base][i]][1],attack_hexes[ai_attacking_unit_hex_index[base][i]][2]) > vehicle_dist then
+                                                       ComMoveXY(i,attack_hexes[ai_attacking_unit_hex_index[base][i]][1],attack_hexes[ai_attacking_unit_hex_index[base][i]][2])
+                                                  else
+                                                       begin
+                                                            temp_list = Replace(ai_attacking_unit_hex_index[base],i, ai_attacking_unit_hex_index[base][i]-1 );
+                                                            ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list);
+                                                       end;
+                                        end;
+
+                              attacking_units = un_list diff retreated_vehicles;
+
+                              if attacking_units = 0 then
+                                   continue;
+                         end;
+                         2: begin  //humans west
+                              //Determine attack path.
+                              //We assume the player has a base on the hill.
+                              attack_hexes = [[59,9],[69,19],[77,29],[101,27],[100,45],[91,47],[87,65],[93,82],[77,82],[49,59],ai_human_pullback_hex[1]];  //Ending in the American main base so we know the attack will be crushed at some point
+
+                              upf_soldiers_west = UnitFilter(upf_soldiers_west,[f_lives,1]);
+                              upf_scientists_west = UnitFilter(upf_scientists_west,[f_lives,1]);
+
+                              if (upf_soldiers_west ^ upf_scientists_west) = 0 then
+                                   continue;
+
+                              attacking_soldiers = upf_soldiers_west;
+                              attacking_scientists = upf_scientists_west;
+
+                              attacking_units = attacking_soldiers;
+                         end;
+                         3: begin  //humans east
+                              //Determine attack path.
+                              //We assume the player has a base on the hill.
+                              attack_hexes = [[100,9],[101,17],[101,27],[77,29],[100,45],[91,47],[87,65],[93,82],[77,82],[49,59],ai_human_pullback_hex[1]];  //Ending in the American main base so we know the attack will be crushed at some point
+
+                              upf_soldiers_east = UnitFilter(upf_soldiers_east,[f_lives,1]);
+                              upf_scientists_east = UnitFilter(upf_scientists_east,[f_lives,1]);
+
+                              if (upf_soldiers_east ^ upf_scientists_east) = 0 then
+                                   continue;
+
+                              attacking_soldiers = upf_soldiers_east;
+                              attacking_scientists = upf_scientists_east;
+
+                              attacking_units = attacking_soldiers;
+                         end;
+                    end;  
+
+                    active = true;
+
+                    if turn in [2,3] then
+                         begin
+                              //Control scientists.
+                                        //Scientists just follow the attacking soldiers. The "average position" of the
+                                        //attacking soldiers are calcualted. The scientists should be no further away from
+                                        //that hex than the soldier furthest away.
+                                        if attacking_scientists > 0 then
+                                             if attacking_soldiers = 0 then
+                                                  begin
+                                                       attacking_units = attacking_scientists;
+                                                  end
+                                             else
+                                                  begin
+                                                       x = 0;
+                                                       y = 0;
+                                                       for i in attacking_soldiers do
+                                                            begin
+                                                                 x = x + GetX(i);
+                                                                 y = y + GetY(i);
+                                                            end;
+
+                                                       x = x div attacking_soldiers;
+                                                       y = y div attacking_soldiers;
+
+                                                       temp_value = 0;
+                                                       for i in attacking_soldiers do
+                                                            begin
+                                                                 k = GetDistUnitXY(i,x,y);
+
+                                                                 if k > temp_value then
+                                                                      temp_value = k;
+                                                            end;
+
+                                                       for i in attacking_scientists do
+                                                            if GetDistUnitXY(i,x,y) > temp_value then
+                                                                 case GetType(IsInUnit(i)) of
+                                                                      unit_building: ComExitBuilding(i);
+                                                                      unit_vehicle: ComExitVehicle(i);
+                                                                      else ComMoveXY(i,x,y);
+                                                                 end;
+                                                  end;
+                         end;
+
+
+                    //Check if humans are ready to go for the next hex
+                    if turn in [2,3] then
+                         begin
+                              temp_value = true;
+
+                              for i in attacking_units do
+                                   if ai_attacking_unit_hex_index[base][i] < attack_hexes then
+                                        begin
+                                             if GetDistUnitXY(i,attack_hexes[ai_attacking_unit_hex_index[base][i]][1],attack_hexes[ai_attacking_unit_hex_index[base][i]][2]) > human_dist then
+                                                  begin
+                                                       temp_value = false;
+                                                       break;
+                                                  end;
+                                        end
+                                   else
+                                        begin
+                                             //Humans follow each other so if one is out of bounds, all are.
+                                             temp_value = false;
+                                             break;
+                                        end;
+
+                              if temp_value then
+                                   for i in attacking_units union attacking_scientists do
+                                        begin
+                                             temp_list = Replace(ai_attacking_unit_hex_index[base],i, ai_attacking_unit_hex_index[base][i]+1 );
+                                             ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list);
+                                        end;
+                         end;
+
+                    for i in attacking_units do
+                         begin
+                             // temp_value = GetTaskList(i);
+
+                              //If the unit is shooting at a unit which is Ok and there is a dying human
+                              //unit within the same distance or closer than the current target then
+                              //kill off that human unit first.
+                            {  if temp_value > 0 then
+                                        if temp_value[1][1] = '^' then  //'^' is auto attack
+                                             begin
+                                                  //The unit is auto attacking because it has met an enemy.
+                                                  temp_unit = Attacks(i);
+                                                  if temp_unit > 0 and IsOk(temp_unit) then
+                                                       begin
+                                                            temp_value = GetDistUnits(i,temp_unit);
+                                                            temp_list = FilterAllUnits([[f_enemy,side],[f_type,unit_human],[f_not,[f_ok]],[f_dist,i,temp_value]]);
+                                                            if temp_list > 0 then
+                                                                 ComAttackUnit(i,temp_list[1]);
+
+                                                            continue;
+                                                       end;
+                                             end;  }
+
+                              //If the unit is near the base then start shooting at humans if possible - else vehicles and buildings.
+                              //Shoot at nearest non-human unit (not so important with human units since we just agressive move).
+                            {  if not IsInArea(i,player_base) then
+                                   begin
+                                        if ai_attacking_unit_hex_index[base][i] < attack_hexes then
+                                             if GetDistUnitXY(i,attack_hexes[ai_attacking_unit_hex_index[base][i]][1],attack_hexes[ai_attacking_unit_hex_index[base][i]][2]) > [vehicle_dist,human_dist][turn] then
+                                                  begin
+                                                       case GetType(IsInUnit(i)) of
+                                                            unit_building: ComExitBuilding(i);
+                                                            unit_vehicle: ComExitVehicle(i);
+                                                            else ComAgressiveMove(i,attack_hexes[ai_attacking_unit_hex_index[base][i]][1],attack_hexes[ai_attacking_unit_hex_index[base][i]][2]);
+                                                       end;
+                                                  end
+                                             else
+                                                  if turn = 1 then
+                                                       begin
+                                                            temp_list = Replace(ai_attacking_unit_hex_index[base],i, ai_attacking_unit_hex_index[base][i]+1 );
+                                                            ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list);
+                                                       end;
+                                   end
+                              else
+                                   begin    }
+                                        temp_list = FilterAllUnits([[f_enemy,side],[f_type,unit_human],[f_dist,i,14],[f_see,side]]);
+
+                                        if temp_list > 0 then
+                                             begin
+                                                  //Finish off dying humans as first priority
+                                                  temp_list_2 = UnitFilter(temp_list,[f_not,[f_lives,250]]);
+                                                  if temp_list_2 > 0 then
+                                                       temp_list = temp_list_2;
+
+                                                  temp_unit = AllNearestUnitToUnit(temp_list,i);
+
+                                                  if GetLives(temp_unit) > 250 then
+                                                       ComAgressiveMove(i,GetX(temp_unit),GetY(temp_unit))
+                                                  else
+                                                       ComAttackUnit(i,temp_unit);
+                                             end
+                                        else
+                                             begin
+                                                  temp_list = FindNonhumansNearUnit(side,i,20,true);
+                                                  if temp_list > 0 then
+                                                       begin
+                                                            ComAgressiveMove(i,GetX(temp_list[1]),GetY(temp_list[1]));
+                                                       end
+                                                  else
+                                                       begin
+                                                            temp_list = FindNonhumansNearUnit(side,i,20,false);
+                                                            if temp_list > 0 then
+                                                                 begin
+                                                                      temp_unit = NearestUnitToUnit(temp_list,i);
+                                                                      ComAttackUnit(i,temp_unit);
+                                                                 end
+                                                            else
+                                                                 if ai_attacking_unit_hex_index[base][i] <= attack_hexes then
+                                                                      if GetDistUnitXY(i,attack_hexes[ai_attacking_unit_hex_index[base][i]][1],attack_hexes[ai_attacking_unit_hex_index[base][i]][2]) > [vehicle_dist,human_dist,human_dist][turn] then
+                                                                           begin
+                                                                                ComAgressiveMove(i,attack_hexes[ai_attacking_unit_hex_index[base][i]][1],attack_hexes[ai_attacking_unit_hex_index[base][i]][2]);
+                                                                           end
+                                                                      else
+                                                                           if turn = 1 then
+                                                                                begin
+                                                                                     temp_list = Replace(ai_attacking_unit_hex_index[base],i, ai_attacking_unit_hex_index[base][i]+1 );
+                                                                                     ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list);
+                                                                                end;
+                                                       end;
+                                             end;
+                                //   end;
+                         end;
+
+               end;
+
+          if not active then
+               begin
+                    if upf_attack_status = 2 then  //First attack is over
+                         upf_attack_status = 3;
+               end;
+
+          until false;
+     end;
+Function FindNonhumansNearUnit(side,un,dist,only_dangerous);
+     var temp_list;
+     begin
+          temp_list = FilterAllUnits([[f_enemy,side],[f_not,[f_type,unit_human]],[f_dist,un,dist],[f_see,side]]);
+
+          if only_dangerous then
+               begin
+                    result = DangerousUnits(temp_list);
+               end
+          else
+               result = temp_list
+     end;
+//Performs update check on attack vehicles.
+//Returns a list with the vehicles which are connected to their controller.
+Function InitialVehicleCheck;
+     var i, k, temp_list;
+     begin
+          upf_vehicles_attack = UnitFilter(upf_vehicles_attack,[f_alive]);
+
+          for i in upf_mechanics do
+               begin
+                    if upf_mechanic_attack_map >= i then
+                         begin
+                              temp_list = UnitFilter(upf_mechanic_attack_map[i],[f_alive]);
+                              upf_mechanic_attack_map = Replace(upf_mechanic_attack_map,i,temp_list);
+                         end;
+               end;
+
+          //Connect vehicles and controllers.
+          result = [];
+
+          for i in upf_mechanics do
+               if upf_mechanic_attack_map >= i then
+                    begin
+                         for k in upf_mechanic_attack_map[i] do
+                              case IsControledBy(k) of
+                                   0: ComLinkTo(k,i);
+                                   i: result = result ^ k;
+                                   else
+                                        ComUnlink(k);
+                              end;
+                    end;
+     end;
+Function DetermineVehicleAttackStrategy;
+     var south_east, south_west;
+     begin
+          south_east = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_turret],[f_btype,b_armoury],[f_btype,b_barracks]],[f_inarea,player_base_south_east]]);
+          south_west = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_breastwork],[f_btype,b_bunker],[f_btype,b_turret],[f_btype,b_armoury],[f_btype,b_barracks]],[f_inarea,player_base_south_west]]);
+
+          if south_east+0 = 0 and south_west+0 = 0 then
+               result = 2  //Attack from west (this will lead the vehicles through the southern area where the player probably has build a base in this case)
+          else
+               if south_east+0 <= south_west+0 then
+                    result = 1  //Attack from south
+               else
+                    result = 2;  //Attack from west
+     end;
+
+
+//As a safety measure if the firt attack should fail, a soldier places mines in front of Gensher
+//to repel a possible attack from the player.
+Every 0$1+0$0.6 trigger upf_attack_status = 2 do
+     var num_mines, hex_list, safety, hex, i, temp_list, area_list, area_num;
+     var mine_guy;
+     begin
+          mine_guy = CreateUnitsWithClass(1,class_soldier,upf)[1];
+          PlaceUnitArea(mine_guy,enter_area_east,false);
+
+
+          //Calculate what hexes should be "mined".
+          area_list = [mine_area_1,mine_area_2];
+          area_num = 1;
+          num_mines = [[0,0],[12,12],[15,18]][difficulty];  //[first area (mine_area_1), second area (mine_area_2)]
+          hex_list = [];
+
+          repeat
+
+          while num_mines[area_num] = 0 do
+               begin
+                    area_num = area_num + 1;
+
+                    if area_num > area_list then
+                         break;
+               end;
+
+          if area_num > area_list then
+               break;
+
+          safety = 0;
+
+               repeat
+
+               safety = safety + 1;
+               hex = RandHexArea(area_list[area_num],false);
+
+               until ( not hex in hex_list and HexInfo(hex[1],hex[2]) = 0 ) or safety = 10;
+
+          if not hex in hex_list and HexInfo(hex[1],hex[2]) = 0 then
+               hex_list = hex_list ^ [hex]
+          else
+               break;
+
+          num_mines = Replace(num_mines,area_num,num_mines[area_num]-1);
+
+          until false;
+
+
+          //Place 'dem mines.
+          while hex_list > 0 and IsLive(mine_guy) and upf_attack_status <> 6 do
+               begin
+                    temp_list = [];
+                    for i in hex_list do
+                         temp_list = temp_list ^ GetDistUnitXY(mine_guy,i[1],i[2]);
+                    hex = WorstFromListByList(hex_list,temp_list);
+                    hex_list = hex_list diff [hex];
+                    
+                    repeat
+                    
+                    if GetDistUnitXY(mine_guy,hex[1],hex[2]) > 1 then
+                         ComAgressiveMove(mine_guy,hex[1],hex[2])
+                    else
+                         ComPlaceRemoteCharge(mine_guy,hex[1],hex[2],0);
+
+                    wait(0$1);
+
+                    until MineOfUnit(mine_guy) > 0 or IsDead(mine_guy) or upf_attack_status = 6;
+
+                    hex = MineOfUnit(mine_guy);
+                    if hex > 0 then
+                         begin
+                              PlaceMine(hex[1],hex[2],upf,0);
+                              upf_mine_list = upf_mine_list ^ [hex];
+                              RemoveMineOfUnit(mine_guy);
+                         end;
+               end;
+
+          upf_mines_are_placed = true;
+
+
+          //Exit the map.
+          while IsPlaced(mine_guy) do
+               begin
+                    wait(0$1);
+
+                    if not IsInArea(mine_guy,enter_area_east) then
+                         ComMoveToArea(mine_guy,enter_area_east)
+                    else
+                         DestroyUnit(mine_guy);
+               end;
+     end;
+//Blow the mines if someone steps on them.
+Every 0$1+0$0.1 trigger upf_mine_list > 0 do
+     var area, i;
+     begin
+          repeat
+          wait(0$0.7);
+
+          //for area in [mine_area_1,mine_area_2] do
+          //     CheckMinesInArea(area,[f_side,you]);  -> With this units have to stand directly on the mine. Vehicles span several hexes
+          i = 1;
+          while i <= upf_mine_list do
+               begin
+                    if GetSide(HexInfo(upf_mine_list[i][1],upf_mine_list[i][2])) = you then
+                         begin
+                              LaunchMineAtPos(upf_mine_list[i][1],upf_mine_list[i][2],upf);
+                              upf_mine_list = Delete(upf_mine_list,i);
+
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          until ( upf_mines_are_placed and upf_mine_list = 0 ) or upf_attack_status = 6;
+     end;
+
+
+//Controls UPF mechanics and their control tower vehicles.
+Every 0$1+0$0.7 trigger upf_attack_status = 2 do
+     var i, temp_list, temp_value, under_attack;
+     var base;
+     begin
+          base = 3;
+
+          repeat
+          wait(0$1);
+
+          if upf_attack_status = 4 then
+               continue;
+
+          for i in upf_mechanics do
+               begin
+                    if IsDead(i) then
+                         begin
+                              upf_mechanics = upf_mechanics diff i;
+
+                              if upf_mechanic_control_map >= i then
+                                   begin
+                                        upf_vehicles_control = upf_vehicles_control diff upf_mechanic_control_map[i];
+                                        upf_mechanic_control_map = Replace(upf_mechanic_control_map,i,0);
+                                   end;
+
+                              ReallocateAttackVehiclesToOtherMecs(i);
+                         end;
+               end;
+
+
+          //If you are not under attack and all your vehicles are pulled back then repair if necessary.
+          //Else stay inside your control tower vehicle.
+          under_attack = BaseUnderAttack(base,-1);
+
+          for i in upf_mechanics do
+               begin
+                    temp_value = false;
+                    if upf_attack_status in [2,3,5] and not under_attack and upf_mechanic_attack_map >= i and upf_mechanic_control_map >= i then
+                         begin
+                              //Also repair control tower if necessary.
+                              temp_list = UnitFilter(upf_mechanic_attack_map[i] ^ upf_mechanic_control_map[i],[f_not,[f_lives,1000]]);
+
+                              if AreUnitsNearArea(upf_mechanic_attack_map[i],attack_vehicle_area) and temp_list > 0 then
+                                   begin
+                                        case GetType(IsInUnit(i)) of
+                                             unit_vehicle: ComExitVehicle(i);
+                                             unit_building: ComExitBuilding(i);
+                                             else
+                                                  ComRepairVehicle(i,temp_list[1]);
+                                        end;
+
+                                        temp_value = true;
+                                   end;
+                         end;
+                         
+                    if not temp_value then
+                         begin
+                              temp_value = false;
+                              if upf_mechanic_control_map >= i then
+                                   if IsOk(upf_mechanic_control_map[i]) then
+                                        temp_value = true;
+
+                              if not temp_value then
+                                   begin
+                                        //No control tower for you any more. Pull back.
+                                        ReallocateAttackVehiclesToOtherMecs(i);
+
+                                        if not IsInArea(i,enter_area_east) then
+                                             ComMoveToArea(i,enter_area_east)
+                                        else
+                                             DestroyUnit(i);
+                                   end
+                              else
+                                   begin
+                                        //Stay in control tower vehicle
+                                        temp_value = IsInUnit(i);
+
+                                        case GetType(temp_value) of
+                                             unit_building: ComExitBuilding(i);
+                                             unit_vehicle: begin
+                                                  if temp_value <> upf_mechanic_control_map[i] then
+                                                       ComExitVehicle(i);
+                                             end;
+                                             else
+                                                  ComEnterUnit(i,upf_mechanic_control_map[i]);
+                                        end;
+                                   end;
+                         end;
+               end;
+
+          until upf_attack_status = 6 and UnitFilter(upf_mechanics,[f_alive]) = 0;
+     end;
+//Reallocate the attack vehicles of the specified mechanic to other mechanics if possible.
+Function ReallocateAttackVehiclesToOtherMecs(mec);
+     var temp_list, k, num, temp_list_2, h;
+     begin
+          if upf_mechanic_attack_map < mec then
+               exit;
+
+          if upf_mechanic_attack_map[mec] = 0 then
+               exit;
+
+          temp_list = upf_mechanic_attack_map[mec];
+
+          for k in upf_mechanics diff mec do
+               begin
+                    if temp_list = 0 then
+                         break;
+
+                    if upf_mechanic_attack_map >= k then
+                         begin
+                              num = GetSkill(k,skill_mechanical) - upf_mechanic_attack_map[k];  //How many more vehicles can this mechanic control
+                              temp_list_2 = upf_mechanic_attack_map[k];
+
+                              if num >= temp_list then
+                                   begin
+                                        temp_list_2 = temp_list_2 ^ temp_list;
+                                        temp_list = [];
+                                   end
+                              else
+                                   for h = 1 to num do
+                                        begin
+                                             temp_list_2 = temp_list_2 ^ temp_list[1];
+                                             temp_list = Delete(temp_list,1);
+                                        end;
+
+                              upf_mechanic_attack_map = Replace(upf_mechanic_attack_map,k,temp_list_2);
+                         end;
+               end;
+
+          upf_mechanic_attack_map = Replace(upf_mechanic_attack_map,mec,[]);
+     end;
+Function AreUnitsNearArea(list,area);
+     var i;
+     begin
+          result = true;
+
+          for i in list do
+               if GetDistUnitArea(i,area) > 3 then
+                    begin
+                         result = false;
+                         exit;
+                    end;
+     end;
+
+
+//Controls the war vehicles in the time between the first and the second attack.
+//Defend your position and Gensher.
+Every 0$1+0$0.8 trigger upf_attack_status = 3 do
+     var vehicle_list, temp_list, temp_list_2, i;
+     var base;
+     begin
+          base = 3;
+
+          repeat
+          wait(0$1);
+
+          if upf_attack_status > 3 then
+               exit;
+
+          vehicle_list = InitialVehicleCheck;
+
+          if upf_vehicles_attack = 0 then
+               continue;
+
+          if BaseUnderAttack(base,-1) then
+               begin
+                    //Order the vehicles to attack an enemy unit near the "base".
+                    temp_list = ListFilterNearArea( FilterAllUnits([f_enemy,upf]) ,GetBaseArea(base));
+
+                    if temp_list > 0 then
+                         begin
+                              temp_list_2 = DangerousUnits(temp_list);
+
+                              if temp_list_2 > 0 then
+                                   ComAgressiveMove(vehicle_list,GetX(temp_list_2[1]),GetY(temp_list_2[1]))
+                              else
+                                   ComAttackUnit(vehicle_list,temp_list[1]);
+                         end;
+               end
+          else
+               begin
+                    for i in vehicle_list do
+                         if not IsInArea(i,attack_vehicle_area) then
+                              ComMoveToArea(i,attack_vehicle_area);
+               end;
+
+          until false;
+     end;
+
+
+//Pullback time.
+//The every above controlling Gensher and his bodyguards will make them pull back.
+//War vehicles, mechanics and control tower vehicles.
+Every 0$1+0$0.9 trigger upf_attack_status = 6 do
+     var vehicle_list, i;
+     begin
+          //First pull back all remotely controlled vehicles. Then all control tower vehicles.
+          //Link remote vehicles to control tower.
+          //The every above controlling mechanics ensures they are inside they control tower vehicles
+          //and if they have no such they pull back themselves.
+
+          //War vehicles.
+          repeat
+          wait(0$1);
+
+          vehicle_list = InitialVehicleCheck;
+          upf_vehicles_attack = UnitFilter(upf_vehicles_attack,[f_ok]);
+          vehicle_list = UnitFilter(vehicle_list,[f_ok]);
+
+          if upf_vehicles_attack = 0 then
+               break;
+
+          for i in vehicle_list do
+               if not IsInArea(i,enter_area_east) then
+                    ComMoveToArea(i,enter_area_east)
+               else
+                    DestroyUnit(i);
+
+          until false;
+
+          //Control tower vehicles.
+          repeat
+          wait(0$1);
+
+          if upf_vehicles_control = 0 then
+               break;
+
+          for i in upf_vehicles_control do
+               if not IsInArea(i,enter_area_east) then
+                    ComMoveToArea(i,enter_area_east)
+               else
+                    begin
+                         if UnitsInside(i) > 0 then  //should be the case
+                              DestroyUnit(UnitsInside(i)[1]);
+
+                         DestroyUnit(i);
+                    end;
+
+          until false;
+     end;
+//UPF soldiers and scientists. Some may live because UPF pulls back if Gensher dies.
+Every 0$1+0$0.2 trigger upf_attack_status = 6 do
+     var i;
+     begin
+
+          repeat
+          wait(0$1);
+
+          for i in UnitFilter(upf_soldiers_west ^ upf_scientists_west,[f_alive]) do
+               if not IsInArea(i,upf_enter_north_west) then
+                    ComMoveToArea(i,upf_enter_north_west)
+               else
+                    DestroyUnit(i);
+
+          wait(0$0.3);  //Don't give too many orders at the same time. May cause 'lag'.
+
+          for i in UnitFilter(upf_soldiers_east ^ upf_scientists_east,[f_alive]) do
+               if not IsInArea(i,upf_enter_north_east) then
+                    ComMoveToArea(i,upf_enter_north_east)
+               else
+                    DestroyUnit(i);
+
+          until UnitFilter(upf_soldiers_west ^ upf_soldiers_east ^ upf_scientists_west ^ upf_scientists_east,[f_alive]) = 0;
+     end;
+
+
+//If Gensher dies UPF immediately pulls back.
+Every 0$1+0$0.1 do
+     begin
+          repeat
+          wait(0$1);
+
+          if upf_attack_status = 6 then
+               exit;
+
+          until kill_gensher_objective_status = 2;  //GetLives(Gensher) = 0;
+
+          upf_attack_status = 6;
+     end;

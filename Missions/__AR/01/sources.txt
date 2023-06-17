@@ -1,0 +1,7 @@
+SOURCE_CODES
+  ENABLED Main
+  ENABLED Export
+  ENABLED People
+  ENABLED "Character Script"
+  ENABLED "Functions and Events"
+END_OF_SOURCE_CODES

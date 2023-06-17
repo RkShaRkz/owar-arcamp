@@ -1,0 +1,93 @@
+
+//Heike dies.
+On UnitDestroyed(un) do
+     begin
+          if un = Heike then
+               begin
+                    ExclusiveOn;
+                    wait(0$1);
+                    YouLost('HeikeDead');
+                    ExclusiveOff;
+               end;
+     end;
+
+
+//Query when Heike is in the escape area if the player wants to end the mission.
+Every 0$1+0$0.6 do
+     var delay;
+     begin
+          delay = 0$0;
+
+          repeat
+          wait(0$1);
+          wait(delay);
+
+          delay = 0$0;
+
+          if IsInArea(Heike,escape_area) then
+               case Query('QEndMission') of
+                    1: EndMission(FilterAllUnits([[f_side,you],[f_inarea,escape_area]]));  //yes
+                    2: delay = 0$5;  //no
+               end;
+
+          until false;
+     end;
+
+Function EndMission(saved_units);
+     var val, un_list, name_list, temp_list;
+     begin
+          //Medals
+          if (saved_units diff upf_deserter) >= legion_members_at_start then
+               begin
+                    AddMedal('SaveLegion1',1);
+                    AddMedal('SaveLegion2',1);
+                    AddMedal('SaveLegion3',1);
+               end
+          else
+               case ((saved_units diff upf_deserter)+0) / legion_members_at_start of  //case saved_units+0 of
+                    0.6..1: begin  //9..legion_members_at_start  (if legion_members_at_start is 15 which is maximum)
+                         AddMedal('SaveLegion1',2);
+                         AddMedal('SaveLegion2',2);
+                         AddMedal('SaveLegion3',-1);
+                    end;
+                    0.32..1: begin  //5..legion_members_at_start
+                         AddMedal('SaveLegion1',3);
+                         AddMedal('SaveLegion2',-1);
+                         AddMedal('SaveLegion3',-2);
+                    end;
+                    else begin
+                         AddMedal('SaveLegion1',-1);
+                         AddMedal('SaveLegion2',-2);
+                         AddMedal('SaveLegion3',-3);
+                    end;
+               end;
+
+          GiveMedals('Medals');
+
+
+          //Reward and save people
+          RewardPeople(saved_units);
+
+          SaveCharacters(Heike,'Heike_12a');
+
+          un_list = [Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam];
+          name_list = ['Olaf', 'Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Suze', 'MarkB', 'Kurt', 'Martin', 'Louis', 'Khattam'];
+          for val = 1 to un_list do
+               if un_list[val] in saved_units then
+                    SaveCharacters(un_list[val],name_list[val] & '_12a');
+
+          temp_list = [];
+          for val in other_deserters_08 do
+               if val in saved_units then
+                    temp_list = temp_list ^ val;
+
+          SaveCharacters(temp_list,'Other_Louis_people_12a');
+
+          SaveCharacters(saved_units diff (Heike ^ upf_deserter ^ un_list ^ temp_list),'Others_12a');
+
+          if upf_deserter in saved_units then
+               SaveCharacters(upf_deserter,'upf_deserter_12a');
+
+
+          YouWin;
+     end;                  

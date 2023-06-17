@@ -1,0 +1,13 @@
+1. Run ow_editor.exe in main Original War folder.
+2. Click "Create mod", name it ArCamp (or whatever else, it doesn't matter), and then click "Create".
+3. Copy the contents of this folder into your newly created mod, in: Original War\mods 
+overwrite the empty sub folders if there are any
+4. Launch the game and select your mod from the main menu
+
+
+
+1. Otwórz ow_editor.exe w g³ównym folderze Original War
+2. Naciœnij "Create mod", nazwij go "ArCamp" (albo cokolwiek innego, to bez znaczenia), i naciœnij "Create". 
+3. Skopiuj zawartoœæ tego folderu do nowo stworzonego moda w: Original War\mods
+Nadpisz jeœli coœ tam jest
+4. W³¹cz grê i wybierz moda z g³ównego menu

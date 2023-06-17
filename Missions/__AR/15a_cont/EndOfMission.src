@@ -1,0 +1,89 @@
+
+Every 0$1+0$0.2 do
+     begin
+          repeat
+          wait(0$2);
+          until IsMissionOver;
+
+          EndMission;
+     end;
+Export Function IsMissionOver;
+     var temp_list;
+     begin
+          temp_list = ai_bases;
+          if alliance_deal_status = 2 then
+               temp_list = temp_list diff 2;
+
+          result := temp_list = 0;
+     end;
+
+Function EndMission;
+     var val, all_list, un_list, name_list;
+     var i, temp_list;
+     begin
+          //Ending dialogues
+          DialogueOn;
+
+          ForceSay(Heike,'D26-H-1');
+          if IsLive(Olaf) then ForceSay(Olaf,'D26-Ola-1');
+          if IsLive(Sonya) then ForceSay(Sonya,'D26-So-1');
+          if IsLive(Oswald) then ForceSay(Oswald,'D26-Os-1');
+          if IsLive(Ralph) then ForceSay(Ralph,'D26-Ra-1');
+          if IsLive(Kowalski) then ForceSay(Kowalski,'D26-Kow-1');
+          if IsLive(Suze) then ForceSay(Suze,'D26-Su-1');
+          if IsLive(MarkB) then ForceSay(MarkB,'D26-Mark-1');
+          if IsLive(Kurt) then ForceSay(Kurt,'D26-Ku-1');
+          if IsLive(Martin) then ForceSay(Martin,'D26-Mart-1');
+          if IsLive(Louis) then ForceSay(Louis,'D26-Lo-1');
+          if IsLive(Khattam) then ForceSay(Khattam,'D26-Kh-1');
+          if IsLive(Kozlov) then ForceSay(Kozlov,'D26-Koz-1');
+          if IsLive(Kyouma) then ForceSay(Kyouma,'D26-Kyo-1');
+          if IsLive(Roth) and alliance_deal_status = 2 then ForceSay(Roth,'D26-Ro-1');
+          if IsLive(Gossudarov) and alliance_deal_status = 2 then ForceSay(Gossudarov,'D26-Go-1');
+          if IsLive(Joan) and alliance_deal_status = 2 then ForceSay(Joan,'D26-Jo-1');
+
+          DialogueOff;
+
+          wait(0$0.2);
+
+
+          //Medals
+          AddMedal('Future',1);
+
+          //No loses
+          if UnitFilter(player_starting_units,[f_alive])+0 = player_starting_units+0 then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('NoLoses',val);
+
+          //Special medal
+          if elimination_order[elimination_order+0] <> 1 then
+               val = 1
+          else
+               if all_artifacts_researched then
+                    val = 2
+               else
+                    if StratGroupBUsed then
+                         val = 3
+                    else
+                         val = 4;
+
+          AddMedal('Special',val);
+
+          GiveMedals('Medals');
+
+
+          //No reason to save variables or characters.
+
+
+          InGameOn;
+
+          Query('QCutsceneInfo');
+          wait(0$0.5);
+
+          YouWin;
+
+          InGameOff;
+     end;

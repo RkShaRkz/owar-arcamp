@@ -1,0 +1,1118 @@
+
+//Willard = Hadarach
+
+
+Export testing;
+
+Export you, americans, russians, nature;
+
+Export Heike, Sonya, Oswald, Ralph, Kowalski, Willard, Evelyn, Aviradze, starting_arabs;
+Export Abdul, Omar, Hassan, saved_am;
+Export Powell, Platonov;
+
+Export ai_soldiers, ai_engineers, ai_mechanics_defend, ai_mechanics_attack, ai_scientists, ai_commander, ai_depot, ai_lab;
+Export ai_power_plants, ai_buildings_locations, ai_vehicles_defend, ai_vehicles_attack, ai_vehicle_pullback_hexes, ai_human_pullback_hex, ai_spawn_people;
+Export ai_building_under_construction, ai_heal_these_humans, ai_all_buildings, ai_building_constructor, ai_vehicle_being_moved;
+Export ai_upcoming_building_data, ai_fact, ai_armoury, ai_bunkers, ai_oil_mine, ai_fact_extensions, ai_retreating_vehicles_defend;
+Export ai_near_base_dist, ai_going_to_attack_this_side, ai_player_seen, ai_refuel_vehicles_list, ai_vehicles_being_repaired;
+Export ai_vehicles_having_been_moved, ai_turrets, ai_captured_buildings;
+Export ai_attack_delay, ai_commence_attack, ai_hauling_engineers, ai_lended_units;
+
+Export player_attack_warning, radio_cancel_count, radio_joke_list, diplomacy_status, enemy_query_options, player_attack_warning_americans_neutral_success;
+Export number_of_calls, last_call_time, last_call_time_timeout, player_has_insulted_side, americans_thinking, personal_issues_taken, american_friend_points;
+Export resource_deal, tech_deal, number_of_sci_requests, request_resources_cooldown, request_reinforcements_cooldown, button_lab;
+Export resources_computer_to_player, ai_side_is_dead, bribe_resource_deal, human_lended_unit_has_died, first_workshop;
+Export going_to_steal_engineers, intro_done, Aviradze_line_up, postponetime_russian_diplomacy_disable, diplomacy_enabled;
+
+Export russians_get_stronger_time;
+
+Export main_arab_depot;
+
+var saved_apes;
+
+
+Starting
+begin
+     RandomizeAll;
+     ResetFog;
+
+     testing = false;  //"true" for testing - "false" for real game
+
+     ai_soldiers = [[],[],[]];  //Soldiers for computer sides
+     ai_engineers = [[],[],[]]; //Engineers for computer sides
+     ai_hauling_engineers = [[],[],[]];  //Engineers carrying resources to the player
+     ai_mechanics_defend = [[],[],[]];  //Mechanics for computer sides (in the base)
+     ai_mechanics_attack = [[],[],[]];  //Mechanics for computer sides (attacking in vehicles)
+     ai_scientists = [[],[],[]];  //Scientists for computer sides
+     ai_commander = [0,0,0];  //The commander of each computer side
+     ai_depot = [0,0,0];  //The depot of each computer side
+     ai_lab = [0,0,0];  //The lab of each computer side
+     ai_fact = [0,0,0];  //The factory of each computer side
+     ai_armoury = [0,0,0];  //The armoury of each computer side
+     ai_bunkers = [[],[],[]];  //The bunkers of each computer side
+     ai_turrets = [[],[],[]];  //The automatic turrets of each computer side
+     ai_oil_mine = [0,0,0];  //The oil mine of each computer side
+     ai_fact_extensions = [[],[],[]];  //The factory extensions of each computer side
+     ai_power_plants = [[],[],[]];  //The power plants of each computer side
+     ai_buildings_locations = [[],[],[]];  //The locations of all buildings for each side. Data looking like [x,y,dir,btype,labkind1,labkind2,bweapon] (CF. function "ScanBuildings")
+     ai_captured_buildings = [[],[],[]];  //Identifiers of the buildings each side has lost because someone captured them. Will be recaptured if possible.
+     ai_vehicles_defend = [[],[],[]];  //Vehicles of each computer side (in the base)
+     ai_vehicles_attack = [[],[],[]];  //Vehicles of each computer side (attacking the enemy)
+     ai_retreating_vehicles_defend = [[],[],[]];  //The defending vehicles which need to retreat during an attack on the base.
+     ai_vehicles_being_repaired = [[],[],[]];  //The vehicles which are going to be or are being repaired.
+     ai_refuel_vehicles_list = [[],[],[]];  //(defending) vehicles needing to be refueled
+     ai_vehicle_pullback_hexes = [ [ [19,12] , [19,17] , [24,26] , [12,4] , [21,29] ],  //Hexes where vehicles can be parked
+                                   [],
+                                   [ [168,117] , [150,99] , [144,102] , [152,105] , [144,96] ]
+                                   ];
+     ai_human_pullback_hex = [[17,15],[],[155,107]];  //Hex where humans can safely retreat to (center of the base)
+     ai_spawn_people = [[],[],[]];  //Human units which needs to be spawned (see every in module "AI" just below event "UnitDestroyed"). This list solely contains non-placed units.
+     ai_building_under_construction = [0,0,0];  //Identifier of building under construction (only 1 building at a time)
+     ai_heal_these_humans = [[],[],[]];  //Humans needing to be healed
+     ai_all_buildings = [[],[],[]];  //Identifiers of all buildings for each computer side
+     ai_building_constructor = [0,0,0];  //Identifier of the engineer who are going to build a building
+     ai_vehicle_being_moved = [0,0,0];  //Identifier of vehicle which is being moved away from building site
+     ai_vehicles_having_been_moved = [[],[],[]];  //Identifiers of the vehicles which have been moved away from building site. Don't move them again until construction has started
+     ai_upcoming_building_data = [[],[],[]];  //Holds the data (building_location syntax) of the building which is going to be build. Isn't reset until the building is completely done.
+     ai_near_base_dist = 15;  //Distance within base where the computer scans for enemies to determine if the base is under attack (so this distance also decides how far away from the base retreating attackers will be pursued).
+     ai_going_to_attack_this_side = [-1,-1,-1];  //Holds the side each computer side is going to attack (or attacked last time)
+     ai_player_seen = [false,false,false];  //True if the computer side has seen the player (and thus will start attacking the player)
+     ai_attack_delay = [0$0,0$0,0$0];  //The time which will pass from the side is ready to attack until the attack actually commences (cf. function "ResetAttackDelay").
+     ai_commence_attack = [false,false,false];  //True if the side has finished preparations for an attack (get mechanics inside vehicles) and thus can start attacking for real.
+     ai_side_is_dead = [false,false,false];  //True if the side is "dead" (has no human units left)
+     ai_lended_units = [[],[],[]];  //The units which are lended to the player (only Americans allow this)
+
+     first_workshop = true;  //true as long as the player has not build his/her first workshop yet
+     button_lab = 0;  //The lab we assign the custom button to
+     player_attack_warning = [false,-1,false];  //Player warned computer of incoming attack
+     player_attack_warning_americans_neutral_success = false;  //Player successfully warned Americans of Russian attack while being neutral with them
+     radio_cancel_count = 0;  //How many times in a row the player has hit the cancel button in the first radio query
+     radio_joke_list = [];  //List of integers for each radio joke. Update and used in event "ArtifactUsed" module "Dialogues"
+     diplomacy_status = [att_enemy,-2,att_enemy];  //The best diplomatic status the player have achieved with each computer side. -1 if you screwed up before being fully neutral with a side (e.g. attacked the side and then called to negotiate)
+     enemy_query_options = [[1,2,3,4,5,6],-1,[1,2,3,4,5,6]];  //Query options for when player is enemy with computer side
+     number_of_calls = [0,-1,0];  //How many times the player has called each computer side using the radio. After a number of failed calls negotiations fall apart completely.
+     last_call_time = [-1,-2,-1];  //The time (tick) of the last call from the player to each computer side
+     last_call_time_timeout = 2$0;  //The time that must pass since the last from the player to a computer side for the computer side not to be pissed at the player.
+     player_has_insulted_side = [false,-1,false];  //True if player has insulted the side and thus completely screwed up all possibilities of negotiation
+     americans_thinking = 0;  //Higher integer numbers if the Americans are thinking over a proposal by the player
+     personal_issues_taken = [false,-1,false];  //True if player's last persuade tactic was the option with the personal issues and the player didn't threaten the side (if the player attacks the other computer side now then the called side will accept the ceasefire anyway).
+     american_friend_points = [7,4,0][difficulty];  //Point system to determine if the Americans will agree with your requests when you are friendly with them.
+                                                    //Increases by:
+                                                    //- Killing Russian units  [5,2,3][human,vehicle,building]
+                                                    //- Giving the Americans resources when they ask for it  5
+                                                    //- Warning the Americans of an impending Russian attack  3
+                                                    //Decreases by:
+                                                    //- Requesting resources or assistance  4-8  10
+                                                    //- Asking for resources/assistance again shortly after having been refused some  1  1
+                                                    //- Declining a request for resources by the Americans  3
+                                                    //- Taking a little long to return lended units (assistance units)  2
+     resource_deal = [[],-1,[]];  //When player has to deliver resources to the computer. [time_out_time, crates, oil]
+     bribe_resource_deal = [false,-1,false];  //True if the resource deal is the bribing from enemy to neutral (to update diplomacy_status correctly)
+     tech_deal = [[],-1,[]];  //When player makes deal with technology. [time_out_time, exported_scientist]
+     number_of_sci_requests = 0;  //How many times the player have requested his/her scientist back from the Russians
+     request_resources_cooldown = 0$0;  //Only for Americans - holds the tick where Americans will be willing to assist with resources again
+     request_reinforcements_cooldown = 0$0;  //Only for Americans - holds the tick where Americans will be willing to assist with reinforcements again
+     resources_computer_to_player = [[],-1,[]];  //[crates, oil] - the resources the computer will give to the player
+     human_lended_unit_has_died = [false,-1,false];  //A human unit which the player has lended has died (doesn't give credit...)
+     going_to_steal_engineers = [];  //holds the engineer that might be about to steal resources from an ally computer's depot.
+     intro_done = false;  //Turns true when the intro is over
+     russians_get_stronger_time = 20$0;  //The time where the Russians get stronger (begin using ru_heavy_wheeled)
+     postponetime_russian_diplomacy_disable = 0$0;  //The time to wait before disabling diplomacy (Americans have been defeated).
+     diplomacy_enabled = true;  //Turns false when diplomacy is turned off (when there is only either the Americans or the Russians left).
+
+     main_arab_depot = 0;  //Id of the depot with the base name "New Nishapur" over it.
+
+     PrepareSides;
+     PrepareNature;
+     PrepareArabians;
+     ScanBuildings;
+     PrepareComputerSides;
+
+     Aviradze_line_up = true;  //True as long as Aviradze should line up with the other men
+     Action;
+     intro_done = true;
+end;
+
+
+Function PrepareSides;
+     begin
+          //Who is who and decide initial attitudes
+          nature = 0;
+          you = 2;
+          americans = 1;
+          russians = 3;
+
+          SetAttitude(you,americans,att_enemy,true);
+          SetAttitude(you,russians,att_enemy,true);
+          SetAttitude(americans,russians,att_enemy,true);
+     end;
+
+Function PrepareNature;
+     var i, spots, num, temp_value, count, temp_unit;
+     begin
+          spots = [ [46,6] , [47,21] , [43,72] , [56,89] , [68,85] , [73,114] , [97,112] , [127,113] ,
+                    [72,35] , [108,67] , [113,60] , [126,72] , [158,83] , [129,39] , [116,3] ];
+
+          InitUc;
+          InitHc;
+
+          uc_side = nature;
+          uc_nation = nation_nature;
+
+          //Apemen
+          //If the player didn't kill all scientists in mission 2 then there are fewer apes (because the Americans
+          //have tamed some).
+          count = 9 - difficulty * 2;
+          if LoadVariable('scientists_got_away_02',true) then
+               count = count - 2;
+
+          hc_class = class_apeman;
+          for i = 1 to count do
+               begin
+                    if spots = 0 then
+                         exit;
+
+                    uc_direction = Rand(0,5);
+
+                    temp_value = -10 + difficulty * 20;
+                    hc_agressivity = Rand(-1*temp_value,temp_value);
+
+                    hc_attr = [Rand(11,13),Rand(10,11)];
+                    hc_sex = Rand(sex_male,sex_female);
+                    hc_skills = [Rand(0,1),0,0,0];
+
+                    num = Rand(1,spots);
+                    PlaceUnitXYR(CreateHuman,spots[num][1],spots[num][2],5,false);
+                    spots = Delete(spots,num);
+               end;
+
+          //Phororhacoses (big birds)
+          hc_class = class_phororhacos;
+          hc_gallery = 'nature_foreg';
+          hc_face_number = 1;
+          hc_skills = [0,0,0,0];
+          for i = 1 to 5 do
+               begin
+                    if spots = 0 then
+                         exit;
+
+                    uc_direction = Rand(0,5);
+                    hc_agressivity = Rand(-30,0);
+                    hc_attr = [Rand(9,10),Rand(11,12)];
+
+                    num = Rand(1,spots);
+                    PlaceUnitXYR(CreateHuman,spots[num][1],spots[num][2],5,false);
+                    spots = Delete(spots,num);
+               end;
+
+          //Fish
+          hc_face_number = 2;
+          for i = 1 to 14 do
+               begin
+                    temp_unit = CreateHuman;
+                    SetClass(temp_unit,class_fish);
+                    
+                    case i of
+                         1..3: PlaceUnitXYR(temp_unit,118,28,3,false);
+                         4..8: PlaceUnitXYR(temp_unit,93,89,3,false);
+                         9..10: PlaceUnitXYR(temp_unit,83,109,1,false);
+                         else PlaceUnitXYR(temp_unit,63,107,3,false);
+                    end;
+               end;
+     end;
+
+Function PrepareArabians;
+     var i, num;
+     begin
+          InitHc;
+          InitUc;
+
+          uc_side = you;
+          uc_nation = nation_arabian;
+
+          //Load old characters
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_03_cont');
+                    SetClass(Heike,class_soldier);
+
+                    if TestCharacters('Sonya_03_cont') then
+                         Sonya = CreateCharacter('Sonya_03_cont')
+                    else Sonya = 0;
+
+                    if TestCharacters('Oswald_03_cont') then
+                         Oswald = CreateCharacter('Oswald_03_cont')
+                    else Oswald = 0;
+
+                    if TestCharacters('Ralph_03_cont') then
+                         Ralph = CreateCharacter('Ralph_03_cont')
+                    else Ralph = 0;
+
+                    if TestCharacters('Kowalski_03_cont') then
+                         Kowalski = CreateCharacter('Kowalski_03_cont')
+                    else Kowalski = 0;
+
+                    if TestCharacters('Aviradze_03_cont') then
+                         Aviradze = CreateCharacter('Aviradze_03_cont')
+                    else Aviradze = 0;
+
+                    if TestCharacters('Willard_03_cont') then
+                         Willard = CreateCharacter('Willard_03_cont')
+                    else Willard = 0;
+               end
+          else
+               begin
+                    InitHc;
+
+                    hc_attr = [10,12];
+                    hc_class = class_soldier;
+                    hc_importance = 110;
+                    hc_sex = sex_female;
+                    hc_name = 'Heike';
+                    hc_skills = [5,1,1,2];
+                    Heike = CreateHuman;
+
+                    hc_importance = 0;
+                    hc_sex:=sex_male;
+                    hc_class:=class_scientistic;
+                    hc_basic_skills = [0,1,1,4];
+                    hc_skills:=[0,2,1,4];
+                    hc_name:='Aviradze';
+                    hc_attr:=[10,12];
+                    Aviradze:=CreateHuman;
+                   
+                    hc_sex:=sex_male;
+                    hc_class:=class_soldier;
+                    hc_basic_skills = [2,0,1,0];
+                    hc_skills:=[5,1,3,0];
+                    hc_name:='Ralph';
+                    hc_attr:=[10,10];
+                    Ralph:=CreateHuman;
+
+                    hc_sex:=sex_male;
+                    hc_class:=class_soldier;
+                    hc_basic_skills = [2,1,1,0];
+                    hc_skills:=[5,2,2,0];
+                    hc_name:='Oswald';
+                    hc_attr:=[11,10];
+                    Oswald:=CreateHuman;
+
+                    hc_sex:=sex_female;
+                    hc_class:=class_scientistic;
+                    hc_basic_skills = [0,1,2,3];
+                    hc_skills:=[1,1,3,5];
+                    hc_name:='Sonya';
+                    hc_attr:=[10,11];
+                    Sonya:=CreateHuman;
+
+                    hc_attr = [11,10];
+                    hc_class = class_soldier;
+                    hc_sex = sex_male;
+                    hc_name = 'Kowalski';
+                    hc_basic_skills = [2,0,1,0];
+                    hc_skills = [4,1,2,1];
+                    Kowalski = CreateHuman;
+
+                    PrepareMechanic(sex_male,3);
+                    hc_name = 'Hadarach';
+                    Willard = CreateHuman;
+
+                    InitHc;
+               end;
+
+          //Create new people
+          Abdul = NewCharacter('Abdul');
+          Hassan = NewCharacter('Hassan');
+          Omar = NewCharacter('Omar');
+
+          for i in [Abdul,Hassan,Omar] do
+               SetDir(i,3);
+
+          Evelyn = NewCharacter('Evelyn');
+
+          starting_arabs = [Heike,Sonya,Ralph,Oswald,Kowalski,Willard,Evelyn];  //Not Aviradze in this list! He will not take part in this mission.
+          starting_arabs = starting_arabs ^ CreateCharacterSet('Others_03_cont');
+          starting_arabs = starting_arabs diff 0;
+
+          //The player should have 10 people for this mission. Add extra if needed (max 3 extra).
+          num = 10 - starting_arabs;
+          if num > 3 then
+               num = 3;
+
+          InitHc;
+          for i = 1 to num do
+               begin
+                    uc_direction = Rand(0,5);
+                    case i of
+                         1: PrepareMechanic(false,-3);
+                         2: PrepareMechanic(false,3);
+                         3: PrepareScientist(false,3);
+                    end;
+
+                    starting_arabs = starting_arabs ^ CreateHuman;
+               end;
+
+          //Place units
+          PlaceUnitXY(Heike,102,20,false);
+
+          for i in (starting_arabs diff Heike) ^ Aviradze do
+               PlaceUnitXYR(i,98,11,5,false);
+
+          //If the player trained sufficient apeman soldiers in mission 3 then he/she starts with a few here.
+          saved_apes=[];
+          if LoadVariable('Apemen_soldiers_trained_03_cont',false) then
+               begin
+                    InitHc;
+                    InitUc;
+
+                    uc_nation = nation_nature;
+                    uc_side = you;
+                    hc_class = class_apeman_soldier;
+
+                    for i = 1 to 2 do
+                         begin
+                              uc_direction = Rand(0,5);
+
+                              hc_attr = [Rand(11,13),Rand(10,11)];
+                              hc_sex = Rand(sex_male,sex_female);
+                              hc_skills = [1,0,0,0];
+
+                              saved_apes = saved_apes ^ CreateHuman;
+
+                              PlaceUnitXYR(saved_apes[i],98,11,5,false);
+                         end;
+               end;
+
+          //Create a bunch of crates for the player (those that were gathered in the previous mission)
+          //Create surplus crates if the player gathered extra crates in the previous mission.
+          //It requires 255 crates to build a basic base (breastworks, not bunkers).
+          num = 35;//45 - 10*difficulty;  -> The min amount to gather in Ar03
+          if LoadVariable('Extra_crates_collected_03_cont',false) then
+               num = num + 10;
+
+          repeat
+               if num >= 5 then
+                    i = 5
+               else i = num;
+
+               num = num - i;
+
+               CreateCratesXYR(i,110,11,3,false);
+
+          until num = 0;
+
+          num = 35;
+          if LoadVariable('Extra_oil_collected_03_cont',false) then
+               num = num + 10;
+
+          repeat
+               if num >= 5 then
+                    i = 5
+               else i = num;
+
+               num = num - i;
+
+               CreateResourcesXYR(mat_oil,i,110,11,3,false);
+
+          until num = 0;
+     end;
+
+Function ScanBuildings;
+     var side, i, temp_list;
+     begin
+          for side in [americans,russians] do
+               begin
+                    ai_all_buildings = Replace(ai_all_buildings,side, FilterAllUnits([[f_side,side],[f_type,unit_building]]) );
+
+                    for i in ai_all_buildings[side] do
+                         UpdateBuildingBasicVariables(side,i,true);
+
+                    //For Russians we mirror ai_bunkers so the best soldiers go in key position bunkers
+                    if side = russians then
+                         begin
+                              temp_list = [];
+                              for i in ai_bunkers[side] do
+                                   temp_list = Insert(temp_list,1,i);
+                              ai_bunkers = Replace(ai_bunkers,side,temp_list);
+                         end;
+
+                    //Prioritated order
+                    temp_list = [];
+                    //for i in ai_depot[side] ^ ai_armoury[side] ^ ai_bunkers[side] ^ ai_power_plants[side] ^ ai_turrets[side] ^ ai_lab[side] ^ ai_fact[side] ^ ai_fact_extensions[side] ^ ai_oil_mine[side] do
+                    for i in ai_all_buildings[side] do
+                         temp_list = temp_list ^ [ [GetX(i),GetY(i),GetDir(i),GetBType(i),GetLabKind(i,1),GetLabKind(i,2),GetBWeapon(i)] ];
+
+                    ai_buildings_locations = Replace(ai_buildings_locations,side,temp_list);
+                    SortBuildingLocationsListInCorrectOrder(side);
+
+                    //Make sources visible
+                    for i in ai_oil_mine[side] do
+                         SetResourceVisibility(GetX(i),GetY(i),side);
+               end;
+     end;
+Export Function UpdateBuildingBasicVariables(side,un,add);
+     var temp_list;
+     begin
+          //un - unit to add/remove from basic building variables
+          //add - boolean (true for add units, false for remove)
+
+          case GetBType(un) of
+               b_depot,b_warehouse:
+                    if add then
+                         ai_depot = Replace(ai_depot,side,un)
+                    else
+                         if un = ai_depot[side] then
+                              ai_depot = Replace(ai_depot,side,0);
+               b_lab,b_lab_half,b_lab_full:
+                    if add then
+                         ai_lab = Replace(ai_lab,side,un)
+                    else
+                         if un = ai_lab[side] then
+                              ai_lab = Replace(ai_lab,side,0);
+               b_factory,b_workshop:
+                    if add then
+                         ai_fact = Replace(ai_fact,side,un)
+                    else
+                         if un = ai_fact[side] then
+                              ai_fact = Replace(ai_fact,side,0);
+               b_armoury,b_barracks: 
+                    if add then
+                         ai_armoury = Replace(ai_armoury,side,un)
+                    else
+                         if un = ai_armoury[side] then
+                              ai_armoury = Replace(ai_armoury,side,0);
+               b_breastwork,b_bunker: begin
+                    if add then
+                         temp_list = ai_bunkers[side] ^ un
+                    else temp_list = ai_bunkers[side] diff un;
+                    ai_bunkers = Replace(ai_bunkers,side,temp_list);
+               end;
+               b_turret: begin
+                    if add then
+                         temp_list = ai_turrets[side] ^ un
+                    else temp_list = ai_turrets[side] diff un;
+                    ai_turrets = Replace(ai_turrets,side,temp_list);
+               end;
+               b_oil_mine:
+                    if add then
+                         ai_oil_mine = Replace(ai_oil_mine,side,un)
+                    else
+                         if un = ai_oil_mine[side] then
+                              ai_oil_mine = Replace(ai_oil_mine,side,0);
+               b_ext_gun,b_ext_noncombat,b_ext_laser,b_ext_computer,b_ext_radar,b_ext_rocket,b_ext_siberium,b_ext_track,b_ext_stitch: begin
+                    if add then
+                         temp_list = ai_fact_extensions[side] ^ un
+                    else temp_list = ai_fact_extensions[side] diff un;
+                    ai_fact_extensions = Replace(ai_fact_extensions,side,temp_list);
+               end;
+               b_solar_power,b_oil_power,b_siberite_power: begin
+                    if add then
+                         temp_list = ai_power_plants[side] ^ un
+                    else temp_list = ai_power_plants[side] diff un;
+                    ai_power_plants = Replace(ai_power_plants,side,temp_list);
+               end;
+          end;
+     end;
+Function SortBuildingLocationsListInCorrectOrder(side);
+     var i, temp_list, p;
+     begin
+         temp_list = [];
+
+         for i in ai_buildings_locations[side] do
+              begin
+                   //Prioritated order in which buildings should be (re-)build.
+                   case i[4] of
+                        b_depot, b_warehouse: p = 100;
+                        b_armoury, b_barracks, b_fort: p = 99;
+                        b_solar_power, b_oil_power, b_siberite_power: p = 98;
+                        b_breastwork: p = 97;
+                        b_factory, b_workshop: p = 96;
+                        b_ext_gun, b_ext_noncombat, b_ext_laser, b_ext_computer,
+                        b_ext_radar, b_ext_rocket, b_ext_siberium, b_ext_track, b_ext_stitch: p = 95;
+                        b_bunker: p = 94;
+                        b_control_tower: p = 93;
+                        b_turret: p = 92;
+                        b_lab, b_lab_half, b_lab_full: p = 91;
+                        b_teleport: p = 90;
+                        b_siberite_mine: p = 89;
+                        b_oil_mine: p = 88;
+                   end;
+
+                   temp_list = temp_list ^ p;
+              end;
+
+          temp_list = SortListByListDesc(ai_buildings_locations[side],temp_list);
+          ai_buildings_locations = Replace(ai_buildings_locations,side,temp_list);
+     end;
+
+Function PrepareComputerSides;
+     var i, temp_list, side, high_skill, temp_value, max;
+     begin
+          //Russians are both higher in skill and have more people.
+          for side in [americans,russians] do
+               begin
+                    InitUc;
+                    InitHc;
+
+                    uc_side = side;
+                    case side of
+                         americans: uc_nation = nation_american;
+                         russians: uc_nation = nation_russian;
+                    end;
+
+
+                    //Soldiers - at least one for each defensive building (remember armoury)
+                    //If Heike let the lost American in mission 01_cont go, he is part of the American staff.
+                    ai_soldiers = Replace(ai_soldiers,side, CreateUnitsWithClass(side,ai_bunkers[side] + difficulty + (side = russians) * 2, class_soldier) );
+
+                    if side = americans then
+                         if TestCharacters('lost_american_01_cont') then
+                              begin
+                                   saved_am = CreateCharacter('lost_american_01_cont');
+                                   temp_list = ai_soldiers[side] ^ saved_am;
+                                   ai_soldiers = Replace(ai_soldiers,side,temp_list);
+                              end
+                         else saved_am = 0;
+
+
+                    //Engineers
+                    //If any scientists got away in mission 2 then the Americans have a few apemen engineers as well.
+                    ai_engineers = Replace(ai_engineers,side, CreateUnitsWithClass(side, 2 + (side = russians), class_engineer) );
+                    
+                    if LoadVariable('scientists_got_away_02',true) and side = americans then
+                         begin
+                              temp_list = CreateApemanEngineers(side,2) ^ ai_engineers[side];  //intended so apes will carry stuff to player if it comes to that
+                              ai_engineers = Replace(ai_engineers,side,temp_list);
+
+                              case side of
+                                   americans: uc_nation = nation_american;
+                                   russians: uc_nation = nation_russian;
+                              end;
+                         end;
+
+                    //No engineer may have higher skill than difficulty + 1 (difficulty + 2 for Russians).
+                    case side of
+                         americans: max = difficulty + 1;
+                         russians: max = difficulty + 2;
+                    end;
+                    high_skill = 0;
+                    for i in ai_engineers[side] do
+                         begin
+                              temp_value = GetSkill(i,skill_engineering);
+                              if temp_value > max then
+                                   begin
+                                        SetSkill(i,skill_engineering,max);
+                                        temp_value = max;
+                                   end;
+
+                              if temp_value > high_skill then
+                                   high_skill = temp_value;
+                         end;
+
+                    //Adapt the level of buildings to the highest engineering skill.
+                    for i in ai_all_buildings[side] do
+                         SetBLevel(i,high_skill);
+
+
+                    //Mechanics
+                    ai_mechanics_defend = Replace(ai_mechanics_defend,side, CreateUnitsWithClass(side, 4 + (side = russians), class_mechanic) );
+
+
+                    //Scientists
+                    ai_scientists = Replace(ai_scientists,side, CreateUnitsWithClass(side, 2 + (side = russians), class_scientistic) );
+
+
+                    //Starting vehicles
+                    if side = russians then
+                         begin
+                              InitVc;
+
+                              vc_chassis = ru_medium_wheeled;
+                              vc_control = control_manual;
+                              vc_engine = engine_combustion;
+
+                              temp_list = [];
+                              for i = 1 to 2 do
+                                   begin
+                                        case i of
+                                             1: vc_weapon = ru_gatling_gun;
+                                             2: vc_weapon = ru_gun;
+                                        end;
+
+                                        temp_list = temp_list ^ CreateVehicle;
+                                   end;
+
+                              temp_list = ai_vehicles_defend[side] ^ temp_list;
+                              ai_vehicles_defend = Replace(ai_vehicles_defend,side,temp_list);
+                         end;
+               end;
+
+          //Commanders
+          uc_side = americans;
+          ai_commander = Replace(ai_commander,americans, NewCharacter('Donaldson') );
+
+          uc_side = russians;
+          ai_commander = Replace(ai_commander,russians, NewCharacter('Tsaritsyn') );
+
+          //Uber commanders
+          uc_side = americans;
+          Powell = NewCharacter('Powell');
+
+          uc_side = russians;
+          Platonov = NewCharacter('Platonov');
+
+          //Place units
+          for side in [americans,russians] do
+               begin
+                    if side = americans then
+                         temp_list = [16,11]
+                    else temp_list = [157,109];
+
+                    for i in ai_soldiers[side] ^ ai_engineers[side] ^ ai_mechanics_defend[side] ^ ai_scientists[side] ^ ai_commander[side] do
+                         PlaceUnitXYR(i,temp_list[1],temp_list[2],7,false);
+
+                    if side = americans then
+                         temp_list = [24,24]
+                    else temp_list = [146,101];
+
+                    for i in ai_vehicles_defend[side] do
+                         PlaceUnitXYR(i,temp_list[1],temp_list[2],8,false);
+               end;
+
+          //The computer sides may not slay each other's commander or the saved American
+          DoNotAttack(americans,ai_commander[russians]);
+          DoNotAttack(russians,ai_commander[americans]);
+          DoNotAttack(russians,saved_am);
+
+          //Reset attack delays
+          ResetAttackDelay(americans);
+          ResetAttackDelay(russians);
+     end;
+Export Function CreateUnitsWithClass(side,num_units,un_class);
+     var i, temp_unit, val, skill;
+     begin
+          result = [];
+
+          case side of
+               americans: uc_nation = nation_american;
+               russians: uc_nation = nation_russian;
+          end;
+
+          uc_side = side;
+
+          for i = 1 to num_units do
+               begin
+                    if Rand(1,3) = 1 then
+                         PrepareHuman(false,un_class, difficulty+1 )
+                    else PrepareHuman(false,un_class, -1*(difficulty+1) );
+
+                    temp_unit = CreateHuman;
+
+                    case un_class of
+                         class_engineer: val = skill_engineering;
+                         class_mechanic: val = skill_mechanical;
+                         class_scientistic: val = skill_scientistic;
+                         else val = skill_combat;
+                    end;
+
+                    skill = GetSkill(temp_unit,val);
+                    if skill < difficulty + 1 then
+                         SetSkill(temp_unit,val, skill + 1);
+
+                    if side = russians and Rand(1,3) = 1 and GetSkill(temp_unit,val) < difficulty + 2 then
+                         SetSkill(temp_unit,val,difficulty + 2);
+
+                    result = result ^ temp_unit;
+               end;
+     end;
+Export Function CreateApemanEngineers(side,num_units);
+     var i;
+     begin
+          InitHc;
+          uc_nation = nation_nature;
+          uc_side = side;
+          hc_class = class_apeman_engineer;
+
+          result = [];
+          for i = 1 to num_units do
+               begin
+                    hc_attr = [Rand(11,13),Rand(10,11)];
+                    hc_sex = Rand(sex_male,sex_female);
+                    hc_skills = [0,Rand(0,1),0,0];
+
+                    result = result ^ CreateHuman;
+               end;
+     end;
+Export Function ResetAttackDelay(side);
+     begin
+          ai_attack_delay = Replace(ai_attack_delay,side, Rand(3$0,4$0) - 1$0 * difficulty );
+     end;
+
+Function Action;
+     var hexes, i, hex, temp_list, k;
+     begin
+          InGameOn;
+          ExclusiveOff;
+          wait(2);
+          CenterNowOnXY(102,10);
+
+          wait(0$1.1);
+
+          if IsOk(Ralph) then
+               begin
+                    ComStand(Evelyn);
+
+                    if GetDistUnits(Ralph,Evelyn) > 2 then
+                         begin
+                              hex = [GetX(Evelyn),GetY(Evelyn)];
+                              hexes = [];
+
+                              for i = 0 to 5 do
+                                   hexes = Insert(hexes,1,[ ShiftX(hex[1],i,2), ShiftY(hex[2],i,2) ]);
+
+                              temp_list = [];
+                              for i in hexes do
+                                   temp_list = temp_list ^ GetDistUnitXY(Ralph,i[1],i[2]);
+                              hex = WorstFromListByList(hexes,temp_list);
+
+                              ComMoveXY(Ralph,hex[1],hex[2]);
+                              AddComTurnUnit(Ralph,Evelyn);
+                              AddComStand(Ralph);
+                              
+                              wait(0$1);
+                         end
+                    else
+                         begin
+                              ComTurnUnit(Ralph,Evelyn);
+                              AddComStand(Ralph);
+                         end;
+                    
+                    Say(Ralph,'D1Ra1');
+
+                    wait(0$0.2);
+                    ComTurnUnit(Evelyn,Ralph);
+                    AddComStand(Evelyn);
+
+                    Say(Evelyn,'D1Ev1');
+
+                    if IsOk(Sonya) then
+                    begin
+                    // Master of Cinematics was here (GWren1 that's right!)
+
+                         // Sonya turns where Ralph is, to accentuate she's referring to him.
+                         ComTurnUnit(Sonya,Ralph);
+                         // Delay. Sonya's brain needs some time to think what to say! :P
+                         Wait(0$0.3);
+                         // Sonya speaks.
+                         Say(Sonya,'D1So1');
+                    end;
+               end;
+
+          wait(0$1);
+          PlaceUnitXY(Abdul,105,4,false);
+          PlaceUnitXY(Hassan,104,2,false);
+          PlaceUnitXY(Omar,106,3,false);
+
+          ComMoveXY(Abdul,105,11);
+          ComMoveXY(Hassan,104,9);
+          ComMoveXY(Omar,106,10);
+          AddComStand([Hassan,Omar]);
+
+          // Abdul turns where the group is, to ask.
+          AddComHold(Abdul);
+          AddComTurnXY(Abdul,104,11);
+
+          // The Master of Cinematics has been here as well! >=D
+
+          // Delay. We wait until Abdul approaches near the group.
+          wait(0$0.5);
+
+          // Gradually every unit in the group starts turning to see who has come.
+          // For to cycle through all the characters in the list.
+          For i in starting_arabs ^ Aviradze do
+              begin
+                   // Random delay. Each unit reacts at a different time. Otherwise "ROBOTIC".
+                   wait(Rand(0$0.1,0$0.3));
+
+                   // This unit holds his/her position.
+                   ComHold(i);
+                   // The specified unit in the list turns to see the group.
+                   AddComTurnUnit(i,Abdul);
+              end;
+
+          // Another delay. Abdul is almost reaching his destination. We wait until he does.
+          i = 0;
+          repeat
+               wait(0$0.1);
+               i = i + 1;  //safety
+          until GetDistUnitXY(Abdul,105,11) = 0 or i > 0$2/0$0.1;
+
+          // Abdul speaks.
+          Wait(0$0.2);
+          Say(Abdul,'D1Ab1');
+                                           
+          temp_list = starting_arabs diff [Heike, Sonya, Oswald, Ralph, Kowalski, Willard, Evelyn, Aviradze];
+          i = temp_list[Rand(1,temp_list)];
+          if GetSex(i) = sex_male then
+               Say(i,'D1SomM1')
+          else Say(i,'D1SomF1');
+
+          ComStand(Heike);
+          hex = [ShiftX(GetX(Heike),0,2),ShiftY(GetY(Heike),0,2)];
+          ComMoveXY(Abdul,hex[1],hex[2]);
+          ComMoveXY(Hassan,hex[1]-1,hex[2]-2);
+          ComMoveXY(Omar,hex[1]+1,hex[2]-1);
+          AddComTurnUnit([Abdul,Hassan,Omar],Heike);
+          AddComStand([Abdul,Hassan,Omar]);
+
+          i = 0;
+          repeat
+               wait(0$0.5);
+               i = i + 1;  //safety
+          until GetDistUnits(Heike,Abdul) <= 4 or i > 0$8/0$0.5;
+
+          ComTurnUnit(Heike,Abdul);
+          AddComStand(Heike);
+
+          Say(Abdul,'D1Ab2');
+
+          Say(Willard,'D1Wi1');
+
+          // We free up the units so they can turn and walk freely.
+          // But Heike is taken temporarily out, since she mustn't do that!
+          ComFree(starting_arabs diff Heike);
+
+          RaiseSailEvent(1);  //The others form up in formation
+
+          // Apes notice the movement and try to mimic them.
+          if saved_apes > 0 then
+               begin
+                    wait(0$1.45);
+                    ComMoveXY(saved_apes[1],96,15);
+                    AddComHold(saved_apes[1]);
+                    AddComTurnXY(saved_apes[1],97,16);
+                    wait(0$0.22);
+                    ComMoveXY(saved_apes[2],97,16);
+                    AddComHold(saved_apes[2]);
+                    AddComTurnXY(saved_apes[2],98,17);
+               end;
+
+          // Heike waits a moment before talking to Abdul. Due to the noises of movement, somehow
+          // distracting for her.
+          Wait(0$1.2);
+          Say(Heike,'D1H1');
+          Say(Abdul,'D1Ab3');
+          Say(Heike,'D1H2');
+          Say(Abdul,'D1Ab4');
+          Say(Heike,'D1H3');
+          Say(Abdul,'D1Ab5');
+          Say(Heike,'D1H4');
+          Say(Abdul,'D1Ab6');
+          Say(Heike,'D1H5');
+
+          if IsOk(Aviradze) then
+               Say(Abdul,'D1Ab7');
+
+          wait(0$0.5);
+          ComMoveXY(Abdul,105,9);
+          AddComTurnXY(Abdul,105,7);
+          ComMoveXY(Hassan,105,7);
+          AddComTurnXY(Hassan,105,9);
+          AddComStand([Abdul,Hassan]);
+
+          ComFree(Heike);
+
+          Wait(0$3);
+          ComStand(Heike);
+          ComMoveXY(Omar, ShiftX(GetX(Heike),0,2), ShiftY(GetY(Heike),0,2));
+          AddComTurnUnit(Omar,Heike);
+          AddComStand(Omar);
+
+          wait(0$0.3);
+          Say(Omar,'D1Om1');
+
+          ComTurnUnit(Heike,Omar);
+          AddComStand(Heike);
+
+          Say(Heike,'D1H6');
+          Say(Omar,'D1Om2');
+          Say(Heike,'D1H7');
+          Say(Omar,'D1Om3');
+          Say(Heike,'D1H8');
+
+          wait(0$0.2);
+          ComMoveXY(Heike,101,26);
+          AddComTurnXY(Heike,103,26);
+          ComMoveXY(Omar,103,26);
+          AddComTurnXY(Omar,101,26);
+          AddComStand([Heike,Omar]);
+
+          i = 0;
+          repeat
+               wait(0$0.5);
+               i = i + 1;  //safety
+          until ( GetDistUnitXY(Heike,101,26) <= 3 and GetDistUnitXY(Omar,103,26) <= 3 ) or i > 0$10/0$0.5;
+
+          Say(Omar,'D1Om4');
+          wait(0$1.2);
+          Say(Heike,'D1H9');
+          Say(Omar,'D1Om5');
+          Say(Heike,'D1H10');
+          Say(Omar,'D1Om6');
+          Say(Heike,'D1H11');
+          Say(Omar,'D1Om7');
+          Say(Heike,'D1H12');
+          Say(Omar,'D1Om8');
+          Say(Heike,'D1H13');
+          Say(Omar,'D1Om9');
+          
+          wait(0$0.3);
+
+          // Cinematics' Master disabled this. -"We don't need it anymore"- ;)
+          {i = 1;
+          repeat
+               ComMoveXY(Omar,ShiftX(GetX(Abdul),3,1),ShiftY(GetY(Abdul),3,1));
+               i = i + 1;  //safety precaution
+               wait(0$0.1);
+          until GetDistUnits(Omar,Abdul) <= 2 or i > 0$10/0$0.1;}
+
+          // The Master of Cinematics (AKA GWren1) has been here!
+
+          // Omar Starts moving towards Abdul's Group.
+          ComMoveXY(Omar,103,1);
+
+          // Wait command. Heike stays pensive for some moments before moving.
+          Wait(0$1.5);
+          // Before moving, she turns to see Omar leaving.
+          ComHold(Heike);
+          AddComTurnUnit(Heike,Omar);
+          // Heike waits there 4 seconds.
+          Wait(0$4);
+          // Heike moves where the group is formed and takes the Lead in the formation.
+          ComMoveXY(Heike,100,15);
+          // Holds position.
+          AddComHold(Heike);
+          // Then turns to see the group.
+          AddComTurnXY(Heike,99,14);
+
+          // Abdul notices Omar is moving, so he turns to see better.
+          ComTurnUnit(Abdul,Omar);
+          // We make him stand, so that the character doesn't move somewhere else.
+          AddComStand(Abdul);
+
+          // Added a delay so the action looks more natural.
+          Wait(0$0.35);
+
+          // Hassan turns to see this as well.
+          ComTurnUnit(Hassan,Omar);
+          // We make him stand, so that the character doesn't move somewhere else.
+          AddComStand(Hassan);
+
+          // Both wait some millseconds until Omar has almost reached them.
+          Wait(0$0.5);
+
+          // Hassan, who is younger than Abdul, has better reflexes, so he goes away first.
+          ComMoveXY(Hassan,103,1);
+          // Delay to make it natural.
+          wait(0$0.4);
+          // Abdul follows.
+          ComMoveXY(Abdul,103,1);
+          // Another delay. This time shorter. Aviradze already knows what's happening, so
+          // he'll follow more quickly.
+          wait(0$0.2);
+          // The Dr. moves away with them.
+          Aviradze_line_up = false;
+          ComMoveXY(Aviradze,103,1);
+
+          k = 0;
+          repeat
+               wait(0$0.2);
+               k = k + 1;  //safety
+
+               for i in UnitFilter([Abdul,Hassan,Omar,Aviradze],[f_placed]) do
+                    if GetDistUnitXY(i,103,1) <= 2 or k > 0$8/0$0.2 then
+                         RemoveUnit(i)
+                    else
+                         ComMoveXY(i,103,1);
+
+          until UnitFilter([Abdul,Hassan,Omar,Aviradze],[f_placed]) = 0;
+
+          temp_list = starting_arabs diff [Heike,Kowalski,Oswald,Ralph,Sonya,Evelyn,Willard];
+          i = temp_list[Rand(1,temp_list)];
+          ComTurnUnit(Heike,i);
+          wait(0$0.2);
+          // Master of cin... Okay I think it's enough with this. Next time I upload a repo
+          // You'll see my changes.
+
+          // This checks if she arrives to her destination.
+          i = 0;
+          repeat
+                wait(0$0.1);
+                i = i + 1;  //safety
+          until ( GetX(Heike)=100 and GetY(Heike)=15 ) or i > 0$6/0$0.1;
+
+          // And talks. -Hmm I'm commenting too much, don't you think, guys?. :P
+          Say(Heike,'D1H14');
+
+          if GetSex(i) = sex_male then
+               Say(i,'D1SomM2')
+          else Say(i,'D1SomF2');
+
+          InGameOff;
+
+          SaveForQuickRestart;
+          wait(0$0.5);
+          ChangeMissionObjectives('M1');
+
+          ComFree(starting_arabs ^ saved_apes);
+     end;
+//People line up in formation
+On SailEvent(i) do
+     var formation_hex_list, unit_list, un, done;
+     begin
+          // The units form up to formally receive their Commander.
+          // A very short delay. Everybody is impressed, but soon they react.
+          Wait(0$0.3);
+
+          // Gradually every unit in the group starts forming up.
+
+          // List of Hexes where the units should form up.
+          // The Logic is: First goes top hex, then lower hex, top hex, lower hex, and so on.
+          formation_hex_list=[[96,14],[97,15],[96,13],[97,14],[96,12],[97,13],[96,11],[97,12],[96,10],[97,11]];
+
+          unit_list = (starting_arabs diff Heike) ^ Aviradze;
+
+          //Random delay (Unit dependent in this case). Natural behaviour intended.
+          for un in unit_list do
+               ComWait(un,Rand(0$0.3,0$0.5));
+
+          // For to cycle through all the characters in the list.
+          done = false;
+          repeat
+               if not Aviradze_line_up then
+                    unit_list = unit_list diff Aviradze;
+
+               done = true;
+               For un=1 to unit_list do
+                    begin
+                         if GetDistUnitXY(unit_list[un],formation_hex_list[un][1],formation_hex_list[un][2]) = 0 then
+                              continue
+                         else
+                              done = false;
+
+                         // The specified unit in the cycle will go to the same specified set of
+                         // hexes in the formation_hex_list.
+                         ComMoveXY(unit_list[un],formation_hex_list[un][1],formation_hex_list[un][2]);
+
+                         // The specified Unit turns in front of the hex. "Straight ahead, Soldier!"
+                         AddComTurnXY(unit_list[un],formation_hex_list[un][1]+1,formation_hex_list[un][2]+1);
+
+                         // This unit holds his/her position.
+                         AddComStand(unit_list[un]);
+                    end;
+
+               wait(0$1);
+
+          until done or intro_done;
+
+     end;

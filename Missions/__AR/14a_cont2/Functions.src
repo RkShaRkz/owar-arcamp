@@ -1,0 +1,421 @@
+
+//Function which makes "unit1" (only 1 unit - not list of units) move "dist" distance away from hex [x,y] (the fastest way)
+//"add" is boolean - if "true" then its an AddComMoveXY, else ComMoveXY
+Export Function AI_GetAwayFromXY(unit1, x, y, dist, add);
+     var list_nearest, list_coords, temp_dir, dir_list, b, min_dist, temp_dist, c, rand_num, rand_near_hex, attempts;
+     begin
+          if not IsOk(unit1) or dist = 1 or not ValidHex(x,y) or GetDistUnitXY(unit1,x,y) >= dist or not add in [true,false] then Exit;
+
+          attempts = 0;
+
+          repeat
+          list_nearest = [];
+          list_coords = [];
+
+          temp_dir = AI_GetTurnDirection(x,y,GetX(unit1),GetY(unit1));
+
+          if attempts = 0 then
+               begin
+                    //find those coordinates that have distance "dist" to "[x,y]" and are in direction unit on [x,y] would turn if asked to face [GetX(unit1),GetY(unti1)]
+                    //this is optimized version but causes 'apathy' (no movement) if "unit1" is cornered
+                    dir_list = [temp_dir,temp_dir+1,temp_dir-1];
+                    if dir_list[2] = 6 then
+                         dir_list = Replace(dir_list,2,0);
+                    if dir_list[3] = -1 then
+                         dir_list = Replace(dir_list,3,5);
+               end
+          else  //if attempts = 1
+               //find all other coordinates that have distance "dist" to "[x,y]" and put them in "list_coords"
+               dir_list = [0,1,2,3,4,5] diff temp_dir;
+
+          //this is the 'corner hexes'
+          for c = 1 to (dir_list+0) do
+               case dir_list[c] of
+                    0: list_coords = Insert(list_coords,1,[x,y-dist]);
+                    1: list_coords = Insert(list_coords,1,[x+dist,y]);
+                    2: list_coords = Insert(list_coords,1,[x+dist,y+dist]);
+                    3: list_coords = Insert(list_coords,1,[x,y+dist]);
+                    4: list_coords = Insert(list_coords,1,[x-dist,y]);
+                    5: list_coords = Insert(list_coords,1,[x-dist,y-dist]);
+               end;
+
+          //this is all the hexes in between the 'corner hexes'
+          //if distance "dist" is >= 30 then we take only every 2. hexes in between (to consume less cpu power)
+          if dist < 30 then
+               c = 1
+          else c = 2;
+
+          b = 1;
+          while b <= (dist - 1) do
+               begin
+                    if 0 in dir_list and 1 in dir_list then
+                         list_coords = Insert(list_coords, 1, [x+b, y-dist+b]);
+                    if 1 in dir_list and 2 in dir_list then
+                         list_coords = Insert(list_coords, 1, [x+dist, y+b]);
+                    if 2 in dir_list and 3 in dir_list then
+                         list_coords = Insert(list_coords, 1, [x+dist-b, y+dist]);
+                    if 3 in dir_list and 4 in dir_list then
+                         list_coords = Insert(list_coords, 1, [x-b, y+dist-b]);
+                    if 4 in dir_list and 5 in dir_list then
+                         list_coords = Insert(list_coords, 1, [x-dist, y-b]);
+                    if 5 in dir_list and 0 in dir_list then
+                         list_coords = Insert(list_coords, 1, [x-dist+b, y-dist]);
+
+                    b = b + c
+               end;
+
+          if list_coords = 0 then exit;
+
+          repeat
+          min_dist = 5000;
+          for b in list_coords do
+               begin
+                    temp_dist = GetDistUnitXY(unit1,b[1],b[2]);
+                    if temp_dist < min_dist then min_dist = temp_dist;
+               end;
+
+          c = 0;
+          repeat
+          c = c + 1;
+
+          //make a new list ("list_nearest") containing those coordiates which have the least distance to "unit1", and remove these coordinates from "list_coords"
+          if GetDistUnitXY(unit1, list_coords[c][1], list_coords[c][2]) = min_dist then
+               begin
+                    list_nearest = Insert(list_nearest, 1, list_coords[c]);
+                    list_coords = Delete(list_coords, c);
+                    c = c - 1;
+               end;
+          until c = list_coords;
+
+          c = 0;
+
+          if list_nearest > 0 then
+               begin
+                    repeat
+                    rand_num = Rand(1,list_nearest);
+                    rand_near_hex = list_nearest[rand_num];
+
+                    if ValidHex(rand_near_hex[1], rand_near_hex[2]) > 0 and HexInfo(rand_near_hex[1], rand_near_hex[2]) = 0 then
+                         c = 1
+                    else
+                         list_nearest = Delete(list_nearest, rand_num);
+                    until c = 1 or list_nearest = 0;
+               end;
+
+          until c = 1 or list_coords = 0;
+
+          attempts = attempts + 1;
+          until c = 1 or attempts > 1;
+
+          //if attempts <= 2 then  //because we don't use "break" "attempts = attempts + 1" will still be executed even if the function actually has found a good hex
+          if c = 1 then
+               if add then
+                    AddComMoveXY(unit1,rand_near_hex[1],rand_near_hex[2])
+               else ComMoveXY(unit1, rand_near_hex[1], rand_near_hex[2]);
+     end;
+
+//Function which returns the direction in which the unit one the specified hex ([x1,y1]) would turn if it was asked to face
+//the other specified hex ([x,y]) (ComTurnXY)
+Export Function AI_GetTurnDirection(x1,y1,x,y);
+     var dist_1, dist_2, b, temp_dist, dir;
+     begin
+          if not ValidHex(x1,y1) or not ValidHex(x,y) then
+               begin
+                    result = -1;
+                    exit;
+               end;
+
+          dist_1 = GetDistXY(x1,y1,x,y);
+          dist_2 = 99999;
+
+          //this is the algorithm
+          for b = 0 to 5 do
+               begin
+                    temp_dist = GetDistXY(ShiftX(x1,b,dist_1),ShiftY(y1,b,dist_1),x,y);
+                    if temp_dist < dist_2 then
+                         begin
+                              dist_2 = temp_dist;
+                              dir = b;
+                         end;
+               end;
+
+          result = dir;
+     end;
+
+//Function which returns inverted direction
+Export Function AI_InvertDirection(direction);
+     var dir;
+     begin
+          dir = direction - 3;
+          if dir < 0 then dir = dir + 6;
+          result = dir;
+     end;
+
+//Function which checks if unit un is distance dist behind the line drawn through hex [x,y] in the
+//given direction. E.g. if direction is 1 the line will be completely vertical and the
+//unit will be behind it if the unit is to the left of the line.
+Export Function BehindLine(un,x,y,dir,dist);
+     var c;
+     begin
+          case dir of
+               0: begin
+                    c = GetX(un) - x;
+                    if c > 0 then
+                         c = c + 1;
+
+                    y = y + (c div 2);
+                    result := GetY(un) >= y + dist;
+               end;
+               1: begin
+                    c = GetY(un) - y;
+                    if c < 0 then
+                         c = c - 1;
+
+                    x = x + (c div 2);
+                    result := GetX(un) <= x - dist;
+               end;
+               2: begin
+                    result := GetX(un) + GetY(un) <= x + y - 2*dist;
+               end;
+               3: begin
+                    c = GetX(un) - x;
+                    if c < 0 then
+                         c = c - 1;
+
+                    y = y + (c div 2);
+                    result := GetY(un) <= y - dist;
+               end;
+               4: begin
+                    c = GetY(un) - y;
+                    if c > 0 then
+                         c = c + 1;
+
+                    x = x + (c div 2);
+                    result := GetX(un) >= x + dist;
+               end;
+               5: begin
+                    result := GetX(un) + GetY(un) >= x + y + 2*dist;
+               end;
+          end;
+     end;
+
+//Returns all hexes within "dist" distance of hex [x,y] including hex [x,y] itself.
+Export Function GetHexesNearHex(x,y,dist);
+     var d, list_coords, b;
+     begin
+          result = [[x,y]];
+
+          for d = 1 to dist do
+               begin
+                    list_coords = [];
+
+                    //This is the 'corner hexes'
+                    list_coords = Insert(list_coords,1,[x,y-d]);
+                    list_coords = Insert(list_coords,1,[x+d,y]);
+                    list_coords = Insert(list_coords,1,[x+d,y+d]);
+                    list_coords = Insert(list_coords,1,[x,y+d]);
+                    list_coords = Insert(list_coords,1,[x-d,y]);
+                    list_coords = Insert(list_coords,1,[x-d,y-d]);
+
+                    //This is all the hexes in between the 'corner hexes'
+                    b = 1;
+                    while b <= (d - 1) do
+                         begin
+                              list_coords = Insert(list_coords, 1, [x+b, y-d+b]);
+                              list_coords = Insert(list_coords, 1, [x+d, y+b]);
+                              list_coords = Insert(list_coords, 1, [x+d-b, y+d]);
+                              list_coords = Insert(list_coords, 1, [x-b, y+d-b]);
+                              list_coords = Insert(list_coords, 1, [x-d, y-b]);
+                              list_coords = Insert(list_coords, 1, [x-d+b, y-d]);
+
+                              b = b + 1;
+                         end;
+
+                    result = result ^ list_coords;
+               end;
+     end;
+
+//Rounds a double to an integer using the conventional rules, i.e. 1.5 -> 2.
+Export Function RoundDouble(d);
+     begin
+          result = d div 1;
+          if d mod 1 >= 0.5 then
+               result = result + 1;
+     end;
+
+
+//********************************
+//*** Computer level up system ***
+//********************************
+{
+This uses the complex list "computer_level_features". Each entrance in the list starts with a string signifying what kind of "upgrade"
+the following values represent. The alternatives are:
+
+- 'building' = A new building for the Russian base (building format like "ai_buildings_locations").
+- 'rus_veh_defend' = The new max number of defending vehicles the Russians will build.
+- 'rus_veh_attack' = The new max number of vehicles the Russians will attack with, exlcusing special vehicles like implosion
+and taufield vehicles. Note this should never be larger than the number of defending vehicles (if it is the AI will never attack).
+- 'rus_taufield_veh' = The new maximum number of taufield vehicles the Russians will attack with (typically in combination with Farmer
+attacking with implosion vehicles).
+- 'ar_implosion_veh' = The new maximum number of implosion vehicles Farmer will attack with.
+- 'ar_veh_defend' = The new max number of defending vehicles Farmer will build.
+- 'ar_veh_attack' = The new maximum number of vehicles Farmer will attack with.
+- 'attack_time' = The new minimum time between attacks (from either Farmer or the Russians).
+
+Example:
+
+[
+     ['building',[56,72,3,b_bunker,0,0,ru_rocket]],
+     ['rus_veh_defend',2],
+     ['rus_veh_attack',1],
+     ['rus_taufield_veh',1],
+     ['ar_implosion_veh',2],
+     ['ar_veh_defend',5],
+     ['ar_attack_veh',4],
+     ['attack_time',5$30]
+]
+}
+var computer_level_1, computer_level_2, veh_attack_delay_seed, hum_attack_delay_seed;
+
+//Function to initiate level up variables.
+Export Function InitComputerLvlSystem;
+     var b;
+     begin
+          computer_level_1 = 0;  //Current level of the computer for computer_level_features_1.
+          computer_level_2 = 0;  //Current level of the computer for computer_level_features_2.
+          computer_level_features_1 = [];  //The features of each level (how the computer gets stronger).
+          computer_level_features_2 = [];  //The features of each level (how the computer gets stronger).
+          ai_max_num_vehicles_defend = [0,0,0];  //Maximum number of defending vehicles each base will build.
+          ai_max_num_vehicles_attack = [0,0,0];  //Maximum number of vehicles each base will attack with.
+          ai_max_num_taufield_vehicles = [0,0,0];  //Maximum number of taufield vehicles allowed for each base.
+          ai_max_num_implosion_vehicles = [0,0,0];  //Maximum number of implosion vehicles allowed for each base.
+          ai_vehicle_attack_delay = [0$0,0$0,0$0];  //The minimum time which will pass between each attack (with vehicles) (cf. function "ResetVehicleAttackDelay").
+          veh_attack_delay_seed = 360$0;  //Time used to determine the attack delay with vehicles (cf. function "ResetVehicleAttackDelay"). This represents the minimum time.
+          ai_human_attack_delay = [0$0,0$0,0$0];  //The minimum time which will pass between each attack (with humans) (cf. function "ResetHumanAttackDelay").
+          hum_attack_delay_seed = 0$0;  //Time used to determine the attack delay with humans (cf. function "ResetVehicleAttackDelay"). This represents the minimum time.
+
+          for b in ai_bases do
+               begin
+                    ResetVehicleAttackDelay(b);
+                    ResetHumanAttackDelay(b);
+               end;
+
+          //String constants for "computer_level_features".
+          cl_building = 'building';
+          cl_rus_veh_defend = 'rus_veh_defend';
+          cl_rus_veh_attack = 'rus_veh_attack';
+          cl_rus_taufield_veh = 'rus_taufield_veh';
+          cl_ar_implosion_veh = 'ar_implosion_veh';
+          cl_ar_veh_defend = 'ar_veh_defend';
+          cl_ar_veh_attack = 'ar_veh_attack';
+          cl_attack_time = 'attack_time';
+
+          do_upgrade_armoury = false;  //True when the armoury should be upgraded to a barracks. Else this wouldn't happen unless the armoury was destroyed.
+     end;
+
+//Function which "levels up" the computer by one level.
+//feature_list_num -> 1 for using computer_level_features_1; 2 for computer_level_features_2
+Export Function ComputerLvlUp(feature_list_num);
+     var data_list, temp_list, i;
+     var level, features;
+     begin
+          case feature_list_num of
+               1: begin
+                    if computer_level_1 + 1 > computer_level_features_1 then
+                         exit;
+
+                    computer_level_1 = computer_level_1 + 1;
+
+                    level = computer_level_1;
+                    features = computer_level_features_1;
+               end;
+               2: begin
+                    if computer_level_2 + 1 > computer_level_features_2 then
+                         exit;
+
+                    computer_level_2 = computer_level_2 + 1;
+
+                    level = computer_level_2;
+                    features = computer_level_features_2;
+               end;
+               else exit;
+          end;
+          
+          data_list = features[level];
+          case data_list[1] of
+               cl_building: begin
+                    temp_list = [data_list[2][1],data_list[2][2],data_list[2][3],data_list[2][4],data_list[2][5],data_list[2][6],data_list[2][7]];
+                    for i = 1 to ai_buildings_locations[1] do
+                         if ai_buildings_locations[1][i][1] = temp_list[1] and ai_buildings_locations[1][i][2] = temp_list[2] then  //Same building (e.g. armoury upgraded to barracks)
+                              begin
+                                   temp_list = Replace(ai_buildings_locations[1],i,temp_list);
+                                   ai_buildings_locations = Replace(ai_buildings_locations,1,temp_list);
+                                   temp_list = [];
+
+                                   if data_list[2][4] = b_barracks then
+                                        do_upgrade_armoury = true;
+
+                                   break;
+                              end;
+
+                    if temp_list > 0 then
+                         begin
+                              temp_list = ai_buildings_locations[1] ^ [temp_list];
+                              ai_buildings_locations = Replace(ai_buildings_locations,1,temp_list);
+                              SortBuildingLocationsListInCorrectOrder(1);
+
+                              //Spawn a new Russian soldier.
+                              if data_list[2][4] in [b_bunker,b_breastwork] and 1 in ai_bases then
+                                   begin
+                                        if data_list[2][4] = b_bunker then
+                                             i = CreateUnitsWithClass(1, class_soldier, russians)[1]
+                                        else
+                                             i = CreateUnitsWithClass(1, class_bazooker, russians)[1];
+
+                                        if not PlaceUnitXYR(i,32,60,2,false) then
+                                             if not PlaceUnitXYR(i,25,45,2,false) then
+                                                  PlaceUnitXYR(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2],7,false);  //should succeed
+
+                                        if IsPlaced(i) then
+                                             begin
+                                                  temp_list = ai_soldiers[1] ^ i;
+                                                  ai_soldiers = Replace(ai_soldiers,1,temp_list);
+                                             end
+                                        else
+                                             DestroyUnit(i);
+                                   end;
+                         end;
+               end;
+               cl_rus_veh_defend: begin
+                    ai_max_num_vehicles_defend = Replace(ai_max_num_vehicles_defend,1,data_list[2]);
+               end;
+               cl_rus_veh_attack: begin
+                    ai_max_num_vehicles_attack = Replace(ai_max_num_vehicles_attack,1,data_list[2]);
+               end;
+               cl_rus_taufield_veh: begin
+                    ai_max_num_taufield_vehicles = Replace(ai_max_num_taufield_vehicles,3,data_list[2]);  //It's Farmer who actually uses the taufield vehicles
+               end;
+               cl_ar_implosion_veh: begin
+                    ai_max_num_implosion_vehicles = Replace(ai_max_num_implosion_vehicles,3,data_list[2]);
+               end;
+               cl_ar_veh_defend: begin
+                    ai_max_num_vehicles_defend = Replace(ai_max_num_vehicles_defend,3,data_list[2]);
+               end;
+               cl_ar_veh_attack: begin
+                    ai_max_num_vehicles_attack = Replace(ai_max_num_vehicles_attack,3,data_list[2]);
+               end;
+               cl_attack_time: begin
+                    veh_attack_delay_seed = data_list[2];
+               end;
+          end;
+     end;
+
+//Functions to calculate attack delays for computer bases.
+Export Function ResetVehicleAttackDelay(base);
+     begin
+          ai_vehicle_attack_delay = Replace(ai_vehicle_attack_delay,base, Rand(veh_attack_delay_seed, veh_attack_delay_seed+1$0) );
+     end;
+Export Function ResetHumanAttackDelay(base);
+     begin
+          ai_human_attack_delay = Replace(ai_human_attack_delay,base, Rand(hum_attack_delay_seed, hum_attack_delay_seed+1$0) );
+     end;

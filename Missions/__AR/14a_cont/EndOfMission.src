@@ -1,0 +1,101 @@
+
+//Checks when player units reach the exit area.
+Every 0$1+0$0.2 do
+     var list_all, list_in_area, i;
+     begin
+
+          repeat
+          wait(0$1);
+
+          list_in_area = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_inarea,exit_area]]);
+          if list_in_area = 0 then
+               continue;
+
+          if Heike in list_in_area then
+               begin
+                    list_all = FilterAllUnits([[f_side,you],[f_type,unit_human]]);
+                    if list_in_area < list_all then
+                         if Query('QLeaveBehind') = 2 then  //"No"
+                              begin
+                                   wait(0$4);  //So we don't spam the player
+                                   continue;
+                              end;
+
+                    EndMission(list_in_area);
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+Function EndMission(escaped_humans);
+     var val, un_list, name_list, temp_list, spared_russians_saved, s;
+     begin
+          //If the player allied with the spared Russians they have a last dialogue here.
+          if spared_russian_answer = 1 then
+               begin
+                    spared_russians_saved = escaped_humans isect UnitFilter(spared_russians_all_units,[f_type,unit_human]);
+                    escaped_humans = escaped_humans diff spared_russians_all_units;
+
+                    if spared_russians_saved > 0 then
+                         begin
+                              DialogueOn;
+
+                              //Preferably pick the same speaker as when they met the player
+                              if spared_russian_speaker in spared_russians_saved then
+                                   val = spared_russian_speaker
+                              else
+                                   val = spared_russians_saved[1];
+
+                              if GetSex(val) = sex_male then
+                                   s = 'M'
+                              else s = 'F';
+
+                              ForceSay(val,'D14-Some'&s&'-1');
+                              ForceSay(Heike,'D14-H-1');
+                              ForceSay(val,'D14-Some'&s&'-2');
+
+                              DialogueOff;
+                         end;
+               end
+          else
+               spared_russians_saved = [];
+
+
+          //Variables
+          case tick - time_start of  //Time should be synchronized with assault event (module "Events")
+               0..[11$0,9$0,7$0][difficulty]: val = 1;
+               0..[14$0,11$0,8$0][difficulty]: val = 2;
+               else val = 3;
+          end;
+
+          SaveVariable(val,'Time_determined_situation_14a_cont');  //How fast the player is has consequences for the next mission. Smaller is better.
+          SaveVariable(spared_russian_answer = 1,'Accepted_Russian_deal_14a_cont');
+
+
+          //Save vehicles
+          temp_list = [];
+          for val in FilterAllUnits([[f_side,you],[f_type,unit_vehicle],[f_ok],[f_occupied],[f_inarea,exit_area]]) diff spared_russians_all_units do  //Don't count in the spared Russians' vehicle (if applicable)
+               temp_list = temp_list ^ [[GetNation(val),GetChassis(val),GetEngine(val),GetControl(val),GetWeapon(val),GetCargo(val,mat_cans),GetCargo(val,mat_oil),GetCargo(val,mat_siberit)]];
+
+          SaveVariable(temp_list,'Vehicles_14a_cont');
+
+
+          //Save people
+          SaveCharacters(Heike,'Heike_14a_cont');
+
+          un_list = [Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam];
+          name_list = ['Olaf', 'Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Suze', 'MarkB', 'Kurt', 'Martin', 'Louis', 'Khattam'];
+          for val = 1 to un_list do
+               if un_list[val] in escaped_humans then
+                    SaveCharacters(un_list[val],name_list[val] & '_14a_cont');
+
+          SaveCharacters(escaped_humans diff (un_list ^ Heike),'Others_14a_cont');
+
+          if spared_russians_saved > 0 then
+               SaveCharacters(spared_russians_saved,'Spared_russians_14a_cont');
+
+
+          ChangeMap('%2','%2');
+     end;

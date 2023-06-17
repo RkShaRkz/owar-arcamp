@@ -1,0 +1,62 @@
+
+On UnitDestroyed(un) do
+     var i, temp_list, j;
+     begin
+          for i = 1 to americans_in_the_field do
+               for j = 1 to americans_in_the_field[i] do
+                    if un = americans_in_the_field[i][j] then
+                         begin
+                              temp_list = Replace(americans_in_the_field[i],j,0);
+                              americans_in_the_field = Replace(americans_in_the_field,i,temp_list);
+                              exit;
+                         end;
+
+          spare_mechanics = spare_mechanics diff un;
+
+          going_to_be_healed = going_to_be_healed diff un;
+          vehicles_being_repaired = vehicles_being_repaired diff un;
+
+          base_engineers = base_engineers diff un;
+
+          lab_scientists = lab_scientists diff un;
+
+          base_inside_soldiers = base_inside_soldiers diff un;
+          base_outside_soldiers = base_outside_soldiers diff un;
+
+          for i = 1 to am_vehicle_groups do
+               case un of
+                    am_vehicle_groups[i][1]: begin
+                         //Vehicle was destroyed - add the driver to spare mechanics and delete the vehicle group
+                         spare_mechanics = spare_mechanics ^ am_vehicle_groups[i][2];
+                         am_vehicle_groups = Delete(am_vehicle_groups,i);
+
+                         if spare_mechanics_working_on = i then
+                              spare_mechanics_working_on = 0;
+
+                         break;
+                    end;
+                    am_vehicle_groups[i][2]: begin
+                         //Driver was killed - find a new driver among the spare mechanics. If not possible then delete the vehicle group
+                         if spare_mechanics > 0 then
+                              begin
+                                   temp_list = Replace(am_vehicle_groups[i],2,spare_mechanics[1]);
+                                   am_vehicle_groups = Replace(am_vehicle_groups,i,temp_list);
+                                   spare_mechanics = Delete(spare_mechanics,1);
+                              end
+                         else
+                              begin
+                                   am_vehicle_groups = Delete(am_vehicle_groups,i);
+
+                                   if spare_mechanics_working_on = i then
+                                        spare_mechanics_working_on = 0;
+                              end;
+
+                         break;
+                    end;
+               end;
+     end;
+On UnitGoesToRed(un) do
+     begin
+          if un = amlab and not scientist_escape then
+               TheEscape;  //The scientists try to run away
+     end;

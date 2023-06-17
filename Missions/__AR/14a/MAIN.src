@@ -1,0 +1,436 @@
+Export testing;
+              
+Export Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis;
+Export Khattam, other_folks;
+Export Farmer;
+
+Export apemale1, apemale2, apefemale;
+
+
+Starting
+begin
+     ResetFog;
+     RandomizeAll;
+     
+     testing = false;  //Just testing or playing for real?
+
+     LoadEnvironment;
+     LoadPeople;
+
+     Action;
+end;
+
+Function LoadEnvironment;
+     var list, i;
+     begin
+          list = LoadVariable('Environment_13a_cont',[]);
+          if list > 0 then
+               begin
+                    //Remove all environment on the map and replace with the saved environment
+                    //from last mission.
+                    for i in ListEnvironmentArea(whole_map_area) do
+                         RemoveEnvironment(i[1],i[2]);  //RemoveEnvironmentArea doesn't remove all environment for some reason
+
+                    PlaceEnvironmentList(list);
+               end;
+     end;
+
+Function LoadPeople;
+     var i, un, temp_list, k, temp_list_2;
+     begin
+          uc_side = 8;
+          uc_nation = nation_arabian;
+
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_13a_cont');
+                    SetClass(Heike,class_soldier);
+
+                    if TestCharacters('Olaf_13a_cont') then
+                         Olaf = CreateCharacter('Olaf_13a_cont')
+                    else
+                         Olaf = 0;
+
+                    if TestCharacters('Sonya_13a_cont') then
+                         Sonya = CreateCharacter('Sonya_13a_cont')
+                    else
+                         Sonya = 0;
+
+                    if TestCharacters('Oswald_13a_cont') then
+                         Oswald = CreateCharacter('Oswald_13a_cont')
+                    else
+                         Oswald = 0;
+
+                    if TestCharacters('Ralph_13a_cont') then
+                         Ralph = CreateCharacter('Ralph_13a_cont')
+                    else
+                         Ralph = 0;
+
+                    if TestCharacters('Kowalski_13a_cont') then
+                         Kowalski = CreateCharacter('Kowalski_13a_cont')
+                    else
+                         Kowalski = 0;
+
+                    if TestCharacters('Suze_13a_cont') then
+                         Suze = CreateCharacter('Suze_13a_cont')
+                    else
+                         Suze = 0;
+
+                    if TestCharacters('MarkB_13a_cont') then
+                         MarkB = CreateCharacter('MarkB_13a_cont')
+                    else
+                         MarkB = 0;
+
+                    if TestCharacters('Kurt_13a_cont') then
+                         Kurt = CreateCharacter('Kurt_13a_cont')
+                    else
+                         Kurt = 0;
+
+                    if TestCharacters('Martin_13a_cont') and LoadVariable('Louis_stays_13a_cont',false) then
+                         Martin = CreateCharacter('Martin_13a_cont')
+                    else
+                         Martin = 0;
+
+                    if TestCharacters('Louis_13a_cont') and LoadVariable('Louis_stays_13a_cont',false) then
+                         Louis = CreateCharacter('Louis_13a_cont')
+                    else
+                         Louis = 0;
+
+                    if TestCharacters('Khattam_13a_cont') and Loadvariable('Khattam_trusted_13a_cont',false) then
+                         Khattam = CreateCharacter('Khattam_13a_cont')
+                    else
+                         Khattam = 0;
+
+                    other_folks = CreateCharacterSet('Others_13a_cont') diff 0;
+
+                    if LoadVariable('Louis_stays_13a_cont',false) then
+                         other_folks = other_folks ^ (CreateCharacterSet('Other_louis_folks_13a_cont') diff 0);
+
+
+                    Farmer = CreateCharacter('Farmer_13a');
+               end
+          else
+               begin
+                    InitHc;
+
+                    PrepareSoldier(sex_female,9);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+
+                    PrepareMechanic(sex_male,9);
+                    hc_name = 'Olaf';
+                    Olaf = CreateHuman;
+
+                    PrepareScientist(sex_female,9);
+                    hc_name = 'Sonya';
+                    Sonya = CreateHuman;
+
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Oswald';
+                    Oswald = CreateHuman;
+                     
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Ralph';
+                    Ralph = CreateHuman;
+
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Kowalski';
+                    Kowalski = CreateHuman;     
+
+                    PrepareSoldier(sex_female,9);
+                    hc_name = 'Suze';
+                    Suze = CreateHuman;
+
+                    PrepareScientist(sex_male,9);
+                    hc_name = 'Mark';
+                    MarkB = CreateHuman;       
+
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Kurt';
+                    Kurt = CreateHuman;
+
+                    PrepareMechanic(sex_male,9);
+                    hc_name = 'Martin';
+                    Martin = CreateHuman;
+
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Louis';
+                    Louis = CreateHuman;
+                    SetClass(Louis,class_mortar);
+
+                    PrepareScientist(sex_male,9);
+                    hc_name = 'Khattam';
+                    Khattam = CreateHuman;
+
+                    other_folks = [];
+                    InitHc;
+                    for i = 1 to 3 do
+                         begin
+                              PrepareHuman(false,[class_soldier,class_mechanic,class_scientistic,class_engineer][Rand(1,4)],8);
+                              other_folks = other_folks ^ CreateHuman;
+                         end;  
+
+
+                    PrepareSoldier(sex_male,9);
+                    hc_name = 'Farmer';
+                    Farmer = CreateHuman;
+               end;
+
+          InitHc;
+          for i = 1 to 10 do
+               begin
+                    PrepareHuman(false,[class_soldier,class_mechanic,class_scientistic,class_engineer][Rand(1,4)],7);
+                    un = CreateHuman;
+
+                    for k in [skill_combat,skill_engineering,skill_mechanical,skill_scientistic] do
+                         if GetSkill(un,k) > 7 then
+                              SetSkill(un,k,7);
+
+                    other_folks = other_folks ^ un;
+               end;
+
+
+          //Load the player's base
+          temp_list = LoadVariable('Player_buildings_13a_cont',[]);  //[x,y,dir,b_type,labext1,labext2,bweapon,nation]
+          if temp_list = [] or testing then
+               temp_list = [[86,30,1,b_oil_mine,0,0,0,nation_arabian],[100,22,5,b_siberite_mine,0,0,0,nation_arabian],[95,29,1,b_ext_radar,0,0,0,nation_arabian],
+               [99,29,3,b_factory,0,0,0,nation_arabian],[102,29,4,b_ext_track,0,0,0,nation_arabian],[98,41,3,b_depot,0,0,0,nation_arabian],[108,51,5,b_lab_half,b_lab_weapon,b_lab_basic,0,nation_arabian],
+               [86,44,1,b_breastwork,0,0,0,nation_arabian],[96,51,4,b_bunker,0,0,ar_gun,nation_arabian],[104,57,0,b_bunker,0,0,us_laser,nation_american],[89,41,5,b_siberite_power,0,0,0,nation_arabian]];
+
+          //Factory extensions must go AFTER the factory
+          temp_list_2 = [];
+          i = 1;
+          while i <= temp_list do
+               begin
+                    if temp_list[i][4] in [b_ext_computer,b_ext_gun,b_ext_laser,b_ext_noncombat,b_ext_radar,b_ext_radio,b_ext_rocket,b_ext_siberium,b_ext_stitch,b_ext_track] then
+                         begin
+                              temp_list_2 = temp_list_2 ^ [temp_list[i]];
+                              temp_list = Delete(temp_list,i);
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          temp_list = temp_list ^ temp_list_2;
+
+          InitBC;
+          for i in temp_list do
+               begin
+                    uc_nation = i[8];
+                    bc_type = i[4];
+                    bc_kind1 = i[5];
+                    bc_kind2 = i[6];
+
+                    if i[4] in [b_oil_mine,b_siberite_mine] then
+                         SetResourceVisibility(i[1],i[2],8);
+
+                    un = CreateAndPlaceBuildingXYD(i[1],i[2],i[3]);
+
+                    if i[4] in [b_bunker,b_turret] then
+                         PlaceWeaponTurret(un,i[7]);
+
+                    if i[4] in [b_depot,b_warehouse,b_lab,b_lab_half,b_lab_full,b_armoury,b_barracks,b_fort,b_workshop,b_factory,b_bunker,b_turret,b_breastwork] then
+                         begin
+                              if i[4] = b_breastwork then
+                                   uc_direction = InvertDir(i[3]);  //To make people in breastworks face properly
+
+                              k = CreateHuman;
+                              PlaceHumanInUnit(k,un);
+
+                              if i[4] = b_breastwork then
+                                   SetClass(k,class_mortar);
+                         end;
+               end;
+
+
+          //Apes for little event
+          InitHc;
+          InitUc;
+
+          uc_nation = nation_nature;
+          uc_side = 8;
+
+          hc_class = class_apeman_soldier;
+          hc_sex = sex_male;
+
+          apemale1 = CreateHuman;
+          apemale2 = CreateHuman;
+
+          hc_sex = sex_female;
+          hc_class = class_apeman;
+
+          apefemale = CreateHuman;
+     end;
+Function InvertDir(dir);
+     begin
+          result = dir - 3;
+          if result < 0 then
+               result = result + 6;
+     end;
+
+Function Action;
+     var val, temp_list, temp_list_2, people_list, un_list, name_list, un, choose_list;
+     begin
+          //Place units
+          temp_list = FilterAllUnits([[f_side,8],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]);
+          temp_list_2 = UnitFilter(temp_list,[f_inarea,player_base]);
+
+          if temp_list_2 = 0 then
+               temp_list_2 = temp_list;
+
+          if temp_list_2 > 0 then
+               begin
+                    val = temp_list_2[1];
+                    SetBName(val,'campbar');
+                    temp_list = [GetX(val),GetY(val),GetDir(val)];
+               end
+          else
+               temp_list = [98,42,3];
+
+          PlaceUnitXYR(Farmer, ShiftX(temp_list[1],temp_list[3],5) , ShiftY(temp_list[2],temp_list[3],5) ,5,false);
+
+          temp_list = [GetX(Farmer),GetY(Farmer)];
+          for val = 0 to 5 do
+               if PlaceUnitXY(Heike,ShiftX(temp_list[1],val,2),ShiftY(temp_list[2],val,2),false) then
+                    break;
+
+          if not IsPlaced(Heike) then  //Couldn't be placed above
+               if not PlaceUnitXYR(Heike,temp_list[1],temp_list[2],2,false) then
+                    PlaceUnitAnywhere(Heike,false);
+
+          ComTurnUnit(Heike,Farmer);
+          ComTurnUnit(Farmer,Heike);
+
+             
+          for val = 0 to 5 do
+               if PlaceUnitXYR(apemale1,ShiftX(temp_list[1],val,5),ShiftY(temp_list[2],val,5),2,false) then
+                    break;
+
+          if IsPlaced(apemale1) then
+               PlaceUnitXYR(apemale2,GetX(apemale1),GetY(apemale1),2,false);
+
+          if UnitFilter([apemale1,apemale2],[f_placed]) > 0 then
+               PlaceUnitXYR(apefemale,82,18,4,false);
+
+
+          InGameOn;
+          ExclusiveOff;
+
+          CenterNowOnXY(40,56);
+          wait(0$0.3);
+          CenterOnUnits(Farmer);
+
+          wait(0$0.8);
+
+          Say(Farmer,'D1-Fa-1');
+
+          if not TestCharacters('Gensher_13a_cont') then
+               Say(Farmer,'D1-Fa-2b');
+
+          Say(Farmer,'D1-Fa-3');
+
+          if LoadVariable('Am_scientists_escaped_13a_cont',true) then
+               begin
+                    Say(Farmer,'D1-Fa-4b');
+
+                    if LoadVariable('Freelancers_sent_away_13a_cont',false) then
+                         Say(Farmer,'D1-Fa-5b');
+               end
+          else
+               Say(Farmer,'D1-Fa-4a');
+
+          if LoadVariable('Freelancers_killed_13a_cont',false) then
+               Say(Farmer,'D1-Fa-5c');
+
+          Say(Heike,'D1-H-1');
+          Say(Farmer,'D1-Fa-6');
+          Say(Heike,'D1-H-2');
+          Say(Farmer,'D1-Fa-7');
+          Say(Farmer,'D1-Fa-8');
+
+
+          wait(0$0.2);
+           
+          //No mortar on normal or higher difficulty
+          people_list = ([Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam] ^ other_folks) diff 0;
+
+          if difficulty > 1 then
+               begin
+                    temp_list_2 = [class_soldier,class_scientistic,class_mechanic,[class_engineer,1]];
+
+                    for un in people_list ^ Heike do
+                         if GetClass(un) in [class_mortar,class_sniper,class_bazooker] then
+                              SetClass(un,class_soldier);
+               end
+          else
+               temp_list_2 = [class_soldier,class_mortar,class_scientistic,class_mechanic,[class_engineer,1]];
+
+          val = [7,6,5][difficulty];
+          SaveVariable(val+1,'Num_people_to_next_map_14a');  //Including Heike
+          choose_list = CharacterSelection('',val,val,[sel_dont_change_class,sel_not_hired,sel_not_changeable,Farmer,sel_hired,sel_change_class] ^ Heike ^ [sel_changeable,sel_not_hired] ^ people_list,temp_list_2);
+
+          InGameOff;
+
+
+          //Save units and change map
+          SaveCharacters(Heike,'Heike_14a_sel');
+
+          un_list = [Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam];
+          name_list = ['Olaf', 'Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Suze', 'MarkB', 'Kurt', 'Martin', 'Louis', 'Khattam'];
+          for un = 1 to un_list do
+               if un_list[un] in choose_list then
+                    SaveCharacters(un_list[un],name_list[un] & '_14a_sel')
+               else
+                    if un_list[un] > 0 then
+                         begin
+                              SetLastMission(un_list[un],17);  //For correct xp bonus later on
+                              SaveCharacters(un_list[un],name_list[un] & '_14a_not_sel');
+                         end;
+
+          SetLastMission(Farmer,17);  //For correct xp bonus later on
+          SaveCharacters(Farmer,'Farmer_14a_not_sel');
+
+          SaveCharacters(choose_list diff (Heike ^ un_list),'Others_14a_sel');
+
+          temp_list = [];
+          for un in other_folks diff choose_list do
+               begin
+                    SetLastMission(un,17);  //For correct xp bonus later on
+                    temp_list = temp_list ^ un;
+               end;
+          SaveCharacters(temp_list,'Others_14a_not_sel');
+
+
+          ChangeMap('%_cont','%_cont');
+     end;
+
+//Ape event
+Every 0$1 do
+     begin
+          if not IsPlaced(apefemale) then
+               exit;
+
+          if not IsPlaced(apemale1) and not IsPlaced(apemale2) then
+               exit;
+
+          if IsPlaced(apemale1) then
+               ComMoveXY(apefemale,GetX(apemale1),GetY(apemale1))
+          else
+               ComMoveXY(apefemale,GetX(apemale2),GetY(apemale2));
+
+          repeat
+          wait(0$0.2);
+          until GetDistUnits(apefemale,apemale1) <= 3 or GetDistUnits(apefemale,apemale2) <= 3;
+
+          ComMoveXY(apefemale,131,78);
+          ComTurnUnit(apemale1,apefemale);
+          ComTurnUnit(apemale2,apefemale);
+
+          //Wait until she has passed.
+          repeat
+          wait(0$0.5);
+          until GetDistUnits(apefemale,apemale1) > 4 or GetDistUnits(apefemale,apemale2) > 4;
+
+          ComMoveUnit([apemale1,apemale2],apefemale);
+     end;

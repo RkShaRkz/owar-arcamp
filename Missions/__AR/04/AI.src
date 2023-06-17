@@ -1,0 +1,2074 @@
+
+//Americans and Russians have unlimited resources
+Every 0$10 do
+     var i, base;
+     begin
+          for i in ai_depot do
+               if IsOk(i) and GetSide(i) <> you then
+                    begin
+                         base = GetBase(i);
+                         SetResourceType(base,mat_cans,300);
+                         SetResourceType(base,mat_oil,300);
+                    end;
+
+          enable;
+     end;
+
+
+//If an American/Russian human unit dies by other sides than the player's side, then
+//a new unit with the same class is instantly created and placed in the base.
+//This is to prevent the player being able to just wait until either the Russians or
+//the Americans have crushed each other.
+On UnitDestroyed(un) do
+     var side, temp_list, temp_value, temp_unit, killer_side, un_type, i;
+     begin
+          if un = Heike then
+               begin
+                    ExclusiveOn;
+                    Wait(0$1);
+                    YouLost('HeikeDead');
+                    ExclusiveOff;
+               end;
+
+
+          un_type = GetType(un);
+          side = GetSide(un);
+
+
+          //Lended units
+          for i in [americans,russians] do
+               if un in ai_lended_units[i] then
+                    begin
+                         temp_list = ai_lended_units[i] diff un;
+                         ai_lended_units = Replace(ai_lended_units,i,temp_list);
+
+                         if un_type = unit_human then
+                              human_lended_unit_has_died = Replace(human_lended_unit_has_died,i,true);
+                    end;
+          
+
+          for i in [americans,russians] do
+               begin
+                    temp_list = ai_captured_buildings[i] diff un;
+                    ai_captured_buildings = Replace(ai_captured_buildings,i,temp_list);
+               end;
+
+          if not side in [americans,russians] then
+               exit;
+
+
+          //Determine which side killed the unit (had the last hit)
+          killer_side = SideShoot(un);  //works even if the unit which last shot at "un" is now dead
+
+
+          //Friend points with Americans
+          if side = russians and killer_side = you and GetAttitude(you,americans) = att_friend then
+               case un_type of
+                    unit_human: american_friend_points = american_friend_points + 5;
+                    unit_vehicle: american_friend_points = american_friend_points + 2;
+                    unit_building: american_friend_points = american_friend_points + 3;
+               end;
+
+                                            
+          //Update computer variables
+          case un_type of
+               unit_human: begin
+                    RemoveHumanFromVariables(side,un);
+
+                    if killer_side <> you then
+                         temp_value = GetClass(un)
+                    else
+                         temp_value = 0;
+
+                    //Create new unit to compensate?
+                    if temp_value > 0 then
+                         begin
+                              if temp_value = class_apeman_engineer then
+                                   temp_unit = CreateApemanEngineers(side,1)
+                              else
+                                   if temp_value in [class_soldier,class_engineer,class_mechanic,class_scientistic,class_bazooker,class_sniper,class_mortar] then
+                                        temp_unit = CreateUnitsWithClass(side,1,temp_value)
+                                   else
+                                        temp_unit = 0;
+
+                              if temp_unit > 0 then
+                                   begin
+                                        temp_list = ai_spawn_people[side] ^ temp_unit;
+                                        ai_spawn_people = Replace(ai_spawn_people,side,temp_list);
+                                   end;
+                         end;
+                    
+                    //If there are no human units left the side is "dead"
+                    if FilterAllUnits([[f_side,side],[f_type,unit_human],[f_alive]]) = 0 then
+                         ai_side_is_dead = Replace(ai_side_is_dead,side,true);
+               end;
+               unit_vehicle: RemoveVehicleFromVariables(side,un);
+               unit_building: begin
+                    RemoveBuildingFromVariables(side,un);
+               end;
+          end;
+     end;
+Export Function RemoveBuildingFromVariables(side,building);
+     var temp_list;
+     begin
+          temp_list = ai_all_buildings[side] diff building;
+          ai_all_buildings = Replace(ai_all_buildings,side,temp_list);
+
+          if building = ai_building_under_construction[side] then
+               ai_building_under_construction = Replace(ai_building_under_construction,side,0);
+
+          UpdateBuildingBasicVariables(side,building,false);
+     end;
+Export Function RemoveVehicleFromVariables(side,vehicle);
+     var temp_list;
+     begin
+          //Global "basis" lists of vehicles. If a vehicle belong to this side it will be in one
+          //and only one of these lists.
+          if vehicle in ai_vehicles_defend[side] then
+               begin
+                    temp_list = ai_vehicles_defend[side] diff vehicle;
+                    ai_vehicles_defend = Replace(ai_vehicles_defend,side,temp_list);
+               end;
+
+          if vehicle in ai_vehicles_attack[side] then
+               begin
+                    temp_list = ai_vehicles_attack[side] diff vehicle;
+                    ai_vehicles_attack = Replace(ai_vehicles_attack,side,temp_list);
+               end;                                                                                                
+
+
+          //Global "transient" lists of vehicles. Vehicles belonging to this side may be in one or more of these lists if
+          //it performs a special or temporary job (you could say that the vehicle is in a special state).
+          if vehicle in ai_retreating_vehicles_defend[side] then
+               begin
+                    temp_list = ai_retreating_vehicles_defend[side] diff vehicle;
+                    ai_retreating_vehicles_defend = Replace(ai_retreating_vehicles_defend,side,temp_list);
+               end;
+
+          if vehicle in ai_vehicles_being_repaired[side] then
+               begin
+                    temp_list = ai_vehicles_being_repaired[side] diff vehicle;
+                    ai_vehicles_being_repaired = Replace(ai_vehicles_being_repaired,side,temp_list);
+               end;
+
+          if vehicle = ai_vehicle_being_moved[side] then
+               ai_vehicle_being_moved = Replace(ai_vehicle_being_moved,side,0);
+
+          if vehicle in ai_vehicles_having_been_moved[side] then
+               begin
+                    temp_list = ai_vehicles_having_been_moved[side] diff vehicle;
+                    ai_vehicles_having_been_moved = Replace(ai_vehicles_having_been_moved,side,temp_list);
+               end;
+
+          if vehicle in ai_refuel_vehicles_list[side] then
+               begin
+                    temp_list = ai_refuel_vehicles_list[side] diff vehicle;
+                    ai_refuel_vehicles_list = Replace(ai_refuel_vehicles_list,side,temp_list);
+               end;
+     end;
+Export Function RemoveHumanFromVariables(side,human);
+     var temp_list;
+     begin
+          //Global "basis" lists of humans. If a human belong to this side he/she will be in one
+          //and only one of these lists.
+          if human in ai_soldiers[side] then
+               begin
+                    temp_list = ai_soldiers[side] diff human;
+                    ai_soldiers = Replace(ai_soldiers,side,temp_list);
+               end;
+
+          if human in ai_engineers[side] then
+               begin
+                    temp_list = ai_engineers[side] diff human;
+                    ai_engineers = Replace(ai_engineers,side,temp_list);
+               end;
+
+          if human in ai_mechanics_defend[side] then
+               begin
+                    temp_list = ai_mechanics_defend[side] diff human;
+                    ai_mechanics_defend = Replace(ai_mechanics_defend,side,temp_list);
+               end;
+
+          if human in ai_mechanics_attack[side] then
+               begin
+                    temp_list = ai_mechanics_attack[side] diff human;
+                    ai_mechanics_attack = Replace(ai_mechanics_attack,side,temp_list);
+               end;
+
+          if human in ai_scientists[side] then
+               begin
+                    temp_list = ai_scientists[side] diff human;
+                    ai_scientists = Replace(ai_scientists,side,temp_list);
+               end;
+
+
+          //Global "transient" lists of humans. Humans belonging to this side may be in one or more of these lists if
+          //he/she performs a special or temporary job (you could say that the human is in a special state).
+          if human in ai_hauling_engineers[side] then
+               begin
+                    temp_list = ai_hauling_engineers[side] diff human;
+                    ai_engineers = Replace(ai_hauling_engineers,side,temp_list);
+               end;
+
+          if human in ai_heal_these_humans[side] then
+               begin
+                    temp_list = ai_heal_these_humans[side] diff human;
+                    ai_heal_these_humans = Replace(ai_heal_these_humans,side,temp_list);
+               end;
+
+          if human = ai_building_constructor[side] then
+               ai_building_constructor = Replace(ai_building_constructor,side,0);
+     end;
+
+//Every which tries to spawn new units for computer sides.
+Every 0$2+0$0.1 do
+     var side, i, temp_unit, temp_list, away, the_sides;
+     begin
+          the_sides = [americans,russians];
+
+          repeat
+          wait(0$2);
+
+          if the_sides = 0 then
+               exit;
+
+          for side in the_sides do
+               begin
+                    if ai_side_is_dead[side] then
+                         begin
+                              for i in ai_spawn_people[side] do
+                                   DestroyUnit(i);
+
+                              ai_spawn_people = Replace(ai_spawn_people,side,[]);
+                              the_sides = the_sides diff side;
+
+                              continue;
+                         end;
+
+                    i = 1;
+                    while i <= ai_spawn_people[side] do
+                         begin
+                              temp_unit = 0;
+                              case GetClass(ai_spawn_people[side][i]) of
+                                   class_soldier: temp_unit = ai_armoury[side];
+                                   class_engineer,class_apeman_engineer: temp_unit = ai_depot[side];
+                                   class_mechanic: temp_unit = ai_fact[side];
+                                   class_scientistic: temp_unit = ai_lab[side];
+                              end;
+
+                              away = false;
+                              if IsOk(temp_unit) and UnitsInside(temp_unit) < 6 then
+                                   begin
+                                        PlaceHumanInUnit(ai_spawn_people[side][i],temp_unit);
+                                                  
+                                        case GetClass(ai_spawn_people[side][i]) of
+                                             class_soldier: begin
+                                                  temp_list = ai_soldiers[side] ^ ai_spawn_people[side][i];
+                                                  ai_soldiers = Replace(ai_soldiers,side,temp_list);
+                                             end;
+                                             class_engineer,class_apeman_engineer: begin
+                                                  temp_list = ai_engineers[side] ^ ai_spawn_people[side][i];
+                                                  ai_engineers = Replace(ai_engineers,side,temp_list);
+                                             end;
+                                             class_mechanic: begin
+                                                  temp_list = ai_mechanics_defend[side] ^ ai_spawn_people[side][i];
+                                                  ai_mechanics_defend = Replace(ai_mechanics_defend,side,temp_list);
+                                             end;
+                                             class_scientistic: begin
+                                                  temp_list = ai_scientists[side] ^ ai_spawn_people[side][i];
+                                                  ai_scientists = Replace(ai_scientists,side,temp_list);
+                                             end;
+                                        end;
+
+                                        away = true;
+                                   end
+                              else
+                                   if temp_unit = 0 and UnitFilter(ai_engineers[side],[f_class,class_engineer]) = 0 then  //Building is destroyed and will never be rebuild
+                                        begin
+                                             DestroyUnit(ai_spawn_people[side][i]);
+
+                                             away = true;
+                                        end;
+
+                              if away then
+                                   begin
+                                        temp_list = Delete(ai_spawn_people[side],i);
+                                        ai_spawn_people = Replace(ai_spawn_people,side,temp_list);
+
+                                        continue;
+                                   end;
+
+                              i = i + 1;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//Soldiers
+//Keep them in bunkers/armoury. If that's not possible due to structure restrictions then help construct buildings. Else retreat to
+//the center of the base.
+Every 0$1 do
+     var side, i, temp_list, buildings_list, soldiers_list, temp_unit, bunkers, under_attack, j;
+     var special_defenders;
+     begin
+          for side in [americans,russians] do
+               begin
+                    if ai_side_is_dead[side] then
+                         continue;
+
+                    soldiers_list = ai_soldiers[side];
+                    under_attack := BaseUnderAttack(side,-1);
+
+                    if side = americans and under_attack then
+                         begin
+                              special_defenders = UnitFilter(soldiers_list,[[f_class,class_soldier],[f_not,[f_inside]]]);
+
+                              if IsOk(ai_armoury[side]) then
+                                   special_defenders = special_defenders ^ UnitFilter(UnitsInside(ai_armoury[side]),[f_class,class_soldier]);
+
+                              special_defenders = special_defenders diff ai_commander[side];
+                         end
+                    else
+                         special_defenders = [];
+
+
+                    //Identify soldiers who need healing.
+                    temp_list = ai_heal_these_humans[side];
+                    for i in soldiers_list diff ai_heal_these_humans[side] do
+                         if GetLives(i) <= 500 or ( GetLives(i) < 800 and not i in special_defenders ) then
+                              temp_list = temp_list ^ i;
+                    ai_heal_these_humans = Replace(ai_heal_these_humans,side,temp_list);
+
+                    if not under_attack then  //Soldiers don't care if they are wounded if the base is under attack
+                         begin
+                              //Make soldiers needing healing go outside (else they won't be healed, cf. the healing
+                              //code (controlling scientists) below.
+                              for i in ai_heal_these_humans[side] do
+                                   if i in soldiers_list then
+                                        case GetType(IsInUnit(i)) of
+                                             unit_vehicle: ComExitVehicle(i);
+                                             unit_building: ComExitBuilding(i);
+                                        end;
+
+                              soldiers_list = soldiers_list diff ai_heal_these_humans[side];
+                              special_defenders = special_defenders diff ai_heal_these_humans[side];
+                         end;
+
+
+                    if soldiers_list = 0 then
+                         continue;
+
+
+                    //Special defenders charge towards attackers attacking from "unusual" directions.
+                    if special_defenders > 0 then
+                         begin
+                              case side of
+                                   americans: begin
+                                       temp_list = FilterAllUnits([[f_enemy,side],[f_type,unit_human],[f_inarea,am_sol_defend_area]]);
+                                   end;
+                                   russians: begin
+                                        temp_list = [];
+                                   end;
+                              end;
+
+                              if temp_list > 0 then
+                                   begin
+                                        soldiers_list = soldiers_list diff special_defenders;
+
+                                        //Charge!
+                                        ComAgressiveMove(GetHumansOutOfUnits(special_defenders),GetX(temp_list[1]),GetY(temp_list[1]));
+                                   end;
+                         end;
+
+
+                    //Find the bunkers which need to be occupied.
+                    //Don't occupy b_bunker if there is no power.
+                    //Remember which soldiers are already inside a building.
+                    i = false;
+                    if IsOk(ai_depot[side]) then
+                         if GetEnergy(GetBase(ai_depot[side]))[4] > 0 then
+                              i = true;
+
+                    if i then
+                         bunkers = ai_bunkers[side]
+                    else
+                         begin
+                              bunkers = [];
+                              for i in ai_bunkers[side] do
+                                   if GetBType(i) = b_breastwork then
+                                        bunkers = bunkers ^ i;
+                         end;
+
+                    buildings_list = [];
+                    for i in UnitFilter(bunkers,[f_ok]) do
+                         begin
+                              temp_unit = UnitsInside(i);
+                              if temp_unit = 0 then
+                                   buildings_list = buildings_list ^ i
+                              else soldiers_list = soldiers_list diff temp_unit;
+                         end;
+
+
+                    //The best soldiers should go to the bunkers. The rest in the armoury.
+                    //The commander also goes in the armoury.
+                    //If the base is under attack then just the nearest soldier.
+                    if buildings_list > 0 then
+                         begin
+                              if not under_attack then
+                                   begin
+                                        temp_list = [];
+                                        for i in soldiers_list do
+                                             temp_list = temp_list ^ GetSkill(i,skill_combat);
+                                        soldiers_list = SortListByListDesc(soldiers_list,temp_list);
+                                   end;
+
+                              for i = 1 to buildings_list do
+                                   begin
+                                        if soldiers_list = 0 then
+                                             break;
+
+                                        if not under_attack then
+                                             temp_unit = soldiers_list[1]
+                                        else
+                                             begin
+                                                  temp_list = [];
+                                                  for j in soldiers_list do
+                                                       temp_list = temp_list ^ GetDistUnits(j,buildings_list[i]);
+
+                                                  temp_unit = WorstFromListByList(soldiers_list,temp_list);
+                                             end;
+
+                                        ComEnterUnit(temp_unit,buildings_list[i]);
+                                        soldiers_list = soldiers_list diff temp_unit;
+                                   end;
+                         end;
+
+
+                    soldiers_list = soldiers_list ^ ai_commander[side];
+
+
+                    //The rest enter armoury (if possible)
+                    if BuildingStatus(ai_armoury[side]) <> bs_build and IsOk(ai_armoury[side]) then
+                         begin
+                              if IsOk(ai_armoury[side]) then
+                                   begin
+                                        temp_list = UnitsInside(ai_armoury[side]);
+                                        soldiers_list = soldiers_list diff temp_list;
+
+                                        for i = 5 downto temp_list+0 do
+                                             begin
+                                                  if soldiers_list = 0 then
+                                                       break;
+
+                                                  ComEnterUnit(soldiers_list[1],ai_armoury[side]);
+                                                  soldiers_list = Delete(soldiers_list,1);
+                                             end;
+                                   end;
+
+                              for i in soldiers_list do
+                                   if GetDistUnitXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]) > 4 then
+                                        ComAgressiveMove(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]);
+                         end
+                    else
+                         if ai_building_under_construction[side] > 0 and not under_attack then
+                              begin
+                                   //ComRepairBuilding(soldiers_list,ai_building_under_construction[side])
+                                   for i in soldiers_list do
+                                        SetTaskList(i,[['h',0,0,ai_building_under_construction[side],0,0,0]]);  //'h' is "help building building"
+                              end
+                         else
+                              for i in soldiers_list do
+                                   if GetDistUnitXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]) > 4 then
+                                        ComAgressiveMove(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]);
+               end;
+
+          enable;
+     end;
+
+
+//Engineers
+//These are the priorities (descending order):
+//- If an engineer is hurt, them pull him/her back for healing.
+//- Recapture our depot (if the player has been bold enough to capture it...)
+//- Reparation of red buildings
+//- Reparation of any building
+//- Reconstruct destroyed buildings if necessary, but only if the base is not under attack.
+//- Gather crates in the vicinity of the base, but only if the base is not under attack.
+//- Return to and stay inside the depot.
+Every 0$1 do
+     var side, i, engineers_list, temp_list, buildings_list, temp_unit, away_dist, temp_list_2;
+     var under_attack;
+     begin
+          for side in [americans,russians] do
+               begin
+                    if ai_side_is_dead[side] then
+                         continue;
+
+                    under_attack = BaseUnderAttack(side,-1);
+
+
+                    //Reset "move empty manual vehicles so we can build our building"-variables if we are under attack so we can use our vehicles freely.
+                    if under_attack then
+                         begin
+                              ai_vehicle_being_moved = Replace(ai_vehicle_being_moved,side,0);
+                              ai_vehicles_having_been_moved = Replace(ai_vehicles_having_been_moved,side,[]);
+                         end;
+
+
+                    engineers_list = ai_engineers[side] diff (ai_heal_these_humans[side] ^ ai_hauling_engineers[side]);
+
+                    //Identify engineers who need healing
+                    temp_list = ai_heal_these_humans[side];
+                    i = 1;
+                    while i <= engineers_list do
+                         begin
+                              if GetLives(engineers_list[i]) <= 700 then
+                                   begin
+                                        temp_list = temp_list ^ engineers_list[i];
+                                        engineers_list = Delete(engineers_list,i);
+                                        i = i - 1;
+                                   end;
+
+                              i = i + 1;
+                         end;
+                    ai_heal_these_humans = Replace(ai_heal_these_humans,side,temp_list);
+
+
+                    if engineers_list = 0 then
+                         continue;
+
+
+                    //Recapture buildings if necessary. Depots first. Here we assume the player hasn't changed the base
+                    //of the captured building.
+                    //Apemen engineers and cranes can't capture buildings.
+                    temp_list_2 = UnitFilter(engineers_list,[f_class,class_engineer]);
+                    if ai_captured_buildings[side] > 0 and temp_list_2 > 0 then
+                         begin
+                              temp_list = [];
+                              for i in ai_captured_buildings[side] do
+                                   if GetBType(i) in [b_depot,b_warehouse] then
+                                        temp_list = temp_list ^ 1
+                                   else
+                                        temp_list = temp_list ^ 0;
+
+                              temp_list = SortListByListDesc(ai_captured_buildings[side],temp_list);
+
+                              //Normal "ComEnterUnit" for capturing doesn't work for buildings which can't be entered (e.g. power plants).
+                              temp_list_2 = GetHumansOutOfUnits(temp_list_2);
+                              if temp_list_2 > 0 then
+                                   begin
+                                        temp_list_2 = SortListByListDesc(temp_list_2, temp_list_2);  //To ensure we take the same unit each time
+                                        SetTaskList(temp_list_2[1],[['e',GetX(temp_list[1]),GetY(temp_list[1]),temp_list[1],0,0,0]]);
+                                        engineers_list = engineers_list diff temp_list_2[1];
+                                   end;
+
+                              if engineers_list = 0 then
+                                   continue;
+                         end;
+
+
+                    //Find buildings which need to be repaired. At least one engineer for each if possible.
+                    i = 1;
+                    buildings_list = [];
+                    repeat
+                         case i of
+                              1: buildings_list = UnitFilter(ai_all_buildings[side],[f_not,[f_ok]]);  //If building is dead then it won't be part of ai_all_buildings
+                              2: buildings_list = UnitFilter(ai_all_buildings[side],[f_not,[f_lives,1000]]);
+                         end;
+
+                         i = i + 1;
+                    until buildings_list > 0 or i > 2;
+
+                    if buildings_list > 0 then
+                         begin
+                              engineers_list = GetHumansOutOfUnits(engineers_list);
+
+                              repeat
+                                   i = 1;
+                                   while i <= buildings_list do
+                                        begin
+                                             if engineers_list = 0 then
+                                                  break;
+
+                                             temp_unit = NearestUnitToUnit(engineers_list,buildings_list[i]);
+                                             ComRepairBuilding(temp_unit,buildings_list[i]);
+                                             engineers_list = engineers_list diff temp_unit;
+
+                                             i = i + 1;
+                                        end;
+
+                              until engineers_list = 0;
+
+                              continue;
+                         end;
+
+
+                    if not under_attack then
+                         begin
+                              //Reconstruct buildings if any has been destroyed.
+                              //First check if a building is already being constructed - then build that one first.
+                              //Upgrading buildings can be hard if the building is working or something, so check if the
+                              //building is actually under construction (or being upgraded) - if not then reset the
+                              //relevant variables.
+                              if ai_building_under_construction[side] > 0 then
+                                   if BuildingStatus(ai_building_under_construction[side]) = bs_build then
+                                        begin
+                                             for i in GetHumansOutOfUnits(engineers_list) do
+                                                  ComRepairBuilding(i,ai_building_under_construction[side]);
+
+                                             continue;
+                                        end
+                                   else
+                                        begin
+                                             ComCancel(ai_building_under_construction[side]);  //To make sure upgrade of building is possible
+                                             ai_building_under_construction = Replace(ai_building_under_construction,side,0);
+                                        end;
+
+                              if ai_all_buildings[side] < ai_buildings_locations[side] or ai_upcoming_building_data[side] > 0 then
+                                   begin
+                                        //Decide which building to construct. We take the first building in the location list which is
+                                        //arranged in prioritated order.
+                                        if ai_upcoming_building_data[side] = 0 then
+                                             begin
+                                                  temp_list = [];
+                                                  for i in ai_buildings_locations[side] do
+                                                       if GetBType(HexInfo(i[1],i[2])) = -1 then  //no building on the spot
+                                                            begin
+                                                                 temp_list = i;
+                                                                 break;
+                                                            end;
+
+                                                  if temp_list > 0 then  //Not necessarily the case (one of our buildings could have been captured)
+                                                       ai_upcoming_building_data = Replace(ai_upcoming_building_data,side,temp_list);
+                                             end;
+
+
+                                        if ai_upcoming_building_data[side] > 0 then
+                                             begin
+                                                  //Find the best engineer to construct the building
+                                                  if ai_building_constructor[side] = 0 then
+                                                       begin
+                                                            temp_list_2 = UnitFilter(ai_engineers[side],[f_class,class_engineer]);
+
+                                                            if temp_list_2 > 0 then
+                                                                 begin
+                                                                      temp_list = [];
+                                                                      for i in temp_list_2 do
+                                                                           temp_list = temp_list ^ GetSkill(i,skill_engineering);
+                                                                      ai_building_constructor = Replace(ai_building_constructor,side, BestFromListByList(temp_list_2,temp_list) );
+                                                                 end;
+                                                       end;
+
+                                                  if ai_building_constructor[side] in engineers_list and ai_building_constructor[side] > 0 then
+                                                       begin
+                                                            engineers_list = engineers_list diff ai_building_constructor[side];
+
+                                                            //Move vehicles away from the building site.
+                                                            away_dist = 7; //Max distance needed for a workshop
+                                                            if ai_vehicle_being_moved[side] = 0 then
+                                                                 begin
+                                                                      temp_list = UnitFilter(ai_vehicles_defend[side],[[f_empty],[f_distxy,ai_upcoming_building_data[side][1],ai_upcoming_building_data[side][2],away_dist]]);
+                                                                      if temp_list > 0 then
+                                                                           begin
+                                                                                ai_vehicle_being_moved = Replace(ai_vehicle_being_moved,side,temp_list[1]);
+                                                                                temp_list_2 = ai_vehicles_having_been_moved[side] ^ temp_list[1];
+                                                                                ai_vehicles_having_been_moved = Replace(ai_vehicles_having_been_moved,side,temp_list_2);
+                                                                           end
+                                                                      else
+                                                                           //Build/upgrade the building
+                                                                           case GetType(IsInUnit(ai_building_constructor[side])) of
+                                                                                unit_building: ComExitBuilding(ai_building_constructor[side]);
+                                                                                unit_vehicle: ComExitVehicle(ai_building_constructor[side]);
+                                                                                else
+                                                                                case GetBType(HexInfo(ai_upcoming_building_data[side][1],ai_upcoming_building_data[side][2])) of
+                                                                                     -1: begin
+                                                                                          case ai_upcoming_building_data[side][4] of
+                                                                                               b_warehouse: i = b_depot;
+                                                                                               b_factory: i = b_workshop;
+                                                                                               b_lab_half,b_lab_full: i = b_lab;
+                                                                                               b_barracks: i = b_armoury;
+                                                                                               else i = ai_upcoming_building_data[side][4];
+                                                                                          end;
+
+                                                                                          ComBuild(ai_building_constructor[side],i,ai_upcoming_building_data[side][1],ai_upcoming_building_data[side][2],ai_upcoming_building_data[side][3]);
+                                                                                     end;
+                                                                                     b_depot: begin
+                                                                                          ComUpgrade(ai_depot[side]);
+                                                                                          ai_building_under_construction = Replace(ai_building_under_construction,side,ai_depot[side]);
+                                                                                     end;
+                                                                                     b_workshop: begin
+                                                                                          ComUpgrade(ai_fact[side]);
+                                                                                          ai_building_under_construction = Replace(ai_building_under_construction,side,ai_fact[side]);
+                                                                                     end;
+                                                                                     b_lab,b_lab_half: begin
+                                                                                          if ai_upcoming_building_data[side][5] <> b_lab_basic and not ai_upcoming_building_data[side][5] in [GetLabKind(ai_lab[side],1),GetLabKind(ai_lab[side],2)] then
+                                                                                               ComUpgradeLab(ai_lab[side],ai_upcoming_building_data[side][5])
+                                                                                          else
+                                                                                               if ai_upcoming_building_data[side][6] <> b_lab_basic then
+                                                                                                    ComUpgradeLab(ai_lab[side],ai_upcoming_building_data[side][6])
+                                                                                               else  //should never happen
+                                                                                                    begin
+                                                                                                         ai_building_constructor = Replace(ai_building_constructor,side,0);
+                                                                                                         ai_upcoming_building_data = Replace(ai_upcoming_building_data,side,[]);
+                                                                                                    end;
+
+                                                                                          ai_building_under_construction = Replace(ai_building_under_construction,side,ai_lab[side]);
+                                                                                     end;
+                                                                                     b_armoury: begin
+                                                                                          temp_unit = HexInfo(ai_upcoming_building_data[side][1],ai_upcoming_building_data[side][2]);
+                                                                                          ComUpgrade(temp_unit);
+                                                                                          ai_building_under_construction = Replace(ai_building_under_construction,side,temp_unit);
+                                                                                     end;
+                                                                                end;
+                                                                           end;
+                                                                 end
+                                                            else
+                                                                 if UnitsInside(ai_vehicle_being_moved[side]) > 0 then
+                                                                      begin
+                                                                           if GetDistUnitXY(ai_vehicle_being_moved[side],ai_upcoming_building_data[side][1],ai_upcoming_building_data[side][2]) <= away_dist then
+                                                                                AI_GetAwayFromXY(ai_vehicle_being_moved[side],ai_upcoming_building_data[side][1],ai_upcoming_building_data[side][2],away_dist+2,false)
+                                                                           else
+                                                                                ai_vehicle_being_moved = Replace(ai_vehicle_being_moved,side,0);
+                                                                      end
+                                                                 else
+                                                                      case GetType(IsInUnit(ai_building_constructor[side])) of
+                                                                           unit_building: ComExitBuilding(ai_building_constructor[side]);
+                                                                           unit_vehicle: ComExitVehicle(ai_building_constructor[side]);
+                                                                           else
+                                                                                ComEnterUnit(ai_building_constructor[side],ai_vehicle_being_moved[side]);
+                                                                      end;
+                                                       end;
+                                             end;
+                                   end;
+
+                              
+                              //Gather crates in the vicinity of the base.
+                              //Everyone go after the same bunch of crates.
+                              case side of
+                                   americans: temp_list = GetListOfCratesInArea(am_base);
+                                   russians: temp_list = GetListOfCratesInArea(ru_base);
+                              end;
+                              if temp_list > 0 and ai_depot[side] > 0 then
+                                   begin
+                                        ComCollect(GetHumansOutOfUnits(engineers_list),temp_list[1],temp_list[2]);
+                                        continue;
+                                   end;
+                         end;
+
+
+                    //Return to and stay inside the depot (if possible)
+                    if IsOk(ai_depot[side]) then
+                         begin
+                              for i in engineers_list do
+                                   begin
+                                        temp_unit = IsInUnit(i);
+                                        if temp_unit <> ai_depot[side] then
+                                             case GetType(temp_unit) of
+                                                  unit_building: ComExitBuilding(i);
+                                                  unit_vehicle: ComExitVehicle(i);
+                                                  else
+                                                       ComEnterUnit(i,ai_depot[side]);
+                                             end;
+                                   end;
+                         end
+                    else
+                         for i in engineers_list do
+                              if GetDistUnitXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]) > 4 then
+                                   ComMoveXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]);
+               end;
+
+          enable;
+     end;
+On BuildingStarted(building,builder) do
+     var side, temp_list;
+     begin
+          side = GetSide(building);
+
+          //If player builds a building inside the computer's base the computer is insulted
+          //if you are neutral with them
+          if side = you then
+               if GetAttitude(americans,you) = att_neutral and IsInArea(building,am_base) then
+                    PlayerDidSomethingStupid(americans)
+               else
+                    if GetAttitude(russians,you) = att_neutral and IsInArea(building,ru_base) then
+                         PlayerDidSomethingStupid(russians);
+
+          if not side in [americans,russians] then
+               exit;
+
+          ai_building_constructor = Replace(ai_building_constructor,side,0);
+          ai_vehicles_having_been_moved = Replace(ai_vehicles_having_been_moved,side,[]);
+
+          //ONLY 1 building is under construction at a time!
+          ai_building_under_construction = Replace(ai_building_under_construction,side,building);
+     end;
+On BuildingComplete(building) do
+     var side, temp_list, btype, temp_unit;
+     begin
+          btype = GetBType(building);
+          side = GetSide(building);
+
+          //If building is the first workshop the player builds.
+          if btype = b_workshop and side = you and first_workshop then
+               begin
+                    first_workshop = false;
+                    CenterOnUnits(building);
+
+                    DialogueOn;
+
+                    Say(Heike,'D3H1');
+
+                    if IsOk(Willard) then
+                         begin
+                              Say(Willard,'D3Wi1');
+                              Say(Heike,'D3H2');
+
+                              if IsOk(Sonya) then
+                                   begin
+                                        Say(Sonya,'D3So1');
+                                        Say(Heike,'D3H3');
+                                   end;
+                         end;
+
+                    DialogueOff;
+
+                    SetRestrict(b_lab_weapon,you,true);
+                    SetRestrict(b_lab_half,you,true);
+               end;
+
+          //Add custom button to the building if it is the only lab the player has.
+          if btype = b_lab and side = you and FilterAllUnits([[f_side,you],[f_or,[f_btype,b_lab],[f_btype,b_lab_half],[f_btype,b_lab_full]],[f_not,[f_constructed]]]) = 1 and diplomacy_enabled then
+               begin
+                    button_lab = building;
+                    InitLab(building);
+               end;
+
+          //Add base name for this building if it is the only depot the player has.
+          if btype = b_depot and side = you and FilterAllUnits([[f_side,you],[f_btype,b_depot],[f_not,[f_constructed]]]) = 1 then
+               begin
+                    SetBName(building,'newnish');
+                    main_arab_depot = building;
+               end;
+
+          
+          if not side in [americans,russians] then
+               exit;
+
+          BuildUpgradeCommon(side,building);
+
+          temp_list = ai_all_buildings[side] ^ building;
+          ai_all_buildings = Replace(ai_all_buildings,side,temp_list);
+
+          UpdateBuildingBasicVariables(side,building,true);
+     end;
+On UpgradeComplete(building) do
+     var side, temp_list;
+     begin
+          side = GetSide(building);
+          if not side in [americans,russians] then
+               exit;
+
+          BuildUpgradeCommon(side,building);
+     end;
+Function BuildUpgradeCommon(side,building);
+     begin
+          //Some buildings require upgrade - e.g. workshop -> factory
+          if GetBType(building) = ai_upcoming_building_data[side][4] then
+               ai_upcoming_building_data = Replace(ai_upcoming_building_data,side,[]);
+
+          ai_building_under_construction = Replace(ai_building_under_construction,side,0);
+     end;
+
+
+//Function which orders human units inside other units to exit them. Returns a list with the units which weren't inside other units.
+Export Function GetHumansOutOfUnits(un_list);
+     var i;
+     begin
+          result = [];
+          for i in un_list do
+               case GetType(IsInUnit(i)) of
+                    unit_building: ComExitBuilding(i);
+                    unit_vehicle: ComExitVehicle(i);
+                    else result = result ^ i;
+               end;
+     end;
+
+//Function which tells if a base is under attack.
+//def_side - side which base is under attack
+//attack_side - side which is attacking def_side's base. -1 if any enemy side of def_side.
+Export Function BaseUnderAttack(def_side,attack_side);
+     var area;
+     begin
+          //If side has had contact with someone recently and there are enemies near the base depot then we presume the base is under attack.
+          //result = ContactTime(side) < 0$10 and FilterAllUnits([[f_enemy,side],[f_distxy,ai_buildings_locations[side][1][1],ai_buildings_locations[side][1][2],ai_near_base_dist]]) > 0;
+          result = false;
+
+          if attack_side = def_side then
+               exit;
+
+          case def_side of
+               americans: area = am_base;
+               russians: area = ru_base;
+          end;
+
+          if attack_side = -1 then
+               begin
+                    if FilterAllUnits([[f_enemy,def_side],[f_inarea,area]]) > 0 then
+                         begin
+                              result = true;
+                              exit;
+                         end;
+
+                    if ContactTime(def_side) >= 0$10 then
+                         exit;
+
+                    if not AnyNearBaseArea( FilterAllUnits([[f_enemy,def_side],[f_not,[f_type,unit_building]]]) ,area) then
+                         exit;
+               end
+          else
+               begin
+                    if FilterAllUnits([[f_side,attack_side],[f_inarea,area]]) > 0 then
+                         begin
+                              result = true;
+                              exit;
+                         end;
+
+                    if ContactTime([def_side,attack_side]) >= 0$10 then
+                         exit;
+
+                    if not AnyNearBaseArea( FilterAllUnits([[f_side,attack_side],[f_not,[f_type,unit_building]]]) ,area) then
+                         exit;
+               end;
+
+          result = true;
+     end;
+Export Function ListFilterNearArea(list,area);
+     var i;
+     begin
+          result = [];
+
+          for i in list do
+               if GetDistUnitArea(i,area) <= ai_near_base_dist then
+                    result = result ^ i;
+     end;
+Function AnyNearBaseArea(list,area);
+     var i;
+     begin
+          result = false;
+
+          for i in list do
+               if GetDistUnitArea(i,area) <= ai_near_base_dist then
+                    begin
+                         result = true;
+                         break;
+                    end;
+     end;
+
+
+//Mechanics (defending, i.e. in the base)
+//Priorities if base is under attack (descending):
+//- If a mechanic is hurt, pull him back for healing, but not if he/she is driving a vehicle, but if he is near an empty vehicle then go inside that one instead.
+//- Defend the base using the war vehicles in the base
+//- Stay in factory
+//Priorites if not under attack (decending):
+//- If a mechanic is hurt, pull him back for healing, but not if he/she is driving a vehicle.
+//- Refuel vehicles
+//- Drive away vehicles which are blocking the factory entrance / park vehicles properly on the vehicle pullback hexes
+//- Repair damaged war vehicles within the base
+//- Commence attack with war vehicles
+//- Stay in factory (and possibly construct a vehicle or weapon)
+Every 0$1 do
+     var side, i, mechanics_list, temp_list, temp_list_3, temp_unit, vehicles_list, allowed_to_repair_vehicles;
+     var under_attack, free_parking_spots, k, ready_to_attack, vehicles_drivers;
+     begin
+          //Index is vehicle id, value is driver id.
+          //For use to ensure the driver first chosen to drive the
+          //vehicle goes for it (doesn't change to another driver).
+          vehicles_drivers = [];
+
+          repeat
+          wait(0$1);
+
+          for side in [americans,russians] do
+               begin
+                    if ai_side_is_dead[side] then
+                         continue;
+
+                    under_attack = BaseUnderAttack(side,-1) or player_attack_warning[side];  //Base under attack (or will soon be, so prepare)
+                    ready_to_attack = not under_attack;  //Are we ready to launch an attack ourselves?
+
+
+                    //Update vehicles drivers so vehicles with a driver no longer has that driver assigned
+                    //so a possible new driver can be assigned next time.
+                    for i in ai_vehicles_defend[side] do
+                         if vehicles_drivers >= i then
+                              if vehicles_drivers[i] > 0 then
+                                   if IsInUnit(vehicles_drivers[i]) = i or IsDead(vehicles_drivers[i]) then
+                                        vehicles_drivers = Replace(vehicles_drivers,i,0);
+
+
+                    mechanics_list = UnitFilter(ai_mechanics_defend[side] diff ai_heal_these_humans[side],[f_not,[f_driving]]);
+
+
+                    //Identify mechanics who need healing
+                    temp_list = ai_heal_these_humans[side];
+                    i = 1;
+                    while i <= mechanics_list do
+                         begin
+                              if GetLives(mechanics_list[i]) <= 900 then
+                                   begin
+                                        temp_list = temp_list ^ mechanics_list[i];
+                                        mechanics_list = Delete(mechanics_list,i);
+                                        continue;
+                                   end;
+
+                              i = i + 1;
+                         end;
+                    ai_heal_these_humans = Replace(ai_heal_these_humans,side,temp_list);
+
+
+                    //Find vehicles which no longer need to be repaired (fully repaired).
+                    temp_list = [];
+                    for i in ai_vehicles_being_repaired[side] do
+                         if GetLives(i) < 1000 then
+                              temp_list = temp_list ^ i;
+                    ai_vehicles_being_repaired = Replace(ai_vehicles_being_repaired,side,temp_list);
+
+
+                    //Find vehicles which do no longer need to retreat (they have been fully repaired or are being repaired)
+                    temp_list = [];
+                    for i in ai_retreating_vehicles_defend[side] diff ai_vehicles_being_repaired[side] do
+                         if GetLives(i) < 1000 then
+                              temp_list = temp_list ^ i;
+                    ai_retreating_vehicles_defend = Replace(ai_retreating_vehicles_defend,side,temp_list);
+
+
+                    //Identify defending vehicles which need to retreat.
+                    //Make vehicles retreat if they exceed a certain threshold of damage. Works for any amount of health
+                    //(except full health) but is only used when the vehicles are burning. Defend the base at all costs!
+                    temp_list = ai_retreating_vehicles_defend[side];
+                    for i in ai_vehicles_defend[side] diff (ai_retreating_vehicles_defend[side] ^ ai_vehicles_being_repaired[side]) do
+                         if GetLives(i) <= 250 then
+                              temp_list = temp_list ^ i;
+                    ai_retreating_vehicles_defend = Replace(ai_retreating_vehicles_defend,side,temp_list);
+
+                                                                                                   
+                    //Find vehicles which no longer need to refuel.
+                    temp_list = [];
+                    for i in ai_refuel_vehicles_list[side] diff (ai_retreating_vehicles_defend[side] ^ ai_vehicles_being_repaired[side] ^ ai_vehicle_being_moved[side] ^ ai_vehicles_having_been_moved[side]) do
+                         if GetFuel(i) < 95 then
+                              temp_list = temp_list ^ i;
+                    ai_refuel_vehicles_list = Replace(ai_refuel_vehicles_list,side,temp_list);
+
+
+                    if under_attack then
+                         begin
+                              //Find the vehicles which need a driver and get them a driver (take the
+                              //nearest available mechanic).
+                              vehicles_list = ai_vehicles_defend[side] diff (ai_retreating_vehicles_defend[side] ^ ai_vehicles_being_repaired[side] ^ ai_vehicle_being_moved[side] ^ ai_vehicles_having_been_moved[side]);
+
+                              case side of
+                                   americans: k = am_base;
+                                   russians: k = ru_base;
+                              end;
+
+                              temp_list = UnitFilter(vehicles_list,[[f_control,control_manual],[f_ok],[f_empty],[f_inarea,k]]);
+                              temp_list = FindDriverHelper(temp_list,mechanics_list,vehicles_drivers);
+                              mechanics_list = temp_list[1];
+                              vehicles_drivers = temp_list[2];
+
+
+                              //Order the vehicles to attack an enemy unit near the base.
+                              //temp_list = FilterAllUnits([[f_enemy,side],[f_ok],[f_distxy,ai_buildings_locations[side][1][1],ai_buildings_locations[side][1][2],ai_near_base_dist]]);
+                              temp_list = ListFilterNearArea( FilterAllUnits([[f_enemy,side],[f_ok]]) ,k);
+
+                              if temp_list > 0 and vehicles_list > 0 then
+                                   ComAgressiveMove(vehicles_list,GetX(temp_list[1]),GetY(temp_list[1]));
+                         end
+                    else
+                         if IsOk(ai_depot[side]) then
+                         begin
+                              //If some vehicles need to refuel then make 'em refuel.
+                              temp_list = ai_refuel_vehicles_list[side];
+                              for i in ai_vehicles_defend[side] diff ai_refuel_vehicles_list[side] do
+                                   if GetFuel(i) < 70 and GetEngine(i) = engine_combustion then
+                                        temp_list = temp_list ^ i;
+                              temp_list = temp_list diff (ai_retreating_vehicles_defend[side] ^ ai_vehicles_being_repaired[side] ^ ai_vehicle_being_moved[side] ^ ai_vehicles_having_been_moved[side]);
+                              ai_refuel_vehicles_list = Replace(ai_refuel_vehicles_list,side,temp_list);
+
+                              temp_list = UnitFilter(ai_refuel_vehicles_list[side],[[f_empty],[f_ok]]);
+                              temp_list = FindDriverHelper(temp_list,mechanics_list,vehicles_drivers);
+                              mechanics_list = temp_list[1];
+                              vehicles_drivers = temp_list[2];
+
+                              ComMoveUnit(ai_refuel_vehicles_list[side],ai_depot[side]);
+                              AddComRefuel(ai_refuel_vehicles_list[side],ai_depot[side]);
+                         end;
+
+
+                    //Determine which vehicles are allowed to repair. If base is under attack then only the vehicles on the
+                    //parking/retreat spots. If not under attack then all defending vehicles.
+                    //Get mechanics in these vehicles out so they can repair too (if we are not under attack).
+                    //If the base is not under attack then scan for vehicles which are not parked correctly.
+                    free_parking_spots = [];  //Keeps track of the pullback hexes available
+                    temp_list_3 = [];  //Keeps track of vehicles on pullback hexes   
+                    for i in ai_vehicle_pullback_hexes[side] do
+                         begin
+                              temp_unit = HexInfo(i[1],i[2]);
+                              
+                              if temp_unit in ai_vehicles_defend[side] then
+                                   begin
+                                        temp_list_3 = temp_list_3 ^ temp_unit;
+
+                                        if not under_attack and not temp_unit in (ai_refuel_vehicles_list[side] ^ ai_vehicles_attack[side] ^ ai_vehicle_being_moved[side] ^ ai_vehicles_having_been_moved[side]) then
+                                             begin
+                                                  if GetControl(temp_unit) = control_manual then
+                                                       begin
+                                                            ComExitVehicle(IsDrivenBy(temp_unit));
+                                                       end;
+                                             end;
+                                   end
+                              else
+                                   if temp_unit = 0 or not ( GetType(temp_unit) = unit_building or ( GetType(temp_unit) = unit_vehicle and ( ( GetControl(temp_unit) = control_manual and IsDrivenBy(temp_unit) = 0 ) or ( GetControl(temp_unit) = control_remote and IsControledBy(temp_unit) = 0 ) ) ) ) then
+                                        free_parking_spots = Insert(free_parking_spots,1,i);
+                         end;
+
+                    if under_attack then
+                         begin
+                              allowed_to_repair_vehicles = temp_list_3;
+                              vehicles_list = UnitFilter((ai_vehicles_being_repaired[side] ^ ai_retreating_vehicles_defend[side]) diff temp_list_3,[f_ok]);
+
+                              //Man only the vehicles being repaired and retreating vehicles which are parked on a parking spot and ( are under attack
+                              //or where mechanics are under attack nearby (i.e. the enemy is near) ).
+                              //Else use your time on repairing the vehicles.
+                              //UnitShoot resets after 10 seconds and detects all kinds of contact (direct hit, bombs, attack ground etc.).
+                              temp_list = [];
+                              temp_list_3 = temp_list_3 isect UnitFilter(ai_vehicles_being_repaired[side] ^ ai_retreating_vehicles_defend[side],[f_ok]);
+                              for i in temp_list_3 do
+                                   if UnitShoot(i) > 0 and GetSide(UnitShoot(i)) <> side then
+                                        temp_list = temp_list ^ i;
+
+                              for i in ai_mechanics_defend[side] do
+                                   if UnitShoot(i) > 0 and GetSide(UnitShoot(i)) <> side then
+                                        temp_list = temp_list ^ UnitFilter(temp_list_3 diff temp_list,[f_dist,i,5]);
+
+                              for i in temp_list_3 diff temp_list do
+                                   if GetControl(i) = control_manual then
+                                        begin
+                                             ComExitVehicle(IsDrivenBy(i));
+                                        end;
+
+                              temp_list = FindDriverHelper(UnitFilter(temp_list,[[f_empty],[f_ok]]),mechanics_list,vehicles_drivers);
+                              mechanics_list = temp_list[1];
+                              vehicles_drivers = temp_list[2];
+                         end
+                    else
+                         begin
+                              //Don't go near burning vehicles too far away from the base - could be dangerous if the
+                              //enemy has set up an ambush.
+                              allowed_to_repair_vehicles = ai_vehicles_defend[side] diff (ai_refuel_vehicles_list[side] ^ ai_vehicles_having_been_moved[side] ^ ai_vehicle_being_moved[side]);
+
+                              case side of
+                                   americans: k = am_base;
+                                   russians: k = ru_base;
+                              end;
+
+                              i = 1;
+                              while i <= allowed_to_repair_vehicles do
+                                   begin
+                                        if not IsOk(allowed_to_repair_vehicles[i]) and GetDistUnitArea(allowed_to_repair_vehicles[i],k) > 7 then
+                                             begin
+                                                  allowed_to_repair_vehicles = Delete(allowed_to_repair_vehicles,i);
+                                                  continue;
+                                             end;
+
+                                        i = i + 1;
+                                   end;
+
+                              vehicles_list = UnitFilter(allowed_to_repair_vehicles diff temp_list_3,[f_ok]);
+
+                              //Find drivers for the vehicles which aren't parked correctly
+                              temp_list = UnitFilter(vehicles_list,[[f_empty],[f_ok]]);
+                              temp_list = FindDriverHelper(temp_list,mechanics_list,vehicles_drivers);
+                              mechanics_list = temp_list[1];
+                              vehicles_drivers = temp_list[2];
+                         end;
+
+                    //Command (damaged vehicles)/(vehicles parked the wrong places) to retreat to the pullback hexes.
+                    //If no pullback hexes are available then the vehicle won't retreat.
+                    for i in vehicles_list do
+                         if free_parking_spots > 0 then
+                              begin
+                                   //Take the closest spot
+                                   temp_list = [];
+                                   for k in free_parking_spots do
+                                        temp_list = temp_list ^ GetDistUnitXY(i,k[1],k[2]);
+                                   temp_list = WorstFromListByList(free_parking_spots,temp_list);
+
+                                   ComMoveXY(i,temp_list[1],temp_list[2]);
+                                   AddComHold(i);
+
+                                   free_parking_spots = free_parking_spots diff [temp_list];
+                                   ready_to_attack = false;
+                              end
+                         else
+                              break;
+
+
+                    if mechanics_list = 0 then
+                         continue;
+
+
+                    //Repair vehicles.
+                    //All mechanics go for the same vehicle.
+                    allowed_to_repair_vehicles = UnitFilter(allowed_to_repair_vehicles,[f_not,[f_lives,1000]]) diff ai_vehicles_being_repaired[side];
+                    if allowed_to_repair_vehicles > 0 or ai_vehicles_being_repaired[side] > 0 then
+                         begin
+                              if allowed_to_repair_vehicles > 0 then
+                                   begin
+                                        k = false;
+                                        if ai_vehicles_being_repaired[side] = 0 then
+                                             k = true
+                                        else
+                                             if IsOk(ai_vehicles_being_repaired[side][1]) then
+                                                  begin
+                                                       allowed_to_repair_vehicles = UnitFilter(allowed_to_repair_vehicles,[f_not,[f_ok]]);
+                                                       k := allowed_to_repair_vehicles > 0;
+                                                  end;
+
+                                        if k then
+                                             begin
+                                                  temp_list = [];
+                                                  for i in allowed_to_repair_vehicles do
+                                                       temp_list = temp_list ^ GetLives(i);
+                                                  temp_unit = WorstFromListByList(allowed_to_repair_vehicles,temp_list);
+
+                                                  temp_list = temp_unit ^ ai_vehicles_being_repaired[side];
+                                                  ai_vehicles_being_repaired = Replace(ai_vehicles_being_repaired,side,temp_list);
+
+                                                  temp_list = ai_retreating_vehicles_defend[side] diff temp_unit;
+                                                  ai_retreating_vehicles_defend = Replace(ai_retreating_vehicles_defend,side,temp_list);
+                                             end;
+                                   end;
+
+                              ComRepairVehicle( GetHumansOutOfUnits(mechanics_list) , ai_vehicles_being_repaired[side][1]);
+
+                              ready_to_attack = false;
+                         end
+                    else
+                         begin
+                              //Count down to attack if we have enough war vehicles to do so, and we are not attacking right now, and we
+                              //are ready (everything is fine - no damaged vehicles, not under attack and so on).
+                              //The computer attacks with maximum (difficulty + 1)
+                              //or (the number of mechanics) number of vehicles (the lesser determines the number). This must be synchronized with
+                              //how many vehicles will be produced (see every below).
+                              if ai_mechanics_attack[side] = 0 and ready_to_attack and (ai_mechanics_defend[side] diff mechanics_list) = 0 and ai_refuel_vehicles_list[side] = 0 then
+                                   begin
+                                        i = NumOfVehicleReqToAttack(side);
+                                        
+                                        if ai_vehicles_defend[side] >= i then
+                                             begin
+                                                  repeat
+                                                  ai_attack_delay = Replace(ai_attack_delay,side, ai_attack_delay[side] - 0$1);  //Must match update time of this every
+                                                  if ai_attack_delay[side] > 0$0 then
+                                                       break;
+
+                                                                                                    
+                                                  //Decide who to attack. The player will only be attacked if the computer know he/she is there (seen him/her
+                                                  //or negotiated with him/her) and some other criteria.
+                                                  //Who to attack is determined by random, but the other computer will never be attacked twice in a row if the
+                                                  //player can be attacked.
+                                                  temp_list = [americans,russians] diff side;
+                                                  if ai_side_is_dead[temp_list[1]] then
+                                                       temp_list = [];
+
+                                                  if MayAttackPlayer(side) then
+                                                       if ai_going_to_attack_this_side[side] <> you then
+                                                            temp_list = [you]
+                                                       else
+                                                            temp_list = temp_list ^ you;
+
+                                                  if temp_list = 0 then
+                                                       break;
+
+                                                  ai_going_to_attack_this_side = Replace(ai_going_to_attack_this_side,side, temp_list[Rand(1,temp_list)] );
+                                                  
+                                                  //Pick mechanics for attack
+                                                  temp_list = [];
+                                                  for k = 1 to i do
+                                                       begin
+                                                            temp_list = temp_list ^ ai_mechanics_defend[side][1];
+                                                            temp_list_3 = Delete(ai_mechanics_defend[side],1);
+                                                            ai_mechanics_defend = Replace(ai_mechanics_defend,side,temp_list_3);
+                                                       end;
+                                                  ai_mechanics_attack = Replace(ai_mechanics_attack,side,temp_list);
+
+                                                  mechanics_list = ai_mechanics_defend[side];
+
+                                                  //Pick vehicles for attack
+                                                  temp_list = [];
+                                                  for k = 1 to i do
+                                                       begin
+                                                            temp_list = temp_list ^ ai_vehicles_defend[side][1];
+                                                            temp_list_3 = Delete(ai_vehicles_defend[side],1);
+                                                            ai_vehicles_defend = Replace(ai_vehicles_defend,side,temp_list_3);
+                                                       end;
+                                                  ai_vehicles_attack = Replace(ai_vehicles_attack,side,temp_list);
+
+                                                  //Reset attack delay
+                                                  ResetAttackDelay(side);
+                                                  until true;
+                                             end;
+                                   end;
+                              
+
+                              //Rest mechanics stay inside the factory (if possible).
+                              //Change class if necessary (if mechanic was lended to the player he/she may not have class_mechanic any
+                              //more).
+                              if IsOk(ai_fact[side]) then
+                                   begin
+                                        for i in mechanics_list do
+                                             begin
+                                                  temp_unit = IsInUnit(i);
+                                                  if temp_unit <> ai_fact[side] then
+                                                       case GetType(temp_unit) of
+                                                            unit_vehicle: ComExitVehicle(i);
+                                                            unit_building: ComExitBuilding(i);
+                                                            else
+                                                                 begin
+                                                                      ComEnterUnit(i,ai_fact[side]);
+
+                                                                      if GetClass(i) <> class_mechanic then
+                                                                           AddComChangeProfession(i,class_mechanic);
+                                                                 end;
+                                                       end;
+                                             end;
+                                   end
+                              else
+                                   for i in mechanics_list do
+                                        if GetDistUnitXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]) > 4 then
+                                             ComMoveXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]);
+                         end;
+               end;
+
+          until false;
+     end;
+Function FindDriverHelper(vehicles_list,mechanics_list,vehicles_drivers);
+     var i, k, temp_unit;
+     begin
+          for i in vehicles_list do
+               begin
+                    if mechanics_list = 0 then
+                         break;
+
+                    k = false;
+                    if vehicles_drivers < i then
+                         k = true
+                    else
+                         if not vehicles_drivers[i] in mechanics_list then
+                              k = true;
+
+                    if k then
+                         vehicles_drivers = Replace(vehicles_drivers,i,AllNearestUnitToUnit(mechanics_list,i));
+
+                    if vehicles_drivers[i] > 0 then
+                        begin
+                             temp_unit = IsInUnit(vehicles_drivers[i]);
+
+                             if temp_unit <> i then
+                                  case GetType(temp_unit) of
+                                       unit_vehicle: ComExitVehicle(vehicles_drivers[i]);  //could sit in a vehicle which is now parked correctly
+                                       unit_building: ComExitBuilding(vehicles_drivers[i]);
+                                       else ComEnterUnit(vehicles_drivers[i],i);
+                                  end;
+
+                             mechanics_list = mechanics_list diff vehicles_drivers[i];
+                        end;
+               end;
+
+          result = [mechanics_list,vehicles_drivers];
+     end;
+//Function which tells if the side is allowed to attack the player.
+Function MayAttackPlayer(side);
+     begin
+          result = {ai_player_seen[side]} player_has_insulted_side[side] and GetAttitude(side,you) = att_enemy and not ( side = americans and americans_thinking > 0 );
+     end;
+Function NumOfVehicleReqToAttack(side);
+     begin
+          result = WorstFromListByList([ai_mechanics_defend[side] + ai_mechanics_attack[side] , ai_vehicle_pullback_hexes[side]+0 , difficulty + 1],
+                                       [ai_mechanics_defend[side] + ai_mechanics_attack[side] , ai_vehicle_pullback_hexes[side]+0 , difficulty + 1]);
+     end;
+//Construct combat vehicles and weapons for bunkers. Weapons for bunkers have highest priority.
+Every 0$1 do
+     var side, i, temp_value, temp_unit, temp_list;
+     begin
+          for side in [americans,russians] do
+               begin
+                    if ai_side_is_dead[side] then
+                         continue;
+
+                    if BuildingStatus(ai_fact[side]) <> bs_idle or not IsOk(ai_fact[side]) or GetBType(ai_fact[side]) <> b_factory then
+                         continue;
+
+
+                    //Check if any bunker needs a weapon
+                    temp_value = false;
+                    for i in ai_buildings_locations[side] do
+                         if i[4] in [b_bunker,b_turret] then
+                              begin
+                                   temp_unit = HexInfo(i[1],i[2]);
+
+                                   if GetBType(temp_unit) in [b_bunker,b_turret] and not IsConstructed(temp_unit) and GetBWeapon(temp_unit) <> i[7] then
+                                        //if i[7] in AvailableWeaponList(ai_fact[side]) then  //Can the factory produce the weapon? (does it have the gun extension, that is).
+                                        if IsWeaponFactory(ai_fact[side]) then
+                                             begin
+                                                  ComPlaceWeapon(temp_unit,i[7]);
+                                                  temp_value = true;
+                                                  break;
+                                             end;
+                              end;
+
+                    if temp_value then
+                         continue;
+
+
+                    //Construct vehicles.
+                    //If there are less vehicles than mechanics or number of parking spots or difficulty + 1 (the lesser determines the max), then there is
+                    //a chance the side will produce a vehicle.
+                    //Note: War vehicles may be left on the battlefield so only count them in if we are attacking.
+                    temp_list = ai_vehicles_defend[side];
+                    if ai_mechanics_attack[side] > 0 then
+                         temp_list = temp_list ^ ai_vehicles_attack[side];
+
+                    if Rand(1,80-20*difficulty) = 1 and temp_list < NumOfVehicleReqToAttack(side) then
+                         case side of
+                              americans: begin
+                                   if Rand(1,2) = 1 then
+                                        begin
+                                             if Rand(1,3) = 1 then
+                                                  temp_value = us_machine_gun
+                                             else temp_value = us_gatling_gun;
+                                        end
+                                   else
+                                        if Rand(1,2) = 1 then
+                                             temp_value = us_light_gun
+                                        else temp_value = us_double_gun;
+
+                                   //if not temp_value in AvailableWeaponList(ai_fact[side]) then
+                                   if not IsWeaponFactory(ai_fact[side]) then
+                                        temp_value = us_machine_gun;
+
+                                   ComConstruct(ai_fact[side],us_medium_wheeled,engine_combustion,control_manual,temp_value);
+                              end;
+                              russians: begin
+                                   if Rand(1,2) = 1 then
+                                        begin
+                                             if Rand(1,3) = 1 then
+                                                  temp_value = ru_heavy_machine_gun
+                                             else temp_value = ru_gatling_gun;
+                                        end
+                                   else
+                                        temp_value = ru_gun;
+
+                                   //if not temp_value in AvailableWeaponList(ai_fact[side]) then
+                                   if not IsWeaponFactory(ai_fact[side]) then
+                                        temp_value = ru_heavy_machine_gun;
+
+                                   if tick > russians_get_stronger_time and Rand(1,4-difficulty) = 1 then
+                                        i = ru_heavy_wheeled
+                                   else i = ru_medium_wheeled;
+
+                                   ComConstruct(ai_fact[side],i,engine_combustion,control_manual,temp_value);
+                              end;
+                         end;
+               end;
+
+          enable;
+     end;
+//If a factory has the gun extension we presume it has all necessary extensions to construct
+//any weapon.
+Function IsWeaponFactory(factory);
+     begin
+          if FilterAllUnits([[f_dist,factory,4],[f_btype,b_ext_gun]]) > 0 then
+               result = true
+          else
+               result = false;
+     end;
+//If the player captures one of the computer's attacking vehicles, then remove it from our variables-system. Not defending
+//because you capture a vehicle just by repairing it and the player could be helping repairing vehicles if there is an
+//alliance.
+On VehicleCaptured(new_identifier,old_identifier,old_side,capturing_unit) do
+     var temp_list, new_side;
+     begin
+          if old_identifier in ai_vehicles_defend[old_side] then
+               begin
+                    RemoveVehicleFromVariables(old_side,old_identifier);
+                    temp_list = ai_vehicles_defend[old_side] ^ new_identifier;
+                    ai_vehicles_defend = Replace(ai_vehicles_defend,old_side,temp_list);
+               end
+          else
+               begin
+                    new_side = GetSide(new_identifier);
+
+                    if old_identifier in ai_vehicles_defend[new_side] then  //computer has "recaptured" its vehicle from the player
+                         begin
+                              RemoveVehicleFromVariables(new_side,old_identifier);
+                              temp_list = ai_vehicles_defend[new_side] ^ new_identifier;
+                              ai_vehicles_defend = Replace(ai_vehicles_defend,new_side,temp_list);
+                         end
+                    else
+                         if old_identifier in ai_vehicles_attack[new_side] then  //computer has "recaptured" its vehicle from the player
+                              begin
+                                   RemoveVehicleFromVariables(new_side,old_identifier);
+                                   temp_list = ai_vehicles_attack[new_side] ^ new_identifier;
+                                   ai_vehicles_attack = Replace(ai_vehicles_attack,new_side,temp_list);
+                              end
+                         else
+                              if old_side in [americans,russians] then
+                                   RemoveVehicleFromVariables(old_side,old_identifier);
+               end;
+     end;
+//When a vehicle is constructed
+On VehicleConstructed(vehicle,factory) do
+     var side, temp_list;
+     begin
+          side = GetSide(vehicle);
+          if not side in [americans,russians] then
+               exit;
+
+          temp_list = ai_vehicles_defend[side] ^ vehicle;
+          ai_vehicles_defend = Replace(ai_vehicles_defend,side,temp_list);
+     end;
+
+//Mechanics (attacking in war vehicles)
+//Get the attacking mechanics inside the war vehicles and attack.
+Every 0$1+0$0.3 do
+     var side, i, attack_vehicles_list, attack_mechanics_list, retreat_vehicles_list, retreat_mechanics_list, temp_list, k, temp_unit, inside_ok;
+     var attack_hexes, first, temp_value, base_area, dist, temp_list_2, attack_timeout, idle_count, stop_attack;
+     begin
+          attack_timeout = [0$0,-1,0$0];  //timeout for attack - pull back if there haven't been action for some time
+          stop_attack = [false,-1,false];  //If for some reason the attack should stop altogether
+
+          repeat
+          wait(0$1);
+
+          for side in [americans,russians] do
+               begin
+                    if ai_side_is_dead[side] then
+                         continue;
+
+                    if ai_mechanics_attack[side] = 0 then
+                         begin
+                              ai_commence_attack = Replace(ai_commence_attack,side,false);
+                              attack_timeout = Replace(attack_timeout,side,0$0);
+                              stop_attack = Replace(stop_attack,side,false);
+                              continue;
+                         end;
+
+
+                                
+                    //If the Russians and the Americans attack each other at the same time the western crossing of the river may temporarily
+                    //be blocked by burning vehicles. The remaining attacking vehicles will then go the other way around to get to the enemy
+                    //base - that is through the player's base. This is unfortunate, especially if the player has not been seen by the computer
+                    //yet.
+                    if not MayAttackPlayer(side) then
+                         begin
+                              for i in ai_vehicles_attack[side] do
+                                   if IsInArea(i,near_player_base_area) then
+                                        begin
+                                             stop_attack = Replace(stop_attack,side,true);
+                                             break;
+                                        end;
+                         end;
+
+
+                    //Check which vehicles should retreat to base.
+                    //- If vehicle is damaged
+                    //- If the player has negotiated while attack was under way (and the player is the target)
+                    //- If the attacked side is considered dead
+                    //- If the attack has timed out
+                    retreat_vehicles_list = [];
+                    if ( not MayAttackPlayer(side) and ai_going_to_attack_this_side[side] = you ) or ai_side_is_dead[ai_going_to_attack_this_side[side]] or attack_timeout[side] >= 0$20 or stop_attack[side] then
+                         retreat_vehicles_list = ai_vehicles_attack[side]
+                    else
+                         for i in ai_vehicles_attack[side] do
+                              if GetLives(i) <= 500 then
+                                   retreat_vehicles_list = retreat_vehicles_list ^ i;
+                     
+
+                    //Check which mechanics should retreat to base (if they are not inside a vehicle and there are not enough
+                    //vehicles for all mechanics then retreat).
+                    retreat_mechanics_list = [];
+                    for i = 1 to ai_mechanics_attack[side] - UnitFilter(ai_vehicles_attack[side],[f_ok]) do
+                         begin
+                              temp_unit = 0;
+                              for k in ai_mechanics_attack[side] diff retreat_mechanics_list do
+                                   if not IsInUnit(k) in ai_vehicles_attack[side] then
+                                        begin
+                                             temp_unit = k;
+                                             break;
+                                        end;
+
+                              if temp_unit > 0 then
+                                   begin
+                                        retreat_mechanics_list = retreat_mechanics_list ^ temp_unit;
+                                   end;
+                         end;
+
+
+                    //Make retreating vehicles and mechanics retreat to base.
+                    //When they reach the base then remove them from the attacking variables and add them to the
+                    //defending variables so they are taken properly care of (see every for defending mechanics above).
+                    case side of
+                         americans: k = am_base;
+                         russians: k = ru_base;
+                    end;
+
+                    for i in retreat_vehicles_list ^ retreat_mechanics_list do
+                         if IsInArea(i,k) then
+                              begin
+                                   if GetType(i) = unit_vehicle then
+                                        begin
+                                             RemoveVehicleFromVariables(side,i);
+
+                                             temp_list = ai_vehicles_defend[side] ^ i;
+                                             ai_vehicles_defend = Replace(ai_vehicles_defend,side,temp_list);
+
+                                             i = UnitsInside(i);
+                                        end;
+                                   
+                                   temp_list = ai_mechanics_attack[side] diff i;
+                                   ai_mechanics_attack = Replace(ai_mechanics_attack,side,temp_list);
+
+                                   temp_list = ai_mechanics_defend[side] ^ i;
+                                   ai_mechanics_defend = Replace(ai_mechanics_defend,side,temp_list);
+                              end
+                         else
+                              ComMoveXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]);
+
+
+                    //Make sure units inside war vehicles are attacking mechanics
+                    inside_ok = true;
+                    attack_vehicles_list = ai_vehicles_attack[side] diff retreat_vehicles_list;
+                    for i in UnitFilter(attack_vehicles_list,[f_not,[f_empty]]) do
+                         begin
+                              temp_unit = UnitsInside(i)[1];
+                              if not temp_unit in ai_mechanics_attack[side] then
+                                   begin
+                                        ComExitVehicle(temp_unit);
+                                        inside_ok = false;
+                                   end;
+                         end;
+
+
+                    //Make sure mechanics are inside vehicles (should only be applicable for initialization)
+                    temp_list = UnitFilter(ai_vehicles_attack[side],[[f_ok],[f_empty]]);
+                    if temp_list > 0 then
+                         begin
+                              attack_mechanics_list = UnitFilter(ai_mechanics_attack[side] diff retreat_mechanics_list,[f_not,[f_driving]]);
+                              for i in temp_list do
+                                   begin
+                                        if attack_mechanics_list = 0 then
+                                             break;  //Should never be applicable
+
+                                        temp_unit = AllNearestUnitToUnit(attack_mechanics_list,i);
+
+                                        k = IsInUnit(temp_unit);
+                                        if k <> i then
+                                             case GetType(k) of
+                                                  unit_vehicle: ComExitVehicle(temp_unit);
+                                                  unit_building: ComExitBuilding(temp_unit);
+                                                  else ComEnterUnit(temp_unit,i);
+                                             end;
+
+                                        attack_mechanics_list = attack_mechanics_list diff temp_unit;
+                                   end;
+                         end
+                    else
+                         if inside_ok then
+                              ai_commence_attack = Replace(ai_commence_attack,side,true);
+
+
+                    //Command vehicles to attack when everybody is ready.
+                    if ai_commence_attack[side] then
+                         begin
+                              case ai_going_to_attack_this_side[side] of
+                                   americans: begin
+                                        attack_hexes = [[18,13],[11,6]];
+                                        base_area = am_base;
+                                   end;
+                                   you: begin
+                                        case side of
+                                             //These hexes end in the opposite computer side's base - just in case the player could not be found
+                                             americans: attack_hexes = [ai_human_pullback_hex[side],[74,21],[95,2],[109,10],[134,40],[158,110],[167,114]];
+                                             russians: attack_hexes = [ai_human_pullback_hex[side],[134,40],[109,10],[95,2],[74,21],[76,62],[59,84],[18,13],[14,5]];
+                                        end;
+
+                                        base_area = -1;
+                                   end;
+                                   russians: begin
+                                        attack_hexes = [[161,104],[167,107]];
+                                        base_area = ru_base;
+                                   end;
+                              end;
+
+                              idle_count = 0;
+                              for i in attack_vehicles_list do
+                                   begin
+                                        //If the unit is shooting at a unit which is Ok and there is a dying human
+                                        //unit within the same distance or closer than the current target then
+                                        //kill off that human unit first.
+                                        {temp_value = GetTaskList(i);
+                                        if temp_value = 1 then
+                                             if temp_value[1][1] = '^' then  //'^' is auto attack
+                                                  begin  
+                                                       //The unit is auto attacking because it has met an enemy.
+                                                       temp_unit = Attacks(i);
+                                                       if temp_unit > 0 and IsOk(temp_unit) then
+                                                            begin
+                                                                 temp_value = GetDistUnits(i,temp_unit);
+                                                                 temp_list = FilterAllUnits([[f_enemy,side],[f_type,unit_human],[f_not,[f_ok]],[f_dist,i,temp_value]]);
+                                                                 if temp_list > 0 then
+                                                                      ComAttackUnit(i,temp_list[1]);
+
+                                                                 continue;
+                                                            end;
+                                                  end;}
+
+                                        //Check if vehicle is inside the enemy base. If that is the case then shoot at buildings/vehicles if no human
+                                        //units are present. Take the nearest non-human (not necessary with humans because we just agressive move).
+                                        temp_list = FilterAllUnits([[f_side,ai_going_to_attack_this_side[side]],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]);
+                                        if temp_list > 0 then
+                                             begin
+                                                  temp_unit = NearestUnitToUnit(temp_list,i);
+                                                  if GetBType(temp_unit) = b_depot then
+                                                       dist = 26  //build distance for depot
+                                                  else
+                                                       dist = 34; //build distance for warehouse
+
+                                                  k = GetDistUnits(i,temp_unit) <= dist;
+                                             end;
+
+                                        if not k then
+                                             begin
+                                                  temp_list = FilterAllUnits([[f_side,ai_going_to_attack_this_side[side]],[f_type,unit_building]]);
+                                                  if temp_list > 0 then
+                                                       begin
+                                                            temp_unit = NearestUnitToUnit(temp_list,i);
+
+                                                            k = GetDistUnits(i,temp_unit) <= 20;
+                                                       end;
+                                             end;
+
+                                        if not k then
+                                             if base_area > 0 then
+                                                  k = IsInArea(i,base_area);
+
+                                                  
+                                        if k then
+                                             begin
+                                                  temp_list = FilterAllUnits([[f_side,ai_going_to_attack_this_side[side]],[f_type,unit_human],[f_dist,i,20],[f_see,side]]);
+
+                                                  //Finish off dying humans as first priority
+                                                  temp_list_2 = UnitFilter(temp_list,[f_not,[f_lives,250]]);
+                                                  if temp_list_2 > 0 then
+                                                       temp_list = temp_list_2;
+
+                                                  if temp_list > 0 then
+                                                       begin
+                                                            temp_unit = AllNearestUnitToUnit(temp_list,i);
+
+                                                            if GetLives(temp_unit) > 250 then
+                                                                 ComAgressiveMove(i,GetX(temp_unit),GetY(temp_unit))
+                                                            else
+                                                                 ComAttackUnit(i,temp_unit);
+                                                       end
+                                                  else
+                                                       begin
+                                                            temp_list = FindNonhumansNearUnit(side,i,20,true);
+                                                            if temp_list > 0 then
+                                                                 begin
+                                                                      ComAgressiveMove(i,GetX(temp_list[1]),GetY(temp_list[1]));
+                                                                 end
+                                                            else
+                                                                 begin
+                                                                      temp_list = FindNonhumansNearUnit(side,i,20,false);
+                                                                      if temp_list > 0 then
+                                                                           begin
+                                                                                temp_unit = NearestUnitToUnit(temp_list,i);
+                                                                                ComAttackUnit(i,temp_unit);
+                                                                           end
+                                                                      else
+                                                                           k = false;
+                                                                 end;
+                                                       end;
+
+                                                  if k then  //found something to shoot at
+                                                       continue;
+                                             end;
+
+                                        //Movement to enemy base
+                                        k = FindClosestHexIndex(i,attack_hexes) + 1;
+                                        if k > attack_hexes then
+                                             begin
+                                                  k = attack_hexes+0;
+                                                  idle_count = idle_count + 1;
+                                             end;
+
+                                        ComAgressiveMove(i,attack_hexes[k][1],attack_hexes[k][2]);
+                                   end;
+
+                              if idle_count = attack_vehicles_list+0 then
+                                   attack_timeout = Replace(attack_timeout,side,attack_timeout[side]+0$1)
+                              else
+                                   attack_timeout = Replace(attack_timeout,side,0$0)
+                         end;
+               end;
+
+          until false;
+     end;
+Function FindClosestHexIndex(un,hex_list);
+     var low_dist, dist, b;
+     begin
+          low_dist = GetDistUnitXY(un,hex_list[1][1],hex_list[1][2]);
+          result = 1;
+
+          for b = 2 to hex_list do
+               begin
+                    dist = GetDistUnitXY(un,hex_list[b][1],hex_list[b][2]);
+                    if dist < low_dist then
+                         begin
+                              low_dist = dist;
+                              result = b;
+                         end;
+               end;
+
+     end;
+Function FindNonhumansNearUnit(side,un,dist,only_dangerous);
+     var weapon_list, temp_list, i, btype, b, val;
+     begin
+          temp_list = FilterAllUnits([[f_enemy,side],[f_not,[f_type,unit_human]],[f_dist,un,dist],[f_see,side]]);
+
+          if only_dangerous then
+               begin
+                    weapon_list = [us_machine_gun,us_light_gun,us_gatling_gun,us_double_gun,us_heavy_gun,us_rocket_launcher,
+                                   us_siberium_rocket,us_laser,us_double_laser,
+                                   ar_multimissile_ballista,ar_light_gun,ar_double_machine_gun,ar_gatling_gun,
+                                   ar_flame_thrower,ar_gun,ar_rocket_launcher,ar_selfpropelled_bomb,
+                                   ru_heavy_machine_gun,ru_gatling_gun,ru_gun,ru_rocket_launcher,ru_heavy_gun,
+                                   ru_rocket,ru_siberium_rocket,ru_time_lapser];
+
+                    temp_list = UnitFilter(temp_list,[f_ok]);
+                    result = [];
+
+                    for i in temp_list do
+                         case GetType(i) of
+                              unit_vehicle: begin
+                                   case GetControl(i) of
+                                        control_manual,control_rider: begin
+                                             if UnitsInside(i) = 0 then
+                                                  continue;
+                                        end;
+                                        control_remote: begin
+                                             if IsControledBy(i) = 0 then
+                                                  continue;
+                                        end;
+                                        control_computer,control_apeman: begin
+                                        end;
+                                   end;
+
+                                   if GetWeapon(i) in weapon_list then
+                                        result = result ^ i;
+                              end;
+                              unit_building: begin
+                                   btype = GetBType(i);
+
+                                   case btype of
+                                        b_turret: begin
+                                        end;
+                                        b_bunker,b_breastwork,b_armoury,b_barracks,b_fort: begin
+                                             if UnitsInside(i) = 0 then
+                                                  continue;
+                                        end;
+                                        else
+                                             continue;
+                                   end;
+
+                                   if btype in [b_bunker,b_turret] then
+                                        if not GetBWeapon(i) in weapon_list then
+                                             continue
+                                        else
+                                             begin
+                                                  b = GetBase(i);
+                                                  val = false;
+
+                                                  if b = 0 then
+                                                       val = true
+                                                  else
+                                                       if GetEnergy(b)[4] = 0 then
+                                                            val = true;
+
+                                                  if val then
+                                                       continue;
+                                             end;
+
+                                   result = result ^ i;
+                              end;
+                         end;
+               end
+          else
+               result = temp_list
+     end;
+
+//The computers's vehicles never seem to run completely out of fuel...
+Every 0$5 do
+     var side, i;
+     begin
+          for side in [americans,russians] do
+               for i in ai_vehicles_attack[side] ^ ai_vehicles_defend[side] do
+                    if GetFuel(i) < 10 then
+                         SetFuel(i,10);
+
+          enable;
+     end;
+
+
+//Scientists
+//If a scientist is wounded them pull him/her back. Else heal what people needs healing. Else stay inside the lab (if lab not Ok then help
+//construct buildings).
+Every 0$1 do
+     var side, i, scientists_list, temp_list, temp_unit, area, under_attack;
+     begin
+          for side in [americans,russians] do
+               begin
+                    if ai_side_is_dead[side] then
+                         continue;
+
+                    scientists_list = ai_scientists[side] diff ai_heal_these_humans[side];
+
+
+                    //Identify scientists who need healing
+                    temp_list = ai_heal_these_humans[side];
+                    i = 1;
+                    while i <= scientists_list do
+                         begin
+                              if GetLives(scientists_list[i]) <= 750 then
+                                   begin
+                                        temp_list = temp_list ^ scientists_list[i];
+                                        scientists_list = Delete(scientists_list,i);
+                                        i = i - 1;
+                                   end;
+
+                              i = i + 1;
+                         end;
+                    ai_heal_these_humans = Replace(ai_heal_these_humans,side,temp_list);
+
+
+                    //Update people who need healing. People at full HP
+                    //will not receive healing.
+                    temp_list = [];
+                    for i in ai_heal_these_humans[side] do
+                         if GetLives(i) < 1000 then
+                              temp_list = temp_list ^ i;
+                    ai_heal_these_humans = Replace(ai_heal_these_humans,side,temp_list);
+
+
+                    //Control people who need healing (except soldiers if the base is under attack). Make 'em retreat to the human pullback hex.
+                    under_attack = BaseUnderAttack(side,-1);
+
+                    case side of
+                         americans: area = am_base;
+                         russians: area = ru_base;
+                    end;
+
+                    for i in ai_heal_these_humans[side] do
+                         if not ( under_attack and i in ai_soldiers[side] ) and GetDistUnitXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]) > 4 then
+                              case GetType(IsInUnit(i)) of
+                                   unit_building: ComExitBuilding(i);
+                                   unit_vehicle: begin
+                                        if IsInArea(i,area) then
+                                             ComExitVehicle(i)
+                                        else
+                                             ComMoveXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]);
+                                   end;
+                                   else
+                                        ComMoveXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]);
+                              end;
+                              
+
+
+                    if scientists_list = 0 then
+                         continue;
+
+
+                    //Heal people. At least one scientist for each human if possible.
+                    //Only heal red people who are (almost) inside the base so the healer is safe.
+                    temp_list = ai_heal_these_humans[side];
+
+                    i = 1;
+                    while i <= temp_list do
+                         begin
+                              if ( not IsOk(temp_list[i]) and GetDistUnitArea(temp_list[i],area) > 7 ) or IsInUnit(temp_list[i]) > 0 then
+                                   begin
+                                        temp_list = Delete(temp_list,i);
+                                        continue;
+                                   end;
+
+                              i = i + 1;
+                         end;
+
+                    if temp_list > 0 then
+                         begin
+                              scientists_list = GetHumansOutOfUnits(scientists_list);
+
+                              repeat
+                                   i = 1;
+                                   while i <= temp_list do
+                                        begin
+                                             if scientists_list = 0 then
+                                                  break;
+
+                                             temp_unit = NearestUnitToUnit(scientists_list,temp_list[i]);
+                                             ComHeal(temp_unit,temp_list[i]);
+                                             scientists_list = scientists_list diff temp_unit;
+
+                                             i = i + 1;
+                                        end;
+
+                              until scientists_list = 0;
+                         end
+                    else
+                         //Enter and stay in lab
+                         if IsOk(ai_lab[side]) and BuildingStatus(ai_lab[side]) <> bs_build then
+                              begin
+                                   //Return to and stay inside lab
+                                   for i in scientists_list do
+                                        begin
+                                             temp_unit = IsInUnit(i);
+                                             if temp_unit <> ai_lab[side] then
+                                                  case GetType(temp_unit) of
+                                                       unit_building: ComExitBuilding(i);
+                                                       unit_vehicle: ComExitVehicle(i);
+                                                       else ComEnterUnit(i,ai_lab[side]);
+                                                  end;
+                                        end;
+                              end
+                         else
+                              //Help building building
+                              if ai_building_under_construction[side] > 0 then
+                                   begin
+                                        //ComRepairBuilding(scientists_list,ai_building_under_construction[side])
+                                        for i in scientists_list do
+                                             SetTaskList(i,[['h',0,0,ai_building_under_construction[side],0,0,0]]);  //'h' is "help building building"
+                                   end
+                              else
+                                   //Pull back
+                                   for i in scientists_list do
+                                        if GetDistUnitXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]) > 4 then
+                                             ComMoveXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2]);
+               end;
+
+          enable;
+     end;

@@ -1,0 +1,142 @@
+
+//Potential bug: The player can win while the Russian cargo bay has stolen the
+//artifact but not yet exited the map (see module 'Events');
+Every 0$1+0$0.6 do
+     begin
+
+          repeat
+          wait(0$1);
+
+          if russians_attack <> 4 or artifact_cargo_bay_status <> 2 then
+               continue;
+
+          DialogueOn;
+
+          Say(Heike,'D8-H-1');
+
+          dwait(0$0.2);
+          EndMission;
+
+          DialogueOff;
+
+          until false;
+     end;
+
+Function EndMission;
+     var val, humans_list, un_list, name_list, bol1, bol2;
+     begin
+          //Medals
+          //Gossudarov captured
+          if IsLive(Gossudarov) then
+               begin
+                    val = 1;
+                    SaveCharacters(Gossudarov,'Gossudarov_10');
+               end
+          else
+               val = -1;
+          AddMedal('GossudarovCaptured',val);
+
+          //Quick action
+          if quick_action then
+               val = 1
+          else
+               val = -1;
+          AddMedal('QuickAction',val);
+
+          
+          humans_list = UnitFilter(starting_humans,[f_alive]);
+          bol1 = false;
+          bol2 = false;
+          if investigate_time_shifting > 0 then
+               begin
+                    bol1 = true;
+
+                    //Time shifting investigation
+                    if investigate_time_shifting = 2 then
+                         begin
+                              val = 1;
+                              bol2 = true;
+                         end
+                    else
+                         val = -1;
+
+                    AddMedal('TimeShiftingInvestigation',val);
+               end
+          else
+               begin
+                    //Few losses
+                    case starting_humans - humans_list of
+                         0: val = 1;
+                         1: val = 2;
+                         else val = -1;
+                    end;
+
+                    AddMedal('Casualties',val);
+               end;
+
+          GiveMedals('Medals');
+
+
+          //Save variables
+          SaveVariable(bol1,'Seen_time_shifting_10');
+          SaveVariable(bol2,'Investigated_time_shifting_10');
+          SaveVariable(traitors_under_player_control,'Cooperates_with_traitors_10');
+          SaveVariable(gensher_answer = 1,'Cooperates_with_UPF_10');
+
+
+          //Reward and save people
+          if IsLive(Gonzo) then
+               humans_list = humans_list ^ Gonzo;
+
+          RewardPeople(humans_list);
+
+
+          //The units the player started the mission with
+          SaveCharacters(Heike,'Heike_10');
+
+          un_list = [Oswald,Kurt,Dwayne,Gonzo];
+          name_list = ['Oswald','Kurt','Dwayne','Gonzo'];
+
+          for val = 1 to un_list do
+               if un_list[val] in humans_list then
+                    SaveCharacters(un_list[val],name_list[val] & '_10');
+
+          SaveVariable(oswald_is_substitute,'Oswald_is_substitute_10');
+          SaveVariable(kurt_is_substitute,'Kurt_is_substitute_10');
+
+
+          //The traitors
+          if GetLives(traitors_leader) > 0 then
+               begin
+                    SaveCharacters(traitors_leader,'Traitors_leader_10');
+                    SaveVariable(not traitors_leader_is_substitute,'Traitors_leader_is_Gordon_10');
+               end;
+
+          if GetLives(Willard) > 0 then
+               SaveCharacters(Willard,'Willard_10');
+
+          if GetLives(scout) > 0 then
+               SaveCharacters(scout,'Traitors_scout_10');
+
+          un_list = [];
+          for val in original_traitors_humans diff [traitors_leader,Willard] do
+               if GetLives(val) > 0 then  //could have been removed from the map
+                    un_list = un_list ^ val;
+          SaveCharacters(un_list,'Other_traitors_10');
+
+
+          //Gensher's reinforcements
+          un_list = [];
+          for val in original_genshers_reinforcements do
+               if GetLives(val) > 0 then
+                    un_list = un_list ^ val;
+          SaveCharacters(un_list,'Gensher_reinforcements_10');
+     
+
+          //Russian prisoners
+          if russian_prisoners_decision = 3 and russian_prisoners_escaped > 0 then
+               SaveCharacters(russian_prisoners_escaped,'Released_Russian_prisoners_10');
+
+
+          YouWin;
+     end;

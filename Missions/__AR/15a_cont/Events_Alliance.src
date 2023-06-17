@@ -1,0 +1,840 @@
+
+//If the player didn't choose to help the Americans, Alliance calls after some time and wants to be friends.
+//If the player has shown hostility towards Alliance they won't go for it, though.
+//Also if the player is working together with the Alliance and he/she attacks Alliance, they're gonna get mad.
+Every 0$1.3 do
+     var count;
+     begin
+          count = 0;
+          repeat
+          wait(0$1);
+
+          if alliance_deal_status = 1 then
+               continue;
+
+          if ContactTime([you,alliance]) <= 0$2 or ai_contact_time[you][alliance] <= 0$2 then
+               count = count + 1
+          else
+               if count > 0 then
+                    count = count - 1;
+
+          if ( count >= 13 or ( count >= 8 and alliance_deal_status = 2 ) ) or SideShoot(Roth) = you or SideShoot(Joan) = you or SideShoot(Gossudarov) = you then
+               player_attacked_alliance = true;
+
+          until player_attacked_alliance;
+
+          if alliance_deal_status = 2 then
+               begin
+                    DialogueOn;
+                    Say(Roth,'D12-Ro-1a');
+                    DialogueOff;
+
+                    AllianceDealBreakdown;
+               end;
+     end;
+Export Function AllianceDealBreakdown;
+     begin
+          alliance_deal_status = 4;
+          SetAttitude(you,alliance,att_enemy,true);
+          ChangeSideFog(alliance,alliance);
+          //SetTech(31,you,state_disabled);  //Homogenous taufield.
+
+          AllianceObjectivesReset;
+     end;
+Export Function AllianceObjectivesReset;
+     begin
+          if alli_sib_needed > 0 then
+               begin
+                    alli_sib_needed = 0;
+                    alli_sib_usage = 0;
+                    display_strings = [];
+                    ChangeMissionObjectives('MDelGatherSib');
+               end;
+
+          if alli_destroy_am_objective_status in [1,2] then
+               ChangeMissionObjectives('MDelDestroyAmericans');
+
+          if alli_destroy_ru_objective_status in [1,2] then
+               ChangeMissionObjectives('MDelDestroyRussians');
+     end;
+Every 0$1+0$0.2 trigger alliance_call_start do
+     var i, temp_list, un;
+     begin
+          if american_deal_status > 0 or player_attacked_alliance then
+               exit;
+
+          DialogueOn;
+
+          temp_list = UnitFilter([Sonya,MarkB,Khattam],[f_ok]);
+          if temp_list > 0 then
+               begin
+                    i = temp_list[Rand(1,temp_list+0)];
+                    case i of
+                         Sonya: Say(i,'D7-So-1');
+                         MarkB: Say(i,'D7-Mark-1');
+                         Khattam: Say(i,'D7-Kh-1');
+                    end;
+               end;
+
+          SayRadio(Joan,'D7-Jo-1');
+          ForceSay(Heike,'D7-H-1');
+          SayRadio(Joan,'D7-Jo-2');
+
+          if IsOk(Ralph) then
+               begin
+                    Say(Ralph,'D7-Ra-1');
+
+                    if IsOk(Sonya) then
+                         begin
+                              Say(Sonya,'D7-So-2');
+                              Say(Ralph,'D7-Ra-2');
+                         end;
+               end;
+
+          SayRadio(Joan,'D7-Jo-3');
+          SayRadio(Joan,'D7-Jo-4');
+
+          DialogueOff;
+
+          alliance_deal_status = 1;
+
+          //Wait for the player to arrive at the Alliance base indicated by the player being attacked by Alliance.
+          repeat
+          wait(0$1);
+          until ContactTime([you,alliance]) <= 0$2 or not 2 in ai_bases or am_going_to_destroy_alli or player_has_built_sib_bomb or not 4 in ai_bases;  //If the player has destroyed the Americans then Alliance is not interested in dealing with the player any more.
+
+          if not 2 in ai_bases or am_going_to_destroy_alli or player_has_built_sib_bomb or not 4 in ai_bases then
+               exit;
+
+          //Note: Alliance may be under attack when this dialogue plays.
+          DialogueOn;
+
+          for i in FilterAllUnits([f_side,you]) do
+               begin
+                    un = UnitShoot(i);
+                    if un > 0 then
+                         if GetSide(un) = alliance then
+                              begin
+                                   CenterOnUnits(i);
+                                   break;
+                              end;
+               end;
+
+          Say(Roth,'D8-Ro-1');
+          Say(Joan,'D8-Jo-1');
+          Say(Roth,'D8-Ro-2');
+          Say(Joan,'D8-Jo-2');
+          Say(Roth,'D8-Ro-3');
+          Say(Joan,'D8-Jo-3');
+          Say(Roth,'D8-Ro-4');
+          Say(Joan,'D8-Jo-4');
+
+          if IsOk(Gossudarov) then
+               begin
+                    Say(Gossudarov,'D8-Go-a-1');
+                    Say(Roth,'D8-Ro-a-5');
+                    Say(Gossudarov,'D8-Go-a-2');
+               end
+          else
+               begin
+                    temp_list = FilterAllUnits([[f_side,alliance],[f_type,unit_human]]) diff ([Joan,Roth,Gossudarov] ^ GetApes(alliance));
+                    if temp_list > 0 then
+                         begin
+                              un = temp_list[Rand(1,temp_list+0)];
+                              if GetSex(un) = sex_male then
+                                   Say(un,'D8-SomeM-b-1')
+                              else
+                                   Say(un,'D8-SomeF-b-1');
+                         end;
+
+                    Say(Roth,'D8-Ro-b-5');
+               end;
+
+          dwait(0$1.8);
+          Say(Roth,'D8-Ro-6');
+          ForceSay(Heike,'D8-H-1');
+          Say(Joan,'D8-Jo-5');
+
+          dwait(0$0.2);
+          i = Query('QAllianceAlliance');
+          case i of
+               1: begin  //Accept
+                    Say(Heike,'D8-1-H-1');
+                    Say(Joan,'D8-1-Jo-1');
+
+                    alliance_deal_status = 2;
+                    SetAttitude(you,alliance,att_friend,true);
+                    ChangeSideFog(alliance,you);
+                    //SetTech(31,you,state_researched); -> makes player immune to Russian taufield as well...  //Homogenous taufield. Kinda annoying if the player's units are slowed by Alliance's taufields.
+               end;
+               2: begin  //Decline
+                    Say(Heike,'D8-2-H-1');
+
+                    alliance_deal_status = 3;
+               end;
+          end;
+
+          DialogueOff;
+     end;
+
+//Alliance does not allow the player to build buildings inside their base.
+Every 0$1.8 trigger alliance_deal_status = 2 do
+     var temp_list, i;
+     begin
+          repeat
+          wait(0$3);
+
+          if alliance_deal_status <> 2 then
+               exit;
+
+          temp_list = FilterAllUnits([[f_inarea,player_alli_dont_build_area],[f_side,you],[f_type,unit_building]]);
+          if temp_list > 0 then
+               begin
+                    DialogueOn;
+                    Say(Joan,'D13-Jo-1');
+                    DialogueOff;
+
+                    for i in temp_list do
+                         DestroyUnit(i);
+               end;
+
+          until false;
+     end;
+
+//As part of the agreement the player must not research or build the siberite bomb.
+On VehicleConstructionStarted(factory, chassis, engine, control, weapon) do
+     begin
+          if FindBase(factory) = 2 and alli_sib_needed > 0 and engine = engine_siberite then
+               alli_sib_usage = alli_sib_usage + 10;
+
+          if GetSide(factory) = you and weapon in [us_siberium_rocket,ru_siberium_rocket] then
+               player_sib_bomb_prod_fact = factory;
+     end;
+Every 0$1+0$0.6 do
+     var progress, temp;
+     begin
+          progress = 0;
+
+          repeat
+          wait(0$0.5);
+
+          //There is no event telling if a factory's job is canceled so we check the working progress instead.
+          //If it drops to zero the job must have been canceled (or done).
+          //A factory's task list is not reset if its health drops below 250 (starts burning).
+          if player_sib_bomb_prod_fact = 0 then
+               begin
+                    progress = 0;
+                    continue;
+               end;
+
+          temp = GetWorkingProgress(player_sib_bomb_prod_fact);
+          //This can be cheated if there are no mechanics in the factory, the player starts production of a siberite bomb, queues another task for the factory
+          //and then cancels the current job (the bomb). The check below will not detect that the factory is not producing a siberite bomb. It's a rare case, though.
+          if temp < progress or BuildingStatus(player_sib_bomb_prod_fact) = bs_idle then
+               begin
+                    player_sib_bomb_prod_fact = 0;
+                    progress = 0;
+                    continue;
+               end;
+
+          progress = temp;
+
+          until false;
+     end;
+Export Function ResearchStarted_AlliFunc(tech,lab);
+     begin
+          if GetSide(lab) = you and tech = tech_sibfiss then
+               player_sib_bomb_res_lab = lab;
+     end;
+Export Function ResearchCancel_AlliFunc(tech,lab);
+     begin
+          if GetSide(lab) = you and tech = tech_sibfiss then
+               player_sib_bomb_res_lab = 0;
+     end;
+Export Function ResearchComplete_AlliFunc(tech,lab);
+     begin
+          if GetSide(lab) = you and tech = tech_sibfiss then
+               player_sib_bomb_res_lab = 0;
+     end;
+Every 0$1+0$0.1 trigger alliance_deal_status = 2 do
+     var count;
+     begin
+          count = 0;
+
+          wait(0$5);  //Give the player some time to cancel research/construction if such is ongoing.
+
+          repeat
+          wait(0$1);
+
+          if alliance_deal_status <> 2 then
+               exit;
+
+          if player_sib_bomb_prod_fact > 0 or player_sib_bomb_res_lab > 0 then
+               count = count + 1;
+
+          until count = 5 or player_has_built_sib_bomb;
+
+          DialogueOn;
+          ForceSay(Roth,'D12-Ro-1b');
+          DialogueOff;
+
+          AllianceDealBreakdown;
+     end;
+
+//If the player tries to steal an artifact from The Alliance, hell breaks loose.
+Export Function ArtifactLoaded_AlliFunc(cargo_bay,artifact);
+     begin
+          if alliance_deal_status = 2 and GetSide(cargo_bay) = you then
+               begin
+                    AllianceDealBreakdown;
+               end;
+     end;
+
+//If the player steals resources from the Alliance they're not gonna be happy about that either.
+Export Function OnCommand_Steal(com);
+     var b, temp_list, t;
+     begin
+          if com = 60 and alliance_deal_status = 2 then  //Pick up material from depot
+               begin
+                    for b in FilterAllUnits([[f_side,you],[f_or,[f_class,class_engineer],[f_class,class_apeman_engineer]]]) do
+                         if not b in going_to_steal_engineers then
+                              if HasTask(b) then
+                                   //Pick material from depot in task list format is ['<',depot_x,depot_y,depot,material_type,0,0]
+                                   begin
+                                        for t in GetTaskList(b) do
+                                             begin
+                                                  if t[1] = '<' and t[4] = ai_depot[2] then
+                                                       begin
+                                                            going_to_steal_engineers = going_to_steal_engineers ^ b;
+                                                            break;
+                                                       end;
+                                             end;
+                                   end;
+               end;
+     end;
+//Check if the registered engineers actually have stolen from a depot. If the engineer is carrying anything near a depot then
+//we presume it is the case.
+//This will wrongly deduce that an engineer has stolen from a depot if an engineer not carrying anything is given a command
+//to pick up a crate, then added a command to go closely past a depot and then added a command to pick material up from a
+//depot. Very odd and rare case...
+Every 0$1+0$0.1 trigger alliance_deal_status = 2 do
+     var un, temp_list, t;
+     begin
+          repeat
+          wait(0$0.5);
+
+          if alliance_deal_status <> 2 then
+               exit;
+
+          if going_to_steal_engineers > 0 then
+               begin
+                    for un in going_to_steal_engineers do
+                         if Carry(un) then
+                              begin
+                                   if IsOk(ai_depot[2]) and GetDistUnits(ai_depot[2],un) <= 4 then
+                                        begin
+                                             AllianceDealBreakdown;
+                                             exit;
+                                        end;
+                              end;
+
+                    going_to_steal_engineers = UnitFilter(going_to_steal_engineers,[f_hastask]);
+
+                    temp_list = [];
+                    for un in going_to_steal_engineers do
+                         begin
+                              for t in GetTaskList(un) do
+                                   if t[1] = '<' then
+                                        begin
+                                             temp_list = temp_list ^ un;
+                                             break;
+                                        end;
+                         end;
+                    going_to_steal_engineers = temp_list;
+               end;
+
+          until false;
+     end;
+
+//After a short while the plan for defeating Powell is ready.
+Every 0$1+0$0.6 trigger alliance_deal_status = 2 do
+     var i, val, temp_list;
+     var solar_power_dialogue_played, solar_power_dialogue_cooldown, solar_power_dialogue_active;
+     begin
+          solar_power_dialogue_played = false;
+          solar_power_dialogue_cooldown = 0$4;
+          solar_power_dialogue_active = false;
+
+          val = 10$0 - tick;
+          if val < 0$10 then
+               val = 0$10;
+
+          repeat
+          wait(0$1);
+          val = val - 0$1;
+
+          if alliance_deal_status <> 2 or IsDead(Joan) then
+               exit;
+
+          //In the freak case the player defeats the Americans - just skip to
+          //the next phase of Alliance's plan.
+          if not 4 in ai_bases then
+               begin
+                    DialogueOn;
+
+                    if 1 in ai_bases then  //The Russians are still around
+                         begin
+                              ForceSay(Heike,'D19-H-1');
+
+                              if IsOk(Joan) then
+                                   begin
+                                        SayRadio(Joan,'D19-Jo-1');
+                                        ForceSay(Joan,'D19-Jo-2');
+                                   end;
+                         end
+                    else
+                         if 3 in ai_bases then
+                              ForceSay(Heike,'D28-H-1');
+
+                    DialogueOff;
+
+                    alli_destroy_am_objective_status = 3;
+                    exit;
+               end;
+
+          until val <= 0$0;
+
+
+          DialogueOn;
+
+          if IsOk(Gossudarov) then
+               Say(Gossudarov,'D16-Go-1a')
+          else
+               ForceSay(Joan,'D16-Jo-1b');
+
+          RevealFogArea(you,am_base);
+          CenterOnXY(122,184);
+
+          ForceSay(Joan,'D16-Jo-2');
+          ForceSay(Joan,'D16-Jo-3');
+
+          if IsOk(Gossudarov) then
+               Say(Gossudarov,'D16-Go-2a')
+          else
+               ForceSay(Joan,'D16-Jo-4b');
+
+          ForceSay(Joan,'D16-Jo-5');
+          ForceSay(Joan,'D16-Jo-6');
+          ForceSay(Heike,'D16-H-1');
+
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('MGatherSib');
+
+          alli_sib_needed = 300;
+
+          //Americans feel the danger and build some solar power plants.
+          if difficulty = 3 then
+               begin
+                    temp_list = ai_buildings_locations[4] ^ [[112,190,Rand(0,5),b_solar_power,0,0,0],[152,191,Rand(0,5),b_solar_power,0,0,0]];
+                    ai_buildings_locations = Replace(ai_buildings_locations,4,temp_list);
+                    SortBuildingLocationsListInCorrectOrder(4);
+
+                    solar_power_dialogue_active = true;
+               end;
+
+          repeat
+          wait(0$1);
+          until alli_sib_needed = 0;
+
+          if alliance_deal_status <> 2 then
+               exit;
+
+          ChangeMissionObjectives('MOutGatherSib');
+          ChangeMissionObjectives('MDestroyAmericans');
+          alli_destroy_am_objective_status = 1;
+
+          //When the player comes in contact with the American base, destroy all siberite power plants
+          //and siberite engine vehicles. We keep doing this until the player succeeds.
+          repeat
+          wait(0$1);
+
+          if alliance_deal_status <> 2 then
+               exit;
+
+          if not 4 in ai_bases then
+               break;
+
+          if ContactTime([you,americans]) > 0$2 then
+               continue;
+
+          val = false;
+          for i in FilterAllUnits([[f_side,you],[f_or,[f_type,unit_human],[f_type,unit_vehicle]]]) do
+               if GetY(i) >= 149 then
+                    begin
+                         val = true;
+                         break;
+                    end;
+
+          if not val then
+               continue;
+
+          if solar_power_dialogue_active and not solar_power_dialogue_played then
+               if FilterAllUnits([[f_side,americans],[f_btype,b_solar_power],[f_not,[f_constructed]]]) > 0 then
+                    begin
+                         solar_power_dialogue_cooldown = solar_power_dialogue_cooldown - 0$1;
+                         if solar_power_dialogue_cooldown <= 0$0 then
+                              begin
+                                   solar_power_dialogue_played = true;
+
+                                   DialogueOn;
+
+                                   ForceSay(Heike,'D27-H-1');
+                                   SayRadio(Joan,'D27-Jo-1');
+                                   ForceSay(Heike,'D27-H-2');
+
+                                   DialogueOff;
+                              end;
+                    end;
+
+          alli_destroy_am_objective_status = 2;
+
+          //Boooom! Don't kill b_ext_siberium so vehicle production can continue.
+          for i in FilterAllUnits([[f_side,americans],[f_btype,b_siberite_power]]) ^ FilterAllUnits([[f_side,americans],[f_type,unit_vehicle],[f_engine,engine_siberite]]) do
+               KillUnit(i);
+
+          //Wait until there is no battle between the player and the Americans.
+          //while BaseUnderAttack(4,you) and 4 in ai_bases do
+          //     wait(0$2);  -> Stops Alliance from keeping blowing up siberite stuff
+
+          until false;
+
+          DialogueOn;
+
+          if 1 in ai_bases then  //The Russians are still around
+               begin
+                    ForceSay(Heike,'D19-H-1');
+
+                    if IsOk(Joan) then
+                         begin
+                              SayRadio(Joan,'D19-Jo-1');
+                              ForceSay(Joan,'D19-Jo-2');
+                         end;
+               end
+          else
+               if 3 in ai_bases then
+                    ForceSay(Heike,'D28-H-1');
+
+          DialogueOff;
+
+          ChangeMissionObjectives('MOutDestroyAmericans');
+          alli_destroy_am_objective_status = 3;
+     end;
+
+//The plan for destroying the Russians are done.
+Every 0$1+0$0.6 trigger alli_destroy_am_objective_status = 3 do
+     var i, temp_list, val, b, temp_list_2;
+     begin
+          wait(1$0);
+
+          if alliance_deal_status <> 2 or IsDead(Joan) or not 1 in ai_bases then
+               exit;
+
+          DialogueOn;
+
+          ForceSay(Joan,'D20-Jo-1');
+
+          RevealFogArea(you,ru_base);
+          CenterOnXY(39,21);
+
+          dwait(0$0.5);
+          ForceSay(Heike,'D20-H-1');
+          ForceSay(Joan,'D20-Jo-2');
+          ForceSay(Joan,'D20-Jo-3');
+          ForceSay(Heike,'D20-H-2');
+          ForceSay(Joan,'D20-Jo-4');
+          ForceSay(Heike,'D20-H-3');
+          ForceSay(Joan,'D20-Jo-5');
+          ForceSay(Heike,'D20-H-4');
+          ForceSay(Joan,'D20-Jo-6');
+          ForceSay(Joan,'D20-Jo-7');
+          ForceSay(Joan,'D20-Jo-8');
+
+          temp_list = UnitFilter([Oswald,Louis,Suze],[f_ok]);
+          if temp_list > 0 then
+               begin
+                    i = Rand(1,temp_list+0);
+                    i = temp_list[i];
+                    case i of
+                         Oswald: Say(i,'D20-Os-1');
+                         Louis: Say(i,'D20-Lo-1');
+                         Suze: Say(i,'D20-Su-1');
+                    end;
+               end
+          else
+               ForceSay(Heike,'D20-H-5');
+
+          ForceSay(Joan,'D20-Jo-9');
+
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('MDelGatherSib');
+          ChangeMissionObjectives('MGatherSib');
+          alli_sib_needed = 500;
+
+          //Russians feel the danger and build some extra defences.
+          if difficulty >= 2 then
+               begin
+                    temp_list = [[31,5,2,b_breastwork,0,0,0],[10,14,5,b_breastwork,0,0,0],[12,19,3,b_breastwork,0,0,0]];
+                    rus_extra_def_locs = [[31,5],[10,14],[12,19]];
+                    if difficulty = 3 then
+                         begin
+                              temp_list = temp_list ^ [[4,3,3,b_bunker,0,0,ru_heavy_gun],[19,13,2,b_bunker,0,0,ru_heavy_gun]];
+                              rus_extra_def_locs = rus_extra_def_locs ^ [[4,3],[19,13]];
+                         end;
+
+                    //Spawn bazookers for these breastworks
+                    temp_list_2 = CreateUnitsWithClass(temp_list+0,class_bazooker,1);
+                    for i in temp_list_2 do
+                         PlaceUnitXYR(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2],7,false);
+
+                    temp_list_2 = ai_soldiers[1] ^ temp_list_2;
+                    ai_soldiers = Replace(ai_soldiers,1,temp_list_2);
+
+                    ai_buildings_locations = Replace(ai_buildings_locations,1,ai_buildings_locations[1] ^ temp_list);
+                    SortBuildingLocationsListInCorrectOrder(1);
+               end;
+
+          wait(0$10);
+          temp_list = UnitFilter([Oswald,Kowalski,Suze],[f_ok]);
+          if temp_list > 0 then
+               begin
+                    DialogueOn;
+
+                    i = Rand(1,temp_list+0);
+                    i = temp_list[i];
+                    case i of
+                         Oswald: Say(i,'D20-Os-2');
+                         Kowalski: Say(i,'D20-Ko-1');
+                         Suze: Say(i,'D20-Su-2');
+                    end;
+
+                    ForceSay(Heike,'D20-H-6');
+
+                    DialogueOff;
+               end;
+
+          val = tick + Rand(1$30,2$0);
+          b = false;
+          repeat
+          wait(0$1);
+
+          //Dialogue about the artifacts
+          if tick >= val and not b and alliance_deal_status = 2 then
+               begin
+                    b = true;
+
+                    if IsOk(Olaf) then
+                         i = Olaf
+                    else
+                         if IsOk(Martin) then
+                              i = Martin
+                         else
+                              i = 0;
+
+                    if i > 0 and IsLive(Joan) then
+                         begin
+                              DialogueOn;
+
+                              if i = Olaf then Say(i,'D18-Ola-1')
+                              else Say(i,'D18-Mart-1');
+
+                              if IsLive(Roth) then
+                                   begin
+                                        ForceSay(Joan,'D18-Jo-1');
+                                        ForceSay(Roth,'D18-Ro-1');
+                                   end;
+
+                              ForceSay(Joan,'D18-Jo-2');
+
+                              if i = Olaf then Say(i,'D18-Ola-2')
+                              else Say(i,'D18-Mart-2');
+
+                              ForceSay(Joan,'D18-Jo-3');
+
+                              if i = Olaf then Say(i,'D18-Ola-3')
+                              else Say(i,'D18-Mart-3');
+
+                              ForceSay(Joan,'D18-Jo-4');
+
+                              if i = Olaf then Say(i,'D18-Ola-4')
+                              else Say(i,'D18-Mart-4');
+
+                              DialogueOff;
+                         end;
+               end;
+
+          until alli_sib_needed = 0;
+
+          if alliance_deal_status <> 2 then
+               exit;
+
+          ChangeMissionObjectives('MOutGatherSib');
+          ChangeMissionObjectives('MDestroyRussians');
+          alli_destroy_ru_objective_status = 1;
+
+          Query('QInfoTeleport');
+          SetAreaMapShow(alli_teleport_area,1);
+
+          repeat
+          wait(0$1);
+
+          if alliance_deal_status <> 2 then
+               exit;
+
+          until not 1 in ai_bases;
+
+          if 3 in ai_bases then
+               begin
+                    DialogueOn;
+
+                    ForceSay(Heike,'D28-H-1');
+
+                    DialogueOff;
+               end;
+
+          ChangeMissionObjectives('MOutDestroyRussians');
+          alli_destroy_ru_objective_status = 3;
+     end;
+//Add, remove and control the button in the player's depot. Clicking it will teleport the units in the target area.
+Every 0$1 trigger alli_destroy_ru_objective_status = 1 do
+     var temp_list;
+     var dep;
+     begin
+          repeat
+          wait(0$1);
+
+          temp_list = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]],[f_ok]]);
+          if temp_list = 0 then
+               continue;
+
+          dep = temp_list[1];
+          SetArtifactUse(you,art_use_teleport,art_instant,dep);
+
+          repeat
+          wait(0$0.5);
+          until alli_destroy_ru_objective_status = 2 or alliance_deal_status <> 2 or IsDead(dep);
+
+          until alli_destroy_ru_objective_status = 2 or alliance_deal_status <> 2;
+
+          SetArtifactUse(you,art_use_teleport,art_no,dep);
+     end;
+Export Function ArtifactUsed_AlliFunc(side,art_icon);
+     var i, un, b;
+     begin
+          case art_icon of
+               art_use_teleport: begin  //Teleport units
+                    if alliance_deal_status = 2 and alli_destroy_ru_objective_status = 1 then
+                         begin
+                              //Alliance teleports player units into Russian base.
+                              if Query('QTeleportConfirm') = 2 then
+                                   exit;
+
+                              alli_destroy_ru_objective_status = 2;
+                              SetAreaMapShow(alli_teleport_area,0);
+
+                              for i in FilterAllUnits([[f_side,you],[f_inarea,alli_teleport_area],[f_type,unit_vehicle]]) ^
+                                FilterAllUnits([[f_side,you],[f_inarea,alli_teleport_area],[f_type,unit_human],[f_not,[f_driving]],[f_not,[f_inside]]]) do
+                                   begin
+                                        TeleportUnit(i,14,4,20,true);
+                                   end;
+
+                              //Destroy siberite related stuff. Only once this time and not b_ext_siberium (to let Russians keep producing vehicles while under attack).
+                              for i in FilterAllUnits([[f_side,russians],[f_or,[f_btype,b_siberite_power],[f_bweapon,ru_time_lapser]]]) ^ FilterAllUnits([[f_side,russians],[f_type,unit_vehicle],[f_or,[f_engine,engine_siberite],[f_weapon,ru_time_lapser]]]) do
+                                   KillUnit(i);
+
+                              rus_enforce_vehicle_prod = true;
+
+                              //Russians fire a space shifting rocket just as the units land.
+                              if difficulty = 3 then
+                                   begin
+                                        wait(0$1.5);  //NOTE - WAIT FOR TELEPORT. Should not be a problem delaying event ArtifactUsed since the player can't control the artifacts and work together with the Alliance at the same time
+
+                                        for i in rus_extra_def_locs do
+                                             begin
+                                                  b = HexInfo(i[1],i[2]);
+                                                  if b > 0 then
+                                                       if GetType(b) = unit_building then
+                                                            if GetBType(b) = b_breastwork and IsOk(b) then
+                                                                 begin
+                                                                      un = UnitsInside(b);
+                                                                      if un > 0 then
+                                                                           if GetClass(un) = class_bazooker then
+                                                                                ComSpaceShift(un[1],Rand(13,14),Rand(3,4));
+                                                                 end;
+                                             end;
+                                   end;
+                         end;
+
+                    //Remember, there is a small delay in removing the icon if the player messes up the alliance with Alliance.
+               end;
+          end;
+     end;
+
+//If the player is working together with the Alliance, the Americans and the Arabians join forces after some time.
+Every 0$1+0$0.5 trigger alliance_deal_status = 2 do
+     var i;
+     begin
+          //Wait until the next American attack has been repelled
+          repeat
+          wait(0$1);
+          until ai_vehicles_attack[4] > 0;
+
+          repeat
+          wait(0$1);
+          until UnitFilter(ai_vehicles_attack[4],[f_ok]) = 0;
+
+          american_arabian_alliance = true;
+          SetAttitude(americans,arabians,att_friend,true);
+
+          //When Alliance has been destroyed the friendship is lost
+          repeat
+          wait(0$1);
+          until not 2 in ai_bases or not 4 in ai_bases or not 3 in ai_bases;
+
+          american_arabian_alliance = false;
+          SetAttitude(americans,arabians,att_enemy,true);
+
+          //Arabian vehicles now attack on their own
+          if am_ar_attack_alli_together and 3 in ai_bases and 4 in ai_bases then
+               begin
+                    for i in ai_vehicles_attack[3] do
+                         ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,i,3);
+
+                    ai_attack_strategy = Replace(ai_attack_strategy,3,1);
+               end;
+     end;
+//The first time the player sees the Arabians attack Alliance together with the Americans.
+Every 0$1+0$0.5 trigger american_arabian_alliance do
+     var temp_list, i;
+     begin
+          repeat
+          wait(0$2);
+
+          if alliance_deal_status <> 2 then
+               exit;
+
+          temp_list = [];
+          for i in FilterAllUnits([[f_side,arabians],[f_type,unit_vehicle],[f_see,you]]) do
+               if GetX(i) <= 126 and GetY(i) >= 136 then
+                    temp_list = temp_list ^ i;
+
+          until temp_list > 0;
+
+          CenterOnUnits(temp_list);
+          DialogueOn;
+          ForceSay(Heike,'D15-H-1');
+          DialogueOff;
+     end;

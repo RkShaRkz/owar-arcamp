@@ -1,0 +1,168 @@
+@ Nìco je špatnì - Something Went Wrong
+% Heike je spolu s dalšími oldáky najatá Arabskou vládou, aby zabránila amerièanùm pøipravit v minulosti loiska siberia. Pøepadnou americkou základnu na Sibiøi, aby se zmocnili stroje èasu.
+
+// Dialog B - Po dobytí základny na Sibiøi
+$ DBAb1
+- Neztrácejte èas. Úkol musíte splnit za kadou cenu.
+$ DBVel1
+- Budu èíst jména, postupnì vstupujte do stroje. Hans Gluckman...
+$ DBHs1
+- Tak já jdu. Ne e mì tam necháte èekat milion let.
+$ DBVel2
+- Robert Farmer...
+$ DBRb2
+- Kurva, potím se jako prase.
+$ DBVel3
+- Leif Swansson...
+$ DBLf3
+- Tady...
+$ DBVel4
+- Heike Steiner...
+
+// Dialog 1 - Pøistání
+$ D1H1
+- Sakra, nìco je špatnì... jakto e jsem tu sama? 
+$ D1H1a
+- Oh, koukám, e úplnì sama ne... ale ten není od nás... a podle uniformy ani amerièan... No, tady to bude pìknì horkı!
+
+# M1
+Hlavní úkol:
+- Pøeij. Pokus se zjistit, co se dìje.
+#
+
+// Dialog 2 - Heike uvidí poprvé základnu
+$ D2H1
+- Zatracenì, rychle zpátky... Co se tady do háje dìje? e já se vdycky nechám natlaèit do takovıho prùseru...
+
+// Dialog 3 - Heike potká Amerièana
+$ D3H1
+- Odhoï zbraò! Dìlej, pracky nahoru a odhoï zbraò!
+$ D3A1
+- Ruce vzhùru! Poèkej, nestøílej... ty asi nejsi Ruska, ne?
+$ D3H2
+- Proè Ruska? Co se tu zatracenì dìje... jo tak, u je mi to jasnı, ten mrtvej támhle...
+$ D3A2
+- Jo, byl to Rusák, zabil jsem ho. Ale jdou po mì další. A kdo jsi sakra ty?
+
+// Query 1 - Co udìlat s Amerièanem
+? Q1
+Úkolem vıpravy je pobít americkou vıpravu. Jene o Rusech v zadání nebylo ani slovo. Navíc je tu Heike neèekanì sama. Co udìlat?
+- Zabít amerièana
+- Nechat ho bıt
+- Pomoci mu
+?
+
+// Dialog 3a - Zabít amerièana
+$ D3aH1
+- Já? Já jsem enská, která tì oddìlá...
+$ D3aR1
+- Támhle, odtud to bylo. Rychle, a nám neuteèe!
+
+// Dialog 3b - Nechat ho bıt
+$ D3bH1
+- Víš co? Do toho ti nic není.
+$ D3bR1
+- Musí bıt nìkde tady... a my ho najdeme! Zastøelil Michajlova. Vidíte, támhle!
+
+// Dialog 3c - Pomoci mu
+$ D3cH1
+- Pssst, teï je to jedno. Myslím, e teï máme jinı problém. Nìco jsem támhle zaslechla.
+$ D3cR1
+- Musí bıt nìkde tady... a my ho najdeme! Zastøelil Michajlova. Vidíte, támhle!
+
+// Dialog 4 - Heike a Amerièan pobili Rusy
+$ D4A1
+- Dìkuju, jsi fakt dobrá. Neøekneš mi teï, kdo vlastnì jsi?
+
+// Query 2 - Co udìlat s Amerièanem
+? Q2
+Co teï?
+- Zabít ho
+- Nechat ho bıt
+?
+
+// Dialog 4a - Zabít Amerièana
+$ D4aH1
+- Radši ne, promiò...
+
+// Dialog 4b - Nechat ho bıt
+$ D4bH1
+- Myslím, e by tì nepotìšilo, kdybys to vìdìl... víš co, radši bì...
+$ D4bA1
+- Ok. Zachránila jsi mi ivot, nech si své tajemství. No nic, snad se ještì nìkdy uvidíme.
+$ D4bH2
+- Obávám se, e ano.
+
+// Dialog 5 - Heike potká Olafa
+$ D5O1
+- Ssss, Heike...
+$ D5H1
+- Oh, poèkej, tebe si pamatuju, ty seš ten hezkej seveøan z druhı skupiny! Co se dìje, kde je chyba?
+$ D5O2
+- Jsem Olaf. Olaf Larsson. Sám toho moc nevím. Pøistáváme dost rozházenì... v èase i v prostoru. Já u jsem tu skoro mìsíc.
+$ D5H2
+- Vdy jsi šel do stroje a po mì...
+$ D5O3
+- To je úplnì jedno, nìkteøí jsou tady u aspoò pùl roku. Amerièani mají snad jakısi základny na severu. Naši se prı shromaïují dost daleko na vıchodì, mimo území, kde se bojuje. My jsme teï jsme na území Rusù. Kde se tu ti Rusové vzali, netuším.
+$ D5H3
+- Co tady dìláš ty?
+$ D5O4
+- Èekám na takové jako ty. Posílám vás skrz bojovou linii k našim, ale asi jen málokdo projde. Podívej, tady jsou dvì ruské základny (odkryje se fog, kamera šmejdí).
+$ D5O4a
+- Jediná monost je projít tudy mezi nimi - ale nebude to jednoduché.
+$ D5H4
+- Take na severu jsou amíci. A co jih?
+$ D5O5
+- Cestu hlídají dost dobøe. (kamera ukáe prùsmyk). Lesem se dá projít, ale dál na jih je øeka a bainy. Obejít to by trvalo moc dlouho.
+$ D5H5
+- OK. Zkusím to skrz frontu. Díky.
+$ D5O6
+- Rozhodnì se vyhıbej jakémukoliv boji. Je jich tady moc. Mùu jít kus s tebou...
+
+# M2
+Hlavní úkol:
+- Dostaò Heike k vıchodnímu okraji mapy.
+Vedlejší úkol:
+- Nenech zabít Olafa.
+#
+
+// Dialog 6 - Heike vidí vyjeïené koleje
+$ D6H1
+- Coe? Tohle vypadá jako vyjedìné koleje... Kde se to tu vzalo...
+$ D6O1
+- Hmmm... ještì jsi nepochopila, e tady se vede fakt tvrdá válka. Amíci i Rusové tady mají továrny a staví bojovou techniku.
+$ D6H2
+- ... a co takhle se k takovımu stroji dostat? Pak by se to snad dalo objet celkem rychle z jihu, ne?
+$ D6O2
+- Sakra, enská, ty se cítíš. No, ruskej tank asi nedostanem, ale obèas tudy projídí americkı prùzkumníci, to by moná šlo.
+
+# M3
+Hlavní úkol:
+- Dostaò Heike k vıchodnímu okraji mapy.
+Volitelnı hlavní úkol:
+- Zajmi vozidlo a dostaò Heike ve vozidle k jinímu okraji mapy.
+Vedlejší úkol:
+- Nenech zabít Olafa.
+#
+
+// Dialog 7 - rozstøíleli vozidlo
+$ D7O1
+- Myslím, e bych to dokázal trochu opravit...
+
+// Dialog 8 - kdy Heike zkouší projít nìkudy špatnì
+$ D8O1
+- Sakra, enská, kam to lezeš. Chceš zhebnout?
+
+// Dialog 9 - kdy Olaf zkouší projít nìkudy špatnì
+$ D9O1
+- Hele, kam mì to posíláš. Mì ještì ivot neomrzel...
+
+// Dialog 10 - kdy Olaf zemøe
+$ D10H1
+- Sakra. Za tohle nìkdo zaplatí.
+
+// Dialog 11 - po skonèení mise
+$ D11O1
+- Tak a tì nedostanou, Heike.
+$ D11H1
+- O mì se neboj, ale ty na sebe dej pozor. U dost dlouho tu sedíš uprostøed vosího hnízda.

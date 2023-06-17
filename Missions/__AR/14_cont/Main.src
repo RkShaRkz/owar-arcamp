@@ -1,0 +1,1517 @@
+
+Export testing,help_variant,all_variant;
+
+Export you, russians, nature, alliance, arabians, americans, russians_alt, mines_side;
+
+Export Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Khattam, Aviradze, Evelyn, Swansson, Dwayne, Makise, Gonzo, Omar, Snake, Gordon, Alliance_sol;
+
+Export ai_bases;
+Export ai_soldiers, ai_attacking_soldiers, ai_engineers, ai_mechanics_defend, ai_mechanics_attack, ai_scientists, ai_attacking_scientists;
+Export ai_apemen_engineers, ai_excepted_soldiers, ai_depot, ai_labs, ai_facts, ai_armouries, ai_bunkers, ai_turrets, ai_oil_mine, ai_siberite_mines;
+Export ai_fact_extensions, ai_power_plants, ai_control_tower, ai_teleporter, ai_buildings_locations, ai_captured_buildings, ai_sib_bomb_fact;
+Export ai_sib_bomb_fact_location, ai_sib_bomb_mechanics, ai_spawn_people;
+Export ai_vehicles_defend, ai_vehicles_attack, ai_retreating_vehicles_defend, ai_vehicles_being_repaired, ai_refuel_vehicles_list;
+Export ai_vehicle_pullback_hexes, ai_human_pullback_hex, ai_building_under_construction, ai_heal_these_humans, ai_all_buildings;
+Export ai_building_constructor, ai_vehicle_being_moved, ai_vehicles_having_been_moved, ai_upcoming_building_data, ai_cannot_rebuild_these_buildings;
+Export ai_near_base_dist, ai_vehicle_attack_delay, ai_human_attack_delay, ai_cargo_bay, ai_cargo_bay_under_construction;
+Export ai_cargo_bay_destroy_tick, ai_crane, ai_crane_under_construction, ai_crane_destroy_tick, ai_crane_is_being_repaired;
+Export ai_crane_driver, ai_attacking_unit_hex_index, ai_retreating_attacking_humans, ai_control_tower_vehicles;
+Export ai_teleporter_exit_placed, ai_excepted_buildings, ai_fact_extension_replace_locations, ai_dismantle_these_buildings;
+Export ai_taufield_vehicles, ai_implosion_vehicles, ai_attack_strategy, ai_behemoths, ai_behemoth_parking_hexes, ai_behemoth_construction_hex;
+Export ai_new_attack_commencing, ai_sib_bomb_vehicles, ai_facts_with_ext_rebuild_map;
+Export ai_time_shift_data, ai_time_shift_hexes, ai_time_shift_hexes_underway;
+Export ai_contact_time, ai_attack_ground_info_initial, ai_attack_ground_info_sustain, ai_sib_bomb_used_time_matrix, ai_sib_bomb_contamination_duration;
+Export ai_defence_replace_mines_centerhexes, ai_defence_mines_hexes, ai_defence_max_num_replace_mines, ai_mine_guys, ai_defence_replace_mines_hexes;
+
+Export Teleport_status,Teleportation_test,Teleporter_captured,Teleport_SaveVariable;
+Export teleport_attack_list,teleport_attack_people,producing_the_attack,att_count,att_count2,att_detected_units,att_backstab;
+Export Teleport_bottomleft,Teleport_bottomright,Teleport_centre,Teleport_right;
+
+Export CratesPrepared,OilPrepared,SiberitePrepared,EscortPrepared,EscortPrepared_vehicles,CargosPrepared,Crates_min,Crates_max,Oil_min,Oil_max,Sib_min,Sib_max,escortmin;
+Export CrateTransportReady,OilTransportReady,SibTransportReady,EscortReady;
+Export Enable_Transport,Query1_time,Query2_time,Query3_time;
+Export ConvoyCargos,ConvoyRussians,ConvoyAlliance,ConvoyAll,deserting,all_waypoints,all_attitude_counter,con_way_heavy,con_way_vehs,con_way_cargos,con_waypoint_counter,ConvoyTimer,Convoy_CargosPlaced;
+
+Export destruction_status, base_list;
+
+Export ai_VehiclesLeft,ai_buildingsleft;
+Export ai_people_running,ai_people_running_path,temp_people_running,entering_teleport_unit;
+Export base9_people,base9_buildings,base10_people,base10_buildings;
+Export starting_people_count,base_spawn_delay;
+Export player_forces,intro_centering,minesready;
+Export PlayerConvoySent, HeikeSent, EscortPeople, RescuePeople, FinalCountdown, TransportAllReadyToGo, MineTheTeleport;
+
+Export MainBuildings,MinorBuildings,RussianPeople;
+
+Export PrepareComputerSides, MissionEnd, PlayerMinimumPeople;
+
+Starting
+begin
+     RandomizeAll;
+     ResetFog;
+
+     testing = false;  //Testing mission or real campaign?
+
+     help_variant=1;       //works in testing only: whose help will the player get, Gensher's (1) or Gordon's(2)
+     all_variant=1;        //works in testing only: were the Russians in mission 10 spared?
+
+     ai_VehiclesLeft=[5,7,0,0,0,0,0,0,0,0];  //limiting amount of vehicles produced in base 2
+     ai_buildingsleft=[3,4,2,1,0,0,0,0,0,0];
+     ai_people_running=[];
+     ai_people_running_path=[];  //[ [startingbasearea,[pathhexes],pathend], ... ]
+
+     entering_teleport_unit=[];
+
+     base9_buildings=[HexInfo(238,164),HexInfo(238,173),HexInfo(243,172),HexInfo(237,183),HexInfo(243,185),HexInfo(228,159)];
+     base10_buildings=[HexInfo(85,145),HexInfo(80,153),HexInfo(88,150),HexInfo(85,165),HexInfo(90,162)];
+
+     starting_people_count=[];
+     base_spawn_delay=1;
+
+     ai_bases = [1,2,3,4,5,6,7,8{,9,10}];  //1 = base in centre, 2 = base on the right side, 3 = base by the river, 4 = the research facility, 5 = the other southern base, 6 = top right corner, 7 = left side of the map, 8 = below base 2, 9 = bottom rigt corner, 10 = bottom left corner
+     ai_soldiers = [[],[],[],[],[],[],[],[],[],[]];  //Soldiers for computer sides
+//     ai_attacking_soldiers = [[],[],[]];  //Soldiers who are attacking
+     ai_excepted_soldiers = [[],[],[],[],[],[],[],[],[],[]];  //Soldiers who should not be controlled by the ordinary soldier control mechanism.
+     ai_engineers = [[],[],[],[],[],[],[],[],[],[]]; //Engineers for computer sides
+     ai_mechanics_defend = [[],[],[],[],[],[],[],[],[],[]];  //Mechanics for computer sides (in the base)
+//     ai_mechanics_attack = [[],[],[],[]];  //Mechanics for computer sides (attacking in vehicles)
+     ai_scientists = [[],[],[],[],[],[],[],[],[],[]];  //Scientists for computer sides
+//     ai_attacking_scientists = [[],[],[],[]];  //Scientists who are attacking
+     ai_apemen_engineers = [[],[],[],[],[],[],[],[],[],[]];  //Apemen engineers for computer sides
+     ai_depot = [0,0,0,0,0,0,0,0,0,0];  //The depot of each computer side
+     ai_labs = [[],[],[],[],[],[],[],[],[],[]];  //The lab of each computer side
+     ai_facts = [[],[],[],[],[],[],[],[],[],[]];  //The factory of each computer side
+     ai_armouries = [[],[],[],[],[],[],[],[],[],[]];  //The armouries of each computer side
+     ai_bunkers = [[],[],[],[],[],[],[],[],[],[]];  //The bunkers of each computer side
+     ai_turrets = [[],[],[],[],[],[],[],[],[],[]];  //The turrets of each computer side
+     ai_oil_mine = [0,0,0,0,0,0,0,0,0,0];  //The oil mine of each computer side
+     ai_siberite_mines = [[],[],[],[],[],[],[],[],[],[]];  //The siberite mines of each computer side/base
+     ai_fact_extensions = [[],[],[],[],[],[],[],[],[],[]];  //The factory extensions of each computer side
+     ai_power_plants = [[],[],[],[],[],[],[],[],[],[]];  //The power plants of each computer side
+//     ai_control_tower = [0,0,0,0];  //Control tower (American) of each side
+     ai_teleporter = [0,0,0,0,0,0,0,0,0,0];  //Teleporter (Russian) of each base
+     ai_buildings_locations = [[],[],[],[],[],[],[],[],[],[]];  //The locations of all buildings for each side. Data looking like [x,y,dir,btype,labkind1,labkind2,bweapon] (CF. function "ScanBuildings")
+     ai_captured_buildings = [[],[],[],[],[],[],[],[],[],[]];  //Identifiers of the buildings each base has lost because someone captured them. Will be recaptured if possible.
+     ai_vehicles_defend = [[],[],[],[],[],[],[],[],[],[]];  //Vehicles of each computer side (in the base)
+//     ai_vehicles_attack = [[],[],[],[]];  //Vehicles of each computer side (attacking the enemy)
+     ai_retreating_vehicles_defend = [[],[],[],[],[],[],[],[],[],[]];  //The defending vehicles which need to retreat during an attack on the base.
+     ai_vehicles_being_repaired = [[],[],[],[],[],[],[],[],[],[]];  //The vehicles which are going to be or are being repaired.
+     ai_refuel_vehicles_list = [[],[],[],[],[],[],[],[],[],[]];  //(defending) vehicles needing to be refueled
+     ai_vehicle_pullback_hexes = [ [[98,56]],
+     [[189,99],[194,93],[184,92],[182,86],[173,80],[189,78],[183,72],[174,101]],
+     [[82,120]],
+     [[179,164],[187,166]],
+     [[142,170]],
+     [[138,13]],
+     [],[],[],[] ];
+                                     //Hexes where vehicles can be parked
+     ai_human_pullback_hex = [[92,70],[173,96],[105,130],[177,170],[131,175],[147,17],[39,67],[206,129],[233,166],[78,144],[234,167],[80,146]];  //Hex where humans can safely retreat to (center of the base)
+//     ai_spawn_people = [[],[],[],[]];  //Human units which needs to be spawned (see every in module "AI" just below event "UnitDestroyed"). This list solely contains non-placed units.
+     ai_building_under_construction = [0,0,0,0,0,0,0,0,0,0];  //Identifier of building under construction (only 1 building at a time)
+     ai_heal_these_humans = [[],[],[],[],[],[],[],[],[],[]];  //Humans needing to be healed
+     ai_all_buildings = [[],[],[],[],[],[],[],[],[],[]];  //Identifiers of all buildings for each computer side
+     ai_building_constructor = [0,0,0,0,0,0,0,0,0,0];  //Identifier of the engineer who are going to build a building
+     ai_vehicle_being_moved = [0,0,0,0,0,0,0,0,0,0];  //Identifier of vehicle which is being moved away from building site
+     ai_vehicles_having_been_moved = [[],[],[],[],[],[],[],[],[],[]];  //Identifiers of the vehicles which have been moved away from building site. Don't move them again until construction has started
+     ai_upcoming_building_data = [[],[],[],[],[],[],[],[],[],[]];  //Holds the data (building_location syntax) of the building which is going to be build. Isn't reset until the building is completely done.
+     ai_cannot_rebuild_these_buildings = [[],[],[],[],[],[],[],[],[],[]];  //Holds the buildings the AI cannot rebuild, typically because the constructor is a crane and a crane can't move blocking vehicles or reach all places like a human. Same format as "ai_buildings_locations".
+     ai_near_base_dist = 18;  //Distance within base where the computer scans for enemies to determine if the base is under attack (so this distance also decides how far away from the base retreating attackers will be pursued).
+//     ai_vehicle_attack_delay = [0$0,0$0,0$0,0$0];  //The minimum time between attacking (with vehicles) (cf. function "ResetVehicleAttackDelay").
+//     ai_human_attack_delay = [0$0,0$0,0$0,0$0];  //The minimum time between attacking (with humans) (cf. function "ResetHumanAttackDelay").
+     ai_attack_strategy = [0,0,0,0,0,0,0,0,0,0];  //The attack strategy for each base.
+     ai_cargo_bay = [0,0,0,0,0,0,0,0,0,0];  //holds the identifier of the (automatic) cargo bay
+     ai_cargo_bay_under_construction = [false,false,false,false,false,false,false,false,false,false];  //True if the base is currently constructing a cargo bay
+     ai_cargo_bay_destroy_tick = [tick,tick,tick,tick,tick,tick,tick,tick,tick,tick];  //To make it worth destroying the cargo bay there is a cooldown on its reconstruction. This variable holds the tick when the cargo bay was destroyed for each base.
+     ai_crane = [0,0,0,0,0,0,0,0,0,0];  //Identifier of the crane of each computer
+     ai_crane_under_construction = [false,false,false,false,false,false,false,false,false,false];  //True if the base is currently constructing a crane
+     ai_crane_destroy_tick = [tick,tick,tick,tick,tick,tick,tick,tick,tick,tick];  //To make it worth destroying the crane there is a cooldown on its reconstruction. This variable holds the tick when the crane was destroyed for each base.
+     ai_crane_is_being_repaired = [false,false,false,false,false,false,false,false,false,false];  //True if the crane is under repairation (or needs repairation).
+     ai_crane_driver = [0,0,0,0,0,0,0,0,0,0];  //Identifier of the mechanic driving the crane (if the crane is manual).
+     ai_attacking_unit_hex_index = [];  //What hex an attacking unit is going for now (index is unit id, value is hex number). Must be reset/prepared when new attacking units are added.
+//     ai_retreating_attacking_humans = [[],[],[],[]];  //Holds the attacking humans who are retreating.
+//     ai_control_tower_vehicles = [[],[],[],[]];  //The control tower vehicles of each base (Arabian remote control).
+     ai_teleporter_exit_placed = [false,false,false,false,false,false,false,false,false,false];  //Tells if the base's teleport's exit has been placed. There is no function to check if a teleporter's exit has been placed, hence this variable.
+     ai_excepted_buildings = [[],[],[],[],[],[],[],[],[],[]];  //Identifier of the buildings the base will not rebuild. Does not work well with capturing buildings (if the player captures one of these buildings and the computer captures it back the building will remain removed from this list) - it's a rare bug though.
+     ai_fact_extension_replace_locations = [[],[],[],[],[],[],[],[],[],[]];  //Coordinates of the factory extensions which may be switched with another extension (dismantled and the other extension build instead). Note that ongoing construction in the factory stops if a required extensions is removed.
+     ai_facts_with_ext_rebuild_map = [];  //Identifiers of factories that is going to have one or more factory extensions rebuilt is index; value is a list of coordinates for the extensions to rebuild. Used to determine when all extensions have been rebuild for a certain factory.
+     ai_dismantle_these_buildings = [[],[],[],[],[],[],[],[],[],[]];  //Identifiers of the buildings which should be dismantled. Does not work well with capturing buildings (if the player captures one of these buildings and the computer captures it back the building will remain removed from this list) - it's a rare bug though.
+     ai_taufield_vehicles = [[],[],[],[],[],[],[],[],[],[]];  //Identifiers of the taufield vehicles (Russian) for each base.
+
+//     ai_new_attack_commencing = [false,false,false,false];  //True when new units have been transfered to the attack variables. The attack procedure should reset. Used only be attack initialize code and attack code.
+     ai_time_shift_data = [[],[],[],[],[],[],[],[],[],[]];  //[time,radius] - duration and radius of a time shifting rocket (for each side (NOT BASE!)).
+     ai_time_shift_hexes = [[],[],[],[],[],[],[],[],[],[]];  //[x,y,time] - hexes where a time shifting rocket has landed (and how long until the effect disappears).
+     ai_time_shift_hexes_underway = [[],[],[],[],[],[],[],[],[],[]];  //[x,y,id,tick] - The bazooker who have been ordered to fire a time shifting rocket at hex [x,y] but haven't done so yet.
+     Initiate_ai_contact_time;
+     ai_attack_ground_info_initial = [];  //[attacking_un,target_un,target_un_side,x,y] - Used to determine if we are under attack by attacking ground, cf. "ai_contact_time".
+     ai_attack_ground_info_sustain = [];  //[attacking_un,target_un,target_un_side,x,y] - Used to determine if we are under attack by attacking ground, cf. "ai_contact_time".
+//     Initiate_ai_sib_bomb_used_time_matrix;
+//     ai_sib_bomb_contamination_duration = 175*35;  //The time (in ticks) the contamination of a siberite rocket lasts.
+//     ai_defence_replace_mines_centerhexes = [[],[],[],[]];  //The central hexes in the vicinity of which the computer will (re-)place defensive mines which will only blow when enemies step on them.
+//     ai_defence_max_num_replace_mines = [-1,-1,-1,-1];  //The number of defensive mines the computer will (re-)place.
+//     ai_mine_guys = [[],[],[],[]];  //Identifiers of the soldiers who replaces the mines outside the computer's base.
+//     ai_defence_mines_hexes = [[],[],[],[]];  //The hexes where the computer's defensive mines are currently placed.
+//     ai_defence_replace_mines_hexes = [[],[],[],[]];  //The hexes where the computer's defence mines are currently placed, but only those mines that can be or have been replaced.
+
+     temp_people_running=[];
+
+
+     Teleport_status=1;               //used to control mission events only  //0 - teleport disabled, 1 - player has yet to take it over before it's too late, 2 - teleport is tested and ready, 3 - cargo bays have been sent through the teleporter
+     Teleport_SaveVariable=-2;         //used to keep track of what medal will be given,     initial status is -2 "You didin't investigate" changed to -3 in dialogue modules when the test failed "You didn't take it in time", or to -1 if the test passed - because the saving is done during sending the convoy and if they go on foot then logically the teleport was destroyed or taken
+     Teleportation_test=0;            //holds if the first attempt has been made
+     teleporter_captured = false;  //True when the player takes over the southern teleporter
+     producing_the_attack=0;
+     teleport_attack_list=[];
+     teleport_attack_people=[];
+     att_count=1;
+     att_count=2;
+     att_detected_units=[];
+
+     Teleport_bottomleft=Hexinfo(74,141);            //minor teleports on the map defined
+     Teleport_bottomright=Hexinfo(228,164);
+     Teleport_centre=Hexinfo(87,63);
+     Teleport_right=Hexinfo(182,96);
+                       
+     CratesPrepared=0;
+     OilPrepared=0;
+     SiberitePrepared=0;
+     EscortPrepared=[];
+     CargosPrepared=[];
+
+     EscortPeople=[];                 //list of people choosen for the convoy escort
+     RescuePeople=[];                 //list of people comming with Heike to next map
+
+
+     // Old:
+            //                Hard           Medium         Easy
+            //res          cr  oil  sib
+            //limits= max 1500 1000 500   1250 850 400   1000 700 350
+            //        min 750  500  250   600  400 200   500  350 150
+
+
+     Crates_min=[500,600,750];
+     Oil_min=[0,0,0];          // disabled
+     Sib_min=[150,200,250];
+
+     Crates_max=[1000,1250,1500];
+     Oil_max=[700,850,1000];
+     Sib_max=[350,400,500];
+
+     escortmin=4;
+     //if help_variant=1 then escortmin=escortmin + 2;
+
+     PlayerMinimumPeople=4;
+     //if help_variant=1 then PlayerMinimumPeople=PlayerMinimumPeople + 2;
+
+     CrateTransportReady=0;
+     OilTransportReady=0;
+     SibTransportReady=0;
+     EscortReady=0;
+
+     Enable_Transport=0;
+     Query1_time=0;
+
+     deserting=[];
+     all_waypoints=[[134,69],[134,83],[126,91],[116,95],[98,93],[79,94],[63,94],[48,94]];
+     con_way_heavy=[ [[68,103],[63,93]],
+                     [[89,97],[84,87]],
+                     [[119,98],[114,88]],
+                     [[140,86],[128,78]],
+                     [[144,66],[132,58]] ];
+
+     con_way_vehs=[ [[69,100],[67,96],[64,104],[58,92],[57,104],[51,92]],
+                    [[90,94],[88,90],[85,98],[79,86],[78,98],[72,86]],
+                    [[120,95],[118,91],[115,99],[109,87],[108,99],[102,87]],
+                    [[136,79],[132,76],[138,89],[126,81],[136,94],[125,86]],
+                    [[140,59],[136,56],[142,69],[130,61],[140,74],[129,66]] ];
+
+     con_way_cargos=[ [[66,100],[64,96],[63,100],[61,96],[60,100],[58,96],[57,100],[55,96]],
+                      [[87,94],[85,90],[84,94],[82,90],[81,94],[79,90],[78,94],[76,90]],
+                      [[117,95],[115,91],[114,95],[112,91],[111,95],[109,91],[108,95],[106,91]],
+                      [[135,82],[132,80],[134,84],[131,82],[134,87],[131,85],[133,89],[130,87]],
+                      [[139,62],[136,60],[138,64],[135,62],[138,67],[135,65],[137,69],[134,67]] ];
+
+     con_waypoint_counter=1;
+
+     FinalCountdown=[15$0,12$0,9$0][difficulty];
+
+     MainBuildings=[];
+     MinorBuildings=[];
+     RussianPeople=[];
+
+     destruction_status=0;                   //secondary objective of destruction: 0 - not destroyed enough, 1 - gets medal
+     
+
+     disable(1);
+     disable(2);
+     disable(3);
+
+     PrepareSides;
+     PrepareNature;
+     PreparePlayer;
+     ScanBuildings;
+
+     Action;
+
+     PrepareComputerSides=1;
+     //PrepareMines;
+     //InitiateTimeShiftData;
+end;
+
+Function Initiate_ai_contact_time;
+     var i;
+     begin
+          //2-dimensional array which tells how long it was since a side was in contact with another side.
+          {
+          [[100000,150,100000,100000,1800,100000,100000,100000],
+           [150,100000,500,100000,100000,100000,100000,100000],
+           [100000,500,100000,100000,100000,100000,100000,100000],
+           [100000,100000,100000,100000,100000,100000,100000,100000],
+           [1800,100000,100000,100000,100000,100000,100000,100000],
+           [100000,100000,100000,100000,100000,100000,100000,100000],
+           [100000,100000,100000,100000,100000,100000,100000,100000],
+           [100000,100000,100000,100000,100000,100000,100000,100000]]
+          }
+          //Here side 1 (first row) was in contact with side 2 150 ticks ago and with side 5 1800 ticks ago.
+          //The variable is necessary because function ContactTime doesn't take attacking ground into consideration
+          //(if you attack ground where an enemy unit is, ContactTime doesn't take it as you are attacking the enemy).
+
+          ai_contact_time = [];
+          for i = 1 to 8 do
+               ai_contact_time = ai_contact_time ^ [[100000,100000,100000,100000,100000,100000,100000,100000]];
+     end;
+
+Function Initiate_ai_sib_bomb_used_time_matrix;
+     var base;
+     begin
+          //2-dimensional array which tells when a side used a siberite bomb on a base. If a side has used
+          //a bomb more than once, the most recent bomb time is used.
+          //First dimension is base. Second dimension is side.
+          {
+          [[-1,-1,-1,-1,7000,-1,-1,-1],
+           [-1,-1,-1,-1,-1,-1,-1,-1],
+           [-1,-1,-1,-1,-1,-1,-1,-1],
+           [-1,3500,-1,-1,-1,-1,-1,-1]]
+          }
+          //Here we have 4 bases. Side 2 fired a rocket into base 4 at tick 3500. Side 5 fired a rocket intro base 1
+          //at tick 7000.
+
+          ai_sib_bomb_used_time_matrix = [];
+          for base in ai_bases do
+               ai_sib_bomb_used_time_matrix = ai_sib_bomb_used_time_matrix ^ [[-1,-1,-1,-1,-1,-1,-1,-1]];
+     end;
+
+Function InitiateTimeShiftData;
+     var side;
+     begin
+          //The following is approximate data on time shifting rockets.
+          //No space-time upgrade researched: Duration 215 tick, radius 4 hexes.
+          //Space-time upgrade 1 researched: Duration 320 tick, radius 7 hexes.
+          //Space-time upgrade 2 researched: Duration 420 tick, radius 10 hexes.
+          //Space-time upgrade 3 researched: Duration 420 tick, radius 10 hexes.
+
+          for side = 1 to 8 do
+               if Researched(side,tech_st3) then
+                    ai_time_shift_data = Replace(ai_time_shift_data,side,[420,10])
+               else
+                    if Researched(side,tech_st2) then
+                         ai_time_shift_data = Replace(ai_time_shift_data,side,[420,10])
+                    else
+                         if Researched(side,tech_st1) then
+                              ai_time_shift_data = Replace(ai_time_shift_data,side,[320,7])
+                         else
+                              ai_time_shift_data = Replace(ai_time_shift_data,side,[215,4]);
+     end;
+
+Function PrepareSides;
+     var legion;
+     begin
+          //Who is who and decide initial attitudes
+          nature = 0;
+
+          russians = 3;
+          russians_alt = 6;
+          Legion=8;
+          alliance = 7;
+          you = 2;
+          arabians=5;
+          mines_side = 0; //Side mines will be set to belong to
+
+
+          SetAttitude(russians,russians_alt,att_friend,true);
+          SetAttitude(russians,alliance,att_enemy,true);
+          SetAttitude(russians,you,att_enemy,true);
+          SetAttitude(alliance,you,att_neutral,true);
+          SetAttitude(Legion,you,att_friend,true);
+          SetAttitude(arabians,you,att_friend,true);
+     end;
+
+Function PrepareNature;
+     var i, spots, num, agres, count, area;
+     begin
+          InitUc;
+          InitHc;
+
+          uc_side = nature;
+          uc_nation = nation_nature;
+
+          agres = -10 + difficulty * 20;
+
+          //Apemen
+           hc_class = class_apeman;
+           for i = 1 to 3 do
+                begin
+                     if i<3 then
+                        area=ape_area1
+                     else
+                         area=ape_area2;
+
+                     uc_direction = Rand(0,5);
+
+                     hc_agressivity = Rand(-1*agres,agres);
+
+                     hc_attr = [Rand(11,13),Rand(10,11)];
+                     hc_sex = Rand(sex_male,sex_female);
+                     hc_skills = [Rand(0,1),Rand(0,1),0,0];
+
+                     PlaceUnitarea(CreateHuman,area,false);
+                end;
+                                            
+          //Phororhacoses (big birds)
+          hc_class = class_phororhacos;
+          hc_gallery = 'nature_foreg';
+          hc_face_number = 1;
+          hc_skills = [0,0,0,0];
+          for i = 1 to 2 do
+               begin
+                    uc_direction = Rand(0,5);
+                    hc_agressivity = Rand(-30,0);
+                    hc_attr = [Rand(9,10),Rand(11,12)];
+
+                    PlaceUnitArea(CreateHuman,Ape_area1,false);
+               end;          
+     end;
+
+every 0$1 marked 1 do
+var i,agres,area;
+begin
+     Randomize;
+
+     repeat
+           wait(rand(2$30,3$30));
+
+           if FilterAllUnits([[f_class,class_apeman],[f_side,0]]) > [14,17,20][difficulty] then
+              continue;
+
+           uc_side = nature;
+           uc_nation = nation_nature;
+
+           agres = -10 + difficulty * 20;
+
+           //Apemen
+           hc_class = class_apeman;
+
+           area=[ape_area1,ape_area2][rand(1,2)];
+
+           uc_direction = Rand(0,5);
+        
+           hc_agressivity = Rand(-1*agres,agres);
+          
+           hc_attr = [Rand(11,13),Rand(10,11)];
+           hc_sex = Rand(sex_male,sex_female);
+           hc_skills = [Rand(0,1),Rand(0,1),0,0];
+
+           PlaceUnitarea(CreateHuman,area,false);
+
+     until tick>85$0;
+
+end;
+
+Function PreparePlayer;
+     var others, i, j, player_uns, base_ok, val, un, k, temp_list, human_list, vehicle_list, temp;
+     begin
+          Randomize;
+
+          InitHc;
+          InitUc;
+          uc_side = 2;
+          uc_nation = nation_arabian;
+
+          if not testing then
+          begin
+
+               //People
+               Omar=LoadCharacter('Omar_14',0,0);
+               //Snake=LoadCharacter('Snake_13',0,0);
+               Snake=NewCharacter('Snake');
+               Heike=LoadCharacter('Heike_14',0,0);
+
+               Olaf=LoadCharacter('Olaf_14',0,0);
+               Sonya=LoadCharacter('Sonya_14',0,0);
+               Oswald=LoadCharacter('Oswald_14',0,0);
+               Ralph=LoadCharacter('Ralph_14',0,0);
+               Kowalski=LoadCharacter('Kowalski_14',0,0);
+               Aviradze=LoadCharacter('Aviradze_14',0,0);
+               Swansson=LoadCharacter('Swansson_14',0,0);
+               Dwayne=LoadCharacter('Dwayne_14',0,0);
+               Khattam=LoadCharacter('Khattam_14',0,0);
+               Evelyn=LoadCharacter('Evelyn_14',0,0);
+               Makise=LoadCharacter('Makise_14',0,0);
+               Gonzo=LoadCharacter('Gonzo_14',0,0);
+
+               others = CreateCharacterSet('Others_14') diff 0;
+               Human_list=[Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Makise] ^ others diff 0;
+
+
+               //Vehicles
+               temp_list=LoadVariable('Vehicles_14',0);
+               Vehicle_list=[];
+
+               for i in temp_list do
+               begin
+                    vc_chassis=i[1]; vc_control=i[2];
+                    vc_engine=i[3]; vc_weapon=i[4]; uc_nation=i[5];
+                    Vehicle_list=Vehicle_list^CreateVehicle;
+               end;
+
+
+               val=0;
+               for i in unitfilter(human_list,[f_class,class_mechanic]) do
+                   if getskill(i,skill_mechanical)>val and getclass(i)=class_mechanic then
+                   begin
+                        val=getskill(i,skill_mechanical);
+                        temp=i;
+                   end;
+
+               placehumaninunit(temp ,unitfilter(Vehicle_list,[f_weapon,ar_control_tower])[1] );
+               
+               for i in human_list do
+                   for j in vehicle_list do
+                       if isdrivenby(j)=0 and isinunit(i)=0 then
+                          placehumaninunit(i,j);
+
+               player_forces=isinunit(Heike);
+               vehicle_list=vehicle_list diff isinunit(Heike);
+
+               player_forces=player_forces^unitfilter(Vehicle_list,[f_weapon,ar_control_tower])[1];
+               vehicle_list=vehicle_list diff unitfilter(Vehicle_list,[f_weapon,ar_control_tower])[1];
+
+               for i in vehicle_list do
+                   player_forces=player_forces^i;
+               player_forces=player_forces^unitfilter(human_list,[f_not,[f_driving]]);
+
+               if Gonzo>0 then
+                  player_forces=player_forces^Gonzo;
+
+               //some cargos depending on previous medal
+               temp = LoadVariable('Russians_Passed_13', 0);
+               if temp = 2 then
+                  j = 8
+               else
+                   if temp = 1 then
+                      j = 5
+                   else
+                       j = 0;
+
+               for i = 1 to j do
+               begin
+                    vc_chassis = ar_half_tracked;
+                    vc_engine = [engine_combustion, engine_siberite][rand(1,2)];
+                    vc_control = control_apeman;
+                    vc_weapon = ar_cargo_bay;
+                    player_forces = player_forces ^ CreateVehicle;
+               end;
+
+
+               //Variables
+               if LoadVariable('Cooperates_with_traitors_10',0)=1 then
+                  help_variant=2
+               else
+                   if LoadVariable('Cooperates_with_UPF_10',0)=1 then
+                       help_variant=1
+                   else
+                        help_variant=0;
+
+               if help_variant=2 then
+               begin
+                    Gordon=LoadCharacter('traitors_leader_10',0,0);       //Just call the leader Gordon even if it's not really him
+
+                    if Gordon=0 then
+                    begin
+                         preparesoldier(false,0);
+                         Gordon=CreateHuman;
+                    end;
+
+                    setside(Gordon,8);
+               end;
+
+               if TestCharacters('Released_Russian_prisoners_10') then
+               begin
+                    All_variant=1;
+                    Alliance_sol=LoadCharacter('Released_Russian_prisoners_10',class_mechanic,1);
+                    setside(Alliance_sol,3);
+               end
+               else
+                   All_variant=0;
+
+
+               if LoadVariable('Implosion_vehicle_dismantled_12_cont2', 0) = 1 then
+                  SetTech(72,2,state_enabled)                  //72 is sib implosion
+               else
+                   SetTech(72,2,state_disabled);
+          end
+          else
+          begin
+               Omar=NewCharacter('Omar');
+               Snake=NewCharacter('Snake');
+               uc_side=8;
+               Gordon=NewCharacter('Gordon');
+               uc_side=2;
+
+               uc_nation=nation_nature;
+               hc_class=class_apeman_soldier; hc_attr=[10,16]; hc_skills=[4,5,8,4]; hc_sex=1;  hc_name = 'Gonzo'; Gonzo=CreateHuman;
+               uc_nation=nation_arabian;
+
+               hc_class=class_mechanic; hc_attr=[12,10]; hc_skills=[4,5,9,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=2; hc_name = 'Olaf'; Olaf=CreateHuman;
+               hc_class=class_soldier; hc_attr=[11,10]; hc_skills=[9,6,6,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=15; hc_name = 'Oswald'; Oswald=CreateHuman;
+               hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[8,5,8,5]; hc_sex=1; hc_gallery='ar'; hc_face_number=5; hc_name = 'Ralph'; Ralph=CreateHuman;
+               hc_class=class_scientistic; hc_attr=[9,11]; hc_skills=[5,6,9,9]; hc_sex=2; hc_gallery='ar'; hc_face_number=6; hc_name = 'Sonya'; Sonya=CreateHuman;
+               hc_class=class_scientistic; hc_attr=[10,12]; hc_skills=[4,5,6,9]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=1; hc_name = 'Aviradze'; Aviradze=CreateHuman;
+               hc_class=class_soldier; hc_attr=[11,10]; hc_skills=[8,6,7,4]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=2; hc_name = 'Kowalski'; Kowalski=CreateHuman;
+               hc_class=class_mechanic; hc_attr=[9,10]; hc_skills=[5,9,6,6]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=5; hc_name = 'Evelyn'; Evelyn=CreateHuman;
+               hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[6,4,9,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=31; hc_name = 'Swansson'; Swansson=CreateHuman;
+               hc_class=class_mechanic; hc_attr=[11,10]; hc_skills=[7,5,9,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=13; hc_name = 'Dwayne'; Dwayne=CreateHuman;
+               hc_class=class_scientistic; hc_attr=[9,10]; hc_skills=[4,6,5,9]; hc_sex=1; hc_gallery='us'; hc_face_number=10; hc_name = 'Khattam'; Khattam=CreateHuman;
+               hc_class=class_scientistic; hc_attr=[9,9]; hc_skills=[4,8,8,10]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=34; hc_name = 'Makise'; Makise=CreateHuman;
+               hc_class=class_soldier; hc_attr=[12,12]; hc_skills=[9,4,8,6]; hc_sex=2; hc_gallery='ru'; hc_face_number=24; hc_name = 'Heike'; Heike=CreateHuman;
+
+               Human_list=[Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Makise];
+
+
+
+
+               Vehicle_list =[[ar_half_tracked,control_remote,engine_siberite,ar_cargo_bay],
+                              [ar_half_tracked,control_remote,engine_siberite,ar_cargo_bay],
+                              [ar_half_tracked,control_manual,engine_siberite,ar_control_tower],
+                              [ar_half_tracked,control_remote,engine_combustion,ar_radar],
+                              [ar_hovercraft,control_manual,engine_combustion,[ar_light_gun,ar_double_machine_gun][rand(1,2)]],
+                              [ar_hovercraft,control_manual,engine_combustion,[ar_light_gun,ar_double_machine_gun][rand(1,2)]],
+
+                              [ar_medium_trike,control_manual,[engine_combustion,engine_siberite][rand(1,2)],ar_rocket_launcher],
+                              [ar_medium_trike,control_apeman,[engine_combustion,engine_siberite][rand(1,2)],ar_rocket_launcher],
+                              [ar_medium_trike,control_manual,[engine_combustion,engine_siberite][rand(1,2)],ar_gatling_gun],
+                              [ar_medium_trike,control_apeman,[engine_combustion,engine_siberite][rand(1,2)],ar_gatling_gun]];
+
+               if difficulty<3 then
+                  Vehicle_list=Vehicle_list ^ [[ar_medium_trike,control_remote,[engine_combustion,engine_siberite][rand(1,2)],ar_rocket_launcher],
+                                               [ar_medium_trike,control_remote,[engine_combustion,engine_siberite][rand(1,2)],ar_gatling_gun]];
+
+               if difficulty=1 then
+                  Vehicle_list=Vehicle_list ^ [[ar_half_tracked,[control_manual,control_remote,control_apeman][rand(1,3)],[engine_combustion,engine_siberite][rand(1,2)],ar_rocket_launcher],
+                                               [ar_half_tracked,[control_manual,control_remote,control_apeman][rand(1,3)],[engine_combustion,engine_siberite][rand(1,2)],ar_gatling_gun]];
+
+
+               Vehicle_list=Vehicle_list ^ [[[ar_half_tracked,ar_medium_trike][rand(1,2)],control_manual,[engine_combustion,engine_siberite][rand(1,2)],[ar_gun,ar_gun,ar_rocket_launcher,ar_rocket_launcher,ar_gatling_gun,ar_flame_thrower][rand(1,6)]],
+                              [[ar_half_tracked,ar_medium_trike][rand(1,2)],control_manual,[engine_combustion,engine_siberite][rand(1,2)],[ar_gun,ar_gun,ar_rocket_launcher,ar_rocket_launcher,ar_gatling_gun,ar_flame_thrower][rand(1,6)]],
+                              [[ar_half_tracked,ar_medium_trike][rand(1,2)],control_manual,[engine_combustion,engine_siberite][rand(1,2)],[ar_gun,ar_gun,ar_rocket_launcher,ar_rocket_launcher,ar_gatling_gun,ar_flame_thrower][rand(1,6)]],
+                              [[ar_half_tracked,ar_medium_trike][rand(1,2)],control_manual,[engine_combustion,engine_siberite][rand(1,2)],[ar_gun,ar_gun,ar_rocket_launcher,ar_rocket_launcher,ar_gatling_gun,ar_flame_thrower][rand(1,6)]],
+                              [[ar_half_tracked,ar_medium_trike][rand(1,2)],control_manual,[engine_combustion,engine_siberite][rand(1,2)],[ar_gun,ar_gun,ar_rocket_launcher,ar_rocket_launcher,ar_gatling_gun,ar_flame_thrower][rand(1,6)]]];
+
+
+
+               player_uns=create_player_forces(0,vehicle_list);
+
+               human_list=human_list diff heike;
+               temp_list=[];
+               for i=1 to [9,8,7][difficulty] do
+               begin
+                    temp=rand(1,human_list);
+                    temp_list=temp_list^human_list[temp];
+                    human_list=human_list diff human_list[temp];
+               end;
+
+               setclass(temp_list[1],class_engineer);
+               temp_list=temp_list^Heike;
+
+               if unitfilter(temp_list,[f_class,class_mechanic])>0 then
+                  temp=unitfilter(temp_list,[f_class,class_mechanic])[1]
+               else
+                   temp=temp_list[2];
+               setclass(temp,class_mechanic);
+
+               placehumaninunit(temp ,unitfilter(player_uns[2],[f_weapon,ar_control_tower])[1] );
+
+               for i in temp_list do
+                   for j in player_uns[2] do
+                       if IsInUnit(i)=0 and GetControl(j)=control_manual and IsDrivenBy(j)=0 then
+                          PlaceHumanInUnit(i,j);
+
+
+               player_forces=isinunit(Heike);
+               vehicle_list=player_uns[2] diff isinunit(Heike);
+
+               player_forces=player_forces^unitfilter(Vehicle_list,[f_weapon,ar_control_tower])[1];
+               vehicle_list=vehicle_list diff unitfilter(Vehicle_list,[f_weapon,ar_control_tower])[1];
+
+               for i in unitfilter(vehicle_list,[f_not,[f_empty]]) do
+                   player_forces=player_forces^i;
+
+
+               SetTech(72,2,state_enabled);                  //72 is sib implosion
+
+               if All_variant=1 then
+               begin
+                    uc_side=3;
+                    uc_nation=nation_russian;
+                    preparemechanic(false,10);
+                    Alliance_sol=createhuman;
+               end;
+          end;
+
+
+          if help_variant=1 then          //Additional UPF people from Gensher
+             for i=1 to 3 do
+             begin
+                  uc_side=2;
+                  uc_nation=nation_arabian;
+                  hc_sex=rand(1,2);
+
+                  case rand(1,3) of
+                       1: hc_skills=[rand(9,10),rand(4,5),rand(1,2),rand(1,2)];
+                       2: hc_skills=[rand(9,10),rand(1,2),rand(4,5),rand(1,2)];
+                       3: hc_skills=[rand(9,10),rand(1,2),rand(1,2),rand(4,5)];
+                  end;
+
+                  if rand(1,2)=1 then
+                     hc_attr=[10,11]
+                  else hc_attr=[11,10];
+
+                  if rand(1,2)=1 then
+                     hc_class=class_soldier
+                  else hc_class=class_mortar;
+
+
+                  un=createhuman;
+
+                  //vc_chassis=ar_light_trike; vc_control=control_manual; vc_engine=engine_combustion; vc_weapon=[ar_light_gun,ar_double_machine_gun][rand(1,2)];
+                  //temp=createvehicle;
+
+                  //PlaceHumanInUnit(un,temp);
+                  player_forces=player_forces^un;
+             end;
+
+
+                         //Convoy: fixed sib(50 and oil(100) and crates(400) or possibly varying crates [400,300,200]
+          if All_variant=1 then
+          begin
+                    uc_side=3;
+                    uc_nation=nation_russian;
+                    vc_chassis=ru_medium_tracked;
+                    vc_weapon=ru_cargo_bay;
+                    vc_engine=engine_siberite;
+                    vc_control=control_computer;
+
+                    //6 cargos
+                    ConvoyCargos=Createvehicle^Createvehicle^Createvehicle^Createvehicle^Createvehicle^Createvehicle;
+                    SetCargo(ConvoyCargos[1],mat_siberit,50);
+                    SetCargo(ConvoyCargos[2],mat_oil,100);
+                    SetCargo(ConvoyCargos[3]^ConvoyCargos[4]^ConvoyCargos[5]^ConvoyCargos[6],mat_cans,100);
+
+                    //8 escort vehicles, split equally
+                    ConvoyRussians=[];
+                    ConvoyAlliance=[];
+
+                    vc_control=control_manual;
+
+                    vc_chassis=ru_heavy_tracked;
+                    vc_weapon=ru_heavy_gun;
+                    ConvoyRussians=ConvoyRussians^CreateVehicle;
+                    ConvoyAlliance=ConvoyAlliance^CreateVehicle;
+
+                    vc_chassis=ru_medium_tracked;
+                    for i=1 to 3 do
+                    begin
+                         vc_weapon=[ru_gun,ru_gatling_gun,ru_rocket_launcher][rand(1,3)];
+                         ConvoyRussians=ConvoyRussians^CreateVehicle;
+                         vc_weapon=[ru_gun,ru_gatling_gun,ru_rocket_launcher][rand(1,3)];
+                         ConvoyAlliance=ConvoyAlliance^CreateVehicle;
+                    end;
+
+                    preparemechanic(false,[7,8,9][difficulty]);
+                    un=createhuman;
+                    placehumaninunit(un,ConvoyRussians[1]);
+
+                    if getskill(Alliance_sol,skill_mechanical)<[7,8,9][difficulty] then
+                       setskill(Alliance_sol,skill_mechanical,[7,8,9][difficulty]);
+                    placehumaninunit(Alliance_sol,ConvoyAlliance[1]);
+
+
+                    for i=1 to ConvoyRussians do
+                    begin
+                         preparemechanic(false,[7,8,9][difficulty]);
+                         if i>1 then
+                            placehumaninunit(createhuman,ConvoyRussians[i]);
+                    end;
+
+
+                    temp_list=[];
+                    if not testing then
+                    begin
+                         temp_list=LoadCharacter('Released_Russian_prisoners_10',0,0);
+                         temp_list=delete(temp_list,1);
+                    end;
+
+                    while temp_list < 3 do
+                         begin
+                              preparemechanic(false,[7,8,9][difficulty]);
+                              temp_list=temp_list^createhuman;
+                         end;
+
+                    for i=1 to ConvoyAlliance do
+                        if i>1 then
+                           placehumaninunit(temp_list[i-1],ConvoyAlliance[i]);
+          end
+          else
+          begin
+               ConvoyRussians=[0,0,0,0];
+               ConvoyAlliance=[0,0,0,0];
+          end;
+     end;
+Function LoadPlayerChar(c_name);
+     begin
+          if TestCharacters(c_name&'_15a') then
+               result = CreateCharacter(c_name&'_15a')
+          else
+               result = 0;
+     end;
+
+Function ScanBuildings;
+     var side, i, temp_list, base, area, temp_list_2, k;
+     var rubun7_new, rubun3_new;
+     begin
+          for base in ai_bases do
+               begin
+                    area = GetBaseArea(base);
+                    side = GetBaseSide(base);
+
+                    ai_all_buildings = Replace(ai_all_buildings,base, FilterAllUnits([[f_side,side],[f_type,unit_building],[f_inarea,area]]) );
+
+                    for i in ai_all_buildings[base] do
+                         UpdateBuildingBasicVariables(base,i,true);
+
+                    //Update buildings locations.
+                    temp_list = [];
+                    //for i in (ai_depot[base] ^ ai_armouries[base] ^ ai_bunkers[base] ^ ai_power_plants[base] ^ ai_control_tower[base] ^ ai_turrets[base] ^ ai_labs[base] ^ ai_facts[base] ^ ai_fact_extensions[base] ^ ai_siberite_mines[base] ^ ai_oil_mine[base] ^ ai_teleporter[base]) diff 0 do
+                    for i in ai_all_buildings[base] do
+                         begin
+
+                                   temp_list = temp_list ^ [ [GetX(i),GetY(i),GetDir(i),GetBType(i),GetLabKind(i,1),GetLabKind(i,2),GetBWeapon(i)] ];
+                         end;
+
+                    ai_buildings_locations = Replace(ai_buildings_locations,base,temp_list);
+                    SortBuildingLocationsListInCorrectOrder(base);
+
+                    //Make sources visible
+                    for i in ai_siberite_mines[base] ^ ai_oil_mine[base] do
+                         SetResourceVisibility(GetX(i),GetY(i),side);
+               end;
+
+
+          //Factories switch between extensions as needed.
+          //Russians between noncombat and rocket.
+          //Alliance between rocket and siberite;
+          //Arabians between noncombat and rocket.
+          //Americans between noncombat, computer, laser, rocket and gun.
+{          ai_fact_extension_replace_locations = Replace(ai_fact_extension_replace_locations,1,[[GetX(ru_ext_rep),GetY(ru_ext_rep)]]);
+
+          ai_fact_extension_replace_locations = Replace(ai_fact_extension_replace_locations,2,[[GetX(alli_ext_rep),GetY(alli_ext_rep)]]);
+
+          ai_fact_extension_replace_locations = Replace(ai_fact_extension_replace_locations,3,[[GetX(ar_ext_rep),GetY(ar_ext_rep)]]);
+
+          ai_fact_extension_replace_locations = Replace(ai_fact_extension_replace_locations,4,[[GetX(am_ext_rep1),GetY(am_ext_rep1)],[GetX(am_ext_rep2),GetY(am_ext_rep2)]]);
+}     end;
+Function ReplaceBunkerWithTurret(id);
+     var un, temp_list;
+     begin
+          InitUc;
+          InitBc;
+          uc_nation = GetNation(id);
+          uc_side = GetSide(id);
+
+          temp_list = [GetX(id),GetY(id),GetDir(id),GetBWeapon(id)];
+          DestroyUnit(id);
+          bc_type = b_turret;
+          un = CreateAndPlaceBuildingXYD(temp_list[1],temp_list[2],temp_list[3]);
+          PlaceWeaponTurret(un,temp_list[4]);
+
+          result = un;
+     end;
+Export Function UpdateBuildingBasicVariables(base,un,add);
+     var temp_list;
+     begin
+          //un - unit to add/remove from basic building variables
+          //add - boolean (true for add units, false for remove)
+
+          case GetBType(un) of
+               b_depot,b_warehouse:
+                    if add then
+                         ai_depot = Replace(ai_depot,base,un)
+                    else
+                         if un = ai_depot[base] then
+                              ai_depot = Replace(ai_depot,base,0);
+               b_lab,b_lab_half,b_lab_full: begin
+                    if add then
+                         temp_list = ai_labs[base] ^ un
+                    else temp_list = ai_labs[base] diff un;
+                    ai_labs = Replace(ai_labs,base,temp_list);
+               end;
+               b_factory,b_workshop: begin
+                    if add then
+                         temp_list = ai_facts[base] ^ un
+                    else temp_list = ai_facts[base] diff un;
+                    ai_facts = Replace(ai_facts,base,temp_list);
+               end;
+               b_armoury,b_barracks,b_fort: begin
+                    if add then
+                         temp_list = ai_armouries[base] ^ un
+                    else temp_list = ai_armouries[base] diff un;
+                    ai_armouries = Replace(ai_armouries,base,temp_list);
+               end;
+               b_breastwork,b_bunker: begin
+                    if add then
+                         temp_list = ai_bunkers[base] ^ un
+                    else temp_list = ai_bunkers[base] diff un;
+                    ai_bunkers = Replace(ai_bunkers,base,temp_list);
+               end;
+               b_turret: begin
+                    if add then
+                         temp_list = ai_turrets[base] ^ un
+                    else temp_list = ai_turrets[base] diff un;
+                    ai_turrets = Replace(ai_turrets,base,temp_list);
+               end;
+               b_oil_mine:
+                    if add then
+                         ai_oil_mine = Replace(ai_oil_mine,base,un)
+                    else
+                         if un = ai_oil_mine[base] then
+                              ai_oil_mine = Replace(ai_oil_mine,base,0);
+               b_siberite_mine: begin
+                    if add then
+                         temp_list = ai_siberite_mines[base] ^ un
+                    else temp_list = ai_siberite_mines[base] diff un;
+                    ai_siberite_mines = Replace(ai_siberite_mines,base,temp_list);
+               end;
+               b_ext_gun,b_ext_noncombat,b_ext_laser,b_ext_computer,b_ext_radar,b_ext_rocket,b_ext_siberium,b_ext_track,b_ext_stitch: begin
+                    if add then
+                         temp_list = ai_fact_extensions[base] ^ un
+                    else temp_list = ai_fact_extensions[base] diff un;
+                    ai_fact_extensions = Replace(ai_fact_extensions,base,temp_list);
+               end;
+               b_solar_power,b_oil_power,b_siberite_power: begin
+                    if add then
+                         temp_list = ai_power_plants[base] ^ un
+                    else temp_list = ai_power_plants[base] diff un;
+                    ai_power_plants = Replace(ai_power_plants,base,temp_list);
+               end;
+               b_control_tower: begin
+                    if add then
+                         ai_control_tower = Replace(ai_control_tower,base,un)
+                    else
+                         if un = ai_control_tower[base] then
+                              ai_control_tower = Replace(ai_control_tower,base,0);
+               end;
+               b_teleport: begin
+                    if add then
+                         begin
+                              ai_teleporter = Replace(ai_teleporter,base,un);
+                              ai_teleporter_exit_placed = Replace(ai_teleporter_exit_placed,base,false);
+                         end
+                    else
+                         if un = ai_teleporter[base] then
+                              begin
+                                   ai_teleporter = Replace(ai_teleporter,base,0);
+                                   ai_teleporter_exit_placed = Replace(ai_teleporter_exit_placed,base,false);
+                              end;
+               end;
+          end;
+     end;
+Export Function SortBuildingLocationsListInCorrectOrder(base);
+     var i, temp_list, p;
+     begin
+         temp_list = [];
+
+         for i in ai_buildings_locations[base] do
+              begin
+                   //Prioritated order in which buildings should be (re-)build.
+                   case i[4] of
+                        b_depot, b_warehouse: p = 100;
+                        b_armoury, b_barracks, b_fort: p = 99;
+                        b_solar_power, b_oil_power, b_siberite_power: p = 98;
+                        b_breastwork: p = 97;
+                        b_factory, b_workshop: p = 96;
+                        b_ext_gun, b_ext_noncombat, b_ext_laser, b_ext_computer,
+                        b_ext_radar, b_ext_rocket, b_ext_siberium, b_ext_track, b_ext_stitch: p = 95;
+                        b_bunker: p = 94;
+                        b_control_tower: p = 93;
+                        b_turret: p = 92;
+                        b_lab, b_lab_half, b_lab_full: p = 91;
+                        b_teleport: p = 90;
+                        b_siberite_mine: p = 89;
+                        b_oil_mine: p = 88;
+                   end;
+
+                   temp_list = temp_list ^ p;
+              end;
+
+          temp_list = SortListByListDesc(ai_buildings_locations[base],temp_list);
+          ai_buildings_locations = Replace(ai_buildings_locations,base,temp_list);
+     end;
+
+every 0$1 trigger PrepareComputerSides do
+     var i, temp_list, temp_list2, side, base, num, nation, temp;
+     begin
+          Randomize;
+
+          for base in ai_bases do
+               begin
+                    repeat
+                          wait(0$0.1);
+                    until base<base_spawn_delay;
+
+                    side = GetBaseSide(base);
+                    nation = GetBaseNation(base);
+
+                    InitUc;
+                    InitHc;
+
+                    uc_side = side;
+                    uc_nation = nation;
+
+
+                    //Soldiers - at least one for each defensive building (remember armouries)
+                    //Special units (bazoookers, snipers, mortars) go to armouries as first priority.
+                    case base of
+                         1: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                              temp_list = CreateUnitsWithClass([4,5,6][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_barracks]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([1,2,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([3,3,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_soldier, base) ^ temp_list;
+                         end;
+                         2: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                              temp_list = CreateUnitsWithClass([4,5,6][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_barracks]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([1,2,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([3,3,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_soldier, base) ^ temp_list;
+                         end;
+                         3: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                              temp_list = CreateUnitsWithClass([4,5,6][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_barracks]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([1,2,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([3,3,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_soldier, base) ^ temp_list;
+                         end;
+                         4: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                              temp_list = CreateUnitsWithClass([4,5,6][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_barracks]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([1,2,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([3,3,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_soldier, base) ^ temp_list;
+                         end;
+                         5: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                              temp_list = CreateUnitsWithClass([4,5,6][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_barracks]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([1,2,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([3,3,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_soldier, base) ^ temp_list;
+                         end;
+                         6: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                              temp_list = CreateUnitsWithClass([4,5,6][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_barracks]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([1,2,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([3,3,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_soldier, base) ^ temp_list;
+                         end;
+                         7: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                              temp_list = CreateUnitsWithClass([4,5,6][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_barracks]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([1,2,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([3,3,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_soldier, base) ^ temp_list;
+                         end;
+                         8: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                              temp_list = CreateUnitsWithClass([4,5,6][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_barracks]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([1,2,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_bazooker, base) ^ temp_list;
+                              temp_list = CreateUnitsWithClass([3,3,3][difficulty]*unitfilter(ai_armouries[base],[f_btype,b_armoury]), class_soldier, base) ^ temp_list;
+                         end;
+                       {  10: begin
+                              temp_list = CreateUnitsWithClass(ai_bunkers[base], class_soldier, base);
+                         end;  }
+                    end;
+
+                    ai_soldiers = Replace(ai_soldiers,base,temp_list);
+                    PlaceComputerUnits(base,ai_soldiers[base],ai_armouries[base]);
+
+
+                       
+
+                    //Engineers
+                    ai_engineers = Replace(ai_engineers,base, CreateUnitsWithClass([ [1,2,3][difficulty], [4,5,6][difficulty], [1,2,3][difficulty], 2, 2, 2, 1, 2, 1, 0][base], class_engineer, base) );
+                    PlaceComputerUnits(base,ai_engineers[base],[ai_depot[base]]);
+
+                    //Adapt the level of buildings to the highest engineering skill.
+                    temp_list = [];
+                    for i in ai_engineers[base] do
+                         temp_list = temp_list ^ GetSkill(i,skill_engineering);
+                    num = BestFromListByList(temp_list,temp_list);
+                    for i in ai_all_buildings[base] do
+                         if GetBtype(i) in [b_armoury,b_barracks,b_breastwork,b_bunker,b_turret] then
+                            SetBLevel(i,num)
+                         else
+                             SetBLevel(i,num - [5,4,3][difficulty]);
+                            
+                    //Apemen engineers
+                    ai_apemen_engineers = Replace(ai_apemen_engineers,base, CreateApemenWithClass([ [1,2,3][difficulty], [1,2,3][difficulty], 2, 0, 2, 3, 3, 2, 3, 3][base],class_apeman_engineer,base) );
+                    PlaceComputerUnits(base,ai_apemen_engineers[base],[ai_depot[base]]);
+
+                    //Mechanics
+                    ai_mechanics_defend = Replace(ai_mechanics_defend,base, CreateUnitsWithClass([6, [8,10,12][difficulty], [4,5,6][difficulty], 3, [4,5,6][difficulty], 3, 3, 0, 0, 0][base], class_mechanic, base) );
+
+                    if base = 2 and difficulty < 3 then
+                    begin
+                         temp_list = ai_mechanics_defend[2];
+                         SetSkill(temp_list[1],Skill_Mechanical, Rand(4+difficulty,6+difficulty));
+                         SetSkill(temp_list[2],Skill_Mechanical, Rand(4+difficulty,6+difficulty));
+                         SetSkill(temp_list[3],Skill_Mechanical, Rand(4+difficulty,6+difficulty));
+                    end;
+
+                    PlaceComputerUnits(base,ai_mechanics_defend[base],ai_facts[base]);
+
+                    //Scientists
+                    num = [ [4,6,8][difficulty], 6, [6,8,10][difficulty], 6, 0, 2, 2, 0, 3, 2][base];
+                    ai_scientists = Replace(ai_scientists,base, CreateUnitsWithClass(num,class_scientistic,base) );
+                    PlaceComputerUnits(base,ai_scientists[base],ai_labs[base]);
+
+
+                    //Resources
+                    SetResourceType(GetBase(ai_depot[base]),mat_cans,300);
+                    SetResourceType(GetBase(ai_depot[base]),mat_oil,300);
+                    SetResourceType(GetBase(ai_depot[base]),mat_siberit,300);
+
+                    //Place units
+                    //for i in ai_soldiers[base] ^ ai_engineers[base] ^ ai_mechanics_defend[base] ^ ai_scientists[base] ^ ai_apemen_engineers[base] do
+                    //     PlaceUnitXYR(i,ai_human_pullback_hex[base][1],ai_human_pullback_hex[base][2],7,false);
+
+                    
+                    //final count
+                    num=0;
+                    for i in ai_soldiers[base] ^ ai_engineers[base] ^ ai_apemen_engineers[base] ^ ai_mechanics_defend[base] ^ ai_scientists[base] do
+                        num=num+1;
+
+                    starting_people_count=starting_people_count^num;
+
+               end;
+
+               enable(2);
+
+               //For simplicity some units are placed through here
+               //Cranes
+               Inituc;
+               Initvc;
+               uc_side=3;
+               uc_nation=nation_russian;
+               vc_weapon=ru_crane;
+               vc_engine=engine_siberite;
+               vc_chassis=ru_medium_tracked;
+               vc_control=control_computer;
+               temp=createvehicle;
+               ai_crane=replace(ai_crane,1,temp);
+               placeunitarea(temp,area_base1,false);
+               commovexy(temp,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+
+               vc_control=control_manual;
+               temp=createvehicle;
+               ai_crane=replace(ai_crane,2,temp);
+               placeunitarea(temp,area_base2,false);
+               commovexy(temp,ai_human_pullback_hex[2][1],ai_human_pullback_hex[2][2]);
+
+               //Other vehicles
+               for i=1 to 2 do
+               begin
+                    case rand(1,4) of
+                         1: begin vc_weapon=ru_heavy_gun; vc_chassis=ru_heavy_tracked; vc_engine=engine_siberite; vc_control=control_computer; end;
+                         2: begin vc_weapon=ru_gun; vc_chassis=ru_medium_tracked; vc_engine=engine_siberite; vc_control=control_computer; end;
+                         3: begin vc_weapon=ru_rocket_launcher; vc_chassis=ru_medium_tracked; vc_engine=engine_siberite; vc_control=control_computer; end;
+                         4: begin vc_weapon=ru_gatling_gun; vc_chassis=ru_medium_tracked; vc_engine=engine_siberite; vc_control=control_computer; end;
+                    end;
+                    temp=createvehicle;
+                    placeunitarea(temp,base3_vehicle_defend,false);
+                    ai_vehicles_defend=replace(ai_vehicles_defend,3,ai_vehicles_defend[3] ^ temp);
+                    commovexy(temp,ai_human_pullback_hex[3][1],ai_human_pullback_hex[3][2]);
+               end;
+
+               vc_control=control_manual;
+               vc_chassis=ru_heavy_tracked;
+               vc_weapon=ru_gun;
+               temp=createvehicle;
+               placeunitarea(temp,area_base4,false);
+               ai_vehicles_defend=replace(ai_vehicles_defend,4,ai_vehicles_defend[4] ^ temp);
+               commovexy(temp,ai_human_pullback_hex[4][1],ai_human_pullback_hex[4][2]);
+
+               vc_weapon=ru_heavy_gun;
+               temp=createvehicle;
+               placeunitarea(temp,area_base4,false);
+               ai_vehicles_defend=replace(ai_vehicles_defend,4,ai_vehicles_defend[4] ^ temp);
+               commovexy(temp,ai_human_pullback_hex[4][1],ai_human_pullback_hex[4][2]);
+
+               for i=1 to 3 do
+               begin
+                    case rand(1,4) of
+                         1: begin vc_weapon=ru_heavy_gun; vc_chassis=ru_heavy_tracked; vc_engine=engine_siberite; vc_control=control_computer; end;
+                         2: begin vc_weapon=ru_gun; vc_chassis=ru_medium_tracked; vc_engine=engine_siberite; vc_control=control_computer; end;
+                         3: begin vc_weapon=ru_rocket_launcher; vc_chassis=ru_medium_tracked; vc_engine=engine_siberite; vc_control=control_computer; end;
+                         4: begin vc_weapon=ru_gatling_gun; vc_chassis=ru_medium_tracked; vc_engine=engine_siberite; vc_control=control_computer; end;
+                    end;
+                    temp=createvehicle;
+                    placeunitarea(temp,area_base5,false);
+                    ai_vehicles_defend=replace(ai_vehicles_defend,5,ai_vehicles_defend[5] ^ temp);
+                    commovexy(temp,ai_human_pullback_hex[5][1],ai_human_pullback_hex[5][2]);
+               end;
+
+               vc_weapon=ru_time_lapser; vc_chassis=ru_heavy_wheeled; vc_engine=engine_siberite; vc_control=control_computer;
+               temp=createvehicle;
+               placeunitarea(temp,area_base6,false);
+               ai_vehicles_defend=replace(ai_vehicles_defend,6,ai_vehicles_defend[6] ^ temp);
+               commovexy(temp,137,14);
+
+               //Legion
+               if help_variant=2 then
+               begin
+                    uc_side=8;
+                    uc_nation=nation_arabian;
+
+                    vc_chassis=ar_half_tracked;
+                    vc_engine=engine_siberite;
+                    vc_control=control_remote;
+                    vc_weapon=ar_selfpropelled_bomb;
+                     temp_list=createvehicle;
+
+                    vc_control=control_apeman;
+                    vc_weapon=ar_radar;
+                     temp_list=temp_list^createvehicle;
+                    vc_weapon=ar_rocket_launcher;
+                     temp_list=temp_list^createvehicle;
+                    vc_control=control_remote;
+                     temp_list=temp_list^createvehicle;
+                    for i in temp_list do
+                        placeunitarea(i,legion_help1,false);
+
+                    vc_control=control_apeman;
+                    vc_weapon=ar_gatling_gun;
+                     temp_list=createvehicle;
+
+                    uc_nation=nation_nature;
+                    hc_class=class_apeman_soldier;
+                    hc_skills=[rand(6,8),rand(2,6),rand(2,6),rand(2,6)];
+                     temp_list=temp_list^createhuman;
+                    hc_skills=[rand(6,8),rand(2,6),rand(2,6),rand(2,6)];
+                     temp_list=temp_list^createhuman;
+                    hc_skills=[rand(6,8),rand(2,6),rand(2,6),rand(2,6)];
+                     temp_list=temp_list^createhuman;
+                    hc_class=class_apeman_kamikaze;
+                     temp_list=temp_list^createhuman;
+                    hc_skills=[rand(6,8),rand(2,6),rand(2,6),rand(2,6)];
+                     temp_list=temp_list^createhuman;
+
+                    for i in temp_list do
+                        placeunitarea(i,legion_help2,false);
+
+                    placemine(118,72,8,0); placemine(118,72,8,0); placemine(118,72,8,0);
+                    placemine(118,73,8,0); placemine(118,73,8,0); placemine(118,73,8,0);
+                    placemine(76,67,8,0);
+                    placemine(79,67,8,0);  placemine(79,67,8,0);  placemine(79,67,8,0);  placemine(79,67,8,0);
+                    placemine(100,68,8,0); placemine(100,68,8,0); placemine(100,68,8,0);
+                    placemine(81,53,8,0);  placemine(81,53,8,0);  placemine(81,53,8,0);
+                    placemine(104,65,8,0); placemine(104,65,8,0);
+
+                    if difficulty=3 then
+                       placemine(100,68,8,0);
+               end;
+                                                                                      
+               //Teleport exits
+               temp_list=[ [238,188],[92,171],0,0,[137,176],0,0,0,[166,64],[122,71] ];
+               for i=1 to temp_list do
+                   if temp_list[i]>0 then
+                   begin
+                        TeleportExit(ai_teleporter[i],temp_list[i][1],temp_list[i][2]);
+                        ai_teleporter_exit_placed = Replace(ai_teleporter_exit_placed,i,true);
+                   end;
+               TeleportExit(Hexinfo(228,164),166,64);
+               TeleportExit(Hexinfo(74,141),122,71);
+
+               for i in base10_buildings ^ base9_buildings do
+                   SetBLevel(i,8);
+
+
+               //People for smaller bases
+               base9_people=CreateUnitsWithClass(3,class_scientistic,1) ^ CreateApemenWithClass([1,2,3][difficulty],class_apeman_engineer,1);
+               base10_people=CreateUnitsWithClass(2,class_scientistic,1) ^ CreateApemenWithClass([1,2,3][difficulty],class_apeman_engineer,1) ^ CreateUnitsWithClass(1,class_bazooker,1);
+
+               for i in base9_people do
+                   placeunitarea(i,area_base9,false);
+               for i in base10_people do
+                   placeunitarea(i,area_base10,false);
+
+               comlinktobase(base10_buildings[2],base10_buildings[1]);
+               addcomlinktobase(base10_buildings[2],base10_buildings[3]);
+               addcomlinktobase(base10_buildings[2],base10_buildings[4]);
+               addcomlinktobase(base10_buildings[2],base10_buildings[5]);
+
+               comenterunit(base9_people[1]^base9_people[2]^base9_people[3],base9_buildings[1]);
+               comenterunit(base9_people diff unitfilter(base9_people,[f_class,class_scientistic]),base9_buildings[2]);
+               comenterunit(base10_people[1]^base10_people[2],base10_buildings[1]);
+               comenterunit(base10_people diff unitfilter(base10_people,[f_or,[f_class,class_scientistic],[f_class,class_bazooker]]),base10_buildings[2]);
+               comenterunit(unitfilter(base10_people,[f_class,class_bazooker]),HexInfo(75,134));
+
+
+               temp=CreateUnitsWithClass(4,class_bazooker,1);
+               temp_list=[[136,109],[139,111],[139,108],[138,106]];
+               temp_list2=[[135,110],[140,113],[142,109],[135,106]];
+               for i=1 to temp do
+               begin
+                    placeunitxy(temp[i],temp_list[i][1],temp_list[i][2],false);
+                    comenterunit(temp[i],HexInfo(temp_list2[i][1],temp_list2[i][2]));
+               end;
+
+               temp=CreateUnitsWithClass(3,class_soldier,1);
+               temp_list=[[58,4],[64,12],[76,12]];
+               temp_list2=[[55,4],[64,15],[79,15]];
+               for i=1 to temp do
+               begin
+                    placeunitxy(temp[i],temp_list[i][1],temp_list[i][2],false);
+                    comenterunit(temp[i],HexInfo(temp_list2[i][1],temp_list2[i][2]));
+               end;
+
+
+               //Technologies
+               Settech(tech_tech1,3,state_researched);       Settech(tech_tech1,7,state_researched);
+               Settech(tech_tech2,3,state_researched);       Settech(tech_tech2,7,state_researched);
+               Settech(tech_weap1,3,state_researched);       Settech(tech_weap1,7,state_researched);
+               Settech(tech_sib1,3,state_researched);        Settech(tech_sib1,7,state_researched);
+               Settech(tech_comp1,3,state_researched);       Settech(tech_comp1,7,state_researched);
+               Settech(tech_ST1,3,state_researched);         Settech(tech_ST1,7,state_researched);
+
+               if difficulty>1 then
+               begin
+                    Settech(tech_tech3,3,state_researched);  Settech(tech_tech3,7,state_researched);
+                    Settech(tech_weap2,3,state_researched);  Settech(tech_weap2,7,state_researched);
+                    Settech(tech_sib2,3,state_researched);   Settech(tech_sib2,7,state_researched);
+                    Settech(tech_comp2,3,state_researched);  Settech(tech_comp2,7,state_researched);
+                    Settech(tech_ST2,3,state_researched);    Settech(tech_ST2,7,state_researched);
+               end;
+
+               if difficulty=3 then
+               begin
+                    Settech(tech_weap3,3,state_researched);  Settech(tech_weap3,7,state_researched);
+                    Settech(tech_sib3,3,state_researched);   Settech(tech_sib3,7,state_researched);
+                    Settech(tech_comp3,3,state_researched);  Settech(tech_comp3,7,state_researched);
+                    //Settech(tech_ST3,3,state_researched);
+               end;
+
+               if difficulty=1 then
+                  SetTech(37,3,state_enabled);  //Limited teleportation
+
+          for i in filterallunits([f_type,unit_building]) do
+          begin
+               if GetBType(i) in [b_barracks,b_factory,b_workshop,b_depot,b_warehouse,b_teleport,b_lab_half,b_lab_full] then
+                  mainbuildings=mainbuildings^i;
+               if GetType(i)=unit_building and not GetBType(i) in [b_barracks,b_factory,b_workshop,b_depot,b_warehouse,b_teleport,b_lab_half,b_lab_full] then
+                  minorbuildings=minorbuildings^i;
+          end;
+
+          for i in filterallunits([[f_type,unit_human],[f_side,3]]) do
+              if not GetClass(i)=class_apeman_engineer then
+                 RussianPeople=RussianPeople^i;
+              
+
+
+          InitiateTimeShiftData;
+     end;
+Export Function CreateUnitsWithClass(num_units,un_class,base);
+     var i, overskill;
+     begin
+          result = [];
+
+          InitUc;
+          InitHc;
+
+          uc_side = GetBaseSide(base);
+          uc_nation = GetBaseNation(base);
+
+          overskill = difficulty + 7;
+
+          if un_class = class_bazooker then
+             case difficulty of
+                  1: overskill = 6;
+                  2: overskill = 7;
+                  3: overskill = 8;
+             end;
+                            
+          if un_class = class_soldier then
+             case difficulty of
+                  1: overskill = 7;
+                  2: overskill = 8;
+                  3: overskill = 9;
+             end;
+
+
+          for i = 1 to num_units do
+               begin
+                    PrepareHuman(false,un_class,overskill);
+
+                    result = result ^ CreateHuman;
+               end;
+     end;
+Export Function CreateApemenWithClass(num_units,un_class,base);
+     var i;
+     begin
+          result = [];
+
+          InitUc;
+          InitHc;
+          uc_side = GetBaseSide(base);
+          uc_nation = nation_nature;
+          hc_class = un_class;
+
+          for i = 1 to num_units do
+               begin
+                    hc_attr = [Rand(11,13),Rand(10,11)];
+                    hc_sex = Rand(sex_male,sex_female);
+                    hc_skills = [Rand(1,3),Rand(1,3),0,0];
+
+                    result = result ^ CreateHuman;
+               end;
+     end;
+Function PlaceComputerUnits(base,un_list,buildings_list);
+     var num, i, b;
+     begin
+          //buildings_list contains the buildings in which the units should be placed.
+          //It's assumed the buildings can contain 6 units (depot, armoury, workshop, lab).
+          //If there isn't space the rest is placed on the human pullback hex.
+
+          num = 1;
+          for b in buildings_list do
+               begin
+                    if num > un_list then
+                         break;
+
+                    for i = UnitsInside(b)+1 to 6 do
+                         begin
+                              if num > un_list  then
+                                   break;
+
+                              PlaceHumanInUnit(un_list[num],b);
+                              if GetBType(b) in [b_barracks,b_armoury] then
+                                 AddComExitBuilding(un_list[num]);
+
+                              num = num + 1;
+                         end;
+               end;     
+
+          for i = num to un_list do
+               PlaceUnitXYR(un_list[i],ai_human_pullback_hex[base][1],ai_human_pullback_hex[base][2],7,false);  
+
+     end;
+
+Function PrepareMines;
+     var hex, temp_list, i, k, temp_list_2, temp_list_3, y;
+     begin
+
+     end;
+
+
+
+
+//Strings display
+every 0$0.1 marked 1 do
+var col1,col2,col3,col4,strings,count1,count2,i,j,time;
+begin
+     strings=[];
+
+     //Mission time
+     if difficulty<3 and MissionEnd=0 then
+     begin                                                               
+          i=(90$0 - tick)/35;
+          i=i/60;
+          for j=1 to i do
+              time=time+1;
+          strings=strings^['#Ar14-MissionTimer',time];
+     end;
+
+     //Convoy Timer
+     if ConvoyTimer>0 then
+     begin
+          i=5$0 - (tick-ConvoyTimer);
+          i=i/35;
+          i=i/60;
+          time=0;
+          for j=1 to i do
+              time=time+1;
+          strings=strings^['#Ar14-ConvoyTimer',time];
+
+          if time=0 then
+             ConvoyTimer=0;
+     end;
+
+     //Monitoring how much resources and escort has the player prepared
+     if CratesPrepared < Crates_min[difficulty] then col1=3
+        else if CratesPrepared < Crates_max[difficulty] then col1=2
+                else col1=7;
+     
+     if OilPrepared < Oil_min[difficulty] then col2=3
+        else if OilPrepared < Oil_max[difficulty] then col2=2
+                else col2=7;
+
+     if SiberitePrepared < Sib_min[difficulty] then col3=3
+        else if SiberitePrepared < Sib_max[difficulty] then col3=2
+                else col3=7;
+
+     count1=0;
+     count2=0;
+     for i in EscortPrepared do
+         count1=count1+1;
+     for i in EscortPrepared_vehicles do
+         count2=count2+1;
+
+     if Count1>=Escortmin and Count2>=4 then col4=7
+     else col4=3;
+
+
+     
+     if MissionEnd then
+        strings=strings^['#Ar14-FinalCountdown',FinalCountdown]
+     else
+         if testing then
+            strings=strings^['#Am15-1',tick];  
+              
+
+     if enable_transport<2 then
+     begin
+          if enable_transport=0 then
+             strings=strings^['#Ar14-Crates',CratesPrepared,Crates_min[difficulty],
+                           {'#Ar14-Oil',OilPrepared,Oil_min[difficulty],}
+                           '#Ar14-Sib',SiberitePrepared,Sib_min[difficulty]]
+          else
+              strings=strings^['#Ar14-Crates_Prepared',col1,CratesPrepared,Crates_min[difficulty],
+                           {'#Ar14-Oil_Prepared',col2,OilPrepared,Oil_min[difficulty],}
+                           '#Ar14-Sib_Prepared',col3,SiberitePrepared,Sib_min[difficulty]];
+
+          if MissionEnd then
+             if EscortReady then
+                strings=strings^['#Ar14-Escort',col4]
+             else strings=strings^['#Ar14-Escort_no',col4,count1,Escortmin,count2,4];
+
+     end;
+
+     display_strings=strings;
+
+     enable;
+end;
+
+
+
+

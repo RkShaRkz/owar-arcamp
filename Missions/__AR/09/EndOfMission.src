@@ -1,0 +1,142 @@
+
+//Every which displays the area to run away when the mission can end.
+//Checks when player units reach the area.
+Every 0$1+0$0.2 trigger mission_can_end do
+     var list_all, list_in_area, i;
+     begin
+          SetAreaMapShow(mission_end_area,1);
+
+          repeat
+          wait(0$1);
+
+          list_in_area = FilterAllUnits([[f_side,you],[f_ok],[f_type,unit_human],[f_inarea,mission_end_area]]);  //Yup, including Gonzo
+          if list_in_area = 0 then
+               continue;
+
+          if Heike in list_in_area then
+               begin
+                    list_all = FilterAllUnits([[f_side,you],[f_ok],[f_type,unit_human]]);  //Yup, including Gonzo
+                    if list_in_area < list_all then
+                         if Query('QLeaveBehind') = 2 then  //"No"
+                              begin
+                                   wait(0$6);  //So we don't spam the player
+                                   continue;
+                              end;
+
+                    EndMission(list_in_area, FilterAllUnits([[f_side,you],[f_ok],[f_type,unit_vehicle],[f_occupied],[f_inarea,mission_end_area]]));
+                    exit;
+               end;
+
+          until false;
+     end;
+
+Function EndMission(people_list, vehicles_list);
+     var val, old_Heike, temp_list;
+     begin
+          EnableExclamations;  //DisableExclamations affects following missions too?
+
+          //Medals
+          //If the entrance dialogue has been played the player has very likely
+          //done some undercover action with Heike and not just turned away
+          //right after the dialogue.
+          if entrance_guard_dialogue_played then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('Strategy',val);
+
+          if num_sabotaged_cargo_bays >= 3 then
+               val = 1
+          else
+               if num_sabotaged_cargo_bays > 0 then
+                    val = -1
+               else
+                    val = -2;
+               
+          AddMedal('SupplySabotage',val);
+
+          if num_documents_stolen >= 35 then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('Intel',val);
+          SaveVariable(val = 1,'Extra_documents_stolen_09');
+
+          GiveMedals('Medals');
+
+
+          temp_list = [];
+          for val in vehicles_list do
+               temp_list = Insert(temp_list,1,[GetChassis(val),GetControl(val),GetEngine(val),GetWeapon(val),GetNation(val),GetFuel(val),GetLives(val)]);
+          SaveVariable(temp_list,'Vehicles_09');
+
+
+          //Reward and save people
+          RewardPeople(people_list);  //Yup, including Gonzo
+
+
+          val = GetLives(Heike);
+          if val > 500 then
+               val = 1000;
+
+          SaveVariable(val,'Heike_HP_09');
+
+          old_Heike = Heike;
+          Heike = NewCharacter('Heike');
+
+          CopySkills(old_Heike,Heike);
+
+          SaveCharacters(Heike,'Heike_09');
+
+
+          if Dwayne in people_list then
+               begin
+                    SaveCharacters(Dwayne,'Dwayne_09');
+
+                    val = GetLives(Dwayne);
+                    if val > 500 then
+                         val = 1000;
+
+                    SaveVariable(val,'Dwayne_HP_09');
+               end;
+
+          if Oswald in people_list then
+               begin
+                    SaveCharacters(Oswald,'Oswald_09');
+
+                    val = GetLives(Oswald);
+                    if val > 500 then
+                         val = 1000;
+
+                    SaveVariable(val,'Oswald_HP_09');
+                    SaveVariable(oswald_is_substitute,'Oswald_is_substitute_09');
+               end;
+          
+          if Kurt in people_list then
+               begin
+                    SaveCharacters(Kurt,'Kurt_09');
+
+                    val = GetLives(Kurt);
+                    if val > 500 then
+                         val = 1000;
+
+                    SaveVariable(val,'Kurt_HP_09');
+                    SaveVariable(kurt_is_substitute,'Kurt_is_substitute_09');
+               end;
+
+          if Gonzo in people_list then
+               begin
+                    SaveCharacters(Gonzo,'Gonzo_09');
+
+                    val = GetLives(Gonzo);
+                    if val > 500 then
+                         val = 1000;
+
+                    SaveVariable(val,'Gonzo_HP_09');
+               end;
+
+
+          YouWin;
+     end;

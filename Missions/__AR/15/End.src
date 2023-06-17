@@ -1,0 +1,261 @@
+
+on UnitDestroyed(un) do
+begin
+     if un = Heike then
+     begin
+          wait(0$2);
+          YouLost('HeikeDied');
+     end;
+
+     if un = Omar then
+     begin
+          wait(0$2);
+          YouLost('OmarDied');
+     end;
+
+     if un = Gensher then
+     begin
+          wait(0$2);
+          YouLost('GensherDied');
+     end;
+
+
+     if GetSide(un) = 2 then
+        if ( FilterAllUnits([[f_side,2],[f_type,unit_human],[f_placed],[f_or,[f_class,class_soldier],[f_class,class_mortar],[f_class,class_engineer],[f_class,class_mechanic],[f_class,class_scientistic]]]) diff [Heike, Omar, Gensher] ) < 3 then
+           YouLost('TooManyCasualties');
+
+     if GetClass(un) = class_tiger and IsTamedBy(un) then
+        StrikeForce_tigers = StrikeForce_tigers - 1;
+
+end;
+
+on TigerTamed(tiger, human) do
+begin
+     StrikeForce_tigers = StrikeForce_tigers + 1;
+
+end;
+
+Export Function EndMission;
+var i, j, temp, temp2, temp_vehicles, temp_list;
+begin
+     Randomize;
+     {
+     //change any engineer into some other class
+     for i in FilterAllUnits([[f_side,2],[f_class,class_engineer]]) do
+     begin
+          temp = [GetSkill(i,skill_combat),  GetSkill(i,skill_mechanical), GetSkill(i,skill_scientistic)];
+          j = 1;
+
+          if temp[2] > temp[1] and temp[2] > temp[3] then
+             j = 2
+          else
+              if temp[3] > temp[1] and temp[3] > temp[2] then
+                 j = 3;
+
+          case j of
+               1: SetClass(i, [class_soldier,class_mortar][rand(1,2)]);
+               2: SetClass(i, class_mechanic);
+               3: SetClass(i, class_scientistic);
+          end;
+     end;
+     }
+
+
+     //Save amount of players preparation
+     temp = FilterUnitsInArea(ExitArea, [[f_side,2],[f_weapon,ar_selfpropelled_bomb]]) * 2;
+     temp = temp + FilterUnitsInArea(ExitArea, [[f_side,2],[f_or,[f_weapon,ar_gun],[f_weapon,ar_gatling_gun],[f_weapon,ar_rocket_launcher],[f_weapon,ar_flame_thrower]
+                                                                ,[f_weapon,ru_gun],[f_weapon,ru_gatling_gun],[f_weapon,ru_rocket_launcher],[f_weapon,ru_heavy_gun]]]);
+
+     i = 0;
+
+     if temp > 8 then
+        i = i + 1;
+     if temp > 16 then
+        i = i + 1;
+     if temp > 24 then
+        i = i + 1;
+     if temp > 32 then
+        i = i + 1;
+
+     SaveVariable(i, '15_VehPreparationLvl');
+
+     j = i + ArtTechDoneCount;
+     if j > 4 then
+        j = 4;
+
+     SaveVariable(j, '15_EnemyDefencesLvl');
+
+     j = i * 0.5;
+     j = j + (ArtTechDoneCount * 0.5);
+
+     case difficulty of
+          2: j = j + 0.5;
+          3: j = j + 1;
+     end;
+
+     case j of
+          0.5: j = 0;
+          1.5: j = 1;
+          2.5: j = 2;
+          3.5: j = 3;
+     end;
+
+     SaveVariable(j, '15_EnemyTechLvl');
+
+     i = 0;
+     i = i + ArtTechDoneCount;
+
+     if AllianceDestroyed then
+        i = i + 2;
+
+     if i > 3 then
+        i = 3;
+
+     SaveVariable(i,  '15_EnemyVehsLvl');
+
+
+     StrikeForce_vehicles = [];
+     StrikeForce_drivers = [];
+     temp = [];
+
+     temp_vehicles = FilterUnitsInArea(ExitArea, [[f_side,2],[f_or,[f_control,control_manual],[f_control,control_rider]],[f_occupied]]);
+
+
+     for i in temp_vehicles do
+         temp = temp ^ IsDrivenBy(i);
+
+     StrikeForce_humans = FilterUnitsInArea(ExitArea, [[f_side,2],[f_type,unit_human]]) ^ temp diff [Heike, Omar, Gensher, Olaf, Oswald, Ralph, Sonya, Aviradze, Kowalski, Evelyn, Swansson, Dwayne, Khattam, Makise, Snake];
+
+     SaveCharacters(StrikeForce_humans, 'StrikeForce_Humans_15');  //contains others only
+
+
+     temp_vehicles = temp_vehicles ^ FilterUnitsInArea(ExitArea, [[f_side,2],[f_or,[f_control,control_remote],[f_control,control_apeman]]]);
+
+     for i in temp_vehicles do
+         StrikeForce_vehicles = StrikeForce_vehicles ^ [[GetNation(i), GetWeapon(i), GetChassis(i), GetControl(i), GetEngine(i),  GetCargo(i,mat_cans), GetCargo(i,mat_oil), GetCargo(i,mat_siberit), GetCargo(i,mat_artifact)]];
+          
+     SaveVariable(StrikeForce_vehicles, 'StrikeForce_Vehicles_15');  
+
+
+     //StrikeForce_drivers = order: [Heike, Omar, Gensher, Olaf, Oswald, Ralph, Sonya, Aviradze, Kowalski, Evelyn, Swansson, Dwayne, Khattam, Makise, Snake] ^ others
+     temp = [Heike, Omar, Gensher, Olaf, Oswald, Ralph, Sonya, Aviradze, Kowalski, Evelyn, Swansson, Dwayne, Khattam, Makise, Snake] ^ StrikeForce_humans;
+
+     for i = 1 to temp do
+         if IsInUnit(temp[i]) then
+         begin
+              for j = 1 to temp_vehicles do
+                  if IsInUnit(temp[i]) = temp_vehicles[j] then
+                  begin
+                       StrikeForce_drivers = StrikeForce_drivers ^ j;
+                       break;
+                  end;
+         end
+         else
+             StrikeForce_drivers = StrikeForce_drivers ^ 0;
+
+     SaveVariable(StrikeForce_Drivers, 'StrikeForce_Drivers_15');
+
+     SaveVariable(StrikeForce_Tigers, 'StrikeForce_Tigers_15');  //only holds the number of tigers tamed
+
+     temp = [Heike, Omar, Gensher, Olaf, Oswald, Ralph, Sonya, Aviradze, Kowalski, Evelyn, Swansson, Dwayne, Khattam, Makise, Snake];
+     temp2 = ['Heike', 'Omar', 'Gensher', 'Olaf', 'Oswald', 'Ralph', 'Sonya', 'Aviradze', 'Kowalski', 'Evelyn', 'Swansson', 'Dwayne', 'Khattam', 'Makise', 'Snake'];
+
+     for i = 1 to temp do
+         if temp > 0 then
+            SaveCharacters(temp[i], temp2[i] & '_15');
+
+
+     if GensherIsLeader then
+        SaveVariable(GensherIsLeader, 'GensherIsLeader_15');
+
+     if OswaldIsLeader then
+        SaveVariable(OswaldIsLeader, 'OswaldIsLeader_15');
+
+     if RalphIsLeader then
+        SaveVariable(RalphIsLeader, 'RalphIsLeader_15');
+
+     if KowalskiIsLeader then
+        SaveVariable(KowalskiIsLeader, 'KowalskiIsLeader_15');
+
+     if SwanssonIsLeader then
+        SaveVariable(SwanssonIsLeader, 'SwanssonIsLeader_15');
+
+     if DwayneIsLeader then
+        SaveVariable(DwayneIsLeader, 'DwayneIsLeader_15');
+
+
+     if OlafIsSupport then
+        SaveVariable(OlafIsSupport, 'OlafIsSupport_15');
+
+     if OswaldIsSupport then
+        SaveVariable(OswaldIsSupport, 'OswaldIsSupport_15');
+
+     if RalphIsSupport then
+        SaveVariable(RalphIsSupport, 'RalphIsSupport_15');
+
+     if SonyaIsSupport then
+        SaveVariable(SonyaIsSupport, 'SonyaIsSupport_15');
+
+     if AviradzeIsSupport then
+        SaveVariable(AviradzeIsSupport, 'AviradzeIsSupport_15');
+
+     if KowalskiIsSupport then
+        SaveVariable(KowalskiIsSupport, 'KowalskiIsSupport_15');
+
+     if EvelynIsSupport then
+        SaveVariable(EvelynIsSupport, 'EvelynIsSupport_15');
+
+     if SwanssonIsSupport then
+        SaveVariable(SwanssonIsSupport, 'SwanssonIsSupport_15');
+
+     if DwayneIsSupport then
+        SaveVariable(DwayneIsSupport, 'DwayneIsSupport_15');
+
+     if KhattamIsSupport then
+        SaveVariable(KhattamIsSupport, 'KhattamIsSupport_15');
+
+     if MakiseIsSupport then
+        SaveVariable(MakiseIsSupport, 'MakiseIsSupport_15');
+
+     if SnakeIsSupport then
+        SaveVariable(SnakeIsSupport, 'SnakeIsSupport_15');
+
+
+     if ATech_SibPlant = 3 then
+        SaveVariable(1, 'ArtTech_SibPlant_15');
+
+     if ATech_Beh = 3 then
+        SaveVariable(1, 'ArtTech_Beh_15');
+
+     if ATech_TimeLapse = 3 then
+        SaveVariable(1, 'ArtTech_TimeLapse_15');
+
+     if ATech_Laser = 3 then
+        SaveVariable(1, 'ArtTech_Laser_15');
+
+     if ATech_SuperStim = 3 then
+        SaveVariable(1, 'ArtTech_SuperStim_15');
+
+     if ATech_SPBomb = 3 then
+        SaveVariable(1, 'ArtTech_SPBomb_15');
+
+     if AllianceDestroyed then
+        SaveVariable(1, 'AllianceDestroyed_15');
+
+     temp = [tech_apelang, tech_tech1, tech_tech2, tech_tech3, tech_explos, tech_selfdest, tech_weap1, tech_weap2, tech_weap3, tech_remcharge, tech_opto1, tech_opto2, tech_opto3, tech_stimdrugs, tech_bio1, tech_bio2, tech_bio3, tech_sibcontam, tech_sib1, tech_sib2, tech_sib3];
+     temp_list = [];
+
+     for i in temp do
+         if GetTech(i,2) = state_researched then
+            temp_list = temp_list ^ i;
+
+     SaveVariable(temp_list, 'Technologies_15');
+
+
+     SaveCharacters(OtherTeam, 'SecondPlayerTeam_15'); //others from the second team only
+
+
+     ChangeMap('%_cont','%_cont');
+
+end;
+

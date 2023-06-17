@@ -1,0 +1,2014 @@
+
+//NOTE that in this mission player units are frequently removed and replaced on the map again, so
+//one has to be careful about how one asks if a unit is present, e.g. use GetLives instead of IsLive.
+
+//It's rather important that wheeled vehicles can make their way on the Legion base hill because Americans attack
+//with wheeled vehicles.
+
+{
+The outline of the mission is as follows:
+- The player takes over Legion's base.
+- Very short time hereafter Legion attacks with a weak force. They always have 1 implosion vehicle which triggers the secondary objective to capture one.
+- The player receives reinforcements.
+- Second Legion attack. This is timed so the player (on hard) won't be ready to destroy the last Legion control tower for the implosion vehicle objective, but
+the player should have people in the field working on it.
+- Heike wonders why the Americans haven't received reinforcements yet.
+- Third Legion attack. The player is expected to be ready to destroy the last Legion control tower (if optimizing, only with 1 soldier in the field). Legion
+attacks with bazookers for the first time indicating that Legion is working for the Russians (which explains why the Americans haven't sent reinforcements
+yet - the Russians are simultaneously attacking the Americans). On hard Legion sends an impostor against the American base. The player is expected to use a sniper to
+take care of him.
+- Fourth Legion attack. Big attack. On hard and medium a Legion impostor.
+- The player is allowed to attack the Americans.
+- A short while hereafter the Americans attack. The American base begins researching and building the siberite bomb.
+- The mission ends when the scientist contaminating the American siberite source is dead (one way or the other).
+
+Concerning balancing the implosion vehicle objectives with Legion attacks: In a test on medium difficulty with 2 snipers and 2 scientists starting at the
+lower eastern spawn point (they have just gone "downhill"), it took about 7 min to clear out the Legion remote controls.
+}
+
+{
+The amount of crates available to the player is based on the following concerns:
+- The player will as a minimum want to build 1 barracks (50 crates) and a bio/weapon lab (20+45+20 crates) = 135 crates. In the longer run the player
+may want to build an opto/sib lab (20+20+20 crates) and a factory (70 crates) with gun and rocket ext (25+25 crates) = 180 crates. After that maybe
+some bunkers (20 crates) with guns or rocket launchers (35, 40 crates).
+- In the American factory the player may want to build vehicles with double gun (75 crates) or gatling gun (55 crates).
+- The player doens't need to build a factory to build a remote control tower vehicle. He/she can just capture one of Legion's (two can be driven to the base).
+- A completely valid strategy is to dismantle large portions of the player's base. E.g. you won't ever need the defences pointing against the American
+base, and the southern part of the base is dispensable (and dismantling it actually makes it easier to defend the base all in all). This yields around
+90 crates depending on how much you dismantle.
+- The player starts with [160,120,80][difficulty] crates.
+
+Conclusion:
+On hard you find almost no crates in the Legion base and just what you need to fulfil the minimum in the abandoned American base. On easy you get almost
+everything you need from the Legion base and the abandoned American base.
+Crate spawning is scarce. The bulk of the crates available to the player is what he/she can find in the bases. This forces the player, on hard, to
+stick to typical Arabian strategies with bombs and man-power, perhaps a few American vehicles. On easy you can easily set up some standard fortifications.
+}
+
+
+Export Function GetApes(side);  //Note that this does not include units going "uphill" or "downhill"
+     begin
+          result = FilterAllUnits([[f_side,side],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+     end;
+
+Export Function GetMainPlayerCharacters;
+     begin
+          result = [Heike, Sonya, Oswald, Ralph, Kowalski, Evelyn, Olaf, Dwayne, Aviradze, Swansson, Khattam, Makise];
+     end;
+
+Export Function GetNonmainPlayerCharacters;  //Note that this does not include units going "uphill" or "downhill"
+     begin
+          result = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff (GetApes(you) ^ GetMainPlayerCharacters);
+     end;
+
+
+//When there are exactly three survivors left in the Legion base, they surrender.
+//We can't use event "UnitGoesToRed" because stimulation drugs causes humans not to trigger that event
+//until the unit dies.
+Every 0$1.1 do
+     var ok_list, wounded_list, i, un, temp_list, pris_map;
+     begin
+          repeat
+          wait(0$0.2);
+
+          ok_list = GetBaseHumans(1);
+          ok_list = UnitFilter(ok_list,[f_lives,251]);  //"f_ok" does not register red humans using stimulation drugs
+
+          until ok_list <= 3;
+
+          wounded_list = GetBaseHumans(1) diff ok_list;
+
+          //If somehow there are missing some ok people then take some of the wounded.
+          if ok_list < 3 then
+               begin
+                    for i = 1 to 3 - ok_list do
+                         begin
+                              if wounded_list = 0 then
+                                   break;
+
+                              ok_list = ok_list ^ wounded_list[1];
+                              wounded_list = Delete(wounded_list,1);
+                         end;
+               end;
+
+          //If there still are missing some people then spawn them.
+          if ok_list < 3 then
+               begin
+                    temp_list = CreateUnitsWithClass(3 - ok_list, class_engineer, 1);
+
+                    for i in temp_list do
+                         PlaceUnitXYR(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2],7,false);
+
+                    ok_list = ok_list ^ temp_list;
+               end;
+
+          //Pick one to talk, preferably one the player can see.
+          un = 0;
+          for i in ok_list do
+               if See(you,i) then
+                    begin
+                         un = i;
+                         break;
+                    end;
+
+          if un = 0 then
+               un = ok_list[1];
+
+          DialogueOn;
+
+          if GetSex(un) = sex_male then
+               ForceSay(un,'D3-PriM-1')
+          else
+               ForceSay(un,'D3-PriF-1');
+
+          DialogueOff;
+
+          //Kill off the remaining people
+          for i in wounded_list do
+               KillUnit(i);
+
+          //Convert prisoners
+          legion_prisoners = ok_list;
+          for i in legion_prisoners do
+               begin
+                    SetSide(i,you_alt);
+
+                    if GetClass(i) in [class_soldier,class_mortar] then
+                         SetClass(i,class_engineer);
+
+                    pris_map = Replace(pris_map,i,GetAttr(i,attr_stamina));
+                    SetAttr(i,attr_stamina,500);  //Temporarily almost invinsible so stray rockets and the like won't hurt
+                    if GetLives(i) <= 500 then
+                         SetLives(i,500);
+
+                    un = IsInUnit(i);
+                    if un > 0 then
+                         case GetType(un) of
+                              unit_building: ComExitBuilding(i);
+                              unit_vehicle: ComExitVehicle(i);
+                         end;
+               end;
+
+          //Disable the AI
+          ai_bases = ai_bases diff 1;
+
+          //The player conquers the base.
+          //Legion apemen simply become the player's apemen.
+          for i in FilterAllUnits([[f_side,legion],[f_type,unit_building],[f_inarea,big_hill_area]]) ^ ai_apemen_engineers[1] ^ UnitFilter(ai_soldiers[1],[f_or,[f_class,class_apeman],[f_class,class_apeman_engineer],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze]]) do
+               SetSide(i,you);  //Can't use "ai_all_buildings" because not all buildings are in that list in the case of this base
+
+          SetLegionMainDepotResources(true);
+          SetLegionSecondaryDepotResources(true);
+
+          wait(0$5);
+
+          DialogueOn;
+
+          ForceSay(Heike,'D3-H-1');
+          SayRadio(Abdul,'D3-Ab-1');
+          SayRadio(Abdul,'D3-Ab-2');
+          SayRadio(Abdul,'D3-Ab-3');
+          ForceSay(Heike,'D3-H-2');
+          ForceSay(Heike,'D3-H-3');
+
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M2');
+
+          wait(0$0.2);
+          Query('QUpDownHill');
+
+          legion_base_captured = true;
+          num_legion_prisoners = UnitFilter(legion_prisoners,[f_alive])+0;
+
+          for i in legion_prisoners do
+               SetAttr(i,attr_stamina,pris_map[i]);
+     end;
+Function GetBaseHumans(base);
+     begin
+          result = UnitFilter((ai_soldiers[base] ^ ai_attacking_soldiers[base] ^ ai_engineers[base] ^ ai_mechanics_defend[base] ^ ai_mechanics_attack[base] ^ ai_sib_bomb_mechanics[base] ^ ai_scientists[base] ^
+                   ai_attacking_scientists[base]) diff 0, [f_not,[f_or,[f_class,class_apeman],[f_class,class_apeman_engineer],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze]]]);
+     end;
+Every 1 trigger legion_prisoners > 0 do
+     var hp_map, i;
+     begin
+          //Even more security to make sure the prisoners stay alive after base surrender.
+
+          hp_map = [];
+          for i in legion_prisoners do
+               hp_map = Replace(hp_map,i,GetLives(i));
+
+          repeat
+          wait(1);
+
+          if legion_base_captured then
+               exit;
+
+          for i in legion_prisoners do
+               if hp_map <= i then
+                    if hp_map[i] > 0 then
+                         SetLives(i,hp_map[i]);
+
+          until false;
+     end;
+Export Function SetLegionMainDepotResources(checkIfIsLive);
+     var base;
+     begin
+          if IsLive(ai_depot[1]) or not checkIfIsLive then
+               begin
+                    base = GetBase(ai_depot[1]);
+
+                    SetResourceType(base,mat_cans,legion_main_depot_resources[1]);
+                    SetResourceType(base,mat_oil,legion_main_depot_resources[2]);
+                    SetResourceType(base,mat_siberit,legion_main_depot_resources[3]);
+               end;
+     end;
+Export Function SetLegionSecondaryDepotResources(checkIfIsLive);
+     var base;
+     begin
+          if IsLive(leg_dep_smal) or not checkIfIsLive then
+               begin
+                    base = GetBase(leg_dep_smal);
+
+                    SetResourceType(base,mat_cans,10*Rand(0,1));
+                    SetResourceType(base,mat_oil,Rand(1,2));  //Oil need here should be a real problem. Without any techs an oil power plant consumes 1 oil about every 3 seconds
+                    SetResourceType(base,mat_siberit,0);
+               end;
+     end;
+Export Function SetLoneAmDepotResources(checkIfIsLive);
+     var base;
+     begin
+          if IsLive(am_dep_2) or not checkIfIsLive then
+               begin
+                    base = GetBase(am_dep_2);
+
+                    SetResourceType(base,mat_cans,[90,70,50][difficulty] + 10*Rand(0,1));
+                    SetResourceType(base,mat_oil,Rand(300,500));
+                    SetResourceType(base,mat_siberit,[50,25,0][difficulty]);  //The player has 15 surplus crystals (after building a sib lab) + 18 from dismantling an implosion vehicle. An implosion vehicle costs 25 crystals.
+               end;
+     end;
+
+
+//Control the legion prisoners of war
+Every 0$1+0$0.3 trigger legion_base_captured do
+      var i, units_list, temp_list, temp_unit, temp_value, temp_list_2, k, humans_needing_healing, scis_present, time;
+     var temp_list_3, temp_list_4, normal_prisoners;
+     var vehicles_drivers, attack_cooldown, detect_attack_cooldown, time_to_escape_tick;
+     var escape_initiated, escaping_prisoners, rebellion, prisoner_info_shown, escape_cooldown, legion_attacking;
+     begin
+          vehicles_drivers = [];  //Index is vehicle id, value is driver id
+          attack_cooldown = 0$15;  //It takes 10 seconds before UnitShoot resets (add a little extra for safety).
+          detect_attack_cooldown = 0$5;  //To avoid the prisoners revolting immediately after being taken prisoners because of a stray rocket or similar.
+          time_to_escape_tick = 0;  //The time one or more prisoners will try to escape during a Legion attack.
+          escape_initiated = false;  //True when the prisoners decide they will try to escape.
+          escaping_prisoners = [];  //Identifiers of the prisoners trying to escape
+          rebellion = false;  //Turns true if the player shoots at the prisoners so they rebel
+          prisoner_info_shown = false;  //Flip switch for help dialogue so it is only shown once
+          escape_cooldown = 0$10;  //To avoid the prisoners trying to escape immediately after being taken prisoners.
+          legion_attacking = false;  //True if Legion has begun attacking the player's base.
+
+          repeat
+
+          time = 0$0.8;
+          wait(time);
+
+          legion_prisoners = UnitFilter(legion_prisoners,[f_alive]);
+
+          if legion_prisoners = 0 then
+               begin
+                    ExclusiveOn;
+                    wait(0$1);
+                    YouLost('PrisonersGone');
+                    ExclusiveOff;
+               end;
+
+          escaping_prisoners = UnitFilter(escaping_prisoners,[f_alive]);
+
+
+          //Determine if the prisoners will try to escape.
+          if escape_cooldown > 0$0 then
+               escape_cooldown = escape_cooldown - time;
+
+          if legion_attacking then
+               begin
+                    if DangerousUnits(FilterAllUnits([[f_side,legion],[f_inarea,big_hill_area]])) = 0 then
+                         legion_attacking = false;
+               end
+          else
+               begin
+                    if PlayerBaseUnderAttackByPseudoBase(3) then
+                         legion_attacking = true;
+               end;
+
+          if escape_initiated then  
+               if not legion_attacking and escaping_prisoners = 0 then  //Only try to escape once per attack
+                    begin
+                         escape_initiated = false;
+                         time_to_escape_tick = 0;
+                         attack_cooldown = 0$15;
+                    end;
+
+          if not escape_initiated and not rebellion and escape_cooldown <= 0$0 then
+               begin
+                    if legion_attacking and current_attack_num > 1 then  //Don't try to escape during the first small attack
+                         begin
+                              if FilterAllUnits([[f_side,you],[f_inarea,big_hill_area],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]],[f_ok],[f_not,[f_constructed]]]) = 0 then  //No depot
+                                   begin
+                                        escape_initiated = true;
+                                        escaping_prisoners = legion_prisoners;
+                                        SetAttitude(you,you_alt_escaping,att_neutral,true);
+                                   end
+                              else
+                                   begin
+                                        if time_to_escape_tick = 0 then
+                                             time_to_escape_tick = tick + Rand(0$4,0$10)
+                                        else
+                                             if tick >= time_to_escape_tick then
+                                                  begin
+                                                       escape_initiated = true;
+
+                                                       escaping_prisoners = [];
+                                                       temp_list = legion_prisoners;
+                                                       for i = 1 to [0,1,1][difficulty] do
+                                                            begin
+                                                                 if temp_list = 0 then
+                                                                      break;
+
+                                                                 temp_unit = temp_list[Rand(1,temp_list+0)];
+                                                                 temp_list = temp_list diff temp_unit;
+                                                                 escaping_prisoners = escaping_prisoners ^ temp_unit;
+                                                            end;
+
+                                                       SetAttitude(you,you_alt_escaping,att_neutral,true);
+                                                  end;
+                                   end;
+                         end
+                    else
+                         if (FilterAllUnits([[f_side,you],[f_inarea,big_hill_area],[f_type,unit_human],[f_ok]]) diff legion_prisoners) = 0 then
+                              begin
+                                   //No player units to guard the prisoners (even apes will do).
+                                   escape_initiated = true;
+                                   escaping_prisoners = legion_prisoners;
+                                   SetAttitude(you,you_alt_escaping,att_neutral,true);
+                              end;
+               end;
+
+          if not prisoner_info_shown and escape_initiated and GetAttitude(you,you_alt_escaping) = att_enemy then
+               begin
+                    prisoner_info_shown = true;
+                    Query('QPrisonersRecapture');
+               end;
+
+          for i in legion_prisoners_shot_to_red do
+               begin
+                    if GetLives(i) > 250 then
+                         begin
+                              legion_prisoners_shot_to_red = legion_prisoners_shot_to_red diff i;
+                              escaping_prisoners = escaping_prisoners diff i;
+                         end;
+               end;
+
+
+          //If the player shoots at the prisoners while they are held in the depot they rebel.
+          //ContactTime does not detect attacking with bombs. Instead we ask if any of the prisoners have been shot at
+          //by a player unit. UnitShoot detects bombs and attack ground (but not damage from e.g. exploding vehicles), and resets every 10 seconds.
+          if not escape_initiated and not rebellion then
+               begin
+                    if attack_cooldown > 0$0 then
+                         attack_cooldown = attack_cooldown - time;
+
+                    temp_value = false;
+                    if attack_cooldown <= 0$0 then
+                         begin
+                              temp_list = FilterAllUnits([f_side,you]);
+
+                              for i in legion_prisoners do
+                                   if UnitShoot(i) in temp_list then
+                                        begin
+                                             temp_value = true;
+                                             break;
+                                        end;
+                         end;
+
+                    if detect_attack_cooldown > 0$0 then
+                         detect_attack_cooldown = detect_attack_cooldown - time;
+
+                    if detect_attack_cooldown <= 0$0 and ( ContactTime([you,you_alt]) <= 0$2 or temp_value ) then
+                         begin
+                              rebellion = true;
+
+                              DialogueOn;
+
+                              if GetSex(legion_prisoners[1]) = sex_male then
+                                   Say(legion_prisoners[1],'D13-PriM-1')
+                              else
+                                   Say(legion_prisoners[1],'D13-PriF-1');
+
+                              DialogueOff;
+                         end;
+               end;
+
+
+          //Main control block
+          if rebellion then
+               begin
+                    //The Legion prisoners attack everything around them.
+                    //If they can they will steal empty vehicles.
+                    for i in UnitFilter(legion_prisoners,[f_not,[f_side,legion]]) do
+                         SetSide(i,legion);
+                    
+                    //Manage drivers for stolen vehicles
+                    for i in vehicle_captured_events do
+                         if vehicles_drivers >= i[1] then
+                              if vehicles_drivers[i[1]] > 0 then
+                                   begin
+                                        vehicles_drivers = Replace(vehicles_drivers,i[2],vehicles_drivers[i[1]]);
+                                        vehicles_drivers = Replace(vehicles_drivers,i[1],0);
+                                   end;
+
+                    vehicle_captured_events = [];
+
+                    units_list = legion_prisoners;
+
+                    for i = 1 to vehicles_drivers+0 do
+                         begin
+                              if vehicles_drivers[i] > 0 then
+                                   if not IsOk(i) or not IsOk(vehicles_drivers[i]) then
+                                        vehicles_drivers = Replace(vehicles_drivers,i,0);
+
+                              if vehicles_drivers[i] = 0 then
+                                   continue;
+
+                              units_list = units_list diff vehicles_drivers[i];
+
+                              temp_list = UnitsInside(i);
+                              if temp_list = 0 then
+                                   begin
+                                        temp_unit = IsInUnit(vehicles_drivers[i]);
+
+                                        if temp_unit = 0 then
+                                             ComEnterUnit(vehicles_drivers[i],i)
+                                        else
+                                             if temp_unit <> i then
+                                                  begin
+                                                       case GetType(temp_unit) of
+                                                            unit_building: ComExitBuilding(vehicles_drivers[i]);
+                                                            unit_vehicle: begin
+                                                                 //Inside another vehicle. Probably not going to happen but
+                                                                 //if it does then make the driver the driver for this vehicle instead
+                                                                 vehicles_drivers = Replace(vehicles_drivers,temp_unit,vehicles_drivers[i]);
+                                                                 vehicles_drivers = Replace(vehicles_drivers,i,0);
+                                                            end;
+                                                       end;
+                                                  end;
+                                   end
+                              else
+                                   if temp_list[1] = vehicles_drivers[i] then
+                                        units_list = units_list ^ i
+                                   else  //a player unit is inside the vehicle
+                                        vehicles_drivers = Replace(vehicles_drivers,i,0);
+                         end;
+
+                    //Control the prisoners
+                    for i in units_list do
+                         begin
+                              if GetType(i) = unit_human then
+                                   begin
+                                        if IsInUnit(i) > 0 then
+                                             if GetType(IsInUnit(i)) = unit_building then
+                                                  begin
+                                                       ComExitBuilding(i);
+                                                       continue;
+                                                  end;
+
+
+                                        //If there is an empty vehicle nearby then steal it (only war vehicles, though)
+                                        temp_list = EmptyWarVehicles(i,10,true);
+
+                                        if temp_list > 0 then
+                                             for k = 1 to vehicles_drivers do
+                                                  if vehicles_drivers[k] > 0 then
+                                                       begin
+                                                            temp_list = temp_list diff k;
+                                                            if temp_list = 0 then
+                                                                 break;
+                                                       end;
+
+                                        if temp_list > 0 then
+                                             begin
+                                                  temp_list_2 = [];
+                                                  for k in temp_list do
+                                                       temp_list_2 = temp_list_2 ^ GetDistUnits(k,i);
+
+                                                  temp_unit = WorstFromListByList(temp_list,temp_list_2);  //The nearest vehicle
+                                                  vehicles_drivers = Replace(vehicles_drivers,temp_unit,i);
+
+                                                  continue;
+                                             end;
+                                   end;
+
+
+                              //If the unit is near the base then start shooting at humans if possible - else vehicles and buildings.
+                              //Shoot at nearest non-human unit (not so important with human units since we just agressive move).
+                              if not IsInArea(i,legion_base) then
+                                   begin
+                                        ComAgressiveMove(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                                   end
+                              else
+                                   begin
+                                        temp_list = FilterAllUnits([[f_enemy,legion],[f_type,unit_human],[f_dist,i,14],[f_see,legion],[f_inarea,big_hill_area]]);
+                                        if temp_list > 0 then
+                                             begin
+                                                  //Finish off dying humans as first priority
+                                                  temp_list_2 = UnitFilter(temp_list,[f_not,[f_lives,250]]);
+                                                  if temp_list_2 > 0 then
+                                                       temp_list = temp_list_2;
+
+                                                  temp_unit = AllNearestUnitToUnit(temp_list,i);
+
+                                                  if GetLives(temp_unit) > 250 then
+                                                       ComAgressiveMove(i,GetX(temp_unit),GetY(temp_unit))
+                                                  else
+                                                       ComAttackUnit(i,temp_unit);
+                                             end
+                                        else
+                                             begin
+                                                  temp_list = UnitFilter(FindNonhumansNearUnit(legion,i,20,true),[f_inarea,big_hill_area]);
+                                                  if temp_list > 0 then
+                                                       begin
+                                                            ComAgressiveMove(i,GetX(temp_list[1]),GetY(temp_list[1]));
+                                                       end
+                                                  else
+                                                       begin
+                                                            temp_list = UnitFilter(FindNonhumansNearUnit(legion,i,20,false),[f_inarea,big_hill_area]);
+                                                            if temp_list > 0 then
+                                                                 begin
+                                                                      temp_unit = NearestUnitToUnit(temp_list,i);
+                                                                      ComAttackUnit(i,temp_unit);
+                                                                 end
+                                                            else
+                                                                 if GetDistUnitXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) > 5 then
+                                                                      ComAgressiveMove(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                                                       end;
+                                             end;
+                                   end;
+                         end;
+               end
+          else
+               begin
+                    //Normal prisoners (non-escaping)
+                    normal_prisoners = legion_prisoners diff escaping_prisoners;
+
+                    //Check for wounded prisoners.
+                    scis_present = UnitFilter(normal_prisoners,[[f_ok],[f_class,class_scientistic]]);
+                    humans_needing_healing = [];
+
+                    if scis_present > 0 then
+                         begin
+                              for i in normal_prisoners do
+                                   if GetLives(i) < 1000 then
+                                        humans_needing_healing = humans_needing_healing ^ i;
+
+                              //Don't go on if the only humans needing healing is the only healer.
+                              if humans_needing_healing+0 = 1 and scis_present+0 = 1 then
+                                   if humans_needing_healing[1] = scis_present[1] then
+                                        humans_needing_healing = [];
+                         end;
+
+                    //Heal folks if necessary.
+                    if humans_needing_healing > 0 then
+                         begin
+                              temp_list = GetHumansOutOfUnits(humans_needing_healing);
+
+                              for i in temp_list diff scis_present do
+                                   if GetDistUnitXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) > 4 then
+                                        ComMoveXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+
+                              temp_list_2 = GetHumansOutOfUnits(scis_present);
+
+                              if temp_list > 0 and temp_list_2 > 0 then
+                                   begin
+                                        //Find the red units to be healed. They have first priority.
+                                        temp_list_3 = [];
+                                        for i in temp_list do
+                                             if GetLives(i) <= 250 then
+                                                  begin
+                                                       temp_list_3 = temp_list_3 ^ i;
+                                                       temp_list = temp_list diff i;
+                                                  end;
+
+                                        //Don't make a scientist heal himself/herself.
+                                        for i in temp_list_2 do
+                                             begin
+                                                  temp_list_4 = UnitFilter(temp_list_3 diff i,[f_inarea,legion_base]);  //The units this scientist is allowed to heal
+
+                                                  if temp_list_4 = 0 then
+                                                       temp_list_4 = UnitFilter(temp_list diff i,[f_inarea,legion_base]);
+
+                                                  if temp_list_4 > 0 then
+                                                       ComHeal(i,NearestUnitToUnit(temp_list_4,i))
+                                                  else
+                                                       if GetDistUnitXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) > 4 then
+                                                            ComMoveXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                                             end;
+                                   end;
+                         end;
+
+                    //Enter the depot. Change side if necessary.
+                    //A human cannot enter a building if that building has another side than the human
+                    //but you can change the human's side after having entered.
+                    for i in normal_prisoners do
+                         begin
+                              if GetSide(i) <> you_alt then
+                                   SetSide(i,you_alt);  //"SendToDepot" may override this if necessary to enter depot
+                         end;
+
+                    temp_list = normal_prisoners;
+                    if humans_needing_healing > 0 then
+                         temp_list = temp_list diff (humans_needing_healing ^ scis_present);
+
+                    SendToDepot(temp_list);
+
+
+                    //Escaping prisoners
+                    temp_list = UnitFilter(escaping_prisoners,[f_ok]);
+
+                    for i in temp_list do
+                         if GetSide(i) <> you_alt_escaping then
+                              SetSide(i,you_alt_escaping);
+
+                    temp_list = GetHumansOutOfUnits(temp_list);
+
+                    for i in temp_list do
+                         begin
+                              if not IsInArea(i,prisoners_escape_area) then
+                                   ComMoveToArea(i,prisoners_escape_area)
+                              else
+                                   begin
+                                        legion_prisoners = legion_prisoners diff i;
+                                        escaping_prisoners = escaping_prisoners diff i;
+                                        DestroyUnit(i);
+                                   end;
+                         end;
+               end;
+
+          until false;
+     end;
+Function SendToDepot(unit_list);
+     var temp_list_2, building, i, task_list, val, inun, count_inside, hex_list;
+     begin
+          unit_list = SortListByListAsc(unit_list,unit_list);  //Make sure we give the same orders to the same people every time
+
+          //Find a depot to enter
+          temp_list_2 = FilterAllUnits([[f_side,you],[f_inarea,big_hill_area],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]],[f_ok],[f_not,[f_constructed]]]);
+          if temp_list_2 > 0 then
+               building = temp_list_2[1]
+          else
+               building = 0;
+
+          //Enter the depot. If no depot were found then just go to the center of the base.
+          //Max 5 people in the depot (has to be space for the player to change profession of a unit). The rest to
+          //the center of the base.
+          if building > 0 then
+               begin
+                    hex_list = [ ShiftX(GetX(building),GetDir(building),3) , ShiftY(GetY(building),GetDir(building),3) ]; //"Front door" hex of American depot
+
+                    temp_list_2 = UnitsInside(building) isect unit_list;
+                    count_inside = temp_list_2+0;
+
+                    for i = 6 to count_inside do
+                         ComExitBuilding(temp_list_2[i]);
+               end
+          else
+               count_inside = 0;
+
+          for i in unit_list do
+               begin
+                    inun = IsInUnit(i);
+
+                    if inun > 0 then
+                         begin
+                              case GetType(inun) of
+                                   unit_vehicle: begin
+                                        ComExitVehicle(i);
+                                   end;
+                                   unit_building: begin
+                                        if inun <> building then
+                                             ComExitBuilding(i);
+                                   end;
+                              end;
+
+                              continue;
+                         end;
+
+                    if building > 0 and count_inside < 5 then
+                         begin
+                              count_inside = count_inside + 1;
+
+                              if GetDistUnitXY(i,hex_list[1],hex_list[2]) <= 1 then
+                                   begin
+                                        SetSide(i,you);
+                                        ComEnterUnit(i,building);
+                                   end
+                              else
+                                   begin
+                                        //If the unit is already moving as it should then don't tell it to do it again.
+                                        //Prevents "lagg".
+                                        task_list = GetTaskList(i);
+                                        val = false;
+
+                                        if task_list = 0 then
+                                             val = true
+                                        else
+                                             if not task_list[1][1] = 'M' or task_list[1][2] <> hex_list[1] or task_list[1][3] <> hex_list[2] then
+                                                  val = true;
+
+                                        if val then
+                                             ComMoveXY(i,hex_list[1],hex_list[2]);
+                                   end;
+                         end
+                    else
+                         if GetDistUnitXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) > 4 then
+                              ComMoveXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+               end;
+     end;
+
+On UnitGoesToRed(un) do
+     begin
+          if un in legion_prisoners then
+               begin
+                    SetSide(un,you_alt);
+                    legion_prisoners_shot_to_red = legion_prisoners_shot_to_red union un;
+               end;
+
+          //Set depot resources so if the player destroys the depot, the remaining resources will be correct.
+          if GetSide(un) <> you then
+               begin
+                    if un = ai_depot[1] then  //Legion main depot
+                         SetLegionMainDepotResources(false);
+
+                    if un = leg_dep_smal then  //Legion secondary depot
+                         SetLegionSecondaryDepotResources(false);
+
+                    if un = am_dep_2 then  //American deserted depot
+                         SetLoneAmDepotResources(false);
+               end;
+     end;
+
+
+//Controlling player units moving up and down hill.
+Every 0$1+0$0.8 trigger legion_base_captured do
+     var c, temp_list, i, k, temp_list_2;
+     var area, query_string, target_area, spawn_directions;
+     var units_on_the_move, query_timer, time_to_wait, num_units_in_area, excepted_units, time_step;
+     begin
+          SetAreaMapShow(upper_west_area,3);
+          SetAreaMapShow(lower_west_area,3);
+          SetAreaMapShow(upper_east_area,5);
+          SetAreaMapShow(lower_east_area,5);
+
+          time_step = 0$0.5;
+          units_on_the_move = [];  //[[[un1,contr1],[un2,0],[un3,driver]],target_area,time_to_arrive]
+          query_timer = [0$0,0$0,0$0,0$0];
+          time_to_wait = [0$2.5,0$2.5,0$2.5,0$2.5];
+          num_units_in_area = [0,0,0,0];
+          excepted_units = [];  //Units that have just traveled must go outside the landing area before being able to travel again
+
+          //So the player won't receive the invitation to move units by accident if units are left in the areas when this event starts
+          excepted_units = FilterAllUnits([[f_side,you],[f_or,[f_type,unit_human],[f_type,unit_vehicle]]]);
+
+          repeat
+          wait(time_step);
+
+          //Spawn units that have arrived.
+          i = 1;
+          while i <= units_on_the_move+0 do
+               begin
+                    if tick >= units_on_the_move[i][3] then
+                         begin
+                              //Halt spawn until there are no enemies near the target area.
+                              case units_on_the_move[i][2] of
+                                   upper_west_area: begin
+                                        if DangerousUnits(FilterAllUnits([[f_enemy,you],[f_inarea,upper_west_vicinity_area]])) > 0 then
+                                             begin
+                                                  i = i + 1;
+                                                  continue;
+                                             end;
+                                   end;
+                                   lower_west_area: begin
+                                        if DangerousUnits(FilterAllUnits([[f_enemy,you],[f_inarea,lower_west_vicinity_area]])) > 0 then
+                                             begin
+                                                  i = i + 1;
+                                                  continue;
+                                             end;
+                                   end;
+                                   upper_east_area: begin
+                                        if DangerousUnits(FilterAllUnits([[f_enemy,you],[f_inarea,upper_east_vicinity_area]])) > 0 then
+                                             begin
+                                                  i = i + 1;
+                                                  continue;
+                                             end;
+                                   end;
+                                   lower_east_area: begin
+                                        if DangerousUnits(FilterAllUnits([[f_enemy,you],[f_inarea,lower_east_vicinity_area]])) > 0 then
+                                             begin
+                                                  i = i + 1;
+                                                  continue;
+                                             end;
+                                   end;
+                              end;
+
+                              temp_list = [];
+
+                              for k in units_on_the_move[i][1] do
+                                   begin
+                                        if not PlaceUnitArea(k[1],units_on_the_move[i][2],false) then  //Returns "false" if placement failed
+                                             temp_list = temp_list ^ [k]
+                                        else
+                                             begin
+                                                  traveling_humans = traveling_humans diff k[1];
+                                                  excepted_units = excepted_units ^ k[1];
+
+                                                  if k[2] > 0 then
+                                                       begin
+                                                            case GetControl(k[1]) of
+                                                                 control_manual, control_rider: begin
+                                                                      PlaceHumanInUnit(k[2],k[1]);
+                                                                      traveling_humans = traveling_humans diff k[2];
+                                                                      excepted_units = excepted_units ^ k[2];
+                                                                 end;
+                                                                 control_remote: ComLinkTo(k[1],k[2]);
+                                                            end;
+                                                       end;
+                                             end;
+                                   end;
+
+                              if temp_list > 0 then
+                                   units_on_the_move = Replace(units_on_the_move,i,[temp_list,units_on_the_move[i][2],units_on_the_move[i][3]])  //We try to place the unit again in the next iteration
+                              else
+                                   begin
+                                        units_on_the_move = Delete(units_on_the_move,i);
+                                        continue;
+                                   end;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          //Clean up excepted units
+          i = 1;
+          while i <= excepted_units do
+               begin
+                    {if not IsInArea(excepted_units[i],upper_west_area) and
+                       not IsInArea(excepted_units[i],lower_west_area) and
+                       not IsInArea(excepted_units[i],upper_east_area) and
+                       not IsInArea(excepted_units[i],lower_east_area) then}
+                    if GetDistUnitArea(excepted_units[i],upper_west_area) > 1 and
+                       GetDistUnitArea(excepted_units[i],lower_west_area) > 1 and
+                       GetDistUnitArea(excepted_units[i],upper_east_area) > 1 and
+                       GetDistUnitArea(excepted_units[i],lower_east_area) > 1 then
+                         begin
+                              excepted_units = Delete(excepted_units,i);
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          //Check if units are to be send marching.
+          for c = 1 to 4 do
+               begin
+                    case c of
+                         1: begin
+                              area = upper_west_area;
+                              target_area = lower_west_area;
+                              query_string = 'QDownWest';
+                              spawn_directions = [0,5];
+                         end;
+                         2: begin
+                              area = lower_west_area;
+                              target_area = upper_west_area;
+                              query_string = 'QUpWest';
+                              spawn_directions = [0,5];
+                         end;
+                         3: begin
+                              area = upper_east_area;
+                              target_area = lower_east_area;
+                              query_string = 'QDownEast';
+                              spawn_directions = [4,5];
+                         end;
+                         4: begin
+                              area = lower_east_area;
+                              target_area = upper_east_area;
+                              query_string = 'QUpEast';
+                              spawn_directions = [3,4];
+                         end;
+                    end;
+
+                    temp_list = [];
+                    for i in FilterAllUnits([[f_side,you],[f_or,[f_type,unit_human],[f_type,unit_vehicle]],[f_inarea,area],[f_ok]]) do  //"f_ok" takes stimulation drugs into consideration
+                         begin
+                              if i in excepted_units then
+                                   continue;
+
+                              if GetType(i) = unit_human then
+                                   begin
+                                        if IsInUnit(i) > 0 then
+                                             continue;
+
+                                        temp_list = Insert(temp_list,1,[i,0]);
+                                   end
+                              else  //vehicle
+                                   begin
+                                        case GetControl(i) of
+                                             control_manual, control_rider: begin
+                                                  k = UnitsInside(i);
+                                                  if k > 0 then
+                                                       begin
+                                                            if k in excepted_units then
+                                                                 continue;
+
+                                                            temp_list = Insert(temp_list,1,[i,k[1]]);
+                                                       end;
+                                             end;
+                                             control_remote: begin
+                                                  k = IsControledBy(i);
+                                                  if k > 0 then
+                                                       temp_list = Insert(temp_list,1,[i,k]);
+                                             end;
+                                             else begin
+                                                  temp_list = Insert(temp_list,1,[i,0]);
+                                             end;
+                                        end;
+                                   end;
+                         end;
+
+                    if temp_list = 0 then
+                         begin
+                              Replace(num_units_in_area,c,0);
+                              continue;
+                         end;
+
+                    if temp_list+0 <> num_units_in_area[c] then
+                         begin
+                              num_units_in_area = Replace(num_units_in_area,c,temp_list+0);
+                              query_timer = Replace(query_timer,c,0$0);
+                         end
+                    else
+                         begin
+                              if query_timer[c] < time_to_wait[c] then
+                                   query_timer = Replace(query_timer,c, query_timer[c] + time_step )
+                              else
+                                   begin
+                                        query_timer = Replace(query_timer,c,0$0);
+
+                                        if Query(query_string) = 1 then  //"Yes"
+                                             begin
+                                                  //Commence movement
+                                                  for i = 1 to temp_list+0 do
+                                                       begin
+                                                            if GetType(temp_list[i][1]) = unit_human then
+                                                                 begin
+                                                                      RemoveUnit(temp_list[i][1]);
+                                                                      traveling_humans = traveling_humans ^ temp_list[i][1];
+                                                                 end
+                                                            else //vehicle
+                                                                 begin
+                                                                      //We would like to turn the vehicle so it looks natural when it spawns again but to change
+                                                                      //the direction we have to destroy the vehicle and create a copy (c'mon OW, why?).
+                                                                      
+                                                                      case GetControl(temp_list[i][1]) of
+                                                                           control_manual, control_rider: begin
+                                                                                RemoveUnit(temp_list[i][2]);  //Driver
+                                                                                traveling_humans = traveling_humans ^ temp_list[i][2];
+                                                                           end;
+                                                                           control_remote: begin
+                                                                                ComUnlink(temp_list[i][1]);  //Remove control links persist through removal - we don't want that.
+                                                                           end;
+                                                                      end;
+
+                                                                      InitUc;
+                                                                      InitVc;
+
+                                                                      uc_side = you;
+                                                                      uc_nation = GetNation(temp_list[i][1]);
+                                                                      uc_direction = spawn_directions[Rand(1,spawn_directions+0)];
+                                                                      vc_chassis = GetChassis(temp_list[i][1]);
+                                                                      vc_control = GetControl(temp_list[i][1]);
+                                                                      vc_engine = GetEngine(temp_list[i][1]);
+                                                                      vc_weapon = GetWeapon(temp_list[i][1]);
+
+                                                                      temp_list_2 = [GetLives(temp_list[i][1]),
+                                                                                     GetFuel(temp_list[i][1]),
+                                                                                     GetCargo(temp_list[i][1],mat_artifact),
+                                                                                     GetCargo(temp_list[i][1],mat_cans),
+                                                                                     GetCargo(temp_list[i][1],mat_oil),
+                                                                                     GetCargo(temp_list[i][1],mat_siberit)];
+
+                                                                      DestroyUnit(temp_list[i][1]);
+                                                                      if temp_list_2[3] > 0 then
+                                                                           begin
+                                                                                //The artifact is not automatically destroyed when the cargo bay carrying it is
+                                                                                k = FindArtifact(4);
+                                                                                if k > 0 then  //should be the case
+                                                                                     ChangeResourceAmountXY(k[1],k[2],0);
+                                                                           end;
+
+                                                                      k = CreateVehicle;
+
+                                                                      SetLives(k,temp_list_2[1]);
+
+                                                                      if vc_engine in [engine_solar,engine_combustion] then
+                                                                           SetFuel(k,temp_list_2[2]);
+
+                                                                      if vc_weapon in [ar_cargo_bay,ru_cargo_bay,us_cargo_bay] then
+                                                                           begin
+                                                                                SetCargo(k,mat_artifact,temp_list_2[3]);
+                                                                                AddCargo(k,mat_cans,temp_list_2[4]);
+                                                                                AddCargo(k,mat_oil,temp_list_2[5]);
+                                                                                AddCargo(k,mat_siberit,temp_list_2[6]);
+                                                                           end;
+
+                                                                      temp_list_2 = Replace(temp_list[i],1,k);
+                                                                      temp_list = Replace(temp_list,i,temp_list_2);
+                                                                 end;
+                                                       end;
+
+                                                  units_on_the_move = Insert(units_on_the_move,1,[temp_list,target_area,tick + 0$30]);
+                                                  Replace(num_units_in_area,c,0);
+                                                  time_to_wait = Replace(time_to_wait,c,0$2.5);
+                                             end
+                                        else
+                                             time_to_wait = Replace(time_to_wait,c,0$5);
+                                   end;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//If the player attacks the American main base before being allowed to then we have a down.
+Every 0$1+0$0.4 do
+     var temp_list, i, counter;
+     begin
+          counter = 0;
+
+          repeat
+          wait(0$1);
+
+          if may_attack_americans then
+               exit;
+
+          if ContactTime([you,americans]) <= 0$1 then
+               counter = counter + 1;
+
+          if counter >= 5 then
+               begin
+                    temp_list = FilterAllUnits([f_side,you]);
+
+                    for i in ai_all_buildings[2] do
+                         if UnitShoot(i) in temp_list then
+                              begin
+                                   DialogueOn;
+                                   ForceSay(Makise,'D14-Ch-1');
+                                   DialogueOff;
+
+                                   ExclusiveOn;
+                                   wait(0$0.2);
+                                   YouLost('AmericansAttacked');
+                                   ExclusiveOff;
+
+                                   exit;
+                              end;
+               end;
+
+          until false;
+     end;
+
+
+//When a player unit enters the American barracks after taking over the Legion base they find some sniper rifles.
+//Control the total number of snipers the player can have.
+Every 0$1+0$0.5 do
+     var temp_list, temp_list_2, un, i, temp_list_3, a;
+     var max_snipers;
+     begin
+          max_snipers = [3,3,3][difficulty];
+
+          //The player finds the sniper rifles
+          repeat
+          wait(0$1);
+
+          if IsDead(am_bar) then
+               exit;
+
+          if GetSide(am_bar) <> you then
+               continue;
+
+          temp_list = UnitsInside(am_bar);
+          if temp_list > 0 then
+               begin
+                    temp_list_2 = temp_list isect ([Oswald,Ralph,Kowalski,Swansson] diff 0);
+                    if temp_list_2 > 0 then
+                         un = temp_list_2[Rand(1,temp_list_2+0)]
+                    else
+                         un = Heike;
+
+                    DialogueOn;
+
+                    case un of
+                         Oswald: Say(un,'D4-Os-1');
+                         Ralph: Say(un,'D4-Ra-1');
+                         Kowalski: Say(un,'D4-Ko-1');
+                         Swansson: Say(un,'D4-Sw-1');
+                         Heike: Say(un,'D4-H-1a');
+                    end;
+
+                    if un <> Heike then
+                         ForceSay(Heike,'D4-H-1b');
+
+                    DialogueOff;
+
+                    wait(0$0.2);
+                    Query('QSniper' & max_snipers);
+
+                    break;
+               end;
+
+          until false;
+
+          SetTech(tech_LasSight,you,state_researched);
+
+          //Control max number of snipers. Doing this through quick iteration like this is not as elegant
+          //as event controllen but much easier. E.g. event controlling has to take chaining of commands
+          //into consideration.
+          repeat
+          wait(0$0.2);
+
+          temp_list = FilterAllUnits([[f_side,you],[f_class,class_sniper]]);
+          if temp_list > max_snipers then
+               begin
+                    //Revert to class_soldier. Take units inside an American barracks as first priority as these are the ones
+                    //who have just changed class to sniper. Secondary are those close to the barracks.
+                    temp_list_2 = [];
+                    temp_list_3 = FilterAllUnits([[f_side,you],[f_btype,b_barracks],[f_nation,nation_american]]);
+
+                    for un in temp_list do
+                         begin
+                              if IsInUnit(un) in temp_list_3 then
+                                   temp_list_2 = temp_list_2 ^ 2
+                              else
+                                   begin
+                                        a = false;
+                                        for i in temp_list_3 do
+                                             begin
+                                                  if GetDistUnits(un,i) <= 6 then
+                                                       begin
+                                                            a = true;
+                                                            break;
+                                                       end;
+                                             end;
+
+                                        if a then
+                                             temp_list_2 = temp_list_2 ^ 1
+                                        else
+                                             temp_list_2 = temp_list_2 ^ 0;
+                                   end;
+                         end;
+
+                    temp_list = SortListByListAsc(temp_list, temp_list_2);
+
+                    for i = temp_list+0 downto max_snipers + 1 do
+                         SetClass(temp_list[i],class_soldier);
+               end;
+
+          if FilterAllUnits([[f_side,you],[f_class,class_sniper]]) >= max_snipers then
+               begin
+                    if GetTech(tech_lassight,you) = state_researched then
+                         SetTech(tech_lassight,you,state_disabled);
+               end
+          else
+               begin
+                    if GetTech(tech_lassight,you) = state_disabled then
+                         SetTech(tech_lassight,you,state_researched);
+               end;
+
+          until false;
+     end;
+
+
+//Ralph is given a sniper rifle.
+Every 0$1+0$0.6 do
+     var un, first_building;
+     begin
+          first_building = 0;  //We don't want him to talk the instant he turns into a sniper. Wait until he enters another building.
+
+          repeat
+          wait(0$1);
+
+          if GetLives(Ralph) = 0 or GetLives(Sonya) = 0 then
+               exit;
+
+          if ContactTime(you) <= 0$5 then
+               continue;
+
+          if GetClass(Ralph) <> class_sniper then
+               continue;
+
+          un = IsInUnit(Ralph);
+          if un = 0 or un = first_building then
+               continue;
+
+          if GetType(un) <> unit_building then
+               continue;
+
+          if first_building = 0 then
+               begin
+                    first_building = un;
+                    continue;
+               end;
+
+          DialogueOn;
+
+          ForceSay(Ralph,'D8-Ra-1');
+          dwait(0$1.5);
+          ForceSay(Ralph,'D8-Ra-2');
+          ForceSay(Sonya,'D8-So-1');
+          ForceSay(Ralph,'D8-Ra-3');
+
+          DialogueOff;
+
+          exit;
+
+          until false;
+     end;
+
+
+//When the player finishes a siberite lab. Makise tells they have to research the artifact.
+//We do this as busy waiting instead of an event because the player can theoretically capture
+//an American siberite lab.
+Every 0$1+0$0.7 trigger legion_base_captured do
+     var i, ext_built;
+     begin
+          repeat
+          wait(0$1);
+
+          ext_built = false;
+          for i in FilterAllUnits([[f_side,you],[f_or,[f_btype,b_lab_half],[f_btype,b_lab_full]],[f_not,[f_constructed]]]) do
+               if b_lab_siberium in [GetLabKind(i,1),GetLabKind(i,2)] then
+                    begin
+                         ext_built = true;
+                         break;
+                    end;
+
+          until ext_built;
+
+          DialogueOn;
+
+          ForceSay(Makise,'D5-Ch-1');
+          ForceSay(Heike,'D5-H-1');
+          ForceSay(Makise,'D5-Ch-2');
+          ForceSay(Heike,'D5-H-2');
+
+          DialogueOff;
+
+          wait(0$0.2);
+          Query('QArtifactResearch');
+     end;
+
+//When the player has investigated the artifact.
+Export Function OnArtifactInvestigated;
+     begin
+          DialogueOn;
+
+          ForceSay(Makise,'D15-Ch-1');
+
+          if GetLives(Oswald) > 0 then
+               begin
+                    ForceSay(Heike,'D15-H-1b');
+                    ForceSay(Oswald,'D15-Os-1');
+                    ForceSay(Heike,'D15-H-2b');
+               end
+          else
+               ForceSay(Heike,'D15-H-1a');
+
+          DialogueOff;
+
+          SetTech(tech_sibcontam,you,state_enabled);
+     end;
+
+//When the player has researched siberite contamination tech.
+//Next objective -> Contaminate the American siberite deposit. Can only be carried out when the
+//player is allowed to attack the Americans.
+Export Function OnResearchComplete_SibCon(tech,lab);
+     begin
+          if GetSide(lab) = you and tech = tech_sibcontam then
+               begin
+                    DialogueOn;
+
+                    ForceSay(Makise,'D24-Ch-1');
+                    ForceSay(Heike,'D24-H-1');
+                    ForceSay(Makise,'D24-Ch-2');
+                    ForceSay(Heike,'D24-H-2');
+                    ForceSay(Makise,'D24-Ch-3');
+                    ForceSay(Heike,'D24-H-3');
+
+                    if GetLives(Khattam) > 0 then
+                         begin
+                              ForceSay(Khattam,'D24-Kh-1');
+                              ForceSay(Heike,'D24-H-4');
+                              ForceSay(Khattam,'D24-Kh-2');
+                         end;
+
+                    ForceSay(Heike,'D24-H-5');
+                    ForceSay(Makise,'D24-Ch-4');
+                    ForceSay(Heike,'D24-H-6');
+                    ForceSay(Makise,'D24-Ch-5');
+                    ForceSay(Heike,'D24-H-7');
+
+                    DialogueOff;
+
+                    dwait(0$0.2);
+                    ChangeMissionObjectives('MContam');
+               end;
+     end;
+
+//If the player is bold enough to try and make Heike or Makise contaminate the deposit,
+//stop it. This approach works even when the game is paused.
+Export Function OnCommand_Contaminate(com);
+     var i, found, task;
+     begin
+          if com = 71 then  //Contaminate deposit
+               begin
+                    for i in [Heike,Makise] do
+                         if IsSelected(i) then
+                              begin
+                                   found = false;
+                                   for task in GetTaskList(i) do
+                                        if task[1] = 'G' then  //Contaminate deposit
+                                             begin
+                                                  found = true;
+                                                  break;
+                                             end;
+
+                                   if found then
+                                        begin
+                                             ComStop(i);  //Clears the task list.
+
+                                             async;  //Say this async so if the player gives the order to both Heike and Makise at the same time they are both stopped instantly + if the player gives the order quickly many times in a row
+                                             case i of
+                                                  Heike: ForceSay(i,'D18-H-1');
+                                                  Makise: ForceSay(i,'D18-Ch-1');
+                                             end;
+                                             sync;
+                                        end;
+                              end;
+               end;
+     end;
+
+//After contamination. The contaminating scientist inside a lab together with Makise.
+//The game engine makes the contaminating scientist lose life constantly - there is no saving him.
+//Removing him from the map stops the HP drain but it starts as soon as he is placed again
+//(so this works as intended with the "going uphill/downhill" thing).
+On SibDepositContaminated(sci,x_of_deposit,y_of_deposit) do
+     begin
+          contaminating_scientist = sci;
+     end;
+Every 0$1+0$0.3 trigger contaminating_scientist > 0 do
+     var b1, b2;
+     begin
+          repeat
+          wait(0$0.5);
+
+          if IsDead(contaminating_scientist) then
+               exit;
+
+          b1 = IsInUnit(contaminating_scientist);
+          b2 = IsInUnit(Makise);
+
+          if b1 = 0 or b2 = 0 then
+               continue;
+
+          if GetType(b1) <> unit_building or GetType(b2) <> unit_building then
+               continue;
+
+          if not GetBType(b1) in [b_lab,b_lab_half,b_lab_full] or not GetBType(b2) in [b_lab,b_lab_half,b_lab_full] then
+               continue;
+
+          if b1 <> b2 then
+               continue;
+
+          CenterOnUnits(b1);
+
+          DialogueOn;
+
+          ForceSay(Makise,'D16-Ch-1');
+
+          case contaminating_scientist of
+               Sonya: ForceSay(contaminating_scientist,'D16-So-1');
+               Oswald: ForceSay(contaminating_scientist,'D16-Os-1');
+               Ralph: ForceSay(contaminating_scientist,'D16-Ra-1');
+               Kowalski: ForceSay(contaminating_scientist,'D16-Ko-1');
+               Evelyn: ForceSay(contaminating_scientist,'D16-Ev-1');
+               Olaf: ForceSay(contaminating_scientist,'D16-Ola-1');
+               Dwayne: ForceSay(contaminating_scientist,'D16-Dw-1');
+               Aviradze: ForceSay(contaminating_scientist,'D16-Av-1');
+               Swansson: ForceSay(contaminating_scientist,'D16-Sw-1');
+               Khattam: ForceSay(contaminating_scientist,'D16-Kh-1');
+               Ortlieb: ForceSay(contaminating_scientist,'D16-Ort-1');
+               else
+                    if GetSex(contaminating_scientist) = sex_male then
+                         ForceSay(contaminating_scientist,'D16-SomeM-1')
+                    else
+                         ForceSay(contaminating_scientist,'D16-SomeF-1');
+          end;
+
+          ForceSay(Makise,'D16-Ch-2');
+
+          case contaminating_scientist of
+               Sonya: ForceSay(contaminating_scientist,'D16-So-2');
+               Oswald: ForceSay(contaminating_scientist,'D16-Os-2');
+               Ralph: ForceSay(contaminating_scientist,'D16-Ra-2');
+               Kowalski: ForceSay(contaminating_scientist,'D16-Ko-2');
+               Evelyn: ForceSay(contaminating_scientist,'D16-Ev-2');
+               Olaf: ForceSay(contaminating_scientist,'D16-Ola-2');
+               Dwayne: ForceSay(contaminating_scientist,'D16-Dw-2');
+               Aviradze: ForceSay(contaminating_scientist,'D16-Av-2');
+               Swansson: ForceSay(contaminating_scientist,'D16-Sw-2');
+               Khattam: ForceSay(contaminating_scientist,'D16-Kh-2');
+               Ortlieb: ForceSay(contaminating_scientist,'D16-Ort-2');
+               else
+                    if GetSex(contaminating_scientist) = sex_male then
+                         ForceSay(contaminating_scientist,'D16-SomeM-2')
+                    else
+                         ForceSay(contaminating_scientist,'D16-SomeF-2');
+          end;
+
+          ForceSay(Makise,'D16-Ch-3');
+          dwait(0$2.5);
+          ForceSay(Heike,'D16-H-1');
+          dwait(0$2);
+
+          if GetSex(contaminating_scientist) = sex_male then
+               ForceSay(Makise,'D16-Ch-4a')
+          else
+               ForceSay(Makise,'D16-Ch-4b');
+
+          ForceSay(Makise,'D16-Ch-5');
+          ForceSay(Heike,'D16-H-2');
+          ForceSay(Heike,'D16-H-3');
+
+          DestroyUnit(contaminating_scientist);  //Dies a tragic death
+          contaminating_scientist_went_to_lab = true;
+
+          DialogueOff;
+
+          EndDialogue;
+
+          exit;
+
+          until false;
+     end;
+
+//The mission ends when the contaminating scientist is dead.
+Every 0$1+0$0.4 trigger contaminating_scientist > 0 do
+     begin
+          repeat
+          wait(0$1);
+          until IsDead(contaminating_scientist);  //Works irrespective of whether the unit is placed on the map or not
+
+          wait(0$5);
+
+          EndDialogue;
+     end;
+Function EndDialogue;
+     begin
+          InGameOn;  //Necessary to hide the unit pane from where the contaminating scientist suddenly disappears
+          DialogueOn;
+
+          ForceSay(Heike,'D17-H-1');
+          SayRadio(Abdul,'D17-Ab-1');
+
+          dwait(0$0.2);
+          EndMission;
+
+          DialogueOff;
+          InGameOff;
+     end;
+
+
+//When biodetection is researched.
+Export Function OnResearchComplete_BioDet(tech,lab);
+     begin
+          if GetSide(lab) = you and tech = tech_biodet and GetLives(Aviradze) > 0 then
+               begin
+                    DialogueOn;
+
+                    ForceSay(Aviradze,'D6-Av-1');
+                    ForceSay(Heike,'D6-H-1');
+                    ForceSay(Aviradze,'D6-Av-2');
+                    ForceSay(Heike,'D6-H-2');
+                    ForceSay(Aviradze,'D6-Av-3');
+                    ForceSay(Heike,'D6-H-3');
+                    ForceSay(Aviradze,'D6-Av-4');
+                    ForceSay(Heike,'D6-H-4');
+
+                    DialogueOff;
+               end;
+     end;
+
+//Some time after biodetection is researched.
+Every 0$1+0$0.8 do
+     begin
+          if GetTech(tech_biodet,you) = state_disabled then
+               exit;
+
+          repeat
+          wait(0$1);
+          until GetTech(tech_biodet,you) = state_researched;
+
+          wait(0$30);
+
+          while ContactTime(you) <= 0$5 do
+               wait(0$1);
+
+          if GetLives(Ralph) = 0 or GetLives(Aviradze) = 0 then
+               exit;
+
+          DialogueOn;
+
+          ForceSay(Ralph,'D7-Ra-1');
+          ForceSay(Aviradze,'D7-Av-1');
+          ForceSay(Ralph,'D7-Ra-2');
+
+          if GetLives(Sonya) > 0 then
+               ForceSay(Sonya,'D7-So-1')
+          else
+               ForceSay(Heike,'D7-H-1');
+
+          ForceSay(Ralph,'D7-Ra-3');
+
+          DialogueOff;
+     end;
+
+
+//After Legion's first attack.
+//Implosion vehicle objective + reinforcements.
+Every 0$1+0$0.4 trigger current_attack_num = 1 do
+     var temp_list, un;
+     begin
+          repeat
+          wait(0$1);
+          temp_list = FilterAllUnits([[f_side,legion],[f_inarea,big_hill_area],[f_see,you]]);
+          until temp_list > 0;
+
+          DialogueOn;
+
+          CenterOnUnits(temp_list);
+          ForceSay(Heike,'D20-H-1');
+
+          DialogueOff;
+
+          //Wait until the attack is over
+          repeat
+          wait(0$1);
+          until DangerousUnits(FilterAllUnits([[f_side,legion],[f_inarea,big_hill_area]])) = 0; 
+
+          wait(0$8);
+
+          temp_list = UnitFilter([Sonya,Evelyn,Khattam] diff 0,[f_lives,1]);
+          if temp_list > 0 then
+               un = temp_list[Rand(1,temp_list+0)]
+          else
+               un = Makise;
+
+          DialogueOn;
+
+          case un of
+               Sonya: ForceSay(un,'D12-So-1');
+               Evelyn: ForceSay(un,'D12-Ev-1');
+               Khattam: ForceSay(un,'D12-Kh-1');
+               Makise: ForceSay(un,'D12-Ch-1');
+          end;
+
+          ForceSay(Heike,'D12-H-1');
+
+          case un of
+               Sonya: ForceSay(un,'D12-So-2');
+               Evelyn: ForceSay(un,'D12-Ev-2');
+               Khattam: ForceSay(un,'D12-Kh-2');
+               Makise: ForceSay(un,'D12-Ch-2');
+          end;
+
+          case un of
+               Sonya: ForceSay(Heike,'D12-H-2a');
+               Evelyn: ForceSay(Heike,'D12-H-2b');
+               Khattam: ForceSay(Heike,'D12-H-2c');
+               Makise: ForceSay(Heike,'D12-H-2d');
+          end;
+
+          ForceSay(Makise,'D12-Ch-3');
+          ForceSay(Heike,'D12-H-3');
+          ForceSay(Makise,'D12-Ch-4');
+
+          if GetLives(Ralph) > 0 then
+               ForceSay(Ralph,'D12-Ra-1');
+
+          ForceSay(Makise,'D12-Ch-5');
+
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M_AddImpVeh');
+
+          wait(0$0.2);
+          Query('QRemoteTakeover');
+
+
+          //Reinforcements from Gensher
+          wait(2$0);
+
+          for un in heike_reinforcements_people ^ heike_reinforcements_vehicles do
+               begin
+                    SetDir(un,4);
+                    PlaceUnitArea(un,attack_group_4_spawn_area,false);
+               end;
+
+          DialogueOn;
+
+          CenterOnUnits(heike_reinforcements_people ^ heike_reinforcements_vehicles);
+
+          Say(Ortlieb,'D21-Ort-1');
+          ForceSay(Heike,'D21-H-1');
+
+          DialogueOff;
+     end;
+
+//After Legion's second attack.
+//Heike wonders why the Americans haven't showed up with reinforcements yet.
+Every 0$1+0$0.1 trigger current_attack_num = 2 do
+     var temp_list, un;
+     begin
+          //Wait until the attack is over
+          repeat
+          wait(0$1);
+          until DangerousUnits(FilterAllUnits([[f_side,legion],[f_inarea,big_hill_area]])) = 0;
+
+          wait(Rand(2$30,3$30));
+
+          temp_list = UnitFilter([Sonya,Oswald,Kowalski,Evelyn,Olaf,Dwayne,Makise] diff 0,[f_lives,1]);
+          un = temp_list[Rand(1,temp_list+0)];  //We always at least have Makise
+
+          DialogueOn;
+
+          case un of
+               Sonya: ForceSay(un,'D10-So-1');
+               Oswald: ForceSay(un,'D10-Os-1');
+               Kowalski: ForceSay(un,'D10-Ko-1');
+               Evelyn: ForceSay(un,'D10-Ev-1');
+               Olaf: ForceSay(un,'D10-Ola-1');
+               Dwayne: ForceSay(un,'D10-Dw-1');
+               Makise: ForceSay(un,'D10-Ch-1');
+          end;
+
+          ForceSay(Heike,'D10-H-1');
+
+          case un of
+               Sonya: ForceSay(un,'D10-So-2');
+               Oswald: ForceSay(un,'D10-Os-2');
+               Kowalski: ForceSay(un,'D10-Ko-2');
+               Evelyn: ForceSay(un,'D10-Ev-2');
+               Olaf: ForceSay(un,'D10-Ola-2');
+               Dwayne: ForceSay(un,'D10-Dw-2');
+               Makise: ForceSay(un,'D10-Ch-2');
+          end;
+
+          ForceSay(Heike,'D10-H-2');
+
+          DialogueOff;
+     end;
+
+//The first time Legion attacks with bazookas.
+Every 0$1+0$0.2 do
+     var temp_list, un;
+     begin
+          repeat
+          wait(0$1);
+          temp_list = FilterAllUnits([[f_side,legion],[f_type,unit_human],[f_class,class_bazooker],[f_see,you]]);
+          until temp_list > 0;
+
+          DialogueOn;
+
+          CenterOnUnits(temp_list);
+
+          temp_list = UnitFilter([Oswald,Ralph,Kowalski,Evelyn,Swansson] diff 0,[f_lives,1]);
+          if temp_list > 0 then
+               un = temp_list[Rand(1,temp_list+0)]
+          else
+               un = 0;
+
+          case un of
+               Oswald: ForceSay(un,'D11-Os-1');
+               Ralph: ForceSay(un,'D11-Ra-1');
+               Kowalski: ForceSay(un,'D11-Ko-1');
+               Evelyn: ForceSay(un,'D11-Ev-1');
+               Swansson: ForceSay(un,'D11-Sw-1');
+          end;
+          
+          ForceSay(Heike,'D11-H-1');
+
+          temp_list = UnitFilter([Oswald,Ralph,Kowalski,Evelyn,Swansson,Makise] diff 0,[f_lives,1]);
+          un = temp_list[Rand(1,temp_list+0)];  //We always at least have Makise
+
+          case un of
+               Oswald: ForceSay(un,'D11-Os-2');
+               Ralph: ForceSay(un,'D11-Ra-2');
+               Kowalski: ForceSay(un,'D11-Ko-2');
+               Evelyn: ForceSay(un,'D11-Ev-2');
+               Swansson: ForceSay(un,'D11-Sw-2');
+               Makise: ForceSay(un,'D11-Ch-1');
+          end;
+
+          ForceSay(Heike,'D11-H-2');
+
+          DialogueOff;
+     end;
+
+//The player may start attacking the Americans after the final Legion attack.
+Every 0$1+0$0.2 trigger current_attack_num = 4 do
+     begin
+          //Wait until the attack is over
+          repeat
+          wait(0$1);
+          until DangerousUnits(FilterAllUnits([[f_side,legion],[f_inarea,big_hill_area]])) = 0;
+
+          wait(Rand(0$30,1$0));
+
+          DialogueOn;
+          SayRadio(Abdul,'D23-Ab-1');
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('MMayAttAm');
+          may_attack_americans = true;
+     end;
+
+
+//The player captures Legion remote vehicles.
+Every 0$1+0$0.1 trigger remote_vehicles_impossible do
+     var i;
+     begin
+          repeat
+          wait(0$1);
+
+          //This works under the assumption that Legion don't spawn remote vehicles any more from this point on.
+          for i in FilterAllUnits([[f_side,legion],[f_inarea,big_hill_area],[f_type,unit_vehicle],[f_control,control_remote],[f_lives,1000]]) do
+               SetSide(i,you);
+
+          until false;
+     end;
+
+//The player dismantles a siberite implosion vehicle.
+//This is a bit tricky since there is no event triggering on a vehicle being dismantled.
+Every 0$1+0$0.1 do
+     var vehicle_list, fact_list, coord_list, i, un, temp_list, louis_alive, dismantle_fact, f, temp_list_2;
+     begin
+          repeat
+          wait(0$0.5);
+
+          vehicle_list = FilterAllUnits([[f_side,you],[f_type,unit_vehicle],[f_weapon,ar_selfpropelled_bomb]]);
+          if vehicle_list = 0 then
+               continue;
+
+          fact_list = FilterAllUnits([[f_side,you],[f_type,unit_building],[f_or,[f_btype,b_workshop],[f_btype,b_factory]]]);
+          if fact_list = 0 then
+               continue;
+
+          //If a vehicle is being dismantled then its coodinates are either the same or just one hex away from the workshop's coordinates.
+          dismantle_fact = 0;
+          un = 0;
+
+          for f in fact_list do
+               begin
+                    coord_list = GetHexesNearHex(GetX(f),GetY(f),1);
+          
+                    for i in vehicle_list do
+                         begin
+                              if [GetX(i),GetY(i)] in coord_list then
+                                   begin
+                                        un = i;
+                                        dismantle_fact = f;
+                                        break;
+                                   end;
+                         end;
+
+                    if un > 0 then
+                         break;
+               end;
+
+          if un = 0 then
+               continue;
+
+          //Observe this vehicle until it is no more - then it must have been dismantled. This logic is flawed if the player
+          //dismantles several vehicles at the same time but this is very unlikely and complicated to accomodate.
+          repeat
+          wait(0$0.5);
+          until IsDead(un);
+
+          louis_alive := TestCharacters('Louis_08');
+          temp_list = UnitFilter([Olaf, Dwayne] diff 0,[f_lives,1]);
+
+          DialogueOn;
+
+          if temp_list > 0 then
+               begin
+                    //Take the person who is inside the factory that dismantled the vehicle, if any.
+                    temp_list_2 = [];
+                    for i in temp_list do
+                         if IsInUnit(i) = dismantle_fact then
+                              temp_list_2 = temp_list_2 ^ i;
+
+                    if temp_list_2 > 0 then
+                         temp_list = temp_list_2;
+
+                    un = temp_list[Rand(1,temp_list+0)];
+
+                    case un of
+                         Olaf: begin
+                              ForceSay(Olaf,'D25-Ola-1');
+
+                              if louis_alive then
+                                   begin
+                                        ForceSay(Olaf,'D25-Ola-2');
+                                        ForceSay(Heike,'D25-H-1a');
+                                        ForceSay(Olaf,'D25-Ola-3');
+                                   end;
+                         end;
+                         Dwayne: begin
+                              ForceSay(Dwayne,'D25-Dw-1');
+
+                              if louis_alive then
+                                   begin
+                                        ForceSay(Dwayne,'D25-Dw-2');
+                                        ForceSay(Heike,'D25-H-1b');
+                                        ForceSay(Dwayne,'D25-Dw-3');
+                                   end;
+                         end;
+                    end;
+
+                    if louis_alive then
+                         ForceSay(Heike,'D25-H-2');
+               end
+          else
+               ForceSay(Makise,'D25-Ch-1');
+                    
+
+          DialogueOff;
+          wait(0$0.2);
+
+          ChangeMissionObjectives('M_OutImpVeh');
+          sib_imp_veh_dismantled = true;
+          SetTech(72,you,state_enabled);  //Implosion tech
+
+          until true;
+     end;
+
+
+//The player finds the small abandoned American base.
+Every 0$1+0$0.8 trigger See(you,am_dep_2) do
+     var temp_list, un;
+     begin
+          temp_list = UnitFilter([Oswald,Kowalski,Swansson] diff 0,[f_lives,1]);
+          if temp_list > 0 then
+               un = temp_list[Rand(1,temp_list+0)]
+          else
+               begin
+                    temp_list = UnitFilter(GetNonmainPlayerCharacters,[f_lives,1]);
+                    if temp_list > 0 then
+                         un = temp_list[Rand(1,temp_list+0)]
+                    else
+                         exit;  //Drop the dialogue
+               end;
+
+          DialogueOn;
+
+          CenterOnUnits(am_dep_2);
+
+          case un of
+               Oswald: ForceSay(un,'D22-Os-1');
+               Kowalski: ForceSay(un,'D22-Ko-1');
+               Swansson: ForceSay(un,'D22-Sw-1');
+               else
+                    if un > 0 then
+                         if GetSex(un) = sex_male then
+                              ForceSay(un,'D22-SomeM-1')
+                         else
+                              ForceSay(un,'D22-SomeF-1');
+          end;
+
+          ForceSay(Heike,'D22-H-1');
+
+          DialogueOfF;
+     end;
+
+
+//Americans researching and building the siberite bomb. Begins when the American attacks begins.
+//Siberite fission research times with lvl 10 scis.
+//1 sci - 2330 sec (38.8 min)
+//2 sci - 1170 sec (19.5 min)
+//3 sci - 780 sec  (13 min)
+//4 sci - 580 sec  (9.7 min)
+//5 sci - 460 sec  (7.7 min)
+//6 sci - 390 sec  (6.5 min)
+//Building the bomb takes approximately 17 * 1500 / [number of mechanics with skill 10] ticks.
+//With 3 lvl 10 mecs that is ca. 4 min.
+//In a rush test on medium difficulty, repelling the American attack took about 1$0,
+//mustering forces before attacking around 2$0 and carrying out the attack (with loses) 4$0.
+Every 0$1.6 trigger current_attack_num = 5 do
+     var i, lab, base, timeout, val;
+     var sib_lab, research_time, started_tick;
+     begin
+          sib_lab = [0,0,0,0];
+
+          //prerequisites to siberite fission.
+          for i in [GetBaseSide(2)] do
+               begin
+                    SetTech(tech_sibdet,i,state_researched);
+                    SetTech(tech_sibpow,i,state_researched);
+                    SetTech(tech_sibeng,i,state_researched);
+                    SetTech(tech_gun,i,state_researched);
+                    SetTech(tech_rocket,i,state_researched);
+               end;
+
+          started_tick = tick;
+
+          research_time = [4$30+9$0 +11$0 ,
+                           3$0 +6$30+ 8$30,
+                           1$30+4$0 + 6$0 ][difficulty];
+          research_time = research_time - 4$0;  //The time it takes to build the bomb
+
+          repeat
+          wait(0$3);
+
+          if not 2 in ai_bases then
+               exit;
+
+          for base in [2] do
+               begin
+                    if not base in ai_bases then
+                         continue;
+
+                    //Start researching some time before construction of the bomb should occur. This should give enough time for the
+                    //research to be done.
+                    if not Researched(GetBaseSide(base),tech_sibfiss) then
+                         begin
+                              if tick < timeout - 25$0 then
+                                   continue;
+
+                              if IsDead(sib_lab[base]) or GetSide(sib_lab[base]) <> GetBaseSide(base) then
+                                   sib_lab = Replace(sib_lab,base,0);
+
+                              if sib_lab[base] = 0 then
+                                   begin
+                                        for i in UnitFilter(ai_all_buildings[base],[f_or,[f_btype,b_lab],[f_btype,b_lab_half],[f_btype,b_lab_full]]) do
+                                             if b_lab_siberium in [GetLabKind(i,1),GetLabKind(i,2)] then
+                                                  begin
+                                                       sib_lab = Replace(sib_lab,base,i);
+                                                       break;
+                                                  end;
+                                   end;
+
+                              if IsOk(sib_lab[base]) then
+                                   begin
+                                        //There isn't time to research the tech if we were to follow the rules, so we dont.
+                                        if IsIdle(sib_lab[base]) then
+                                             ComResearch(sib_lab[base],tech_sibfiss)
+                                        else
+                                             if UnitsInside(sib_lab[base]) > 0 then
+                                                  begin
+                                                       i = RoundToInteger(((tick - started_tick) / research_time) * 100);
+                                                       SetTechProgress(tech_sibfiss,GetBaseSide(base),i);
+                                                  end;
+                                   end;
+                         end
+                    else
+                         begin
+                              //Build it! But only build one.
+                              if ai_sib_bomb_vehicles[base] = 0 then
+                                   begin
+                                        if IsOk(ai_sib_bomb_fact[base]) and GetBType(ai_sib_bomb_fact[base]) = b_factory and IsIdle(ai_sib_bomb_fact[base]) then
+                                             case GetNation(ai_sib_bomb_fact[base]) of
+                                                  nation_american: ComConstruct(ai_sib_bomb_fact[base],us_heavy_tracked,engine_siberite,control_manual,us_siberium_rocket);
+                                                  nation_russian: ComConstruct(ai_sib_bomb_fact[base],ru_heavy_tracked,engine_siberite,control_manual,ru_siberium_rocket);
+                                             end;
+                                   end;
+                         end;
+               end;
+
+          until false;
+     end;
+Function RoundToInteger(num);
+     begin
+          result = num div 1;
+     end;

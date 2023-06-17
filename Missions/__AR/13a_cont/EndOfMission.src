@@ -1,0 +1,127 @@
+
+Every 0$1+0$0.2 trigger buildup_objective_can_be_completed and player_base_b_types = 0  //Objective "Build base"
+                        and am_scientists_escape_status = 2 and player_has_seen_am_labs_explode and americans_retreat  //Objective "Stop the Americans"
+                        and upf_attack_status = 6  //Objective "Survive UPF's attack"
+                        and not sib_rocket_fired do
+     begin
+          Wait(0$0.5);
+          EndMission;
+     end;
+
+Function EndMission;
+     var val, all_list, un_list, name_list;
+     var fast2, i, temp_list;
+     begin
+          //Medals
+          //The event with American reinforcements showing up may never happen
+          //if the player is fast enough.
+
+          //American scientists escape
+          if scientist_escaped then
+               val = -1
+          else
+               val = 1;
+
+          AddMedal('AmScisEscape',val);
+
+          //Gensher eliminated
+          if kill_gensher_objective_status = 2 then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('GensherEliminate',val);
+
+          //American reinforcements
+          if am_reinforcements_start and am_reinforcements_time <= 0$0 then
+               begin
+                    if am_reinforcements_got_through then
+                         val = -1
+                    else
+                         val = 1;
+
+                    AddMedal('AmReinforcements',val);
+                    fast2 = false;
+               end
+          else
+               begin
+                    AddMedal('DamnYouAreFast',1);
+                    fast2 = true;
+               end;
+
+          GiveMedals('Medals');
+
+
+          //Variables
+          SaveVariable(khattam_choice in [0,3],'Khattam_trusted_13a_cont');
+          SaveVariable(khattam_choice = 2,'Khattam_exiled_13a_cont');
+          SaveVariable(khattam_choice = 1,'Khattam_killed_13a_cont');
+          SaveVariable(upf_deserter_choice in [0,3],'UPF_deserter_trusted_13a_cont');
+          SaveVariable(upf_deserter_choice = 2,'UPF_deserter_exiled_13a_cont');
+          SaveVariable(upf_deserter_choice = 1,'UPF_deserter_killed_13a_cont');
+          SaveVariable(scientist_escaped,'Am_scientists_escaped_13a_cont');
+          SaveVariable(am_reinforcements_got_through,'Am_reinforcements_got_through_13a_cont');
+          SaveVariable(fast2,'Am_reinforcements_never_spawned_13a_cont');
+          SaveVariable(freelancers_bombing_start,'Freelancers_betray_Heike_13a_cont');
+          SaveVariable(freelancers_choice = 2 or louis_gordon_dispute_choice = 1 or freelancers_second_choice = 2,'Freelancers_sent_away_13a_cont');
+          SaveVariable(freelancers_second_choice = 1,'Freelancers_killed_13a_cont');
+          SaveVariable(not louis_gone,'Louis_stays_13a_cont');
+          SaveVariable(ListEnvironmentArea(whole_map_area),'Environment_13a_cont');
+
+          //Save what the player's base looks like
+          temp_list = [];
+          for i in FilterAllUnits([[f_side,you],[f_type,unit_building]]) do
+               temp_list = Insert(temp_list,1,[GetX(i),GetY(i),GetDir(i),GetBType(i),GetLabKind(i,1),GetLabKind(i,2),GetBWeapon(i),GetNation(i)]);
+
+          SaveVariable(temp_list,'Player_buildings_13a_cont');
+
+
+          //Reward and save people
+          all_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_alive]]) diff GetApes(you);
+
+          RewardPeople(all_list);
+
+          SaveCharacters(Heike,'Heike_13a_cont');
+
+          un_list = [Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt];
+          name_list = ['Olaf', 'Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Suze', 'MarkB', 'Kurt'];
+          for val = 1 to un_list do
+               if un_list[val] in all_list then
+                    SaveCharacters(un_list[val],name_list[val] & '_13a_cont');
+
+          SaveCharacters(all_list diff (GetMainPlayerCharacters ^ other_louis_folks ^ other_freelancers),'Others_13a_cont');
+
+          if GetLives(Khattam) > 0 then
+               SaveCharacters(Khattam,'Khattam_13a_cont');
+
+          if GetLives(upf_deserter) > 0 then
+               SaveCharacters(upf_deserter,'upf_deserter_13a_cont');
+
+          if GetLives(Louis) > 0 then
+               SaveCharacters(Louis,'Louis_13a_cont');
+
+          if GetLives(Martin) > 0 then
+               SaveCharacters(Martin,'Martin_13a_cont');
+
+          SaveCharacters(UnitFilter(other_louis_folks,[f_lives,1]),'Other_louis_folks_13a_cont');
+
+          if GetLives(Gensher) > 0 then
+               SaveCharacters(Gensher,'Gensher_13a_cont');
+
+          //if GetLives(Heinz) > 0 then  -> Unless the player shoots him despite he is an ally, he is alive
+               SaveCharacters(Heinz,'Heinz_13a_cont');
+
+          if GetLives(Gordon) > 0 then
+               SaveCharacters(Gordon,'Gordon_13a_cont');
+
+          if GetLives(Willard) > 0 then
+               SaveCharacters(Willard,'Willard_13a_cont');
+
+          SaveCharacters(UnitFilter(other_freelancers,[f_lives,1]),'Other_freelancers_13a_cont');
+
+          if GetLives(Hugh) > 0 then
+               SaveCharacters(Hugh,'Hugh_13a_cont');
+
+
+          YouWin;
+     end;

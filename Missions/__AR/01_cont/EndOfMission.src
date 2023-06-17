@@ -1,0 +1,71 @@
+
+EVERY 0$2 trigger GetLives(Heike) <= 250 do
+  begin
+    ExclusiveOn;
+    wait(0$1);
+    //end_of_mission:=-1; // you lost :-(
+    Youlost('HeikeDead');
+    ExclusiveOff;
+  end;
+
+// ending conditions
+// three times per second tests if Heike is in area 7 (right border of map) or
+//if Heike is in area 9 (bottom border of map) and is in any vehicle
+every 0$0.3 trigger IsOK(Heike) and ( ( IsInArea(Heike,EastSide) and east_escape_enabled ) or ( IsInArea(Heike,SouthSide) and IsInUnit(Heike) > 0 and south_escape_enabled ) ) do
+  begin
+    DialogueOn;
+
+    if IsOK(Olaf) then
+      begin
+// say goodbye to Olaf
+        CenterOnUnits(Heike);
+        Say(Olaf,'D11O1');
+        Say(Heike,'D11H1');
+      end;
+
+    dwait(0$0.2);
+    //end_of_mission:=1; // you win!
+    WinMap;
+    DialogueOff;
+  end;
+function WinMap;
+var veh_build, veh;
+begin
+    AddMedal('Heike',1);
+
+    if IsInArea(Heike,SouthSide) then
+         begin
+              AddMedal('SouthSide',1);
+              veh = IsInUnit(Heike);
+              veh_build = [GetChassis(veh),GetEngine(veh),control_manual,GetWeapon(veh),GetLives(veh)];
+         end
+    else
+         begin
+              AddMedal('SouthSide',2);
+              veh_build = [];
+         end;
+
+    if IsOk(Olaf) then
+         AddMedal('Olaf',1)
+    else
+         AddMedal('Olaf',-1);
+
+    GiveMedals('MAIN');
+
+    if not IsOK(Olaf) then
+         RewardPeople(Heike)
+    else
+         begin
+              RewardPeople([Heike,Olaf]);
+              SaveCharacters(Olaf,'Olaf_01_cont');
+         end;
+
+    SaveCharacters(Heike,'Heike_01_cont');
+
+    if GetLives(lost_american) > 0 and am_query_answer = 3 then
+         SaveCharacters(lost_american,'lost_american_01_cont');
+
+    SaveVariable(veh_build,'vehicle_01_cont');
+
+    YouWin;
+  end;

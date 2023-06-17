@@ -1,0 +1,2402 @@
+
+//The custom button does not work while the lab is working so we remove it when it does and place it again when it is done/cancels
+//the work.
+Export Function InitLab(lab);
+     begin
+          SetArtifactUse(you,art_use_exclamation,art_instant,lab);
+     end;
+Function DeInitLab(lab);
+     begin
+          SetArtifactUse(you,art_use_exclamation,art_no,lab);
+     end;
+On ResearchStarted(tech,lab) do
+     begin
+          if lab = button_lab then
+               DeInitLab(lab);
+     end;
+On ResearchCancel(tech,lab) do
+     begin
+          if lab = button_lab then
+               InitLab(lab);
+     end;
+On ResearchComplete(tech,lab) do
+     begin
+          if lab = button_lab then
+               InitLab(lab);
+     end;
+
+
+//After some time, Omar calls and tells that the Russians are stronger than the Americans.
+Every 0$1 do
+     begin
+          repeat
+          wait(0$1);
+          until intro_done;
+
+          wait(Rand(3$30,4$0));
+
+          DialogueOn;
+          SayRadio(Omar,'D2Om1');
+          Say(Heike,'D2H1');
+          SayRadio(Omar,'D2Om2');
+          Say(Heike,'D2H2');
+          SayRadio(Omar,'D2Om3');
+          Say(Heike,'D2H3');
+          DialogueOff;
+     end;
+
+
+//Every which checks if player has insulted the computer sides. Such can happen in different ways:
+//1 - the player attacks the side.
+//2 - the player steals a vehicle from the side (while was anything but enemy with the side).
+//3 - the player places soldiers and/or vehicles in the side's base area for too long (while neutral with the side).
+//4 - the player captures the computer's depot.
+//5 - the player builds a building inside the computer's base (while was neutral with the side).
+//6 - the player steals materials from the computer's depot.
+//If there has been contact between the player and a computer side then the computer side
+//has seen the player and can start attacking him/her.
+Every 0$1+0$0.1 do
+     var side, i, get_away_counter, area, t, no_get_away, contact_counter, no_contact;
+     begin
+          get_away_counter = [0,-1,0];  //Keeps approximative track of how long the player has had military units in a computer side's base
+          contact_counter = [0,-1,0];  //How long the player has attacked the side (there's a little tolerance - player units could attack by themselves)
+
+          repeat
+               for side in [americans,russians] do
+                    if not player_has_insulted_side[side] and diplomacy_status[side] > -1 then
+                         begin
+                              no_get_away = true;
+                              if GetAttitude(side,you) = att_neutral then
+                                   begin
+                                        case side of
+                                             americans: area = am_base;
+                                             russians: area = ru_base;
+                                        end;
+                                        
+                                        for i in FilterAllUnits([[f_side,you],[f_inarea,area]]) diff UnitFilter(ai_vehicles_defend[side] ^ ai_vehicles_attack[side],[f_side,you]) do
+                                             begin
+                                                  t = GetType(i);
+                                                  if t = unit_vehicle or ( t = unit_human and GetClass(i) in [class_soldier,class_apeman_soldier,class_apeman_kamikaze] ) then
+                                                       begin
+                                                            if get_away_counter[side] = 0 then
+                                                                 begin
+                                                                      DialogueOn;
+                                                                      case side of
+                                                                           americans: SayRadio(ai_commander[side],'DANgDo3');
+                                                                           russians: SayRadio(ai_commander[side],'DRNgTs4');
+                                                                      end;
+                                                                      DialogueOff;
+                                                                 end;
+
+                                                            get_away_counter = Replace(get_away_counter,side, get_away_counter[side] + 1);
+                                                            no_get_away = false;
+
+                                                            break;
+                                                       end;
+                                             end;
+                                   end;
+
+                              if no_get_away and get_away_counter[side] > 0 then
+                                   get_away_counter = Replace(get_away_counter,side, get_away_counter[side] - 1);
+
+
+                              no_contact = true;
+                              if ContactTime([side,you]) <= 0$5 then
+                                   begin
+                                        ai_player_seen = Replace(ai_player_seen,side,true);
+
+                                        for i in FilterAllUnits([f_side,you]) do
+                                             if GetSide(Attacks(i)) = side then
+                                                  begin
+                                                       contact_counter = Replace(contact_counter,side, contact_counter[side] + 1);
+                                                       no_contact = false;
+
+                                                       break;
+                                                  end;
+                                   end;
+
+                              if no_contact and contact_counter[side] > 0 then
+                                   contact_counter = Replace(contact_counter,side, contact_counter[side] - 1);
+
+                              
+                              if contact_counter[side] >= 6 or get_away_counter[side] >= 14 then
+                                   PlayerDidSomethingStupid(side);
+                         end;
+             
+               wait(0$0.5);
+
+          until ( player_has_insulted_side[americans] and player_has_insulted_side[russians] ) or ( diplomacy_status[americans] = -1 and diplomacy_status[russians] = -1 ) or not diplomacy_enabled;
+     end;
+On BuildingCaptured(captured_building,building_former_side,capturing_unit) do
+     var temp_list, side;
+     begin
+          if captured_building = ai_depot[americans] then
+               PlayerDidSomethingStupid(americans)
+          else
+               if captured_building = ai_depot[russians] then
+                    PlayerDidSomethingStupid(russians);
+
+          if captured_building in ai_depot then
+               begin
+                    //Set resource amounts to something realistic.
+                    //Remember this should be the same as in event UnitGoesToRed.
+                    SetResourceType(GetBase(captured_building),mat_cans,[150,100,50][difficulty] + Rand(0,5)*10);
+                    SetResourceType(GetBase(captured_building),mat_oil,300 + Rand(0,100));
+               end;
+
+          if building_former_side in [americans,russians] then
+               begin
+                    //Someone captured one of our buildings!
+                    RemoveBuildingFromVariables(building_former_side,captured_building);
+
+                    temp_list = ai_captured_buildings[building_former_side] ^ captured_building;
+                    ai_captured_buildings = Replace(ai_captured_buildings,building_former_side,temp_list);
+               end
+          else
+               begin
+                    //Ha! We captured it back again!
+                    side = GetSide(captured_building);
+                    if side in [americans,russians] then
+                         begin
+                              temp_list = ai_all_buildings[side] ^ captured_building;
+                              ai_all_buildings = Replace(ai_all_buildings,side,temp_list);
+
+                              UpdateBuildingBasicVariables(side,captured_building,true);
+
+                              temp_list = ai_captured_buildings[side] diff captured_building;
+                              ai_captured_buildings = Replace(ai_captured_buildings,side,temp_list);
+                         end;
+               end;
+     end;
+On UnitGoesToRed(un) do
+     begin
+          if un in ai_depot then
+               begin
+                    //Set resource amounts to something realistic.
+                    //Remember this should be the same as in event BuildingCaptured.
+                    SetResourceType(GetBase(un),mat_cans,[150,100,50][difficulty] + Rand(0,5)*10);
+                    SetResourceType(GetBase(un),mat_oil,300 + Rand(0,100));
+               end;
+     end;
+Export Function PlayerDidSomethingStupid(side);
+     begin
+          player_has_insulted_side = Replace(player_has_insulted_side,side,true);
+          ai_player_seen = Replace(ai_player_seen,side,true);
+          
+          DialogueOn;
+          case side of
+               americans:
+                    if GetAttitude(you,side) = att_neutral or americans_thinking > 0 then  //When attacks att_neutral it becomes att_enemy automatically
+                         begin
+                              SayRadio(ai_commander[side],'DANgDo2');
+
+                              if americans_thinking > 0 then
+                                   diplomacy_status = Replace(diplomacy_status,side,-1);
+                         end
+                    else
+                         if GetAttitude(you,side) = att_friend then
+                              begin
+                                   SayRadio(ai_commander[side],'DAFgDo1');
+                              end;
+               russians:
+                    if GetAttitude(you,side) = att_neutral then
+                         SayRadio(ai_commander[side],'DRNgTs2');
+          end;
+          DialogueOff;
+
+          SetPermanentlyEnemy(side,false);
+     end;
+Function SetPermanentlyEnemy(side,kill_first);
+     var i;
+     begin
+          if kill_first and tech_deal[side] > 0 then
+               KillApeScientist(side);
+
+          SetNewAttitude(you,side,att_enemy,true);
+
+          ReturnBorrowedUnits(ai_lended_units[side],false);
+          ai_lended_units = Replace(ai_lended_units,side,[]);
+
+          //CF. event "VehicleCaptured" module "AI"
+          for i in ai_vehicles_defend[side] do
+               if GetSide(i) <> side then
+                    RemoveVehicleFromVariables(side,i);
+
+          if not kill_first and tech_deal[side] > 0 then
+               KillApeScientist(side);
+     end;
+Function KillApeScientist(side);
+     var area;
+     begin
+          if tech_deal[side][2] > 0 then
+               begin
+                    CenterOnUnits(ai_lab[side]);
+                    wait(0$1);
+                    SetSide(tech_deal[side][2],you);
+                    ComExitBuilding(tech_deal[side][2]);
+                    wait(0$1);
+                    KillUnit(tech_deal[side][2]);
+                    wait(0$2.2);
+               end;
+
+          tech_deal = Replace(tech_deal,side,[]);
+
+          case side of
+               americans: area = am_base;
+               russians: area = ru_base;
+          end;
+          SetAreaMapShow(area,0);
+
+          //if GetAttitude(you,side) = att_enemy then
+          //     diplomacy_status = Replace(diplomacy_status,side,-1);
+     end;
+
+//If the player steals resources from an ally computer (instead of asking for them) the computer
+//is getting pissed.
+On Command(com) do
+     var b, temp_list, t;
+     begin
+          if com = 60 then  //Pick up material from depot
+               begin
+                    for b in FilterAllUnits([[f_side,you],[f_or,[f_class,class_engineer],[f_class,class_apeman_engineer]]]) do
+                         if not b in going_to_steal_engineers then
+                              if HasTask(b) then
+                                   //Pick material from depot in task list format is ['<',depot_x,depot_y,depot,material_type,0,0]
+                                   begin
+                                        for t in GetTaskList(b) do
+                                             begin
+                                                  if t[1] = '<' and t[4] in ai_depot then
+                                                       begin
+                                                            going_to_steal_engineers = going_to_steal_engineers ^ b;
+                                                            break;
+                                                       end;
+                                             end;
+                                   end;
+               end;
+     end;
+//Check if the registered engineers actually have stolen from a depot. If the engineer is carrying anything near a depot then
+//we presume it is the case.
+//This will wrongly deduce that an engineer has stolen from a depot if an engineer not carrying anything is given a command
+//to pick up a crate, then added a command to go closely past a depot and then added a command to pick material up from a
+//depot. Very odd and rare case...
+Every 0$0.5 do
+     var un, temp_list, side, t;
+     begin
+          if going_to_steal_engineers > 0 then
+               begin
+                    for un in going_to_steal_engineers do
+                         if Carry(un) then
+                              begin
+                                   for side = 1 to ai_depot do
+                                        if GetDistUnits(ai_depot[side],un) <= 4 then
+                                             PlayerDidSomethingStupid(side);
+                              end;
+
+                    going_to_steal_engineers = UnitFilter(going_to_steal_engineers,[f_hastask]);
+
+                    temp_list = [];
+                    for un in going_to_steal_engineers do
+                         begin
+                              for t in GetTaskList(un) do
+                                   if t[1] = '<' then
+                                        begin
+                                             temp_list = temp_list ^ un;
+                                             break;
+                                        end;
+                         end;
+                    going_to_steal_engineers = temp_list;
+               end;
+
+          enable;
+     end;
+
+//If the player steals a vehicle from the computer, it's not gonna be happy either. Only goes for vehicles defending
+//the base. If the player repairs a vehicle in the field (an attacking vehicle) and takes it, it's ok (because it's most likely been abandoned
+//then).
+Every 0$1+0$0.2 do
+     var area, side, temp_list;
+     begin
+         
+          repeat
+          wait(0$1);
+
+          for side in [americans,russians] do
+               begin
+                    if not ( GetAttitude(side,you) <> att_enemy and not player_has_insulted_side[side] and diplomacy_status[side] > -1 and diplomacy_enabled ) then
+                         continue;
+
+                    case side of
+                         americans: begin
+                              area = am_base;
+                         end;
+                         russians: begin
+                              area = ru_base;
+                         end;
+                    end;
+
+                    temp_list = UnitFilter(ai_vehicles_defend[side],[[f_side,you],[f_not,[f_empty]]]);
+                    //temp_list = temp_list diff ListFilterNearBaseArea(temp_list,area);
+                    temp_list = temp_list diff ai_lended_units[side];
+
+                    if temp_list > 0 then
+                         PlayerDidSomethingStupid(side);
+               end;
+
+          until false;
+     end;
+
+
+//When player clicks the "use radio"-button in the lab.
+On ArtifactUsed(out1,out2,out3,out4) do
+     var temp_list, val, comm, i, query_pick, temp_list_2, temp_list_3;
+     begin
+          if not IsOk(Heike) or ContactTime(you) < 0$10 then
+               begin
+                    Query('HeikeCantTalk');
+                    exit;
+               end;
+
+          DialogueOn;
+
+          if radio_cancel_count >= 2 then
+               begin
+                    radio_cancel_count = 0;
+
+                    if radio_joke_list = 0 then
+                         radio_joke_list = [1,2,3,4,5,6,7];
+
+                    temp_list = radio_joke_list;  //Necessary because of SAIL weirdness
+                    val = temp_list[Rand(1,temp_list)];
+                    radio_joke_list = radio_joke_list diff val;
+                    
+                    Query('RadioJoke' & val);
+               end
+          else
+               begin
+                    temp_list = [3];
+
+                    if GetAttitude(americans,you) = diplomacy_status[americans] and IsLive(ai_commander[americans]) and not player_attack_warning[americans] and resources_computer_to_player[americans] = 0 and resource_deal[americans] = 0 and tech_deal[americans] = 0 and americans_thinking = 0 and ai_lended_units[americans] = 0 and not human_lended_unit_has_died[americans] then
+                         temp_list = temp_list ^ 1;
+
+                    val = true;
+                    if tech_deal[russians] > 0 then
+                         if tech_deal[russians][1] <> 0$0 then
+                              val = false;
+                    if GetAttitude(russians,you) = diplomacy_status[russians] and IsLive(ai_commander[russians]) and not player_attack_warning[russians] and resources_computer_to_player[russians] = 0 and resource_deal[russians] = 0 and val then
+                         temp_list = temp_list ^ 2;
+
+                    case SelectiveQuery('RadioMain',temp_list) of  //Call Americans|Call Russians|Cancel
+                         1: begin
+                              radio_cancel_count = 0;
+                              comm = ai_commander[americans];
+
+                              if not IsOk(comm) then
+                                   begin
+                                        Query('DonaldsonWounded');
+                                        DialogueOff;
+                                        exit;
+                                   end;
+
+                              case diplomacy_status[americans] of
+                                   att_enemy: begin
+                                        query_pick = SelectiveQuery('RadioAmericansEnemy',enemy_query_options[americans]);
+                                        if query_pick = 6 then  //Cancel
+                                             begin
+                                                  DialogueOff;
+                                                  exit;
+                                             end;
+                                        temp_list = enemy_query_options[americans] diff query_pick;
+                                        enemy_query_options = Replace(enemy_query_options,americans,temp_list);
+
+                                        number_of_calls = Replace(number_of_calls,americans, number_of_calls[americans] + 1);
+
+                                        ai_player_seen = Replace(ai_player_seen,americans,true);  //This side now knows the player is present and will start attacking the player
+
+                                        personal_issues_taken = Replace(personal_issues_taken,americans,false);
+
+                                        Say(Heike,'DAgH1');
+                                        
+                                        if number_of_calls[americans] = 1 then
+                                             SayRadio(comm,'DAgDo1')
+                                        else
+                                             begin
+                                                  SayRadio(comm,'DAgDo2');
+                                                  Say(Heike,'DAgH2');
+
+                                                  val = false;
+                                                  if player_has_insulted_side[americans] then
+                                                       begin
+                                                            SayRadio(comm,'DAgDo4');
+                                                            val = true;
+                                                       end
+                                                  else
+                                                       if tick - last_call_time[americans] < last_call_time_timeout or number_of_calls[americans] >= [5,4,3][difficulty] then
+                                                            begin
+                                                                 SayRadio(comm,'DAgDo3');
+                                                                 val = true;
+                                                            end;
+
+                                                  if val then
+                                                       begin
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,americans,-1);
+                                                            exit;
+                                                       end;
+                                             end;
+
+                                        last_call_time = Replace(last_call_time,americans,tick);
+
+                                        case query_pick of
+                                             1: begin  //Group of mercenaries
+                                                  Say(Heike,'DA1H1');
+
+                                                  if player_has_insulted_side[americans] then
+                                                       begin
+                                                            SayRadio(comm,'DAgDo4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,americans,-1);
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DA1Do1');
+                                                  Say(Heike,'DA1H2');
+                                                  SayRadio(comm,'DA1Do2');
+                                                  Say(Heike,'DA1H3');
+
+                                                  if tick < russians_get_stronger_time then
+                                                       begin
+                                                            SayRadio(comm,'DA1Do3a');
+
+                                                            if not IsOk(saved_am) then
+                                                                 begin
+                                                                      EvaluateCall;
+                                                                      DialogueOff;
+                                                                      exit;
+                                                                 end;
+                                                            
+                                                            SayRadio(saved_am,'DAgSavedAm1');
+                                                            SayRadio(comm,'DAgDo5');
+                                                            SayRadio(saved_am,'DAgSavedAm2');
+                                                            SayRadio(comm,'DAgDo6');
+                                                            Say(Heike,'DAgH3');
+                                                            SayRadio(saved_am,'DAgSavedAm3');
+                                                            SayRadio(comm,'DAgDo7');
+                                                       end
+                                                  else
+                                                       SayRadio(comm,'DA1Do3b');
+
+                                                  SayRadio(comm,'DA1Do4');
+
+                                                  DWait(0$0.2);
+                                                  case Query('MercenaryPrice') of  //Nothing|50 crates|80 crates|110 crates
+                                                       1: begin
+                                                            Say(Heike,'DA11H1');
+                                                            SayRadio(comm,'DA11Do1');
+                                                            EvaluateCall;
+                                                       end;
+                                                       2: begin
+                                                            Say(Heike,'DA12H1');
+                                                            SayRadio(comm,'DA12Do1');
+
+                                                            UpgradeDiplomacy(americans,att_neutral);
+                                                            resources_computer_to_player = Replace(resources_computer_to_player,americans,[50,0]);
+                                                       end;
+                                                       3: begin
+                                                            Say(Heike,'DA13H1');
+
+                                                            if difficulty > 1 then
+                                                                 begin
+                                                                      SayRadio(comm,'DA13Do1a');
+                                                                      EvaluateCall;
+                                                                 end
+                                                            else
+                                                                 begin
+                                                                      SayRadio(comm,'DA13Do1b');
+
+                                                                      UpgradeDiplomacy(americans,att_neutral);
+                                                                      resources_computer_to_player = Replace(resources_computer_to_player,americans,[80,0]);
+                                                                 end;
+                                                       end;
+                                                       4: begin
+                                                            Say(Heike,'DA14H1');
+                                                            SayRadio(comm,'DA14Do1');
+                                                            EvaluateCall;
+                                                       end;
+                                                  end;
+                                             end;
+                                             2: begin  //Personal issues
+                                                  Say(Heike,'DA2H1');
+
+                                                  if player_has_insulted_side[americans] then
+                                                       begin
+                                                            SayRadio(comm,'DAgDo4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,americans,-1);
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DA2Do1');
+                                                  Say(Heike,'DA2H2');
+                                                  SayRadio(comm,'DA2Do2');
+
+                                                  DWait(0$0.2);
+                                                  repeat
+
+                                                  case Query('PersuadeAmericans') of  //Advantage|Traitors|Threaten
+                                                       1: begin
+                                                            Say(Heike,'DA21H1');
+                                                            SayRadio(comm,'DA21Do1');
+
+                                                            DWait(0$0.2);
+                                                            case Query('ThinkTime') of  //5 min think yes| 5 min think no
+                                                                 1: begin
+                                                                      Say(Heike,'DA211H1');
+                                                                      americans_thinking = 1;
+                                                                 end;
+                                                                 2: begin
+                                                                      Say(Heike,'DA212H1');
+                                                                      SayRadio(comm,'DA212Do1');
+                                                                      Say(Heike,'DA212H2');
+
+                                                                      personal_issues_taken = Replace(personal_issues_taken,americans,true);
+                                                                      EvaluateCall;
+                                                                 end;
+                                                            end;
+                                                       end;
+                                                       2: begin
+                                                            if Query('PersuadeAmericansHelperOption2') = 2 then
+                                                                 continue;  //Start over again
+
+                                                            Say(Heike,'DA22H1');
+                                                            SayRadio(comm,'DA22Do1');
+
+                                                            DWait(0$0.2);
+                                                            case Query('ThinkTime') of  //5 min think yes| 5 min think no
+                                                                 1: begin
+                                                                      Say(Heike,'DA221H1');
+                                                                      americans_thinking = 2;
+                                                                 end;
+                                                                 2: begin
+                                                                      Say(Heike,'DA222H1');
+
+                                                                      DWait(0$1.5);
+                                                                      SayRadio(comm,'DA222Do1');
+                                                                      
+                                                                      UpgradeDiplomacy(americans,att_neutral);
+                                                                 end;
+                                                            end;
+                                                       end;
+                                                       3: begin
+                                                            Say(Heike,'DA23H1');
+                                                            SayRadio(comm,'dA23Do1');
+                                                            EvaluateCall;
+                                                       end;
+                                                  end;
+
+                                                  until true;
+                                             end;
+                                             3: begin  //Offer resources
+                                                  Say(Heike,'DA3H1');
+
+                                                  if player_has_insulted_side[americans] then
+                                                       begin
+                                                            SayRadio(comm,'DAgDo4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,americans,-1);
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DA3Do1');
+                                                  EvaluateCall;
+                                             end;
+                                             4: begin  //Offer technology
+                                                  Say(Heike,'DA4H1');
+
+                                                  if player_has_insulted_side[americans] then
+                                                       begin
+                                                            SayRadio(comm,'DAgDo4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,americans,-1);
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DA4Do1');
+
+                                                  DWait(0$3);
+                                                  SayRadio(comm,'DA4Do2');
+
+                                                  DWait(0$0.2);
+                                                  case Query('TechOffer') of  //Solar|Oil|Apeman tech
+                                                       1: begin
+                                                            Say(Heike,'DA41H1');
+                                                            SayRadio(comm,'DA41Do1');
+                                                            EvaluateCall;
+                                                       end;
+                                                       2: begin
+                                                            Say(Heike,'DA42H1');
+                                                            SayRadio(comm,'DA42Do1');
+                                                            EvaluateCall;
+                                                       end;
+                                                       3: begin
+                                                            Say(Heike,'DA43H1');
+
+                                                            if LoadVariable('scientists_got_away_02',true) then
+                                                                 begin
+                                                                      SayRadio(comm,'DA43Do1a');
+                                                                      EvaluateCall;
+                                                                      DialogueOff;
+                                                                      exit;
+                                                                 end;
+                                                            
+                                                            SayRadio(comm,'DA43Do1b');
+
+                                                            DWait(0$1.5);
+                                                            SayRadio(comm,'DA43Do2b');
+
+                                                            UpgradeDiplomacy(americans,att_neutral);
+                                                            tech_deal = Replace(tech_deal,americans,[4$0,0]);
+                                                            SetAreaMapShow(am_base,1);
+                                                       end;
+                                                  end;
+                                             end;
+                                             5: begin  //Warn of attack
+                                                  Say(Heike,'DA5H1');
+
+                                                  if player_has_insulted_side[americans] then
+                                                       begin
+                                                            SayRadio(comm,'DA5Do1c');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,americans,-1);
+                                                            exit;
+                                                       end;
+
+                                                  if BaseUnderAttack(americans,-1) then
+                                                       begin
+                                                            SayRadio(comm,'DA5Do1a');
+                                                            EvaluateCall;
+                                                            DialogueOff;
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DA5Do1b');
+                                                  Say(Heike,'DA5H2b');
+                                                  SayRadio(comm,'DA5Do2b');
+
+                                                  player_attack_warning = Replace(player_attack_warning,americans,true);
+                                             end;
+                                             6: begin  //Cancel
+                                             end;
+                                        end;
+                                   end;
+                                   att_neutral: begin
+                                        query_pick = Query('RadioAmericansNeutral');
+                                        if query_pick = 3 then  //Cancel
+                                             begin
+                                                  DialogueOff;
+                                                  exit;
+                                             end;
+
+                                        Say(Heike,'DANgH1');
+                                        SayRadio(comm,'DANgDo1');
+
+                                        case query_pick of
+                                             1: begin  //Propose alliance
+                                                  Say(Heike,'DAN1H1');
+
+                                                  if tick < russians_get_stronger_time and not player_attack_warning_americans_neutral_success then
+                                                       SayRadio(comm,'DAN1Do1a')
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DAN1Do1b');
+
+                                                            UpgradeDiplomacy(americans,att_friend);
+                                                       end;
+                                             end;
+                                             2: begin  //Warn of attack
+                                                  Say(Heike,'DAN2H1');
+
+                                                  if BaseUnderAttack(americans,-1) then
+                                                       SayRadio(comm,'DA5Do1a')
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DAN2Do1');
+
+                                                            player_attack_warning = Replace(player_attack_warning,americans,true);
+                                                       end;
+                                             end;
+                                             3: begin  //Cancel
+                                             end;
+                                        end;
+                                   end;
+                                   att_friend: begin
+                                        query_pick = Query('RadioAmericansFriend');
+                                        if query_pick = 5 then  //Cancel
+                                             begin
+                                                  DialogueOff;
+                                                  exit;
+                                             end;
+
+                                        Say(Heike,'DANgH1');
+
+                                        if BaseUnderAttack(americans,-1) then
+                                             begin
+                                                  SayRadio(comm,'DAFgDo2');
+                                                  DialogueOff;
+                                                  exit;
+                                             end
+                                        else
+                                             SayRadio(comm,'DANgDo1');
+                                        
+                                        case query_pick of
+                                             1: begin  //Terminate alliance
+                                                  Say(Heike,'DAF1H1');
+                                                  SayRadio(comm,'DAF1Do1');
+
+                                                  ReturnBorrowedUnits(ai_lended_units[americans],false);
+                                                  ai_lended_units = Replace(ai_lended_units,americans,[]);
+                                                  SetNewAttitude(you,americans,att_enemy,true);
+                                             end;
+                                             2: begin  //Request resources
+                                                  Say(Heike,'DAF2H1');
+
+                                                  if tick < request_resources_cooldown then
+                                                       begin
+                                                            SayRadio(comm,'DAF2Do1b');
+                                                            request_resources_cooldown = tick + [1$0,3$0,5$0][difficulty];
+                                                            american_friend_points = american_friend_points - 1;
+                                                            DialogueOff;
+                                                            exit;
+                                                       end;
+                                                  
+                                                  SayRadio(comm,'DAF2Do1a');
+
+                                                  DWait(0$0.2);
+                                                  case Query('PlayerResourceRequest') of  //40 crates|60 crates|80 crates|40 oil|60 oil|80 oil
+                                                       1: begin
+                                                            Say(Heike,'DAF21H1');
+                                                            temp_list = [40,mat_cans];
+                                                            val = 4;
+                                                       end;
+                                                       2: begin
+                                                            Say(Heike,'DAF22H1');
+                                                            temp_list = [60,mat_cans];
+                                                            val = 6;
+                                                       end;
+                                                       3: begin
+                                                            Say(Heike,'DAF23H1');
+                                                            temp_list = [80,mat_cans];
+                                                            val = 8;
+                                                       end;
+                                                       4: begin
+                                                            Say(Heike,'DAF24H1');
+                                                            temp_list = [40,mat_oil];
+                                                            val = 3;
+                                                       end;
+                                                       5: begin
+                                                            Say(Heike,'DAF25H1');
+                                                            temp_list = [60,mat_oil];
+                                                            val = 5;
+                                                       end;
+                                                       6: begin
+                                                            Say(Heike,'DAF26H1');
+                                                            temp_list = [80,mat_oil];
+                                                            val = 7;
+                                                       end;
+                                                  end;
+
+                                                  if american_friend_points >= val then
+                                                       begin
+                                                            SayRadio(comm,'DAF2Do2a');
+
+                                                            case temp_list[2] of
+                                                                 mat_cans: resources_computer_to_player = Replace(resources_computer_to_player,americans, [temp_list[1],0] );
+                                                                 mat_oil: resources_computer_to_player = Replace(resources_computer_to_player,americans, [0,temp_list[1]] );
+                                                            end;
+
+                                                            american_friend_points = american_friend_points - val;
+                                                       end
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DAF2Do2b');
+                                                            request_resources_cooldown = tick + [1$0,3$0,5$0][difficulty];
+                                                       end;
+                                             end;
+                                             3: begin  //Request assistance
+                                                  Say(Heike,'DAF3H1');
+
+                                                  if tick < request_reinforcements_cooldown then
+                                                       begin
+                                                            SayRadio(comm,'DAF2Do1b');
+                                                            request_reinforcements_cooldown = tick + [1$0,3$0,5$0][difficulty];
+                                                            american_friend_points = american_friend_points - 1;
+                                                            DialogueOff;
+                                                            exit;
+                                                       end;
+
+                                                  if american_friend_points >= 10 then
+                                                       begin
+                                                            //The player "borrows" up to 2 mechanics and 2 vehicles.
+                                                            temp_list = ai_vehicles_defend[americans] diff (ai_retreating_vehicles_defend[americans] ^ ai_vehicles_being_repaired[americans] ^ ai_vehicle_being_moved[americans] ^ ai_vehicles_having_been_moved[americans] ^ ai_refuel_vehicles_list[americans]);
+                                                            temp_list_2 = ai_mechanics_defend[americans] diff ai_heal_these_humans[americans];
+
+                                                            val = WorstFromListByList([temp_list+0,temp_list_2+0],[temp_list+0,temp_list_2+0]);
+                                                            if val > 2 then
+                                                                 val = 2;
+
+                                                            if val = 0 then
+                                                                 begin
+                                                                      SayRadio(comm,'DAF3Do1a');
+                                                                      request_reinforcements_cooldown = tick + [1$0,3$0,5$0][difficulty];
+                                                                 end
+                                                            else
+                                                                 begin
+                                                                      SayRadio(comm,'DAF3Do1b');
+
+                                                                      temp_list_3 = [];
+                                                                      for i = 1 to val do
+                                                                           temp_list_3 = temp_list_3 ^ [temp_list[i],temp_list_2[i]];
+                                                                      ai_lended_units = Replace(ai_lended_units,americans,temp_list_3);
+
+                                                                      for i in ai_lended_units[americans] do
+                                                                           begin
+                                                                                case GetType(i) of
+                                                                                     unit_human: begin
+                                                                                          RemoveHumanFromVariables(americans,i);
+
+                                                                                          case GetType(IsInUnit(i)) of
+                                                                                               unit_vehicle: ComExitVehicle(i);
+                                                                                               unit_building: ComExitBuilding(i);
+                                                                                          end;
+                                                                                     end;
+                                                                                     unit_vehicle: begin
+                                                                                          RemoveVehicleFromVariables(americans,i);
+
+                                                                                          for val in UnitsInside(i) do
+                                                                                               ComExitVehicle(val);
+                                                                                     end;
+                                                                                end;
+
+                                                                                SetSide(i,you);
+                                                                           end;
+
+                                                                      american_friend_points = american_friend_points - 10;
+                                                                 end;
+                                                       end
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DAF3Do1a');
+                                                            request_reinforcements_cooldown = tick + [1$0,3$0,5$0][difficulty];
+                                                       end;
+
+                                             end;
+                                             4: begin  //Warn of attack
+                                                  Say(Heike,'DAN2H1');
+
+                                                  if BaseUnderAttack(americans,-1) then
+                                                       SayRadio(comm,'DA5Do1a')
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DAN2Do1');
+
+                                                            player_attack_warning = Replace(player_attack_warning,americans,true);
+                                                       end;
+                                             end;
+                                             5: begin  //Cancel
+                                             end;
+                                        end;
+                                   end;
+                              end;
+                         end;
+                         2: begin
+                              radio_cancel_count = 0;
+                              comm = ai_commander[russians];
+
+                              if not IsOk(comm) then
+                                   begin
+                                        Query('TsarytsynWounded');
+                                        DialogueOff;
+                                        exit;
+                                   end;
+
+                              case diplomacy_status[russians] of
+                                   att_enemy: begin
+                                        query_pick = SelectiveQuery('RadioRussiansEnemy',enemy_query_options[russians]);
+                                        if query_pick = 6 then  //Cancel
+                                             begin
+                                                  DialogueOff;
+                                                  exit;
+                                             end;
+                                        temp_list = enemy_query_options[russians] diff query_pick;
+                                        enemy_query_options = Replace(enemy_query_options,russians,temp_list);
+
+                                        number_of_calls = Replace(number_of_calls,russians, number_of_calls[russians] + 1);
+
+                                        ai_player_seen = Replace(ai_player_seen,russians,true);  //This side now knows the player is present and will start attacking the player
+
+                                        personal_issues_taken = Replace(personal_issues_taken,russians,false);
+
+                                        Say(Heike,'DRgH1');
+                                        
+                                        if number_of_calls[russians] = 1 then
+                                             SayRadio(comm,'DRgTs1')
+                                        else
+                                             begin
+                                                  SayRadio(comm,'DRgTs2');
+                                                  Say(Heike,'DRgH2');
+
+                                                  val = false;
+                                                  if player_has_insulted_side[russians] then
+                                                       begin
+                                                            SayRadio(comm,'DRgTs4');
+                                                            val = true;
+                                                       end
+                                                  else
+                                                       if tick - last_call_time[russians] < last_call_time_timeout or number_of_calls[russians] >= [5,4,3][difficulty] then
+                                                            begin
+                                                                 SayRadio(comm,'DRgTs3');
+                                                                 val = true;
+                                                            end;
+
+                                                  if val then
+                                                       begin
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,russians,-1);
+                                                            exit;
+                                                       end;
+                                             end;
+
+                                        last_call_time = Replace(last_call_time,russians,tick);
+
+                                        case query_pick of
+                                             1: begin  //Group of mercenaries
+                                                  Say(Heike,'DR1H1');
+
+                                                  if player_has_insulted_side[russians] then
+                                                       begin
+                                                            SayRadio(comm,'DRgTs4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,russians,-1);
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DR1Ts1');
+                                                  EvaluateCall;
+                                             end;
+                                             2: begin  //Personal issues
+                                                  Say(Heike,'DR2H1');
+
+                                                  if player_has_insulted_side[russians] then
+                                                       begin
+                                                            SayRadio(comm,'DRgTs4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,russians,-1);
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DR2Ts1');
+
+                                                  DWait(0$0.2);
+                                                  repeat
+
+                                                  case Query('PersuadeRussians') of  //Advantage|Traitors|Threaten
+                                                       1: begin
+                                                            Say(Heike,'DR21H1');
+                                                            SayRadio(comm,'DR21Ts1');
+
+                                                            personal_issues_taken = Replace(personal_issues_taken,russians,true);
+                                                       end;
+                                                       2: begin
+                                                            if Query('PersuadeRussiansHelperOption2') = 2 then
+                                                                 continue;  //Start over again
+
+                                                            Say(Heike,'DR22H1');
+                                                            SayRadio(comm,'DR22Ts1');
+                                                       end;
+                                                       3: begin
+                                                            Say(Heike,'DR23H1');
+                                                            SayRadio(comm,'DR23Ts1');
+                                                       end;
+                                                  end;
+
+                                                 until true;
+
+                                                 EvaluateCall;
+                                             end;
+                                             3: begin  //Offer resources
+                                                  Say(Heike,'DR3H1');
+
+                                                  if player_has_insulted_side[russians] then
+                                                       begin
+                                                            SayRadio(comm,'DRgTs4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,russians,-1);
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DR3Ts1');
+                                                  Say(Heike,'DR3H2');
+                                                  SayRadio(comm,'DR3Ts2');
+
+                                                  if IsOk(Ralph) then
+                                                       begin
+                                                            Say(Ralph,'DR3Ra1');
+                                                            Say(Heike,'DR3H3');
+                                                       end;
+
+                                                  SayRadio(comm,'DR3Ts3');
+
+                                                  temp_list = [5,6,7];
+                                                  if difficulty <= 2 then
+                                                       temp_list = temp_list ^ [3,4];
+                                                  if difficulty = 1 then
+                                                       temp_list = temp_list ^ [1,2];
+
+                                                  DWait(0$0.2);
+                                                  val = Query('ResourceBribe'); //40 crates|20 crates and 40 oil|60 crates|40 crates and 60 oil|80 crates|60 crates and 80 oil|200 oil
+                                                  case val of
+                                                       1: begin
+                                                            Say(Heike,'DR31H1');
+                                                            temp_list_2 = [40,0];
+                                                       end;
+                                                       2: begin
+                                                            Say(Heike,'DR32H1');
+                                                            temp_list_2 = [20,40];
+                                                       end;
+                                                       3: begin
+                                                            Say(Heike,'DR33H1');
+                                                            temp_list_2 = [60,0];
+                                                       end;
+                                                       4: begin
+                                                            Say(Heike,'DR34H1');
+                                                            temp_list_2 = [40,60];
+                                                       end;
+                                                       5: begin
+                                                            Say(Heike,'DR35H1');
+                                                            temp_list_2 = [80,0];
+                                                       end;
+                                                       6: begin
+                                                            Say(Heike,'DR36H1');
+                                                            temp_list_2 = [60,80];
+                                                       end;
+                                                       7: begin
+                                                            Say(Heike,'DR37H1');
+                                                            temp_list_2 = [0,200];
+                                                       end;
+                                                  end;
+
+                                                  if not val in temp_list then
+                                                       begin
+                                                            SayRadio(comm,'DR3Ts4a');
+                                                            EvaluateCall;
+                                                       end
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DR3Ts4b');
+                                                            SayRadio(comm,'DR3Ts5b');
+
+                                                            UpgradeDiplomacy(russians,att_neutral);
+                                                            resource_deal = Replace(resource_deal,russians,[10$0] ^ temp_list_2);
+                                                            bribe_resource_deal = Replace(bribe_resource_deal,russians,true);
+                                                            SetAreaMapShow(ru_base,1);
+                                                       end;
+                                             end;
+                                             4: begin  //Offer technology
+                                                  Say(Heike,'DR4H1');
+
+                                                  if player_has_insulted_side[russians] then
+                                                       begin
+                                                            SayRadio(comm,'DRgTs4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,russians,-1);
+                                                            exit;
+                                                       end;
+
+                                                  SayRadio(comm,'DR4Ts1');
+                                                  Say(Heike,'DR4H2');
+                                                  SayRadio(comm,'DR4Ts2');
+
+                                                  DWait(0$0.2);
+                                                  case Query('TechOffer') of  //Solar|Oil|Apeman tech
+                                                       1: begin
+                                                            Say(Heike,'DR41H1');
+                                                            SayRadio(comm,'DR41Ts1');
+                                                            EvaluateCall;
+                                                       end;
+                                                       2: begin
+                                                            Say(Heike,'DR42H1');
+                                                            SayRadio(comm,'DR42Ts1');
+                                                            EvaluateCall;
+                                                       end;
+                                                       3: begin
+                                                            Say(Heike,'DR43H1');
+                                                            SayRadio(comm,'DR43Ts1');
+
+                                                            if IsOk(Sonya) then
+                                                                 begin
+                                                                      Say(Sonya,'DR43So1');
+                                                                      Say(Heike,'DR43H2');
+                                                                      Say(Sonya,'DR43So2');
+                                                                      Say(Heike,'DR43H3');
+                                                                 end
+                                                            else
+                                                                 DWait(0$2);
+
+                                                            SayRadio(comm,'DR43Ts2');
+
+                                                            UpgradeDiplomacy(russians,att_neutral);
+                                                            tech_deal = Replace(tech_deal,russians,[4$0,0]);
+                                                            SetAreaMapShow(ru_base,1);
+                                                       end;
+                                                  end;
+                                             end;
+                                             5: begin  //Warn of attack
+                                                  Say(Heike,'DR5H1');
+
+                                                  if player_has_insulted_side[russians] then
+                                                       begin
+                                                            SayRadio(comm,'DRgTs4');
+                                                            DialogueOff;
+                                                            diplomacy_status = Replace(diplomacy_status,russians,-1);
+                                                            exit;
+                                                       end;
+
+                                                  if BaseUnderAttack(russians,-1) then
+                                                       begin
+                                                            SayRadio(comm,'DR5Ts1a');
+                                                            EvaluateCall;
+                                                       end
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DR5Ts1b');
+
+                                                            player_attack_warning = Replace(player_attack_warning,russians,true);
+                                                       end;
+                                             end;
+                                             6: begin  //Cancel
+                                             end;
+                                        end;
+                                   end;
+                                   att_neutral: begin
+                                        temp_list = [1,2,4];
+                                        if tech_deal[russians] > 0 then
+                                             if tech_deal[russians][1] = 0$0 then
+                                                  temp_list = temp_list ^ 3;
+
+                                        query_pick = SelectiveQuery('RadioRussiansNeutral',temp_list);
+                                        if query_pick = 4 then  //Cancel
+                                             begin
+                                                  DialogueOff;
+                                                  exit;
+                                             end;
+
+                                        Say(Heike,'DRNgH1');
+                                        SayRadio(comm,'DRNgTs1');
+                                       
+                                        case query_pick of
+                                             1: begin  //Propose alliance
+                                                  Say(Heike,'DRN1H1');
+                                                  SayRadio(comm,'DRN1Ts1');
+
+                                                  //KillApeScientist(russians);
+                                                  //SetNewAttitude(you,russians,att_enemy,true);
+                                                  DialogueOff;
+                                                  InGameOn;
+                                                  SetPermanentlyEnemy(russians,true);
+                                                  InGameOff;
+                                                  DialogueOn;
+                                             end;
+                                             2: begin  //Warn of attack
+                                                  Say(Heike,'DRN2H1');
+
+                                                  if BaseUnderAttack(russians,-1) then
+                                                       SayRadio(comm,'DR5Ts1a')
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DRN2Ts1');
+
+                                                            player_attack_warning = Replace(player_attack_warning,russians,true);
+                                                       end;
+                                             end;
+                                             3: begin  //Request apeman expert back
+                                                  number_of_sci_requests = number_of_sci_requests + 1;
+
+                                                  if GetSex(tech_deal[russians][2]) = sex_male then
+                                                       val = 'M'
+                                                  else val = 'F';
+                                                       
+                                                  Say(Heike,'DRN3H1' & val);
+
+                                                  if number_of_sci_requests = 1 then
+                                                       begin
+                                                            SayRadio(comm,'DRN3Ts1' & val & 'a');
+                                                            Say(Heike,'DRN3H2a');
+
+                                                            DWait(0$0.5);
+                                                            Say(Heike,'DRN3H3a');
+                                                       end
+                                                  else
+                                                       begin
+                                                            SayRadio(comm,'DRN3Ts1b');
+
+                                                            DialogueOff;
+                                                            InGameOn;
+                                                            SetPermanentlyEnemy(russians,true);
+                                                            InGameOff;
+                                                            DialogueOn;
+
+                                                            Say(Heike,'DRN3H2b');
+                                                            SayRadio(comm,'DRN3Ts2b');
+                                                            Say(Heike,'DRN3H3b');
+
+                                                            //SetNewAttitude(you,russians,att_enemy,true);
+                                                       end;
+                                             end;
+                                             4: begin  //Cancel
+                                             end;
+                                        end;
+                                   end;
+                              end;
+                         end;
+                         3: radio_cancel_count = radio_cancel_count + 1;  //Cancel
+                    end;
+               end;
+
+          DialogueOff;
+     end;
+Export Function UpgradeDiplomacy(com_side,new_atti);
+     begin
+          SetAttitude(you,com_side,new_atti,true);
+          diplomacy_status = Replace(diplomacy_status,com_side,new_atti);
+
+          //If new attitude is friend then share vision.
+          if new_atti = att_friend then
+               ChangeSideFog(com_side,you);
+     end;
+Function SetNewAttitude(side1,side2,new_atti,boo);
+     begin
+          //Remove shared vision if was friends before and isn't any more.
+          if GetAttitude(side1,side2) = att_friend and new_atti <> att_friend then
+               begin
+                    ChangeSideFog(side1,side1);
+                    ChangeSideFog(side2,side2);
+               end;
+
+          SetAttitude(side1,side2,new_atti,boo);
+     end;
+Function EvaluateCall;
+     var val, side;
+     begin
+          val = 0;
+          for side in [americans,russians] do
+               //In a case the player called the side after having insulted it which doesn't trigger this function to be run
+               //but if the player can call the other side and calls that side without success then Heike should still evaluate
+               //the call properly.
+               if not ( player_has_insulted_side[side] and number_of_calls[side] = 1 ) and diplomacy_status[side] = att_enemy then
+                    val = val + number_of_calls[side];
+
+          if val = 1 then
+               begin
+                    DWait(0$1);
+                    Say(Heike,'DGH1');
+               end;
+     end;
+
+//Display a counter showing the time before the player can safely call a computer side again.
+Every 0$1 do
+     var side, sec, disp_string, i, k;
+     begin
+          repeat
+          wait(0$1);
+
+          for side in [1,3] do
+               begin
+                    if last_call_time[side] = -1 then
+                         continue;
+
+                    if side = 1 then
+                         disp_string = '#Ar04-CallTimeoutAmericans'
+                    else
+                         disp_string = '#Ar04-CallTimeoutRussians';
+
+                    sec = last_call_time_timeout - (tick - last_call_time[side]);
+                    
+                    if sec >= 0 and diplomacy_status[side] = att_enemy then
+                         begin
+                              if display_strings = 0 then
+                                   display_strings = [disp_string] ^ sec
+                              else
+                                   if not disp_string in display_strings then
+                                        display_strings = display_strings ^ [disp_string] ^ sec
+                                   else
+                                       for i = 1 to display_strings do
+                                           if display_strings[i] = disp_string then
+                                                begin
+                                                     display_strings = Replace(display_strings,i+1,sec);
+                                                     break;
+                                                end;
+                         end
+                    else
+                         begin
+                              for i = 1 to display_strings do
+                                   if display_strings[i] = disp_string then
+                                        begin
+                                             for k = 1 to 2 do
+                                                  display_strings = Delete(display_strings,i);
+
+                                             break;
+                                        end;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//Computer giving resources to the player
+Every 0$1.3 do
+     var side, i, carrying, area, temp_list, target_hex, crates_under_way, oil_under_way, crates_left, oil_left, att;
+     var un, temp_list_2;
+     begin
+          carrying = [[],-1,[]];  //Hauling engineers carrying stuff
+          target_hex = [[],-1,[]];  //Where to carry to
+
+          repeat
+               for side in [americans,russians] do
+                    if resources_computer_to_player[side] > 0 then
+                         begin
+                              //If the attitude towards the player has changed to enemy then drop this job.
+                              att = GetAttitude(side,you);
+                              if att = att_enemy then
+                                   resources_computer_to_player = Replace(resources_computer_to_player,side,[0,0]);
+
+
+                              crates_left = resources_computer_to_player[side][1];
+                              oil_left = resources_computer_to_player[side][2];
+
+                              if crates_left = 0 and oil_left = 0 then
+                                   begin
+                                        ai_hauling_engineers = Replace(ai_hauling_engineers,side,[]);
+                                        resources_computer_to_player = Replace(resources_computer_to_player,side,[]);
+                                        last_call_time = Replace(last_call_time,side,tick);
+                                        continue;
+                                   end;
+
+
+                              //If the computer's depot is burning or destroyed then forget about this job for now
+                              if not IsOk(ai_depot[side]) then
+                                   begin
+                                        ai_hauling_engineers = Replace(ai_hauling_engineers,side,[]);
+                                        continue;
+                                   end;
+
+
+                              //Assign haulers if there are none. Assign half of the staff (rounded down). There must always be one engineer left.
+                              //If there isn't enough engineers then create one and place him/her in the depot.
+                              if ai_hauling_engineers[side] = 0 then
+                                   begin
+                                        for i = 1 downto ai_engineers[side]+0 do
+                                             begin
+                                                  un = CreateUnitsWithClass(side,1,class_engineer)[1];
+                                                  PlaceHumanInUnit(un,ai_depot[side]);
+                                                  temp_list = ai_engineers[side] ^ un;
+                                                  ai_engineers = Replace(ai_engineers,side,temp_list);
+                                             end;
+
+                                        //Don't pick engineers being healed
+                                        temp_list = ai_engineers[side] diff ai_heal_these_humans[side];
+
+                                        if temp_list > 1 then
+                                             begin
+                                                  temp_list_2 = [];
+                                                  for i = 1 to temp_list div 2 do
+                                                       temp_list_2 = temp_list_2 ^ temp_list[i];
+                                                  ai_hauling_engineers = Replace(ai_hauling_engineers,side,temp_list_2)
+                                             end
+                                        else
+                                             continue;
+                                   end;
+
+
+                              //Command hauling engineers.
+                              //Take away haulers from duty if there are nothing more to haul and they are inside their base area.
+                              //Place the resources close to the player's depot. If the player has no depot then just any building
+                              //the player has (if none then don't do anything - but he/she should at least have a lab).
+                              case side of
+                                   americans: area = am_base;
+                                   russians: area = ru_base;
+                              end;
+
+                              //Where to deliver
+                              if target_hex[side] = 0 then
+                                   begin
+                                        temp_list = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]);
+                                        if temp_list > 0 then
+                                             target_hex = Replace(target_hex,side,[GetX(temp_list[1]),GetY(temp_list[1])])
+                                        else
+                                             begin
+                                                  temp_list = FilterAllUnits([[f_side,you],[f_type,unit_building]]);
+                                                  if temp_list > 0 then
+                                                       target_hex = Replace(target_hex,side,[GetX(temp_list[1]),GetY(temp_list[1])]);
+                                             end;
+                                   end;
+
+                              //Determine how many crates/oil barrels are being transported at the moment
+                              crates_under_way = 0;
+                              oil_under_way = 0;
+                              for i in ai_hauling_engineers[side] do
+                                   case GetCargoType(i) of
+                                        mat_cans: crates_under_way = crates_under_way + 10;
+                                        mat_oil: oil_under_way = oil_under_way + 10;
+                                   end;
+
+                              for i in GetHumansOutOfUnits(ai_hauling_engineers[side]) do
+                                   if target_hex[side] = 0 then
+                                        ComMoveXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2])
+                                   else
+                                        if not Carry(i) or att = att_enemy then
+                                             begin
+                                                  if i in carrying[side] then
+                                                       begin
+                                                            case GetTag(i) of
+                                                                 mat_cans: crates_left = crates_left - 10;
+                                                                 mat_oil: oil_left = oil_left - 10;
+                                                            end;
+
+                                                            temp_list = carrying[side] diff i;
+                                                            carrying = Replace(carrying,side,temp_list);
+                                                       end;
+
+                                                  if crates_left - crates_under_way > 0 then
+                                                       ComTransport(i,ai_depot[side],mat_cans)
+                                                  else
+                                                       if oil_left - oil_under_way > 0 then
+                                                            ComTransport(i,ai_depot[side],mat_oil)
+                                                       else
+                                                            if not IsInArea(i,area) then
+                                                                 ComMoveXY(i,ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2])
+                                                            else
+                                                                 begin
+                                                                      temp_list = ai_hauling_engineers[side] diff i;
+                                                                      ai_hauling_engineers = Replace(ai_hauling_engineers,side,temp_list);
+                                                                 end;
+                                             end
+                                        else
+                                             begin
+                                                  if not i in carrying[side] then
+                                                       begin
+                                                            case GetCargoType(i) of
+                                                                 mat_cans: SetTag(i,mat_cans);
+                                                                 mat_oil: SetTag(i,mat_oil);
+                                                            end;
+
+                                                            temp_list = carrying[side] ^ i;
+                                                            carrying = Replace(carrying,side,temp_list);
+                                                       end;
+
+                                                  if GetDistUnitXY(i,target_hex[side][1],target_hex[side][2]) <= 10 then
+                                                       ComUnload(i)
+                                                  else
+                                                       ComMoveXY(i,target_hex[side][1],target_hex[side][2]);
+                                             end;
+                             
+                              resources_computer_to_player = Replace(resources_computer_to_player,side,[crates_left,oil_left]);
+                         end;
+
+               wait(0$1);
+          until end_of_mission;
+     end;
+
+//Americans thinking over the player's proposal of ceasefire
+Every 0$1 trigger americans_thinking > 0 do
+     begin
+          Wait( Rand(2$30,3$30) );
+
+          while not IsOk(ai_commander[americans]) or not IsOk(Heike) do
+               wait(0$2);
+
+          if not diplomacy_enabled then
+               begin
+                    americans_thinking = 0;
+                    exit;
+               end;
+
+          if not player_has_insulted_side[americans] then
+               begin
+                    last_call_time = Replace(last_call_time,americans,tick);
+
+                    DialogueOn;
+
+                    case americans_thinking of
+                         1: begin
+                              SayRadio(ai_commander[americans],'DA211Do1');
+                              Say(Heike,'DA211H2');
+
+                              UpgradeDiplomacy(americans,att_neutral);
+                         end;
+                         2: begin
+                              SayRadio(ai_commander[americans],'DA221Do1');
+
+                              EvaluateCall;
+                         end;
+                    end;
+
+                    DialogueOff;
+               end;
+
+          americans_thinking = 0;
+
+          if not player_has_insulted_side[americans] then
+               enable
+          else
+               diplomacy_status = Replace(diplomacy_status,americans,-1);
+     end;
+
+//If the player used the strategy with personal issues to become neutral with a side and used the soft negotiations
+//but still failed, then if the player attacks the opposite side, the side will admit the player spoke the truth and
+//accept the ceasefire anyway.
+Every 0$1.9 do
+     var side, other_side, attack_count, area;
+     begin
+          attack_count = [0,-1,0];
+
+          repeat
+               for side in [americans,russians] do
+                    if personal_issues_taken[side] and not player_has_insulted_side[side] then
+                         begin
+                              case side of
+                                   americans: begin
+                                        other_side = russians;
+                                        area = ru_base;
+                                   end;
+                                   russians: begin
+                                        other_side = americans;
+                                        area = am_base;
+                                   end;
+                              end;
+
+                              //if ContactTime([you,other_side]) <= 0$2 and FilterAllUnits([[f_side,you],[f_distxy,ai_buildings_locations[other_side][1][1],ai_buildings_locations[other_side][1][2],ai_near_base_dist]]) > 0 then
+                              if ContactTime([you,other_side]) <= 0$5 and ListFilterNearArea( FilterAllUnits([f_side,you]) , area) > 0 then
+                                   attack_count = Replace(attack_count,side, attack_count[side] + 1)
+                              else
+                                   if attack_count[side] > 0 then
+                                        attack_count = Replace(attack_count,side, attack_count[side] - 1);
+                                      
+                              if attack_count[side] >= 12 then
+                                   begin
+                                        DialogueOn;
+
+                                        case side of
+                                             americans: SayRadio(ai_commander[side],'DA21Do2');
+                                             russians: SayRadio(ai_commander[side],'DR21Ts2');
+                                        end;
+
+                                        DialogueOff;
+
+                                        UpgradeDiplomacy(side,att_neutral);
+                                        personal_issues_taken = Replace(personal_issues_taken,side,false);
+                                   end;
+                         end;
+
+               wait(0$1);
+
+          until ( player_has_insulted_side[americans] and player_has_insulted_side[russians] ) or ( diplomacy_status[americans] <> att_enemy and diplomacy_status[russians] <> att_enemy ) or not diplomacy_enabled;
+     end;
+
+//Computer side waiting for player to deliver resources
+Every 0$1.8 do
+     var side, i, player_carriers_noticed, area, temp_list, crates_left, oil_left, wait_time, disp_string, k, count;
+     var empty_player_carriers_near_base;
+     begin
+          player_carriers_noticed = [[],-1,[]];  //The carrying units in the side's area who are noticed - we are pending their cargo drop.
+          empty_player_carriers_near_base = [[],-1,[]];  //Units capable of carrying anything which aren't carrying anything which are near the side's base.
+          wait_time = 0$1;
+
+          repeat
+               for side in [americans,russians] do
+                    if resource_deal[side] > 0 then
+                         begin
+                              case side of
+                                   americans: begin
+                                        area = am_base;
+                                        disp_string = '#Ar04-ResourceCarryAmericans';
+                                   end;
+                                   russians: begin
+                                        area = ru_base;
+                                        disp_string = '#Ar04-ResourceCarryRussians';
+                                   end;
+                              end;
+
+                              //Check if player is enemy with target side now. If that is the case then
+                              //end the deal.
+                              if GetAttitude(you,side) = att_enemy then
+                                   begin
+                                        DeleteResourceCounter(disp_string);
+                                        EndResourceDeal(side,area);
+                                        player_carriers_noticed = Replace(player_carriers_noticed,side,[]);
+                                        empty_player_carriers_near_base = Replace(empty_player_carriers_near_base,side,[]);
+
+                                        continue;
+                                   end;
+
+
+                              crates_left = resource_deal[side][2];
+                              oil_left = resource_deal[side][3];
+
+
+                              //Check if some of the noticed carriers have dropped their cargo
+                              temp_list = [];
+                              for i in player_carriers_noticed[side] do
+                                   if not Carry(i) then
+                                        begin
+                                             if IsInArea(i,area) then
+                                                  case GetTag(i) of
+                                                       mat_cans: crates_left = crates_left - 10;
+                                                       mat_oil: oil_left = oil_left - 10;
+                                                  end;
+                                        end
+                                   else
+                                        temp_list = temp_list ^ i;
+                              player_carriers_noticed = Replace(player_carriers_noticed,side,temp_list);
+
+
+                              //Check for new carriers in the area
+                              temp_list = [];
+                              for i in FilterAllUnits([[f_side,you],[f_inarea,area],[f_or,[f_class,class_engineer],[f_class,class_apeman_engineer]]]) diff player_carriers_noticed[side] do
+                                   if Carry(i) then
+                                        begin
+                                             temp_list = temp_list ^ i;
+                                             k = GetCargoType(i);
+                                             SetTag(i,k);
+
+                                             //Is it stolen?!?
+                                             if i in empty_player_carriers_near_base[side] then
+                                                  case k of
+                                                       mat_cans: crates_left = crates_left + 10;
+                                                       mat_oil: oil_left = oil_left + 10;
+                                                  end;
+                                        end;
+                              temp_list = player_carriers_noticed[side] ^ temp_list;
+                              player_carriers_noticed = Replace(player_carriers_noticed,side,temp_list);
+
+
+                              //Check for carriers in the vicinity of the base which aren't carrying anything. If next time we look they
+                              //are inside the base area and carrying anything then they have stolen from us!
+                              temp_list = [];
+                              //for i in FilterAllUnits([[f_side,you],[f_distxy,ai_buildings_locations[side][1][1],ai_buildings_locations[side][1][2],ai_near_base_dist],[f_or,[f_class,class_engineer],[f_class,class_apeman_engineer]]]) do
+                              for i in ListFilterNearArea( FilterAllUnits([[f_side,you],[f_or,[f_class,class_engineer],[f_class,class_apeman_engineer]]]) , area) do
+                                   if not Carry(i) then
+                                        temp_list = temp_list ^ i;
+                              empty_player_carriers_near_base = Replace(empty_player_carriers_near_base,side,temp_list);
+
+
+                              //Update needed crates, oil and time left. Display the string if there is time left. Else - something happens...
+                              //Check if all resources have been delivered.
+                              resource_deal = Replace(resource_deal,side, [resource_deal[side][1] - wait_time, crates_left, oil_left] );
+                              if resource_deal[side][1] >= 0 and ( resource_deal[side][2] > 0 or resource_deal[side][3] > 0 ) then
+                                   begin
+                                        if display_strings = 0 then
+                                             display_strings = [disp_string] ^ resource_deal[side]
+                                        else
+                                             if not disp_string in display_strings then
+                                                  display_strings = display_strings ^ [disp_string] ^ resource_deal[side]
+                                             else
+                                                  for i = 1 to display_strings do
+                                                       if display_strings[i] = disp_string then
+                                                            begin
+                                                                 count = 1;
+                                                                 for k = i+1 to i+3 do
+                                                                      begin
+                                                                           display_strings = Replace(display_strings,k,resource_deal[side][count]);
+                                                                           count = count + 1;
+                                                                      end;
+
+                                                                 break;
+                                                            end;
+                                   end
+                              else
+                                   begin
+                                        //Delete counter
+                                        DeleteResourceCounter(disp_string);
+
+                                        //Dialogue depending on outcome.
+                                        //Americans ask for resources when player is friendly with them.
+                                        //Russians can be bribed to neutral and can request resources when neutral.
+                                        DialogueOn;
+
+                                        if resource_deal[side][2] <= 0 and resource_deal[side][3] <= 0 then  //Can deliver too much of one material
+                                             case side of
+                                                  americans: begin
+                                                       SayRadio(ai_commander[side],'DAFgg1Do2a');
+
+                                                       american_friend_points = american_friend_points + 5;  //The player can request more resources back from the Americans with these points hehe
+                                                  end;
+                                                  russians: SayRadio(ai_commander[side],'DR3Ts6ba');
+                                             end
+                                        else  //Out of time
+                                             case side of
+                                                  americans: begin
+                                                       SayRadio(ai_commander[side],'DAFgg1Do2b');
+
+                                                       SetNewAttitude(you,side,att_neutral,true);
+                                                  end;
+                                                  russians: begin
+                                                       SayRadio(ai_commander[side],'DR3Ts6bb');
+
+                                                       SetNewAttitude(you,side,att_enemy,true);
+                                                       if bribe_resource_deal[side] then
+                                                            diplomacy_status = Replace(diplomacy_status,side,-1);
+                                                  end;
+                                             end;
+
+                                        DialogueOff;
+
+                                        EndResourceDeal(side,area);
+                                        player_carriers_noticed = Replace(player_carriers_noticed,side,[]);
+                                        empty_player_carriers_near_base = Replace(empty_player_carriers_near_base,side,[]);
+                                   end;
+                         end;
+
+               wait(wait_time);
+          until end_of_mission;
+     end;
+Function DeleteResourceCounter(disp_string);
+     var i, k;
+     begin
+          for i = 1 to display_strings do
+               if display_strings[i] = disp_string then
+                    begin
+                         for k = i+3 downto i do
+                              display_strings = Delete(display_strings,k);
+
+                         break;
+                    end;
+     end;
+Function EndResourceDeal(side,area);
+     begin
+          resource_deal = Replace(resource_deal,side,[]);
+          bribe_resource_deal = Replace(bribe_resource_deal,side,false);
+          SetAreaMapShow(area,0);
+     end;
+//If the player has achieved neutral attitude with the Russians and didn't reach it with the tech deal then the Russians will
+//keep asking the player for resources.
+Every 0$3 trigger tech_deal[russians] = 0 and GetAttitude(you,russians) = att_neutral and resource_deal[russians] = 0 do
+     var val;
+     begin
+          val = [12$0,10$0,8$0][difficulty];
+          wait( Rand(val,val+1$0) );
+
+          while not IsOk(ai_commander[russians]) or not IsOk(Heike) do
+               wait(0$2);
+
+          if GetAttitude(you,russians) <> att_neutral then
+               exit;
+
+          DialogueOn;
+
+          SayRadio(ai_commander[russians],'DRNggTs1');
+
+          DWait(0$0.2);
+          case Query('RussianResourceRequest') of  //Yes|no
+               1: begin
+                   Say(Heike,'DRNgg1H1');
+                   SayRadio(ai_commander[russians],'DRNgg1Ts1');
+
+                   resource_deal = Replace(resource_deal,russians, [ [14$0,12$0,10$0][difficulty] , [30,40,50][Rand(1,3)] , [30,40,50][Rand(1,3)] ] );
+               end;
+               2: begin
+                    Say(Heike,'DRNgg2H1');
+                    SayRadio(ai_commander[russians],'DR3Ts4a');
+
+                    SetNewAttitude(you,russians,att_enemy,true);
+               end;
+          end;
+
+          DialogueOff;
+
+          enable;
+     end;
+//If the player reaches friendly attitude with the Americans they ask for a few resources from time to time. Gives good credit to fulfil.
+Every 0$3 trigger GetAttitude(you,americans) = att_friend and resources_computer_to_player[americans] = 0 and resource_deal[americans] = 0 do
+     begin
+          wait( Rand(13$0,17$0) );
+
+          while not IsOk(ai_commander[americans]) or not IsOk(Heike) do
+               wait(0$2);
+
+          if GetAttitude(you,americans) <> att_friend then
+               exit;
+
+          DialogueOn;
+
+          SayRadio(ai_commander[americans],'DAFggDo1');
+
+          DWait(0$0.2);
+          case Query('AmericanResourceRequest') of
+               1: begin
+                    Say(Heike,'DAFgg1H1');
+                    SayRadio(ai_commander[americans],'DAFgg1Do1');
+
+                    resource_deal = Replace(resource_deal,americans, [[15$0,13$0,11$0][Rand(1,3)] , 50 , 0] );
+               end;
+               2: begin
+                    Say(Heike,'DAFgg2H1');
+                    SayRadio(ai_commander[americans],'DAFgg2Do1');
+
+                    american_friend_points = american_friend_points - 3;
+               end;
+          end;
+
+          DialogueOff;
+
+          enable;
+     end;
+
+//When player makes deal to share (apeman language) technology with a computer side.
+Every 0$1 do
+     var side, temp_list, area, temp_unit, other_side;
+     begin
+          for side in [americans,russians] do
+               if tech_deal[side] > 0 then
+                    begin
+                         //If the player haven't sent a scientist to the side yet then check for one in the base area and
+                         //count down the timer.
+                         if tech_deal[side][2] = 0 then
+                              begin
+                                   case side of
+                                        americans: area = am_base;
+                                        russians: area = ru_base;
+                                   end;
+                                   
+                                   temp_list = FilterAllUnits([[f_side,you],[f_inarea,area],[f_class,class_scientistic]]);
+                                   if temp_list > 0 then
+                                        begin
+                                             temp_list = Replace(tech_deal[side],2,temp_list[1]);
+                                             tech_deal = Replace(tech_deal,side,temp_list);
+
+                                             SetSide(tech_deal[side][2],side);
+                                             ComCancel(ai_lab[side]);  //Lab could be researhing tech_tech1 (see module "AI")
+                                             SetAreaMapShow(area,0);
+
+                                             case side of
+                                                  americans: other_side = russians;
+                                                  russians: other_side = americans;
+                                             end;
+                                             DoNotAttack(other_side,tech_deal[side][2]);
+                                        end
+                                   else
+                                        begin
+                                             temp_list = Replace(tech_deal[side],1, tech_deal[side][1] - 0$1);  //Time must be same as this every's update time
+                                             tech_deal = Replace(tech_deal,side,temp_list);
+
+                                             if tech_deal[side][1] <= 0$0 then  //Time is up
+                                                  begin
+                                                       DialogueOn;
+
+                                                       case side of
+                                                            americans: SayRadio(ai_commander[side],'DA43Do3ba');
+                                                            russians: SayRadio(ai_commander[side],'DR43Ts3a');
+                                                       end;
+
+                                                       DialogueOff;
+
+                                                       SetAreaMapShow(area,0);
+                                                       SetNewAttitude(you,side,att_enemy,true);
+                                                       diplomacy_status = Replace(diplomacy_status,side,-1);
+                                                       tech_deal = Replace(tech_deal,side,[]);
+                                                  end;
+
+                                             continue;
+                                        end;
+                              end;
+
+
+                         //Control the scientist
+                         if not IsOk(ai_lab[side]) then
+                              ComMoveXY(tech_deal[side][2],ai_human_pullback_hex[side][1],ai_human_pullback_hex[side][2])
+                         else
+                              begin
+                                   temp_unit = IsInUnit(tech_deal[side][2]);
+                                   if temp_unit <> ai_lab[side] then
+                                        case GetType(temp_unit) of
+                                             unit_building: ComExitBuilding(tech_deal[side][2]);
+                                             unit_vehicle: ComExitVehicle(tech_deal[side][2]);
+                                             else ComEnterUnit(tech_deal[side][2],ai_lab[side]);
+                                        end
+                                   else
+                                        if not Researched(side,tech_apelang) then
+                                             ComResearch(ai_lab[side],tech_apelang)
+                                        else
+                                             if tech_deal[side][1] > 0$0 then
+                                                  begin
+                                                       DialogueOn;
+
+                                                       case side of
+                                                            americans: begin
+                                                                 SayRadio(ai_commander[side],'DA43Do3bb');
+
+                                                                 SetSide(tech_deal[side][2],you);
+                                                                 ComExitBuilding(tech_deal[side][2]);
+                                                                 NormalAttack(russians,tech_deal[side][2]);
+                                                                 tech_deal = Replace(tech_deal,side,[]);
+                                                            end;
+                                                            russians: begin
+                                                                 Say(Heike,'DR43H4b');
+                                                                 SayRadio(ai_commander[side],'DR43Ts3b');
+                                                                 Say(Heike,'DR43H5b');
+                                                                 SayRadio(ai_commander[side],'DR43Ts4b');
+
+                                                                 temp_list = Replace(tech_deal[side],1,0$0);
+                                                                 tech_deal = Replace(tech_deal,side,temp_list);
+                                                            end;
+                                                       end;
+
+                                                       DialogueOff;
+                                                  end;
+                              end;
+                    end;
+
+          enable;
+     end;
+//When the player has defeated the Americans (no human units left), the Russians give back the scientist to the player (if the player
+//made the tech_deal).
+Every 0$2.7 do
+     begin
+          repeat
+               wait(0$5);
+               if tech_deal[russians] = 0 then
+                    continue;
+
+          until tech_deal[russians][1] = 0$0;
+
+          repeat
+               wait(0$5);
+               if tech_deal[russians] = 0 then
+                    exit;
+
+          until ai_side_is_dead[americans] and IsOk(ai_commander[russians]);
+
+          if not player_has_insulted_side[russians] then
+               begin
+                    DialogueOn;
+
+                    if GetSex(tech_deal[russians][2]) = sex_male then
+                         SayRadio(ai_commander[russians],'DRNgTs3M')
+                    else SayRadio(ai_commander[russians],'DRNgTs3F');
+
+                    DialogueOff;
+
+                    SetSide(tech_deal[russians][2],you);
+                    ComExitBuilding(tech_deal[russians][2]);
+                    NormalAttack(americans,tech_deal[russians][2]);
+                    tech_deal = Replace(tech_deal,russians,[]);
+
+                    postponetime_russian_diplomacy_disable = postponetime_russian_diplomacy_disable + 2$0;
+               end;
+     end;
+
+//When player has warned Americans of incoming Russian attack.
+Every 0$1 trigger player_attack_warning[americans] do
+     var warning, time;
+     begin
+          time = 0$0;
+
+          repeat
+               //The Russian attack could meet an American attack on their way to the American base.
+               //But make sure the contact isn't made because the Americans are attacking the Russian base.
+
+               wait(0$5);
+               time = time + 0$5;
+
+               if player_has_insulted_side[americans] or not diplomacy_enabled then
+                    break;
+
+          until ( ContactTime([americans,russians]) <= 0$5 and not BaseUnderAttack(russians,americans) ) or time >= 1$30;
+
+          while BaseUnderAttack(americans,-1) do
+               wait(0$5);
+
+          if not diplomacy_enabled then
+               exit;
+
+          EvaluateAttackWarning(americans,time < 1$30);
+
+          enable;
+     end;
+//When player has warned Russians of incoming American attack.
+Every 0$1 trigger player_attack_warning[russians] do
+     var warning, time;
+     begin
+          time = 0$0;
+
+          repeat
+               //The American attack could meet an Russian attack on their way to the Russian base.
+               //But make sure the contact isn't made because the Russians are attacking the American base.
+
+               wait(0$5);
+               time = time + 0$5;
+
+               if player_has_insulted_side[russians] or not diplomacy_enabled then
+                    break;
+
+          until ( ContactTime([americans,russians]) <= 0$5 and not BaseUnderAttack(americans,russians) ) or time >= 1$30;
+
+          while BaseUnderAttack(russians,-1) do
+               wait(0$5);
+
+          if not diplomacy_enabled then
+               exit;
+
+          EvaluateAttackWarning(russians,time < 1$30);
+
+          enable;
+     end;
+Function EvaluateAttackWarning(side,warning);
+     begin
+          if player_has_insulted_side[side] then
+               diplomacy_status = Replace(diplomacy_status,side,-1)
+          else
+               begin
+                    DialogueOn;
+
+                    case diplomacy_status[side] of
+                         att_enemy:
+                              if not warning then
+                                   begin
+                                        case side of
+                                             americans: SayRadio(ai_commander[side],'DA5Do3ba');
+                                             russians: SayRadio(ai_commander[side],'DR5Ts2ba');
+                                        end;
+
+                                        diplomacy_status = Replace(diplomacy_status,side,-1);
+                                   end
+                              else
+                                   case side of
+                                        americans: begin
+                                             SayRadio(ai_commander[side],'DA5Do3bb');
+                                             Say(Heike,'DA5H3bb');
+                                             SayRadio(ai_commander[side],'DA5Do4bb');
+
+                                             DWait(0$0.2);
+                                             case Query('AcceptCeasefireAmericans') of  //Accept yes|accept no
+                                                  1: begin
+                                                       Say(Heike,'DA51H1');
+
+                                                       UpgradeDiplomacy(side,att_neutral);
+                                                  end;
+                                                  2: begin
+                                                       Say(Heike,'DA52H1');
+                                                       SayRadio(ai_commander[side],'DA52Do1');
+
+                                                       diplomacy_status = Replace(diplomacy_status,side,-1);
+                                                  end;
+                                             end;
+                                        end;
+                                        russians: begin
+                                             SayRadio(ai_commander[side],'DR5Ts2bb');
+                                             Say(Heike,'DR5H2bb');
+                                             SayRadio(ai_commander[side],'DR5Ts3bb');
+
+                                             UpgradeDiplomacy(side,att_neutral);
+                                        end;
+                                   end;
+                         att_neutral,att_friend:
+                              if not warning then
+                                   begin
+                                        case side of
+                                             americans: SayRadio(ai_commander[side],'DAN2Do2a');
+                                             russians: SayRadio(ai_commander[side],'DRN2Ts2a');
+                                        end;
+
+                                        SetNewAttitude(you,side,att_enemy,true);
+                                   end
+                              else
+                                   case side of
+                                        americans: begin
+                                             SayRadio(ai_commander[side],'DANDo2b');
+
+                                             if diplomacy_status[side] = att_neutral then
+                                                  player_attack_warning_americans_neutral_success = true
+                                             else
+                                                  american_friend_points = american_friend_points + 3;
+                                        end;
+                                        russians: SayRadio(ai_commander[side],'DRN2Ts2b');
+                                   end;
+                    end;
+
+                    DialogueOff;
+               end;
+
+          player_attack_warning = Replace(player_attack_warning,side,false);
+     end;
+
+//When player has borrowed units from the Americans, after some time the Americans want their units back again.
+Every 0$1 trigger ai_lended_units[americans] > 0 do
+     var wait_time1, wait_time2, count, temp_list, temp_list_2;
+     begin
+          wait_time1 = [10$0,8$0,6$0][difficulty];
+          count = 0$0;
+
+          repeat
+               count = count + 0$1;
+               wait(0$1);
+
+               if GetAttitude(you,americans) <> att_friend then
+                    begin
+                         ReturnBorrowedUnits(ai_lended_units[americans],false);
+                         ai_lended_units = Replace(ai_lended_units,americans,[]);
+                         exit;
+                    end;
+
+          until count >= wait_time1 and IsOk(ai_commander[americans]);
+
+          DialogueOn;
+          SayRadio(ai_commander[americans],'DAF3Do2b');
+          DialogueOff;
+
+          if LendHumanUnitCasualties then
+               exit;
+
+          wait_time1 = [4$0,3$0,2$30][difficulty];
+          wait_time2 = [2$0,1$0,0$45][difficulty] + wait_time1;
+          count = 0$0;
+          repeat
+               count = count + 0$1;
+
+               if LendHumanUnitCasualties then
+                    exit;
+
+               if GetAttitude(you,americans) <> att_friend then
+                    begin
+                         ReturnBorrowedUnits(ai_lended_units[americans],false);
+                         ai_lended_units = Replace(ai_lended_units,americans,[]);
+
+                         exit;
+                    end;
+
+               if count >= wait_time2 then
+                    begin
+                         DialogueOn;
+                         SayRadio(ai_commander[americans],'DAF3Do4b');
+                         DialogueOff;
+
+                         SetAttitude(you,americans,att_enemy,true);
+                         ReturnBorrowedUnits(ai_lended_units[americans],false);
+                         ai_lended_units = Replace(ai_lended_units,americans,[]);
+
+                         exit;
+                    end
+               else
+                    if count >= wait_time1 then
+                         begin
+                              DialogueOn;
+                              SayRadio(ai_commander[americans],'DAF3Do3b');
+                              DialogueOff;
+
+                              american_friend_points = american_friend_points - 2;
+                              wait_time1 = wait_time2;  //To prevent this dialogue from being played again
+                         end;
+
+               //Look for lended units in the base area.
+               temp_list_2 = UnitFilter(ai_lended_units[americans],[f_inarea,am_base]);
+               ReturnBorrowedUnits(temp_list_2,true);
+
+               temp_list = ai_lended_units[americans] diff temp_list_2;
+               ai_lended_units = Replace(ai_lended_units,americans,temp_list);
+
+               wait(0$1);
+
+          until ai_lended_units[americans] = 0;
+
+          DialogueOn;
+          Say(Heike,'DAF3H2b');
+          DialogueOff;
+
+          enable;
+     end;
+Function ReturnBorrowedUnits(un_list,in_area);
+     var i, temp_list, val;
+     begin
+          for i in un_list do
+                    case GetType(i) of
+                         unit_human: begin
+                              temp_list = ai_mechanics_defend[americans] ^ i;
+                              ai_mechanics_defend = Replace(ai_mechanics_defend,americans,temp_list);
+
+                              SetSide(i,americans);
+                         end;
+                         unit_vehicle: begin
+                              //Only change the side of the vehicle back to Americans if the vehicle is in the base area
+                              //or there is an American side unit inside the vehicle. The same goes for putting it back into
+                              //the ai variables.
+                              val = false;
+                              if in_area then
+                                   val = true
+                              else
+                                   if IsInArea(i,am_base) then
+                                        val = true;
+
+                              if not val then
+                                   begin
+                                        temp_list = UnitsInside(i);
+                                        if temp_list > 0 then
+                                             if GetSide(temp_list[1]) = americans or temp_list[1] in un_list then  //Setting sides takes 1 tick so if the driver and the vehicle changes side at the same time then we have a problem...
+                                                  val = true;
+                                   end;
+
+                              if val then
+                                   begin
+                                        temp_list = ai_vehicles_defend[americans] ^ i;
+                                        ai_vehicles_defend = Replace(ai_vehicles_defend,americans,temp_list);
+
+                                        SetSide(i,americans);
+                                   end;
+                         end;
+                    end;
+
+          //If a mechanic is inside a vehicle he/she will never exit (cf. the mechanic control code in module "AI").
+          //The lended American vehicle will return themselves so if a mechanic is inside such one, no problem. But
+          //if the mechanic is inside a player vehicle...
+          //Have to make this check after all units have had their sides set (no so smart to make a driver exit
+          //his/her vehicle just because its side was set later than the driver's side).
+          for i in un_list do
+               if GetType(i) = unit_human then
+                    begin
+                         val = IsInUnit(i);
+                         if val > 0 then
+                              if GetSide(val) <> americans then
+                                   ComExitVehicle(i);
+                    end;
+     end;
+Function LendHumanUnitCasualties;
+     begin
+          if human_lended_unit_has_died[americans] then
+               begin
+                    DialogueOn;
+                    Say(Heike,'DAF3H3b');
+                    SayRadio(ai_commander[americans],'DAF3Do5b');
+                    DialogueOff;
+
+                    SetNewAttitude(you,americans,att_enemy,true);
+                    ReturnBorrowedUnits(ai_lended_units[americans],false);
+                    ai_lended_units = Replace(ai_lended_units,americans,[]);
+
+                    result = true;
+               end
+          else result = false;
+     end;
+
+
+//When player kills the American who was (possibly) saved in mission 01.
+Every 0$1.2 do
+     begin
+          if saved_am = 0 then
+               exit;
+
+          repeat
+          wait(0$0.2);
+          until IsDying(saved_am);
+
+          if IsLive(saved_am) then
+               begin
+                    DialogueOn;
+                    ForceSay(saved_am,'D5SavedAm1');
+                    DialogueOff;
+               end;
+     end;
+
+
+//When player kills the leaders of the bases
+//American
+Every 0$0.2 trigger IsDying(ai_commander[americans]) do
+     begin
+          DialogueOn;
+          ForceSay(ai_commander[americans],'DAgDo8');
+          DialogueOff;
+     end;
+//Russians
+Every 0$0.2 trigger IsDying(ai_commander[russians]) do
+     begin
+          DialogueOn;
+          ForceSay(ai_commander[russians],'DRgTs5');
+          DialogueOff;
+     end;
+
+
+//When one of the sides have been defeated (Russians or Americans), diplomacy is disabled,
+//all ongoing diplomacy actions are cancelled and attitudes are reset to enemy.
+//Americans killed.
+Every 0$1+0$0.2 trigger ai_side_is_dead[americans] do
+     var k;
+     begin
+          repeat
+          wait(0$1);
+          k = true;
+
+          if tech_deal[russians] > 0 then
+               if tech_deal[russians][1] = 0$0 then
+                    k = false;
+
+          until k;
+
+          repeat
+          wait(0$1);
+          postponetime_russian_diplomacy_disable = postponetime_russian_diplomacy_disable - 0$1;
+
+          until postponetime_russian_diplomacy_disable <= 0$0;
+
+          wait(Rand(0$10,0$20));
+
+          if not ai_side_is_dead[russians] then
+               NegotiationsDownfall(russians);
+     end;
+//Russians killed.
+Every 0$1+0$0.3 trigger ai_side_is_dead[russians] do
+     begin
+          wait(Rand(0$10,0$20));
+
+          if not ai_side_is_dead[americans] then
+               NegotiationsDownfall(americans);
+     end;
+Function NegotiationsDownfall(side);
+     var i, un;
+     begin
+          DialogueOn;
+
+          if IsOk(Sonya) then
+               Say(Sonya,'D4So1')
+          else
+               begin
+                    un = 0;
+
+                    for i in FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff [Heike, Sonya, Oswald, Ralph, Kowalski, Willard, Evelyn, Aviradze] do
+                         if not GetClass(i) in [class_apeman, class_apeman_soldier, class_apeman_engineer, class_apeman_kamikaze] then
+                              begin
+                                   un = i;
+                                   break;
+                              end;
+
+                    if un > 0 then
+                         if GetSex(un) = sex_male then
+                              Say(un,'D4SomeM1')
+                         else
+                              Say(un,'D4SomeF1');
+               end;
+
+          case side of
+               americans: begin
+                    SayRadio(Powell,'D4Pow1');
+                    SayRadio(ai_commander[side],'D4Do1');
+               end;
+               russians: begin
+                    SayRadio(Platonov,'D4Pla1');
+                    SayRadio(ai_commander[side],'D4Ts1');
+               end;
+          end;
+
+          ForceSay(Heike,'D4H1');
+
+          DialogueOff;
+
+          diplomacy_enabled = false;
+          DeInitLab(button_lab);
+          SetPermanentlyEnemy(side,false);
+     end;

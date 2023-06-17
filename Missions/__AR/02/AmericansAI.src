@@ -1,0 +1,505 @@
+
+
+//Protectors for scientists in the field should stay close to their scientist.
+//Scientists and their protectors flee as well when the base scientists do.
+Every 0$1 do
+     var i, j, all_gone;
+     begin
+          for i in americans_in_the_field do
+               if scientist_escape then
+                    begin
+                         for j in i do
+                              if IsPlaced(j) and j > 0 then
+                                   if IsInArea(j,border) then
+                                        RemoveUnit(j)  //When gets away
+                                   else
+                                        ComMoveToArea(j,border);
+                    end
+               else
+                    if i[1] > 0 then
+                         for j = 2 to i do
+                              if i[j] > 0 then
+                                   if GetDistUnits(i[1],i[j]) > 3 then
+                                        ComAgressiveMove(i[j],GetX(i[1]),GetY(i[1]));
+
+          enable;
+     end;
+
+
+
+//AI for mechanics
+Every 0$1 trigger am_vehicle_groups > 0 do
+     var see_list, i, temp_value, seen_target;
+     begin
+          //Check for player units, which can be seen, in the vicinity of the base
+          see_list = FilterAllUnits([[f_side,you],[f_inarea,near_am_base],[f_see,americans]]);
+          if see_list > 0 then
+               seen_target = see_list[1]
+          else seen_target = 0;
+
+          for i = 1 to am_vehicle_groups do
+               begin
+                    //Fight if the scientists are too scared to heal - else receive healing.
+                    if am_vehicle_groups[i][2] in going_to_be_healed then
+                         continue;
+
+                    //If vehicle is burning then repair it (it must be within our reach)
+                    temp_value = GetLives(am_vehicle_groups[i][1]);
+                    if temp_value <= 250 and temp_value > 0 then
+                         begin
+                              if IsInArea(am_vehicle_groups[i][1],near_am_base) then
+                                   case GetType(IsInUnit(am_vehicle_groups[i][2])) of
+                                        unit_building: ComExitBuilding(am_vehicle_groups[i][2]);
+                                        unit_vehicle: ComExitVehicle(am_vehicle_groups[i][2]);
+                                        else
+                                             begin
+                                                  //Repairtime
+                                                  ComRepairVehicle(am_vehicle_groups[i][2],am_vehicle_groups[i][1]);
+
+                                                  if spare_mechanics_working_on = 0 then
+                                                       spare_mechanics_working_on = i;
+
+                                                  vehicles_being_repaired = vehicles_being_repaired union am_vehicle_groups[i][1];
+                                             end;
+                                   end
+                              else
+                                   begin
+                                        //Give up the vehicle. Transfer the driver to spare mechanics and delete the vehicle group.
+                                        spare_mechanics = spare_mechanics ^ am_vehicle_groups[i][2];
+                                        am_vehicle_groups = Delete(am_vehicle_groups,i);
+
+                                        if spare_mechanics_working_on = i then
+                                             spare_mechanics_working_on = 0;
+
+                                        vehicles_being_repaired = vehicles_being_repaired diff am_vehicle_groups[i][1];
+                                   end;
+
+                              continue;
+                         end;
+                              
+                    
+                    //Dont' leave the base area
+                    if not IsInArea(am_vehicle_groups[i][1],near_am_base) then
+                         begin
+                              DriverCheck(i);
+                              ComReturn(am_vehicle_groups[i][1]);
+
+                              continue;
+                         end;
+
+                    if seen_target = 0 then
+                         begin
+                              //return to base and repair/heal if necessary
+                              if GetDistUnitXY(am_vehicle_groups[i][1],GetRememberedX(am_vehicle_groups[i][1]),GetRememberedY(am_vehicle_groups[i][1])) > 3 then
+                                   begin
+                                        ComReturn(am_vehicle_groups[i][1]);
+                                        DriverCheck(i);
+                                   end
+                              else
+                                   //Repair vehicle
+                                   if GetLives(am_vehicle_groups[i][1]) < 1000 then
+                                        case GetType(IsInUnit(am_vehicle_groups[i][2])) of
+                                             unit_building: ComExitBuilding(am_vehicle_groups[i][2]);
+                                             unit_vehicle: ComExitVehicle(am_vehicle_groups[i][2]);
+                                             else
+                                                  begin
+                                                       ComRepairVehicle(am_vehicle_groups[i][2],am_vehicle_groups[i][1]);
+
+                                                       if spare_mechanics_working_on = 0 then
+                                                            spare_mechanics_working_on = i;
+
+                                                       vehicles_being_repaired = vehicles_being_repaired union am_vehicle_groups[i][1];
+                                                  end;
+                                        end
+                                   else
+                                        begin
+                                             if spare_mechanics_working_on = i then
+                                                  spare_mechanics_working_on = 0;
+
+                                             vehicles_being_repaired = vehicles_being_repaired diff am_vehicle_groups[i][1];
+
+                                             //Heal human - enter vehicle
+                                             if GetLives(am_vehicle_groups[i][2]) < 750 and will_heal then
+                                                  going_to_be_healed = going_to_be_healed union am_vehicle_groups[i][2]
+                                             else
+                                                  DriverCheck(i);
+                                        end;
+                         end
+                    else
+                         begin
+                              if am_vehicle_groups[i][1] in vehicles_being_repaired then
+                                   if GetLives(am_vehicle_groups[i][1]) >= 700 then  //send it to battle anyway
+                                        begin
+                                             if spare_mechanics_working_on = i then
+                                                  spare_mechanics_working_on = 0;
+
+                                             vehicles_being_repaired = vehicles_being_repaired diff am_vehicle_groups[i][1];
+                                        end;
+
+                              if not am_vehicle_groups[i][1] in vehicles_being_repaired then
+                                   begin
+                                        DriverCheck(i);
+                                        ComAgressiveMove(am_vehicle_groups[i][1],GetX(seen_target),GetY(seen_target));
+                                   end;
+                         end;
+               end;
+
+          enable;
+     end;
+Function DriverCheck(index);
+     var temp_unit;
+     begin
+          //Get foreign driver out of vehicle
+          temp_unit = IsDrivenBy(am_vehicle_groups[index][1]);
+          if temp_unit <> am_vehicle_groups[index][2] then
+               ComExitVehicle(temp_unit);
+                    
+          //Get correct driver inside vehicle
+          temp_unit = IsInUnit(am_vehicle_groups[index][2]);
+          case GetType(temp_unit) of
+               unit_building: ComExitBuilding(am_vehicle_groups[index][2]);
+               unit_vehicle:
+                    if temp_unit <> am_vehicle_groups[index][1] then
+                         ComExitVehicle(am_vehicle_groups[index][2]);
+               else
+                    ComEnterUnit(am_vehicle_groups[index][2],am_vehicle_groups[index][1]);
+          end;
+     end;
+//Spare mechanics
+Every 0$2 trigger spare_mechanics > 0 do
+     var i, ok, temp_unit;
+     begin
+          //Some spare mechanics who need healing?
+          CheckHealing(spare_mechanics,800,false);
+
+          if spare_mechanics_working_on > 0 then
+               begin
+                    //Help a vehicle group repairing a vehicle.
+                    //The spare mechanics only help one vehicle group at a time
+                    for i in spare_mechanics diff going_to_be_healed do
+                         case GetType(IsInUnit(i)) of
+                              unit_building: ComExitBuilding(i);
+                              unit_vehicle: ComExitVehicle(i);
+                              else
+                                   ComRepairVehicle(i,am_vehicle_groups[spare_mechanics_working_on][1]);
+                         end;
+               end
+          else
+               //If the spare mechanics aren't helping reparing a vehicle then go back to the workshop.
+               //If the workshop is burning or destroyed then just go to the center of the base.
+               BackToBuilding(spare_mechanics,amworkshop,false);
+
+          enable;
+     end;
+
+
+
+//AI for scientists
+Export will_heal;
+Every 0$1 trigger lab_scientists > 0 do
+     var i, temp_list;
+     begin
+          if not scientist_escape then
+               begin
+                    //Do the scientists have the guts to heal? (not if there are enemies near, hehe)
+                    will_heal := FilterAllUnits([[f_side,you],[f_inarea,near_am_base],[f_see,americans]]) = 0;
+
+                    //Update which units need healing - reset all if the scientists are too scared to heal
+                    temp_list = [];
+                    if will_heal then
+                         for i in going_to_be_healed do
+                              if GetLives(i) < 1000 then
+                                   temp_list = temp_list ^ i;
+                    going_to_be_healed = temp_list;
+
+                    //Some scientists which need healing themselves?
+                    CheckHealing(lab_scientists,950,true);
+
+                    //Move units which need healing to healing area
+                    for i in going_to_be_healed do
+                         case GetType(IsInUnit(i)) of
+                              unit_building: ComExitBuilding(i);
+                              unit_vehicle: ComExitVehicle(i);
+                              else
+                                   ComMoveToArea(i,heal_area);
+                         end;
+
+                    temp_list = UnitFilter(going_to_be_healed,[f_inarea,heal_area]);
+                    if temp_list = 0 or not will_heal then
+                         //Back to the lab
+                         BackToBuilding(lab_scientists,amlab,false)
+                    else
+                         //Heal some folks
+                         for i in lab_scientists diff going_to_be_healed do
+                              case GetType(IsInUnit(i)) of
+                                   unit_building: ComExitBuilding(i);
+                                   unit_vehicle: ComExitVehicle(i);
+                                   else
+                                        ComHeal(i,temp_list[1]);
+                              end;
+               end
+          else
+               begin
+                    //Time to try and escape!
+                    will_heal = false;
+                    going_to_be_healed = [];
+
+                    for i in lab_scientists do
+                         case GetType(IsInUnit(i)) of
+                              unit_building: ComExitBuilding(i);
+                              unit_vehicle: ComExitVehicle(i);
+                              else
+                                   ComMoveToArea(i,scientist_escape_area);
+                         end;
+               end;
+
+          enable;
+     end;
+//Check when it is time to escape. Depends on how safe the scientists feel (that is: How great a force do we have to protect us?).
+Every 0$0.5 trigger reinforcements_have_arrived do
+     var points, am_force_points, i, spare_count;
+     begin
+          //Roughly determines how strong the American defending force is.
+          //1 soldier = 1 point
+          //1 vehicle group = 2 points
+          //1 armoury = 2 points
+          am_force_points = UnitFilter(base_inside_soldiers ^ base_outside_soldiers,[f_ok]) * 1 +
+                            UnitFilter(amarmoury,[f_ok]) * 2;
+
+          spare_count = 0;
+          for i in am_vehicle_groups do
+               if IsOk(i[2]) then
+                    am_force_points = am_force_points + 2
+               else
+                    if spare_mechanics > spare_count then  //If we have someone to replace the driver
+                         begin
+                              am_force_points = am_force_points + 2;
+                              spare_count = spare_count + 1;
+                         end;
+
+          case difficulty of
+               1: points = 0;
+               2: points = 4;
+               3: points = 6;
+          end;
+
+          if am_force_points <= points then
+               TheEscape
+          else enable;
+     end;
+//Dialogues and set-up for the scientist escape.
+Export Function TheEscape;
+     var sci_speaker, dismantle;
+     begin
+          dismantle = false;
+          //if lab_scientists diff Gladstone > 0 then
+          if IsLive(Gladstone) then
+               begin
+                    //sci_speaker = (lab_scientists diff Gladstone)[1];
+
+                    DialogueOn;
+                    ForceSay(Gladstone,'D7Gla1');
+                    if difficulty > 1 then
+                         begin
+                              ForceSay(Gladstone,'D7Gla2');
+                              dismantle = true;
+                         end;
+                    if reinforcements_have_arrived then  //We know they must not escape
+                         Say(Heike,'D7H1');
+                    DialogueOff;
+               end;
+          
+          scientist_escape = true;
+          if dismantle then
+               begin
+                    wait([-1,0$7,0$2][difficulty]);  //Delay on dismantle
+                    dismantle_the_lab = true;
+               end;
+     end;
+//When scientists from the base successfully escapes
+Every 0$0.5 trigger scientist_escape do
+     var i;
+     begin
+          if UnitFilter(lab_scientists,[f_placed]) = 0 then  //No scientists left (escaped or dead)
+               begin
+                    Wait(0$1);
+
+                    if IsOk(Aviradze) then  //includes IsPlaced
+                         begin
+                              DialogueOn;
+                              if lab_scientists > 0 then  //some escaped
+                                   Say(Aviradze,'D8Av1')
+                              else Say(Aviradze,'D8Av2');
+                              DialogueOff;
+                         end;
+
+                    exit;
+               end;
+
+          for i in lab_scientists do
+               if IsInArea(i,scientist_escape_area) then
+                    RemoveUnit(i);
+
+          enable;
+     end;
+
+
+
+//AI for engineers
+Every 0$1 trigger base_engineers > 0 do
+     var i, rep_build;
+     begin
+          if not dismantle_the_lab then
+               begin
+                    //Need healing, anyone?
+                    CheckHealing(base_engineers,800,false);
+
+                    //Check if any buildings need to be repaired
+                    rep_build = 0;
+                    for i in [amlab,amarmoury,amdep,amworkshop] do  //prioritated
+                         if GetLives(i) < 1000 then
+                              begin
+                                   rep_build = i;
+                                   break;
+                              end;
+
+                    if rep_build > 0 then
+                         begin
+                              //Repair picked building
+                              for i in base_engineers diff going_to_be_healed do
+                                   case GetType(IsInUnit(i)) of
+                                       unit_building: ComExitBuilding(i);
+                                       unit_vehicle: ComExitVehicle(i);
+                                       else
+                                            ComRepairBuilding(i,rep_build);
+                                   end;
+                         end
+                    else
+                         //Return to depot. If depot is destroyed then just move to center of base.
+                         BackToBuilding(base_engineers,amdep,false);
+               end
+          else
+               //Dismantle the lab (mission is lost if success)
+               if IsDead(amlab) then
+                    dismantle_the_lab = false
+               else
+                    for i in base_engineers do
+                         case GetType(IsInUnit(i)) of
+                              unit_building: ComExitBuilding(i);
+                              unit_vehicle: ComExitVehicle(i);
+                              else
+                                   ComDismantle(i,amlab);
+                         end;
+
+          enable;
+     end;
+
+
+
+//AI for soldiers (in the base)
+//Soldiers inside armoury
+Every 0$1 trigger base_inside_soldiers > 0 do
+     var i;
+     begin
+          //If the armoury has been destroyed and these soldiers have retreated to the center
+          //of the base, they may require healing.
+          if not IsOk(amarmoury) then
+               CheckHealing(base_inside_soldiers,900,false);
+
+          if not scientist_escape then
+               //Keep the folks inside the armoury. If the armoury is destroyed or burning then go
+               //to the center of the base.
+               BackToBuilding(base_inside_soldiers,amarmoury,true)
+          else
+               if ContactTime([you,americans]) > 0$10 then
+                    for i in base_inside_soldiers do
+                         case GetType(IsInUnit(i)) of
+                              unit_building: ComExitBuilding(i);
+                              unit_vehicle: ComExitVehicle(i);
+                              else
+                                   RetreatToBase(i);
+                         end;
+
+          enable;
+     end;
+//Soldiers outside (on the cliffs)
+Every 0$1 trigger base_outside_soldiers > 0 do
+     var i;
+     begin
+          //Need some healing?
+          if FilterAllUnits([[f_side,you],[f_see,americans]]) = 0 then
+               CheckHealing(base_outside_soldiers,700,false);
+
+          if not scientist_escape then
+               begin
+                    //These soldiers may pursue the player's units, but must stay within the base area.
+                    //Keep the soldiers in the vicinity of their starting point (has relatively large freedom).
+                    for i in base_outside_soldiers diff going_to_be_healed do
+                         if not IsInArea(i,near_am_base) then
+                              ComReturn(i)
+                         else
+                              if GetDistUnitXY(i,GetRememberedX(i),GetRememberedY(i)) > 6 then
+                                   ComAgressiveMove(i,GetRememberedX(i),GetRememberedY(i));
+               end
+          else
+               RetreatToBase(base_outside_soldiers);
+
+          enable;
+     end;
+Function RetreatToBase(unit_list);
+     var i, dist;
+     begin
+          //Move to the center of the base to driver away the Arabs.
+          //If all is quiet then 'dismantle' the lab (if that order has been given).
+          for i in unit_list do
+               begin
+                    dist = GetDistUnitXY(i,center_of_base[1],center_of_base[2]);
+                    if dist > 7 then
+                         ComAgressiveMove(i,center_of_base[1],center_of_base[2])
+                    else
+                         if dismantle_the_lab then
+                              if ContactTime([you,americans]) > 0$7 then
+                                   ComAttackUnit(i,amlab)
+                              else
+                                   if dist < 7 then
+                                        ComAgressiveMove(i,center_of_base[1],center_of_base[2]);
+               end;
+     end;
+
+
+
+Function CheckHealing(unit_list,hp_tolerance,first_priority);
+     var i;
+     begin
+          if will_heal then
+               for i in unit_list diff going_to_be_healed do
+                    if GetLives(i) < hp_tolerance then
+                         if first_priority then
+                              going_to_be_healed = Insert(going_to_be_healed,1,i)
+                         else
+                              going_to_be_healed = going_to_be_healed ^ i;
+     end;
+Function BackToBuilding(unit_list,building,agr_move);
+     var i, temp_unit, ok;
+     begin
+          ok = IsOk(building);
+          for i in unit_list diff going_to_be_healed do
+               begin
+                    temp_unit = IsInUnit(i);
+                    case GetType(temp_unit) of
+                         unit_building:
+                              if temp_unit <> building then
+                                   ComExitBuilding(i);
+                         unit_vehicle: ComExitVehicle(i);
+                         else
+                              if ok then
+                                   ComEnterUnit(i,building)
+                              else
+                                   if GetDistUnitXY(i,center_of_base[1],center_of_base[2]) > 4 then
+                                        if agr_move then
+                                             ComAgressiveMove(i,center_of_base[1],center_of_base[2])
+                                        else
+                                             ComMoveXY(i,center_of_base[1],center_of_base[2]);
+                    end;
+               end;
+     end;

@@ -1,0 +1,122 @@
+
+
+// lost_americans program (patroling in trees)
+EVERY 0$1+0$0.1 DO
+  var fase;
+  begin
+    fase = 0;
+
+    repeat
+    wait(0$1);
+
+    if has_met_am then
+         exit;
+
+    if HasTask(lost_american) then
+         continue;
+
+    fase := (fase + 1) mod 4;
+    case fase of
+      0:ComMoveXY(lost_american,53,14);
+      1:ComMoveXY(lost_american,55,17);
+      2:ComMoveXY(lost_american,53,14);
+      3:ComMoveXY(lost_american,54,12);
+    end;
+
+    until false;
+  end;
+
+
+// Program for american reckon vehicle.
+every 0$2+0$0.5 trigger vehicle_can_go do
+  var i, hex_index, temp_list;
+  var recon_way;
+  begin
+// sets symetric neutral relations - if you attack americans or
+// americans attack you it change to att_enemy
+    SetAttitude(you,americans,att_neutral,true);
+// prepare reckon waypoints (-1 means short waiting)
+    recon_way=[[10,12], [13,19], [16,23], [22,29],
+                [23,33], [27,37], [33,36], [38,37], [42,38], [51,38],
+                [62,50], [56,43], [51,38], [42,38], [38,37], [33,36], [27,37], [23,33],
+                [22,29], [16,23], [13,19], [10,12], [6,8]];
+
+    hex_index = 1;
+
+
+
+    repeat
+    // after some time
+    Wait(Rand(0$18,0$25));
+
+// ... vehicle try to appear on border of map
+      repeat
+        Wait(0$1)
+      until PlaceUnitXY(recon_vehicle,6,8,false);
+
+// processes commands until is attacked by you or reaches starting point
+      repeat
+        if not IsOk(recon_vehicle) then
+             begin
+                  temp_list = FilterAllUnits([[f_side,you],[f_see,americans],[f_dist,recon_driver,20]]);
+                  if temp_list > 0 then
+                       ComAttackUnit(recon_driver,temp_list[1])
+                  else
+                       if IsLive(recon_vehicle) then
+                            ComRepairVehicle(recon_driver,recon_vehicle)
+                       else
+                            //Pull back and never come back.
+                            if GetDistUnitXY(recon_driver,recon_way[recon_way][1],recon_way[recon_way][2]) <= 2 then
+                                 begin
+                                      DestroyUnit(recon_driver);
+                                      exit;
+                                 end
+                            else
+                                 ComMoveXY(recon_driver,recon_way[recon_way][1],recon_way[recon_way][2]);
+             end
+        else
+             if not IsInUnit(recon_driver) = recon_vehicle then
+                  ComEnterUnit(recon_driver,recon_vehicle)
+             else
+                  begin
+                       if GetDistUnitXY(recon_driver,recon_way[hex_index][1],recon_way[hex_index][2]) <= 2 then
+                            begin
+                                 hex_index = hex_index + 1;
+
+                                 if hex_index > recon_way then
+                                      begin
+                                           RemoveUnit(recon_vehicle);
+                                           SetDir(recon_vehicle,2);
+
+                                           hex_index = 1;
+
+                                           break;
+                                      end;
+                            end;
+                       
+                       if difficulty = 1 then
+                            ComMoveXY(recon_driver,recon_way[hex_index][1],recon_way[hex_index][2])
+                       else
+                            ComAgressiveMove(recon_driver,recon_way[hex_index][1],recon_way[hex_index][2]);
+                  end; 
+
+        wait(5);
+
+      until not IsPlaced(recon_driver) or GetLives(recon_driver) <= 250;
+
+    until GetLives(recon_driver) <= 250;
+
+  end;
+
+// Olaf says that he is able to repair damaged vehicle
+EVERY 0$1+0$1 trigger GetLives(recon_driver) <= 250 do
+  begin
+    if IsOk(Olaf) then
+      Say(Olaf,'D7O1');
+    Hint('Vehicles');
+  end;
+
+every 0$3+0$0.5 trigger IsInUnit(Heike) or IsInUnit(Olaf) do
+  begin
+    Hint('Controlling vehicles');
+  end;

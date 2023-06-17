@@ -1,0 +1,826 @@
+
+Export testing;
+
+Export you, nature, upf, legion, mines_side, upf_deserter_shoot_side;
+
+Export Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, other_deserters_08;
+Export Khattam, upf_deserter;
+
+Export remote_controllers, remote_controllers_vehicles, killed_legion_hexes, all_mines_hexes, group_4_position;
+Export group_4_breastwork, group_3_breastwork, upf_breastworks, group_3_position, patrols, patrols_path, patrols_path_hex_index;
+Export patrols_subpaths, units_to_dispose_when_enter_area, remote_controllers_control_tower, legion_members_at_start;
+Export mountain_guard_east, mountain_guard_north, mountain_guard_west, the_tiger, tiger_captive, group_3_exterminators_spawned;
+
+
+Starting
+begin
+     RandomizeAll;
+     ResetFog;
+
+     testing = false;  //Testing mission or real campaign?
+
+     mountain_guard_east = 0;  //Identifier of the UPF breastwork guard in the easternmost breastwork.
+     mountain_guard_north = 0;  //Identifier of the UPF breastwork guard in the northernmost breastwork.
+     mountain_guard_west = 0;  //Identifier of the UPF breastwork guard in the westernmost breastwork.
+     remote_controllers = [];  //Identifiers of the UPF remote controlling mechanics.
+     remote_controllers_vehicles = [];  //Index corresponding to the unit number of a remote controller from "remote_controllers" holds a list of remote vehicles the mechanic controls.
+     remote_controllers_control_tower = [];  //The control tower vehicle of each remote controller mechanics. Index is mechanic id. Value is vehicle id.
+     killed_legion_hexes = [];  //[x,y] - Coordinates of the corpses of the killed Legion folks in the central-southern mountains (cf. function "PrepareOtherMines").
+     all_mines_hexes = [];  //Coordinates of all mines on the map [x,y].
+     group_4_position = 0;  //1 if group 4 (see "PrepareArabians") is situated at the north-eastern camp. 2 if central-south.
+     group_3_position = 0;  //1 if group 3 is situated at the central north. 2 for north-west.
+     group_4_breastwork = 0;  //Identifier of group 4's breastwork.
+     group_3_breastwork = 0;  //Identifier of group 3's breastwork.
+     upf_breastworks = [];  //Identifiers of all the breastworks controlled by UPF
+     patrols = [];  //[[id1,id2,id3],[id4,id5,id6]] - Holds the identifiers of soldiers who are searching for the Legion scum
+     patrols_path = [];  //[ [[x1,y1],[x2,y2],...] , [[x9,y9],[x10,y10],...] ] - holds the patrolling path for patrols. Patrol with index 1 uses path with index 1 and so on.
+     patrols_path_hex_index = [];  //The index in "patrols_path" the patrolling units in "patrols" are going for next.
+     legion_members_at_start = [];  //Holds the units the player can save + the player's starting units.
+
+     //Holds the path fragments from which a patrol path is constructed randomly. The first number in the beginning of each path-list is the path-type-id of that path.
+     //The following list contains numbers which dictate the path-types you can combine with this one (put after). Hereafter follows the hexes defining the path.
+     //So a possible path would be (only looking at the path-types): 1000-1001-1002-3001 , or the reverse (all hexes reversed)
+     //Note that path 4xxx cannot be taken if group 4 is present at the north-eastern cave. The same goes for paths 3xxx with group 3 placed
+     //in the upper left corner of the map.
+     //See function "CreateControlPath" in module "AI".
+     patrols_subpaths = [
+                         [1000,[1001],[186,138]],
+                         [1001,[1002,4001],[196,131],[191,114],[173,92]],
+                         [4001,[1002],[158,80],[152,66],[146,51],[143,38],[151,33],[143,38],[146,51],[152,66],[158,80]],
+                         [1002,[1003,3001],[154,85],[135,78],[116,71],[97,60]],
+                         [1003,[],[94,73],[84,81],[76,90],[65,93]], //path ends here
+                         [3001,[],[85,47],[79,29],[55,24],[33,21],[38,41],[40,57],[43,62],[52,73],[61,87]]  //path ends here
+                        ];
+
+     units_to_dispose_when_enter_area = [];  //Identifiers of the computer units which should be destroyed by an asynchronous thread when the unit enters one of the enter/exit areas (e.g. enter_area_south).
+     the_tiger = 0;  //Identifier of the tiger roaming it's lair in the central south.
+     tiger_captive = 0;  //Identifier of the civilian trapped in the before mentioned tiger's lair.
+     group_3_exterminators_spawned = false;  //Turns true when the exterminator squad for group 3 has spawned.
+
+
+     PrepareSides;
+     PrepareArabians;
+     PrepareComputerSides;
+     PrepareOtherMines;
+       
+     Action;
+end;
+
+Function PrepareSides;
+     begin
+          //Who is who and decide initial attitudes
+          nature = 0;
+          you = 8;
+          upf = 2;
+          legion = 5;
+          upf_deserter_shoot_side = 7;
+          mines_side = 0;  //Side mines will be set to belong to
+
+          SetAttitude(you,upf,att_enemy,true);
+          SetAttitude(you,legion,att_friend,true);
+          SetAttitude(you,upf_deserter_shoot_side,att_enemy,true);
+
+          SetAttitude(upf,legion,att_enemy,true);
+          SetAttitude(upf,upf_deserter_shoot_side,att_enemy,true);
+
+          SetAttitude(legion,upf_deserter_shoot_side,att_enemy,true);
+     end;
+
+Function PrepareArabians;
+     var i, temp_unit, temp_list, hex;
+     begin
+          InitHc;
+          InitUc;
+          uc_side = you;
+          uc_nation = nation_arabian;
+
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_11_cont');
+
+                    if TestCharacters('Oswald_11_cont') then
+                         Oswald = CreateCharacter('Oswald_11_cont')
+                    else
+                         if TestCharacters('Oswald_11_not_sel') then
+                              Oswald = CreateCharacter('Oswald_11_not_sel')
+                         else
+                              Oswald = 0;
+
+                    if LoadVariable('Oswald_is_substitute_11_generic',false) then
+                         Oswald = 0;
+
+
+                    if TestCharacters('Kurt_11_cont') then
+                         Kurt = CreateCharacter('Kurt_11_cont')
+                    else
+                         if TestCharacters('Kurt_11_not_sel') then
+                              Kurt = CreateCharacter('Kurt_11_not_sel')
+                         else
+                              Kurt = 0;
+
+                    if LoadVariable('Kurt_is_substitute_11_generic',false) then
+                         Kurt = 0;
+
+
+                    //-------------------
+                    uc_side = legion;
+                    //-------------------
+
+                    if TestCharacters('Olaf_11_cont') then
+                         Olaf = CreateCharacter('Olaf_11_cont')
+                    else
+                         if TestCharacters('Olaf_11_not_sel') then
+                              Olaf = CreateCharacter('Olaf_11_not_sel')
+                         else
+                              Olaf = 0;
+                    
+                    if TestCharacters('Sonya_11_cont') then
+                         Sonya = CreateCharacter('Sonya_11_cont')
+                    else
+                         if TestCharacters('Sonya_11_not_sel') then
+                              Sonya = CreateCharacter('Sonya_11_not_sel')
+                         else
+                              Sonya = 0;
+
+                    if TestCharacters('Ralph_11_cont') then
+                         Ralph = CreateCharacter('Ralph_11_cont')
+                    else
+                         if TestCharacters('Ralph_11_not_sel') then
+                              Ralph = CreateCharacter('Ralph_11_not_sel')
+                         else
+                              Ralph = 0;
+
+                    if TestCharacters('Kowalski_11_cont') then
+                         Kowalski = CreateCharacter('Kowalski_11_cont')
+                    else
+                         if TestCharacters('Kowalski_11_not_sel') then
+                              Kowalski = CreateCharacter('Kowalski_11_not_sel')
+                         else
+                              Kowalski = 0;
+
+                    if TestCharacters('Suze_11_cont') then
+                         Suze = CreateCharacter('Suze_11_cont')
+                    else
+                         if TestCharacters('Suze_11_not_sel') then
+                              Suze = CreateCharacter('Suze_11_not_sel')
+                         else
+                              Suze = 0;
+
+                    if TestCharacters('MarkB_11_cont') then
+                         MarkB = CreateCharacter('MarkB_11_cont')
+                    else
+                         if TestCharacters('MarkB_11_not_sel') then
+                              MarkB = CreateCharacter('MarkB_11_not_sel')
+                         else
+                              MarkB = 0;
+
+                    if TestCharacters('Louis_08') then
+                         Louis = CreateCharacter('Louis_08')
+                    else
+                         Louis = 0;
+
+                    //If not Louis survived none of the deserters from mission 08 are present
+                    if TestCharacters('Martin_08') and Louis > 0 then
+                         Martin = CreateCharacter('Martin_08')
+                    else
+                         Martin = 0;
+
+                    if Louis > 0 then
+                         other_deserters_08 = CreateCharacterSet('other_deserters_08') diff 0
+                    else
+                         other_deserters_08 = [];
+
+                    if not LoadVariable('Khattam_accepted_11_cont',true) and TestCharacters('Khattam_11_cont') then
+                         Khattam = CreateCharacter('Khattam_11_cont')
+                    else
+                         Khattam = 0;
+               end
+          else
+               begin
+                    InitHc;
+
+                    PrepareSoldier(sex_female,8);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Oswald';
+                    Oswald = CreateHuman;
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Kurt';
+                    Kurt = CreateHuman;
+
+                    //-------------------
+                    uc_side = legion;
+                    //-------------------
+
+                    PrepareMechanic(sex_male,8);
+                    hc_name = 'Olaf';
+                    Olaf = CreateHuman;
+
+                    PrepareScientist(sex_female,8);
+                    hc_name = 'Sonya';
+                    Sonya = CreateHuman;
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Ralph';
+                    Ralph = CreateHuman;
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Kowalski';
+                    Kowalski = CreateHuman;
+
+                    PrepareSoldier(sex_female,8);
+                    hc_name = 'Suze';
+                    Suze = CreateHuman;
+
+                    PrepareScientist(sex_male,8);
+                    hc_name = 'Mark';
+                    MarkB = CreateHuman;
+
+                    PrepareEngineer(sex_male,8);
+                    hc_name = 'Louis';
+                    Louis = CreateHuman;
+
+                    PrepareMechanic(sex_male,8);
+                    hc_name = 'Martin';
+                    Martin = CreateHuman;
+
+                    other_deserters_08 = [];
+                    hc_name = '';
+                    for i = 1 to 2 do
+                         begin
+                              PrepareHuman(sex_male,[class_soldier,class_engineer,class_mechanic,class_scientistic][Rand(1,4)],7);
+                              other_deserters_08 = other_deserters_08 ^ CreateHuman;
+                         end;
+
+                    PrepareScientist(sex_male,8);
+                    hc_name = 'Khattam';
+                    Khattam = CreateHuman;
+               end;
+
+          //The UPF deserter
+          upf_deserter = NewCharacter('Bergkamp');
+
+
+          //Place units and change class.
+          {
+          There are 5 groups of people:
+          Heike + Oswald + Kurt
+          UPF deserter
+          Louis + Martin + others
+          MarkB + Ralph + Sonya + Kowalski
+          Khattam + Olaf + Suze
+          }
+          //Group 1
+          SetClass(Heike,class_soldier);
+          SetClass(Oswald,class_soldier);
+          SetClass(Kurt,class_soldier);
+
+          for i in [Heike,Oswald,Kurt] diff 0 do
+               SetDir(i,5);
+                
+          PlaceUnitXY(Heike,220,146,false);
+
+          if Oswald > 0 then
+               PlaceUnitXY(Oswald,219,147,false);
+
+          if Kurt > 0 then
+               PlaceUnitXY(Kurt,217,147,false);
+                                
+
+          //Group 2
+          if Rand(1,2) = 1 then
+               PlaceUnitXY(upf_deserter,49,35,false)
+          else
+               PlaceUnitXY(upf_deserter,106,8,false);
+
+
+          //Group 3
+          SetClass(Martin,class_mechanic);
+          SetClass(Louis,class_mortar);
+
+          case difficulty of
+               1: begin
+                    SetClass(other_deserters_08,class_mortar);
+               end;
+               2,3: begin
+                    SetClass(other_deserters_08,class_soldier);
+               end;
+          end;
+
+          temp_list = ([Louis,Martin] diff 0) ^ other_deserters_08;
+
+          if temp_list > 0 then
+               begin
+                    //Where to spawn
+                    if Rand(1,2) = 1 then
+                         begin
+                              //Central North
+                              bc_type = b_breastwork;
+                              temp_unit = CreateAndPlaceBuildingXYD(112,37,0);
+
+                              hex = [115,33];
+
+                              CreateCratesXYR(Rand(2,4),114,29,1,false);
+                              CreateCratesXYR(Rand(1,3),115,31,1,false);
+
+                              //Place mines in the north-western camp
+                              if difficulty > 1 then
+                                   PlaceMinesToArea(mine_area_22_15,[10,25][difficulty-1],0,mines_side,0);
+
+                              group_3_position = 1;
+                         end
+                    else
+                         begin
+                              //North West
+                              bc_type = b_breastwork;
+                              temp_unit = CreateAndPlaceBuildingXYD(26,17,5);
+
+                              hex = [20,15];
+
+                              CreateCratesXYR(Rand(2,4),19,12,1,false);
+                              CreateCratesXYR(Rand(1,3),19,17,1,false);
+
+                              //Place mines in the central North camp
+                              if difficulty > 1 then
+                                   PlaceMinesToArea(mine_area_98_38,[10,25][difficulty-1],0,mines_side,0);
+
+                              group_3_position = 2;
+                         end;
+
+                    SetBLevel(temp_unit,GetSkill(FindMaxSkill2(temp_list,skill_engineering),skill_engineering));
+                    group_3_breastwork = temp_unit;
+
+                    //Populate the breastwork
+                    for i = 1 to temp_list + 1 do
+                         begin
+                              if i <= temp_list then
+                                   begin
+                                        if GetClass(temp_list[i]) = class_soldier then
+                                             begin
+                                                  SetDir(temp_list[i],AI_InvertDirection(GetDir(temp_unit)));
+                                                  PlaceHumanInUnit(temp_list[i],temp_unit);
+                                                  temp_list = Delete(temp_list,i);
+
+                                                  break;
+                                             end
+                                   end
+                              else  //Noone with class soldier
+                                   begin
+                                        SetDir(temp_list[1],AI_InvertDirection(GetDir(temp_unit)));
+                                        PlaceHumanInUnit(temp_list[1],temp_unit);
+                                        temp_list = Delete(temp_list,1);
+                                   end;
+                         end;
+
+                    //Place the rest of the units
+                    for i in temp_list do
+                         begin
+                              PlaceUnitXYR(i,hex[1],hex[2],3,false);
+                              ComHold(i);
+                         end;
+               end
+          else
+               begin
+                    //Place mines in both camps
+                    if difficulty > 1 then
+                         PlaceMinesToArea(mine_area_22_15,[10,25][difficulty-1],0,mines_side,0);
+
+                    if difficulty > 1 then
+                         PlaceMinesToArea(mine_area_98_38,[10,25][difficulty-1],0,mines_side,0);
+               end;
+
+
+          //Group 4
+          SetClass(Sonya,class_scientistic);
+          SetClass(Kowalski,class_soldier);
+
+          case difficulty of
+               1: begin
+                    SetClass(MarkB,class_scientistic);
+                    SetClass(Ralph,class_soldier);
+               end;
+               2: begin
+                    SetClass(MarkB,class_scientistic);
+                    SetClass(Ralph,class_engineer);
+               end;
+               3: begin
+                    SetClass(MarkB,class_soldier);
+                    SetClass(Ralph,class_engineer);
+               end;
+          end;
+
+          temp_list = [Sonya,MarkB,Kowalski,Ralph] diff 0;
+
+          if temp_list > 0 then
+               begin
+                    //Where to spawn
+                    if ( Rand(1,2) = 1 and difficulty = 2 ) or difficulty = 1 then
+                         begin
+                              //North East
+                              bc_type = b_breastwork;
+                              temp_unit = CreateAndPlaceBuildingXYD(165,48,2);
+
+                              hex = [170,56];
+
+                              CreateCratesXYR(Rand(1,4),171,58,1,false);
+
+                              //Place mines in the central souhtern camp
+                              if difficulty > 1 then
+                                   PlaceMinesToArea(mine_area_122_115,[10,25][difficulty-1],0,mines_side,0);
+
+                              group_4_position = 1;          
+                         end
+                    else
+                         begin
+                              //Central South
+                              bc_type = b_breastwork;
+                              temp_unit = CreateAndPlaceBuildingXYD(120,113,2);
+
+                              hex = [128,120];
+
+                              CreateCratesXYR(Rand(1,4),126,120,1,false);
+
+                              //Place mines in the north eastern camp
+                              if difficulty > 1 then
+                                   PlaceMinesToArea(mine_area_165_50,[10,25][difficulty-1],0,mines_side,0);
+
+                              group_4_position = 2;
+                         end;
+
+                    SetBLevel(temp_unit,GetSkill(FindMaxSkill2(temp_list,skill_engineering),skill_engineering));
+                    group_4_breastwork = temp_unit;
+
+                    //Populate the breastwork
+                    for i = 1 to temp_list + 1 do
+                         begin
+                              if i <= temp_list then
+                                   begin
+                                        if GetClass(temp_list[i]) = class_soldier then
+                                             begin
+                                                  SetDir(temp_list[i],AI_InvertDirection(GetDir(temp_unit)));
+                                                  PlaceHumanInUnit(temp_list[i],temp_unit);
+                                                  temp_list = Delete(temp_list,i);
+
+                                                  break;
+                                             end
+                                   end
+                              else  //Noone with class soldier
+                                   begin
+                                        SetDir(temp_list[1],AI_InvertDirection(GetDir(temp_unit)));
+                                        PlaceHumanInUnit(temp_list[1],temp_unit);
+                                        temp_list = Delete(temp_list,1);
+                                   end;
+                         end;
+
+                    //Place the rest of the units
+                    for i in temp_list do
+                         begin
+                              PlaceUnitXYR(i,hex[1],hex[2],3,false);
+                              ComHold(i);
+                         end;
+               end
+          else
+               begin
+                    //Place mines in both camps
+                    if difficulty > 1 then
+                         PlaceMinesToArea(mine_area_122_115,[10,25][difficulty-1],0,mines_side,0);
+
+                    if difficulty > 1 then
+                         PlaceMinesToArea(mine_area_165_50,[10,25][difficulty-1],0,mines_side,0);
+               end;
+
+
+          //Group 5
+          SetClass(Olaf,class_mechanic);
+          SetClass(Suze,class_soldier);
+
+          //Change Khattam's nation to nation_arabian so the player
+          //can't build American buildings.
+          if Khattam > 0 then
+               begin
+                    PrepareNewCharacter('Khatam');
+                    uc_side = legion;
+                    uc_nation = nation_arabian;
+
+                    temp_unit = Khattam;
+                    Khattam = CreateHuman;
+
+                    hc_importance = 0;  //InitHc does not reset this one and it persists over missions
+
+                    CopySkills(temp_unit,Khattam);
+                    DestroyUnit(temp_unit);
+               end;
+
+          temp_list = [Olaf,Suze,Khattam] diff 0;
+
+          for i in temp_list do
+               PlaceUnitXYR(i,82,137,1,false);
+
+
+          //Tiger captive
+          tiger_captive = CreateUnitsWithClass(1,class_engineer,legion,sex_female)[1];
+          PlaceUnitXY(tiger_captive,136,145,false);
+          ComHold(tiger_captive);
+
+          InitHc;
+          InitUc;
+          uc_nation = nation_nature;
+          uc_side = nature;
+
+          hc_class = class_tiger;
+          hc_sex = sex_male;
+          hc_gallery = 'nature_foreg';
+          hc_face_number = 3;
+          hc_agressivity = 50;
+          hc_attr = [Rand(10,12),Rand(10,11)];
+          hc_skills = [difficulty,0,0,0];
+          the_tiger = CreateHuman;
+          PlaceUnitXYR(the_tiger,152,140,2,false);
+
+
+          //Update variables
+          legion_members_at_start = ([Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam, tiger_captive] ^ other_deserters_08) diff 0;
+     end;
+
+Function PrepareComputerSides;
+     var b, un, hex, n;
+     begin
+          //Technologies
+          case difficulty of
+               1: begin
+               end;
+               2: begin
+                    SetTech(tech_stimdrugs,upf,state_researched);
+                    SetTech(tech_opto1,upf,state_researched);
+               end;
+               3: begin
+                    SetTech(tech_stimdrugs,upf,state_researched);
+                    SetTech(tech_opto1,upf,state_researched);
+                    SetTech(tech_opto2,upf,state_researched);
+                    SetTech(tech_opto3,upf,state_researched);
+                    SetTech(tech_bio1,upf,state_researched);
+               end;
+          end;
+               
+
+          //Breastworks (in mountains)
+          InitUc;
+          InitBc;
+          uc_side = upf;
+          uc_nation = nation_arabian;
+          bc_type = b_breastwork;
+          bc_level = [7,8,9][difficulty];
+
+          b = CreateAndPlaceBuildingXYD(164,98,3);
+          InitHc;
+          un = CreateUnitsWithClass(1,class_mortar,upf,false)[1];
+          SetDir(un,AI_InvertDirection(GetDir(b)));
+          PlaceHumanInUnit(un,b);
+          mountain_guard_east = un;
+          upf_breastworks = upf_breastworks ^ b;
+
+          b = CreateAndPlaceBuildingXYD(83,99,2);
+          un = CreateUnitsWithClass(1,class_mortar,upf,false)[1];
+          SetDir(un,AI_InvertDirection(GetDir(b)));
+          PlaceHumanInUnit(un,b);
+          mountain_guard_west = un;
+          upf_breastworks = upf_breastworks ^ b;
+
+          b = CreateAndPlaceBuildingXYD(71,33,3);
+          un = CreateUnitsWithClass(1,[class_mortar,class_soldier,class_soldier][difficulty],upf,false)[1];
+          SetDir(un,AI_InvertDirection(GetDir(b)));
+          PlaceHumanInUnit(un,b);
+          mountain_guard_north = un;
+          upf_breastworks = upf_breastworks ^ b;
+
+
+          //Breastworks (on the ground). Have mines in front. (mine area "mine_area_57_90")
+          if difficulty = 3 then
+               n = 0
+          else
+               n = 2;
+
+          b = CreateAndPlaceBuildingXYD(55+(n=2),90+n,4);
+          un = CreateUnitsWithClass(1,class_soldier,upf,false)[1];
+          SetDir(un,AI_InvertDirection(GetDir(b)));
+          PlaceHumanInUnit(un,b);
+          upf_breastworks = upf_breastworks ^ b;
+
+          PlaceMine(56+(n=2),88+n,mines_side,0);
+          PlaceMine(57+(n=2),89+n,mines_side,0);
+          PlaceMine(58+(n=2),90+n,mines_side,0);
+          PlaceMine(58+(n=2),91+n,mines_side,0);
+
+          if difficulty = 3 then
+               begin
+                    b = CreateAndPlaceBuildingXYD(60,99,4);
+                    un = CreateUnitsWithClass(1,class_mortar,upf,false)[1];
+                    SetDir(un,AI_InvertDirection(GetDir(b)));
+                    PlaceHumanInUnit(un,b);
+                    upf_breastworks = upf_breastworks ^ b;
+
+                    PlaceMine(61,97,mines_side,0);
+                    PlaceMine(62,98,mines_side,0);
+                    PlaceMine(63,99,mines_side,0);
+                    PlaceMine(63,100,mines_side,0);
+               end;
+
+
+          //The northeastern entrance/exit is filled with mines. (mine area "mine_area_40_70")
+          for hex in [[32,61],[35,61],[33,62],[35,62],[32,63],[33,63],[35,63],
+                              [36,63],[37,63],[38,63],[35,64],[38,64],[39,64],[35,65],[37,65],[38,65],
+                              [35,66],[36,66],[39,66],[40,66],[34,67],[38,67],[39,67],[41,67],[37,68],
+                              [38,68],[40,68],[36,69],[39,69],[41,69],[42,69],[37,70],[40,70],[41,70],
+                              [43,70],[37,71],[38,71],[39,71],[40,71],[41,71],[37,72],[38,72],[42,72],
+                              [43,72],[40,73],[44,73],[42,74],[43,74],[44,74],[45,75]] do
+               begin
+                    PlaceMine(hex[1],hex[2],mines_side,0);
+               end;
+
+
+          //Remote controllers. Located at the western entrance.
+          InitVc;
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          vc_chassis = ar_half_tracked;
+          vc_weapon = ar_control_tower;
+
+          for hex in [[62,112],[58,109],[57,104]] do
+               begin
+                    uc_direction = Rand(0,5);
+                    b = CreateVehicle;
+                    PlaceUnitXY(b,hex[1],hex[2],false);
+
+                    un = CreateUnitsWithClass(1,class_mechanic,upf,false)[1];
+                    PlaceHumanInUnit(un,b);
+                    remote_controllers = remote_controllers ^ un;
+
+                    remote_controllers_vehicles = Replace(remote_controllers_vehicles,un,[]);
+                    remote_controllers_control_tower = Replace(remote_controllers_control_tower,un,b);
+               end;
+     end;
+Export Function CreateUnitsWithClass(num_units,un_class,side,sex);
+     var i, overskill;
+     begin
+          result = [];
+
+          InitUc;
+          InitHc;
+
+          case side of
+               you, upf, legion: begin
+                    uc_nation = nation_arabian;
+               end;
+          end;
+          uc_side = side;
+
+          overskill = difficulty + 5;
+
+          for i = 1 to num_units do
+               begin
+                    if Rand(1,3) = 1 then
+                         PrepareHuman(sex,un_class,-overskill+1)
+                    else PrepareHuman(sex,un_class,overskill);
+
+                    result = result ^ CreateHuman;
+               end;
+     end;
+//Function which returns inverted direction
+Function AI_InvertDirection(direction);
+     begin
+          result = direction - 3;
+
+          if result < 0 then
+               result = result + 6;
+     end;
+
+Function PrepareOtherMines;
+     var hex, un, i, x, y;
+     begin
+          //Mines in the short cut through the easternmost mountains
+          if difficulty > 1 then
+               begin
+                    for hex in [[206,131],[207,130],[163,73],[164,73]] do
+                         PlaceMine(hex[1],hex[2],mines_side,0);
+
+                    PlaceMinesToArea(mine_area_207_129,8,0,mines_side,0);
+               end;
+
+          //Central southern road is blocked by mines
+          PlaceMinesToArea(mine_area_140_110,50,0,mines_side,0);
+
+          //Road into the mountains east of central southern road (just below the eastern breastwork).
+          //Some Legion folks were hiding here but were discovered by UPF. Their bodies are still at
+          //the site.
+          PlaceMinesToArea(mine_area_172_120,4,0,mines_side,0);
+
+          InitUc;
+          InitHc;
+          uc_side = legion;
+          uc_nation = nation_arabian;
+          hc_class = class_soldier;
+
+          for i = 1 to 2 do
+               begin
+                    uc_direction = Rand(0,5);
+                    un = CreateHuman;
+                    hex = [172+Rand(0,2), 120+Rand(0,1)];
+
+                    if not hex in killed_legion_hexes then
+                         begin
+                              killed_legion_hexes = killed_legion_hexes ^ [hex];
+                              PlaceUnitXY(un,hex[1],hex[2],false);
+                              KillUnit(un);
+                         end
+                    else
+                         DestroyUnit(un);
+               end;
+
+          //Central road into mountains
+          {
+          if difficulty = 3 then
+               PlaceMinesToArea(mine_area_126_64,20,0,mines_side,0);
+          }
+
+
+          //Determine where all mines on the map are placed.
+          for y = 0 to 149 do
+               for x = 0 + (y+1) div 2 to 149 + (y+1) div 2 do
+                    if MineAtPos(x,y) then
+                         all_mines_hexes = all_mines_hexes ^ [[x,y]];
+     end;
+
+
+Function Action;
+     begin
+          InGameOn;
+           {
+          wait(2);
+          CenterNowOnXY(12,12);  //Just somewhere with only black fog
+
+          wait(2);
+          repeat
+          until Query('QCutscene') = 2;  //You have no choice but to join The Dark Side mwhahahaha!
+            -> moved to mission 11  }
+          wait(2);
+          CenterNowOnUnits(Heike);
+          
+          ComMoveXY([Heike,Oswald,Kurt],210,141);
+          AddComHold([Heike,Oswald,Kurt]);
+
+          if IsOk(Oswald) then
+               begin
+                    Say(Oswald,'D1-Os-1');
+                    Say(Heike,'D1-H-1');
+               end
+          else
+               Say(Heike,'D1-H-1-b');
+
+          if IsOk(Kurt) then
+               Say(Kurt,'D1-Ku-1')
+          else
+               Say(Heike,'D1-H-2-b');
+
+          if IsOk(Oswald) then
+               Say(Oswald,'D1-Os-2');
+
+          if IsOk(Kurt) and LoadVariable('Cooperates_with_UPF_10',false) then
+               begin
+                    Say(Kurt,'D1-Ku-2');
+                    Say(Heike,'D1-H-2');
+               end;
+
+          Say(Heike,'D1-H-3');
+
+          if IsOk(Oswald) then
+               begin
+                    Say(Heike,'D1-H-4');
+                    Say(Oswald,'D1-Os-3');
+                    Say(Heike,'D1-H-5');
+
+                    SetTech(tech_stimdrugs,you,state_researched);
+
+                    wait(0$1.5);
+
+                    Say(Heike,'D1-H-6');
+                    Say(Oswald,'D1-Os-4');
+                    Say(Oswald,'D1-Os-5');
+               end;
+
+          Say(Heike,'D1-H-7');
+
+          InGameOff;
+
+
+          ComFree([Heike,Oswald,Kurt]);
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M1');
+          SetAreaMapShow(escape_area,1);
+
+          wait(0$0.2);
+          SaveForQuickRestart;
+     end;

@@ -1,0 +1,1774 @@
+////Module layout:
+  //spawn group heavy
+  //spawning russian groups
+  //Group hunt
+  //Group escapees
+  //Group hunt triggered
+  //Group Seek normal
+  //Group scout
+  //Group Seek triggered
+  //Spawn Legion
+  //Control Legion
+  //Spawn Omar group
+  //Control escaping Arabians
+  //Generating times for new cycle of arabian escapees and keeping count of the groups.
+  //Control Russians
+  //Control unatended Russian units
+
+///Spawn the group (separated into individual blocks)
+//groups: 1-heavy, 2-scout, 3-seek, 4-hunt 5-escapees(side5).                                    
+//choose one of possible paths from any given point at random                                    
+//events: 1) Give the player some time to set up in the beginning. 1,2 or 3 min?
+//        2) Keep spawning a Russian group(remember that it will vary - may be only a single unit) every 15s to 45s
+//        3) Keep spawning side 5 escapees. Logically should be less numerous than Russians - 6 groups (should be 2 people on average) per 9min at random times within that time period
+//        4) Spawn the heavy group at 10min and another at 20min    (17min)
+//        5) Spawn Legion attackers between 22min-32min. Another heavy at 30min (25min)
+//        6) Spawn Omar reinforcements at 33min   (18-27)(28)                                           //gamestage (1) 0-10min, little
+//        7) Spawn a bigger heavy(they should get progressively bigger) group at 45min  (35)                 (2) 10-35min, same but little more numerous
+//        8) Spawn second Legion attack between 47-58min       (40)                                          (3) 35min-  , bigger,tougher and more of them
+//        9) Spawn final heavy group at 60min                   (45)                                         (4) last increase around 50min, only if necessary
+every 0$2 do
+var i,j,vehicle,area,path,incomming_group,a,temp_val,temp;
+begin
+     path=[];
+     Randomize;
+
+     if ru_heavy_times>0 then
+     begin
+          if tick>ru_heavy_times[1] then                  //Spawning group heavy if their time is up
+          begin
+               magenta=1;                                 //Heavies are always magenta
+               incomming_group=determine_group(1);
+               ru_heavy_times=delete(ru_heavy_times,1);
+               area=enter1;                               //Always the same path and area of spawning
+               path=path1a;
+
+               for i in incomming_group do
+                   PlaceUnitArea(i,area,false);
+
+               magenta=0;
+
+               ru_grouptypes=ru_grouptypes^[1];           //adding all the information about the group to the lists
+
+               Russians=Russians^[incomming_group];
+               ru_paths=ru_paths^[path];
+               ru_groupstatus=ru_groupstatus^[0];
+               ru_grouphexcount=ru_grouphexcount^[0];
+               ru_targethex=ru_targethex^[[0,0]];
+               Target_List=Target_List^0;
+               ru_groupside=ru_groupside^6;
+
+               target_hg=target_hg^[0];
+               target_gun=target_gun^[0];
+               target_all=target_all^[0];
+               target_bazooka=target_bazooka^[0];
+
+               bazooka_engagetime=bazooka_engagetime^999$0;
+          end;
+     end
+     else
+     begin
+          if ru_limit>0 then
+          begin
+               repeat
+                     wait(0$1);
+                     temp=0;
+                     for i=1 to russians do
+                         if ru_grouptypes[i]=1 then
+                            for j in russians[i] do
+                                if gety(j)>160 then
+                                   temp=1;                //The last one repeated once all tanks of previous group pass the Y 160 coordinate
+                     if temp=0 then
+                        ru_limit=ru_limit-1;
+               until temp=0;
+
+               magenta=1;                                 //Heavies are always magenta
+               incomming_group=determine_group(1);
+               ru_heavy_times=delete(ru_heavy_times,1);
+               area=enter1;                               //Always the same path and area of spawning
+               path=path1a;
+
+               for i in incomming_group do
+                   PlaceUnitArea(i,area,false);
+
+               magenta=0;
+
+               ru_grouptypes=ru_grouptypes^[1];           //adding all the information about the group to the lists
+
+               Russians=Russians^[incomming_group];
+               ru_paths=ru_paths^[path];
+               ru_groupstatus=ru_groupstatus^[0];
+               ru_grouphexcount=ru_grouphexcount^[0];
+               ru_targethex=ru_targethex^[[0,0]];
+               Target_List=Target_List^0;
+               ru_groupside=ru_groupside^6;
+
+               target_hg=target_hg^[0];
+               target_gun=target_gun^[0];
+               target_all=target_all^[0];
+               target_bazooka=target_bazooka^[0];
+
+               bazooka_engagetime=bazooka_engagetime^999$0;
+          end;
+     end;
+enable;
+end;
+
+
+//determining groups times, areas and paths to spawn
+every 0$1 trigger gamestage>0 and tick<[53$0,54$0,55$0][difficulty] do
+var i,j,time,roll,temp;
+begin
+     Randomize;
+
+     for i=1 to Ru_spawning_time do
+         if Ru_spawning_time[i]=0 then
+         begin
+              if rand(1,100)>=[33,50,67][difficulty] and not scout_gone then
+                 scout_warning=tag(scout_warning,i,1);
+
+              if i=6 or i=7 then
+              begin
+                   ru_spawning_time=tag(ru_spawning_time,i,tick+rand(2$30,4$0));
+                   if rand(1,3)=1 then
+                      Ru_prep_mag=tag(Ru_prep_mag,i,PrepareAreaAndPath(4,1))
+                   else                        
+                       Ru_prep_mag=tag(Ru_prep_mag,i,PrepareAreaAndPath(3,1));
+              end
+              else
+
+              begin
+                   temp=0;
+
+                   for j in ru_grouptypes do
+                       if j=3 then
+                          temp=1;
+
+                   for j in Ru_prep_red^Ru_prep_mag do
+                       if j>0 then
+                          if j[1]=3 then
+                             temp=1;
+
+                   if gamestage=1 or temp=1 or No_seek_groups=1 then
+                      roll=rand(1,6)
+                   else roll=rand(1,8);
+
+                   if i=5 and No_seek_groups=0 then
+                      roll=7;
+
+                   if (roll=7 or roll=8) and No_seek_groups=0 then
+                   begin
+                        Ru_prep_red=tag(Ru_prep_red,i,PrepareAreaAndPath(3,0));
+                        if i=5 then
+                           time=tick+rand(1$30,2$30)
+                        else
+                            time=tick+rand(2$0,3$30);
+                        ru_spawning_time=tag(ru_spawning_time,i,time);
+                   end;
+
+                   if roll=6 or roll=5 then
+                   begin
+                        Ru_prep_red=tag(Ru_prep_red,i,PrepareAreaAndPath(2,0));
+                        time=tick+rand(1$30,2$30);
+                        ru_spawning_time=tag(ru_spawning_time,i,time);
+                   end;
+
+                   if roll=4 or roll=3 or roll=2 or roll=1 then
+                   begin
+                        Ru_prep_red=tag(Ru_prep_red,i,PrepareAreaAndPath(4,0));
+                        time=tick+rand(1$30,2$30);
+                        ru_spawning_time=tag(ru_spawning_time,i,time);
+                   end;
+              end;
+
+         end;
+
+enable;
+end;
+
+//Checking if it's time to spawn
+every 0$1 trigger gamestage>0 and tick<[53$0,54$0,55$0][difficulty] do
+var i,j,temp,count,count_max,area,time,grouptype,path;
+begin
+     Randomize;
+
+     if gamestage<3 then
+     for i=1 to scout_warning do
+         if scout_warning[i]>0 then
+            if tick>ru_spawning_time[i]-0$30 then
+            begin
+                 if i<6 then
+                 begin
+                      grouptype=Ru_prep_red[i][1];
+                      area=Ru_prep_red[i][3];
+                      path=Ru_prep_red[i][3];
+                 end
+                 else
+                 begin
+                      grouptype=Ru_prep_mag[i][1];
+                      area=Ru_prep_mag[i][3];
+                      path=Ru_prep_mag[i][3];
+                 end;
+
+                 scout_warning=tag(scout_warning,i,0);
+
+                 if scout_gone=1 then
+                    continue;
+
+                 case grouptype of
+                      4: begin
+                              case area of
+                                   enter1: SayRadio(scout,'w_med_centre');
+                                   enter2: SayRadio(scout,'w_med_left');
+                                   enter3: SayRadio(scout,'w_med_rightcent');
+                                   enter4: SayRadio(scout,'w_med_right');
+                              end;
+                         end;
+
+                      3: begin
+                              if No_seek_groups=0 then
+                                 case area of
+                                      enter1: SayRadio(scout,'w_sp_centre');
+                                      enter2: SayRadio(scout,'w_sp_left');
+                                      enter3: if path[1][1]=206 then SayRadio(scout,'w_sp_centre')
+                                              else SayRadio(scout,'w_sp_right');
+                                      enter4: SayRadio(scout,'w_sp_right');
+                                 end;
+                         end;
+
+                      2: begin
+                              case area of
+                                   enter1: SayRadio(scout,'w_sc_centre');
+                                   enter2: SayRadio(scout,'w_cs_left');
+                                   enter3: SayRadio(scout,'w_sc_right');
+                                   enter4: SayRadio(scout,'w_sc_right');
+                              end;
+                         end;
+                 end;
+            end;
+
+     count_max=6;
+
+     if not ru_spawning_time[6]=100$0 and not ru_spawning_time[7]=100$0 then  //The timers work independently but may spawn both magenta groups at very near times
+     begin
+          temp=ru_spawning_time[6]-ru_spawning_time[7];
+          if temp<0 then
+             temp=-temp;
+          if temp<2$0 then                                //Setting a minimum 2 min time interval between them
+             if ru_spawning_time[6]>ru_spawning_time[7] then
+                ru_spawning_time=tag(ru_spawning_time,6,ru_spawning_time[7]+2$0)
+             else ru_spawning_time=tag(ru_spawning_time,7,ru_spawning_time[6]+2$0);
+     end;
+
+     for i=6 to ru_spawning_time do
+         for j in ru_heavy_times do
+             if ru_spawning_time[i]>j-1$0 and ru_spawning_time[i]<j+1$0 then
+                ru_spawning_time=tag(ru_spawning_time,i,j+2$0);                      //Let no magenta spawn during heavy attack
+
+     for i=6 to ru_spawning_time do
+         if ru_spawning_time[i]>LegionSpawnTime-1$0 and ru_spawning_time[i]<LegionSpawnTime+1$0 then
+            ru_spawning_time=tag(ru_spawning_time,i,LegionSpawnTime+2$0);                      //Let no magenta spawn during legion attack
+
+
+     count=0;
+     for i in ru_grouptypes do
+     begin
+          if difficulty=1 then                                 //on easy level no other enemy groups may appear during heavy attack
+             if i=1 then
+                count=count+6
+             else
+                 count=count+1;
+
+          if difficulty>1 then
+             if i=1 then
+                count=count+3                                  //There can be max 6 groups on map and fewer during heavy attack
+             else count=count+1;
+     end;
+
+
+     temp=[LegionSpawnTime-1$30,LegionSpawnTime+1$30];       //There can be fewer groups around the time of legion attack
+     if tick>temp[1] and tick<temp[2] then
+        count_max=[2,3,4][difficulty];
+
+
+     if count<count_max then
+        for i=1 to ru_spawning_time do
+            if tick>ru_spawning_time[i] and ru_spawning_time[i]>0 then
+            begin
+                 if tick>ru_spawning_time[i]+0$3 then          //If the tick goes beyond the time of spawn it means the spawning was halted by the group limit
+                 begin
+                      time=tick+rand(1$0,2$0);
+                      ru_spawning_time=tag(ru_spawning_time,i,time);     //implemented additional delay to prevent new spawning the instant one of the present groups is destroyed
+                      break;
+                 end;
+
+
+                 if i<6 then
+                    area=Ru_prep_red[i][3]
+                 else
+                     area=Ru_prep_mag[i][3];
+
+                 if area=clear_spawn_location[1] and ru_spawning_time[i]>clear_spawn_location[2]-0$30 and ru_spawning_time[i]<clear_spawn_location[2]+0$30 then
+                 begin
+                      ru_spawning_time=tag(ru_spawning_time,i,ru_spawning_time[i]+0$40);
+                      break;
+                 end;
+
+
+                 if i<6 then
+                    temp=Ru_prep_red[i][1]
+                 else                                                                    //if the no seek switch is on, change seek groups to hunt
+                     temp=Ru_prep_mag[i][1];
+                 if No_seek_groups=1 and temp=3 then
+                    if i<6 then
+                       Ru_prep_red=tag(Ru_prep_red,i,PrepareAreaAndPath(4,0))
+                    else
+                        Ru_prep_mag=tag(Ru_prep_mag,i,PrepareAreaAndPath(4,0));
+
+
+                 if i<6 then
+                 begin
+                      SpawnTheGroup(Ru_prep_red[i][1],Ru_prep_red[i][2],Ru_prep_red[i][3],Ru_prep_red[i][4]);
+                      Ru_prep_red=tag(Ru_prep_red,i,0);
+                      ru_spawning_time=tag(ru_spawning_time,i,0);
+                 end
+                    else
+                    begin
+                         temp=0;
+                         for j in ru_grouptypes do
+                             if j=1 then
+                             begin
+                                  temp=1;
+                                  ru_spawning_time=tag(ru_spawning_time,i,ru_spawning_time[i]+0$30);
+                             end;
+
+                         if temp=0 then
+                         begin
+                              SpawnTheGroup(Ru_prep_mag[i][1],Ru_prep_mag[i][2],Ru_prep_mag[i][3],Ru_prep_mag[i][4]);
+                              Ru_prep_mag=tag(Ru_prep_mag,i,0);
+                              ru_spawning_time=tag(ru_spawning_time,i,100$0);
+                         end;
+                    end;
+            end;
+enable;
+end;
+
+
+Export Function PrepareAreaAndPath(group,mag);
+var i,roll,area,path,incomming_group;
+begin
+     Randomize;
+
+     if mag then
+        magenta=1;
+
+     if group=2 then
+     begin
+          incomming_group=determine_group(2);
+
+          roll=Randomized_1_4_list[1];
+          Randomized_1_4_list=delete(Randomized_1_4_list,1);
+
+          case roll of
+               1: area=enter1;
+               2: area=enter2;
+               3: area=enter3;
+               4: area=enter4;
+          end;
+
+          case roll of                            //The numering order for scout paths is different: paths1 go from enter4, paths2 from enter3, paths3 from enter1, paths4 from enter2
+               4:
+                 case rand(1,5) of
+                      1: path=path_scout1a;   2: path=path_scout1b;   3: path=path_scout1c;   4: path=path_scout1d;   5: path=path_scout1e;
+                 end;
+               3:
+                 path=path_scout2;
+               1:
+                 case rand(1,6) of
+                      1: path=path_scout3a; 2: path=path_scout3b; 3: path=path_scout3c; 4: path=path_scout3d; 5: path=path_scout3e; 6: path=path_scout3f;
+                 end;
+               2:
+                 case rand(1,3) of
+                      1: path=path_scout4a; 2: path=path_scout4b; 3: path=path_scout4c;
+                 end;
+          end;
+
+          result=[group,incomming_group,area,path];
+     end
+     else
+
+     begin
+          if group=3 then
+             incomming_group=determine_group(3)
+          else
+              incomming_group=determine_group(4);
+
+          roll=Randomized_1_4_list[1];                         //area from precreated list
+          Randomized_1_4_list=delete(Randomized_1_4_list,1);
+
+          case roll of                                         //take a path appropriate to an area
+               1:
+                 begin
+                      case rand(1,6) of 1:path=path1a; 2:path=path1b; 3:path=path1c; 4:path=path1d; 5:path=path1e; 6:path=path1f; end;
+                      area=enter1;
+                 end;
+               2:
+                 begin
+                      case rand(1,6) of 1:path=path2a; 2:path=path2b; 3:path=path2c; 4:path=path2d; 5:path=path2e; 6:path=path2f; end;
+                      area=enter2;
+                 end;
+               3:
+                 begin
+                      case rand(1,5) of  1:path=path3a; 2:path=path3b; 3:path=path3c; 4:path=path3d; 5:path=path3e; end;
+                      area=enter3;
+                 end;
+               4:
+                 begin
+                      case rand(1,3) of 1:path=path4a; 2:path=path4b; 3:path=path4c; end;
+                      area=enter4;
+                 end;
+          end;
+
+          result=[group,incomming_group,area,path];
+     end;
+
+     magenta=0;
+end;
+
+
+Function SpawnTheGroup(Grouptype,Groupunits,Area,Path);
+var i;
+begin
+     for i in Groupunits do
+     begin
+          if Area>0 then
+             PlaceUnitArea(i,Area,false)
+          else exclamation=4;              //used in testing only
+     end;
+
+     ru_grouptypes=ru_grouptypes^[Grouptype];
+
+     Russians=Russians^[Groupunits];
+     ru_groupside=ru_groupside^GetSide(Groupunits[1]);
+     ru_paths=ru_paths^[Path];
+     ru_groupstatus=ru_groupstatus^[0];
+     ru_grouphexcount=ru_grouphexcount^[0];
+     ru_targethex=ru_targethex^[[0,0]];
+     Target_List=Target_List^0;
+
+     target_hg=target_hg^[0];
+     target_gun=target_gun^[0];
+     target_all=target_all^[0];
+     target_bazooka=target_bazooka^[0];
+
+     bazooka_engagetime=bazooka_engagetime^999$0;
+end;
+
+
+//Group escapees
+every 0$1 trigger gamestage>0 and number_of_Ar5_groups_to_go>0 do
+var i,j,path,incomming_group,area,temp_list,temp_val;
+begin
+     Randomize;
+
+     if tick>Ar5_timeup then                                    //once the next time from list Ar5_time comes spwawn the escapees group
+     begin
+          for i in Ar5_time do
+              if tick<i then
+              begin
+                   Ar5_timeup=i;
+                   break;
+              end
+              else Ar5_timeup=999$0;
+
+          path=[];                                              //area choosen from precreated list
+          incomming_group=determine_group(5);
+
+          area=Randomized_1_4_list[1];
+          Randomized_1_4_list=delete(Randomized_1_4_list,1);
+                                                                //choose a path appropriate to an area
+
+          for i=1 to ru_grouptypes do                           //Do not spawn escapees group behind heavies, unless they are halfway up the map
+              if ru_grouptypes[i]=1 then
+                 for j in russians[i] do
+                     if getY(j)>110 and area=1 then
+                     begin
+                          area=rand(2,4);
+                          break;
+                     end;
+
+
+          case area of
+               1: begin path=escapees_path3; area=enter1; end;
+               2: begin if rand(1,2)=1 then
+                           path=escapees_path1
+                        else path=escapees_path2;
+                             area=enter2; end;
+               3: begin path=escapees_path4; area=enter3; end;
+               4: begin path=escapees_path5; area=enter4; end;
+          end;
+
+          if tick>[6$0,6$0,5$0][difficulty] then
+             if rand(1,100)>=[67,50,33][difficulty] then
+                ar_areas=ar_areas^[[area,path]];    //hold the area and path for group hunt triggered
+
+          temp_list=[];
+          for i in incomming_group do
+          begin
+               if area>0 then
+                  PlaceUnitArea(i,area,false)
+               else exclamation=5;               //used in testing only
+
+               temp_val=rand(400,1000);          //random hp for every unit
+               setlives(i,temp_val);
+               temp_list=temp_list^temp_val;
+          end;
+
+          ar_paths=ar_paths^[path];
+          ar_grouptypes=ar_grouptypes^[5];
+          ar_groupstatus=ar_groupstatus^[-1];
+          ar_grouphexcount=ar_grouphexcount^[0];
+          ar_groupfollowing=ar_groupfollowing^[0];
+          ar_targetlist=ar_targetlist^[[0,0]];
+          ar_liveslist=ar_liveslist^[temp_list];
+
+          if rand(1,3)=3 then
+             ar_dlg=ar_dlg^[1]
+          else ar_dlg=ar_dlg^[0];
+
+          escaping_arabians=escaping_arabians^[incomming_group];
+
+     end;
+
+enable;
+end;
+
+
+//Group hunt triggered
+every 0$1 trigger ar_areas>0 do             
+var i,area,path,incomming_group;
+begin
+     Randomize;
+
+     if ar_areas>0 then
+     begin
+          wait(rand(0$15,0$25));          //created 15-25s after side 5 group has spawned and goes directly after them
+          area=ar_areas[1][1];
+          path=ar_areas[1][2];
+          ar_areas=delete(ar_areas,1);
+          incomming_group=determine_group(8);
+
+          for i in incomming_group do
+              begin
+                   if area>0 then
+                      PlaceUnitArea(i,area,false)
+                   else exclamation=4;       //used in testing only
+              end;
+
+          ru_grouptypes=ru_grouptypes^[4];
+
+          Russians=Russians^[incomming_group];
+          ru_paths=ru_paths^[path];
+          ru_groupstatus=ru_groupstatus^[0];
+          ru_grouphexcount=ru_grouphexcount^[0];
+          ru_targethex=ru_targethex^[[0,0]];
+          Target_List=Target_List^0;
+          ru_groupside=ru_groupside^3;
+
+          target_hg=target_hg^[0];
+          target_gun=target_gun^[0];
+          target_all=target_all^[0];
+          target_bazooka=target_bazooka^[0];
+
+          bazooka_engagetime=bazooka_engagetime^999$0;
+     end;
+     enable;
+end;
+
+
+//Group Seek triggered
+Every 0$1 trigger incomming_seek_group>0 do
+var i,j,time,path,area,group,grouptodelete,incomming_group,checkarea;
+begin
+     grouptodelete=0;                          //triggered by returning scout group
+     for i=1 to incomming_seek_group do
+     begin
+          if clear_spawn_location[1]>0 then
+             case clear_spawn_location[1] of
+                  1: checkarea=enter1; 2: checkarea=enter2; 3: checkarea=enter3;
+             end;
+
+          if tick>incomming_seek_group[i][3] and not (incomming_seek_group[i][1]=checkarea and incomming_seek_group[i][3]>clear_spawn_location[2]-0$30 and incomming_seek_group[i][3]<clear_spawn_location[2]+0$30) then
+          begin
+               grouptodelete=i;
+
+               incomming_group=determine_group(3);    //taking path and area as remembered in list after the delay time has passed
+               area=incomming_seek_group[i][1];
+               path=incomming_seek_group[i][2];
+
+               for j in incomming_group do
+                   if area>0 then
+                      PlaceUnitArea(j,area,false)
+                   else exclamation=6;            //used in testing only
+
+                ru_grouptypes=ru_grouptypes^[3];            //adding the group as any other
+
+                Russians=Russians^[incomming_group];
+                ru_paths=ru_paths^[path];
+                ru_groupstatus=ru_groupstatus^[0];
+                ru_grouphexcount=ru_grouphexcount^[0];
+                ru_targethex=ru_targethex^[[0,0]];
+                ru_groupside=ru_groupside^3;
+                Target_List=Target_List^0;
+
+                target_hg=target_hg^[0];
+                target_gun=target_gun^[0];
+                target_all=target_all^[0];
+                target_bazooka=target_bazooka^[0];
+
+                bazooka_engagetime=bazooka_engagetime^999$0;
+          break;
+          end;
+     end;
+
+     if grouptodelete>0 then                            //clear that group from list
+     begin
+          incomming_seek_group=delete(incomming_seek_group,grouptodelete);
+          grouptodelete=0;
+     end;  
+     enable;
+end;
+
+
+//Spawn Legion
+every 0$1 trigger tick> LegionSpawnTime and Legion_attack<3 do
+var i,j,temp,area,incomming_group;
+begin
+     if Legion_attack=1 or Legion_attack=2 then             //Legion_attack holds the stage the game is at:
+        Legion_attack=3;                                    //0 - before the first legion attack, 1 - first legion has just spawned, 2 - first legion has rescued the prisoners and is heading back with them (used to ensure the escape attemppt happens only once) or first legion is destroyed, 3 - second legion attack has just spawned, 4 - second legion is shooting at the prisoners or is destroyed
+     if Legion_attack=0 then
+     begin
+          LegionSpawnTime=[rand(46$0,52$0),rand(47$0,53$0),rand(48$0,54$0)][difficulty];      //time of second legion attack
+          Legion_attack=1;
+     end;
+                                               
+
+                                                     //find where the prisoners are and choose appropriate area of spawning and path
+     temp=prisoners;
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea1) or InArea(getX(temp[1]),getY(temp[1]),SeekArea4) or InArea(getX(temp[1]),getY(temp[1]),SeekArea6) or InArea(getX(temp[1]),getY(temp[1]),SeekArea7) then
+        case rand(1,3) of
+             1: area=legion_enter_left;      //if they are in the middle of the map legion will approach from a random direction
+             2: area=legion_enter_right;
+             3: area=legion_enter_centre;
+        end;
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea2) or InArea(getX(temp[1]),getY(temp[1]),SeekArea10) or InArea(getX(temp[1]),getY(temp[1]),SeekArea5) then
+        area=legion_enter_right;
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea3) or InArea(getX(temp[1]),getY(temp[1]),SeekArea8) then
+        area=legion_enter_left;
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea9) then          //if they are on the bottom legion will spawn on the same side of map they are (right/center/left)
+        area=legion_enter_centre;                                  //if they are on the top of the map legion will spawn in the other corner
+
+     incomming_group=determine_group(6);
+
+     if area = 0 then
+        area = legion_enter_right;
+
+     for i in incomming_group do
+         placeunitarea(i,area,false);
+
+     Legion=incomming_group^filterallunits([[f_side,8],[f_type,unit_human]]);         //add the drivers to the Legion list
+
+     Legion_path=[];
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea1) then
+        Legion_path=Legion_path^[[161,32]];
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea2) then
+        Legion_path=Legion_path^[[161,32],[178,66],[162,102],[190,133],[233,164]];
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea4) then
+        Legion_path=Legion_path^[[111,51]];
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea6) then
+        Legion_path=Legion_path^[[91,29]];
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea7) then
+        Legion_path=Legion_path^[[42,26],[44,55]];
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea8) then
+        Legion_path=Legion_path^[[42,26],[44,55],[71,98],[84,127]];
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea9) then
+        Legion_path=Legion_path^[[92,32],[116,66],[133,98],[128,123]];
+     if InArea(getX(temp[1]),getY(temp[1]),SeekArea10) then
+        Legion_path=Legion_path^[[161,32],[187,70]];
+
+     enable;
+end;
+
+//Control Legion
+every 0$1 trigger Legion>0 do
+var i,j,temp,temp_hex,player_units,player_units_incontact,target_unit;
+begin                                                                                 
+     temp=[];
+     for i in Legion do
+         if not Isplaced(i) or GetLives(i)<100 then
+            temp=temp^i;
+     Legion=Legion diff temp;                      //remove dying or not placed units from Legion list
+
+    temp_hex=0;
+    for i=1 to legion_path do                            //if all units ar within 8 hex distance from a hex in the path, delete it from path list
+    begin
+         temp=0;
+         for j in legion do
+             if getdistunitxy(j,legion_path[i][1],legion_path[i][2])>8 then
+                temp=1;
+
+         if temp=0 then
+            temp_hex=i;
+    end;
+    if temp_hex>0 then
+       legion_path=delete(legion_path,temp_hex);
+
+
+    player_units_incontact=[];                              //detect the player units they can see
+    player_units=filterallunits([f_side,2]);
+    for i in player_units do
+        if see(8,i) then
+           player_units_incontact=player_units_incontact^i;
+
+
+    if legion_attack=3 or legion_attack=4 then             //during second attack prisoners are prioritized over player units if within 20 hexes
+       if SmallestDistance(legion,prisoners)<20 then
+       begin
+            player_units_incontact=[];
+            for i in prisoners do
+                if NearestDistFromGroupToUnit(Legion,i)<20 then
+                   player_units_incontact=player_units_incontact^i;
+       end;
+            
+
+
+    if Legion>0 then
+       if player_units_incontact>0 then                   //targeting priority: mortars, vehicles, other humans. Each time simply choosing the closest
+       begin
+            target_unit=0;
+            if unitfilter(player_units_incontact,[f_and,[f_type,unit_human],[f_class,class_mortar]])>0 and target_unit=0 then
+               target_unit=closestunit(Legion,unitfilter(player_units_incontact,[f_class,class_mortar]));
+
+            if unitfilter(player_units_incontact,[f_type,unit_vehicle])>0 and target_unit=0 then
+               target_unit=closestunit(Legion,unitfilter(player_units_incontact,[f_type,unit_vehicle]));
+
+            if target_unit=0 then
+               target_unit=closestunit(Legion,unitfilter(player_units_incontact,[f_type,unit_human]));
+
+
+
+            for i in Legion do
+            begin
+                 if GetType(i)=unit_vehicle then
+                    if getcontrol(i)=control_apeman and getlives(i)<350 then
+                    begin
+                         if getdistunits(i,target_unit)>3 then
+                            commoveunit(i,target_unit)
+                         else
+                             if unitfilter(Legion,[[f_type,unit_human],[f_not,[f_driving]],[f_dist,i,3]])=0 then
+                                settasklist(i,[['K',0,0,0,0,0,0]]);        //if an ape car is nearly destroyed, approach the current target and self destruct. In practice they almost never have a chance to do it
+                    end
+                    else
+                        if getweapon(i)=ar_radar then
+                        begin
+                             if unitfilter(Legion,[[f_type,unit_vehicle],[f_ok]])>1 then
+                             begin
+                                  temp=AverageGroupPos(Legion);
+                                  commovexy(i,temp[1],temp[2]);           //radar simply moves to the centre of the group
+                             end
+                             else
+                                 if getdistunits(i,target_unit)>3 then      //if the radar is the last one left, attack by self destruction
+                                    commoveunit(i,target_unit)
+                                 else
+                                     settasklist(i,[['K',0,0,0,0,0,0]]);
+                        end
+                        else
+                            comattackunit(i,target_unit);
+
+                 if GetType(i)=unit_human then
+                    if Getlives(i)<500 or unitfilter(Legion,[[f_type,unit_vehicle],[f_ok],[f_not,[f_weapon,ar_radar]]])=0 then       //if a human is injured or there are no more working vehicles beside radar, the human will retreat
+                    begin
+                         if getdistunitxy(i,6,8)>3 then
+                            Commovexy(i,6,8)
+                         else removeunit(i);
+                    end
+                    else
+                        if unitfilter(Legion,[[f_type,unit_vehicle],[f_empty],[f_ok]])>0 then
+                           comenterunit(i, unitfilter(Legion,[[f_type,unit_vehicle],[f_empty],[f_ok]])[1])                  //enter an empty Legion vehicle
+                        else
+                            comrepairvehicle(i, Nearestunittounit(unitfilter(Legion, [[f_type,unit_vehicle], [f_not,[f_lives,1000]], [f_not,[f_weapon,ar_radar]] ]), i) );    //or repair the closest one
+
+                 if getcontrol(i)=control_manual then                                                                      //self destruct any empty manuals if no human unit is nearby to prevent being taken over
+                    if isdrivenby(i)=0 and unitfilter(Legion,[[f_type,unit_human],[f_not,[f_driving]],[f_dist,i,3]])=0 then
+                       settasklist(i,[['K',0,0,0,0,0,0]]);        
+            end;
+
+       end
+       else
+           begin
+                if legion_path>0 then                                    //if there aren't any enemies nearby move to next hex in the list
+                   commovexy(legion,legion_path[1][1],legion_path[1][2])
+                else
+                    Moveclosetounit(legion,prisoners[1],3);                    //if there are no hexes move toward the prisoners
+
+                for i in unitfilter(Legion,[f_type,unit_human]) do
+                    if Getlives(i)<500 or unitfilter(Legion,[[f_type,unit_vehicle],[f_ok],[f_not,[f_weapon,ar_radar]]])=0 then       //if a human is injured or there are no more working vehicles beside radar, the human will retreat
+                       if getdistunitxy(i,6,8)>3 then
+                          Commovexy(i,6,8)
+                       else removeunit(i);
+           end;
+
+    enable;
+end;
+
+//Spawn Omar group
+every 0$1 trigger tick>[34$0,35$0,36$0][difficulty] do
+var i,temp,temp2,incomming_group;
+begin
+     incomming_group=determine_group(7);
+
+     repeat                                                             //run it in a loop in case there's no room to spawn everyone at once
+           wait(0$0.5);
+           temp=unitfilter(incomming_group,[f_weapon,ar_control_tower]);
+           temp2=isdrivenby(temp[1]);
+
+           temp=0;
+           for i in incomming_group do
+           begin
+                if not isplaced(i) then
+                begin
+                     placeunitarea(i,legion_enter_right,false);
+                     temp=1;
+                end
+                else
+                begin
+                     if getcontrol(i)=control_remote then
+                        linkvehicletohuman(i,temp2);                //link remotes to the control tower in Omar group
+                     if gety(i)<10 and not getclass(i)=class_tiger then
+                        commovexy(i,133,20);                         //make the group move a little forward
+                end;
+           end;
+     until temp=0;                                                   //repeat unitl everyone is placed
+end;
+
+//Control escaping Arabians
+every 0$1 trigger escaping_arabians>0 do
+var i,j,k,temp_val,temp,group,path,group_type,group_number,passed_hex,dlg_status,hex,nexthex,unittoberemoved;
+var temp_list,temp_list1,temp_list2,temp_line,l,grouptodelete,unit_to_follow,temp_dist;
+var character, line;
+begin
+     Randomize;
+
+     for i=1 to escaping_arabians do
+     begin                                                           //they should generally just run ahead, stopping only to heal dying unit if there are no Russians nearby. 
+          //remove dead units and empty groups
+
+             for j in escaping_arabians[i] do
+                 if islive(j)=0 then           //if there happens to be a dead unit
+                 begin
+                      //count it as dead unless the error margin applies - implemented because the mission randomness may cause them to be killed right after spawning
+
+                      if getlives(j)=0 then   //check lives so units leaving the map won't be counted as dead
+                      begin                                        
+                           if getside(unitshoot(j))=2 then
+                              friendlyfire=5;                            //mark if the unit has been killed by player
+
+                           st_arunitsdead=st_arunitsdead+1;   //strings used in testing only
+
+                           if getY(j)>160 then
+                              escapees_dead=escapees_dead-1;         //if a unit is killed before reaching Y 160 coordinate it never counts as player's fault
+
+                           if gety(j)>133 and getY(j)<161 then
+                              if escapees_errormargin>0 or j in escapees_errormargin_group then
+                              begin
+                                   if escapees_errormargin>0 then                       //from Y160 to Y133, the casualties of one group per cycle (4 or 5 min) are ignored
+                                   begin
+                                        escapees_errormargin=escapees_errormargin-1;
+                                        escapees_errormargin_group=escaping_arabians[i];  //remember which group is ignored
+                                   end;
+
+                                   escapees_dead=escapees_dead-1;
+                              end;
+
+                           escapees_dead=escapees_dead+1;            //otherwise count as dead
+                      end;
+
+                      temp_list=[];
+                      for k=1 to escaping_arabians do                           //update (rewrite) the whole list by removing dead units from their groups, so it will leave an empty set if all are dead
+                          if k=i then
+                             temp_list=temp_list^[unitfilter(escaping_arabians[k],[f_alive])]
+                          else
+                              temp_list=temp_list^[escaping_arabians[k]];
+
+                      escaping_arabians=temp_list;
+                 end;
+
+
+          temp=0;
+          for j in escaping_arabians[i] do           //remove empty sets (happens at the end of this block)
+              if islive(j) then
+                 temp=1;
+          if temp=0 then
+          begin
+               grouptodelete=i;
+               break;
+          end;
+
+
+          temp=0;                                    //if all units from escapees_errormargin_group pass the Y 133 coordinate they are no longer protected by the error margin and will count as player's fault if they die
+          for j in escapees_errormargin_group do
+              if getY(j)>133 then
+                 temp=1;
+
+          if temp=0 then
+             escapees_errormargin_group=[];
+
+
+
+          if isselected(escaping_arabians[i]) and tick<[20$0,20$0,25$0][difficulty] then         //If the group is moving along and is selected, not applicable after the time for final group 20min or 25min depending on difficulty
+          begin
+               if ar_paths[i][1]>1 and ar_groupfollowing[i]=0 then
+               begin
+                    unit_to_follow=0;
+                    temp_list=filterallunits([[f_side,2],[f_not,[f_and,[f_type,unit_vehicle],[f_empty]]]]);   //they should follow nearest player unit (takes a second or two so won't happen if selected in pause)
+
+                    if UnitsInrange(escaping_arabians[i],temp_list,10)>0 then
+                    begin
+                         for j=1 to ar_groupfollowing do              //release all other following groups - only one group of escapees may be controlled at a time
+                             if ar_groupfollowing[j]=1 or ar_groupfollowing[j]=2 then
+                             begin
+                                  ar_groupfollowing=tag(ar_groupfollowing,j,0);
+                                  ar_paths=tag(ar_paths,j,0);
+                             end;
+
+
+                         temp=closestunit(escaping_arabians[i],temp_list);
+
+                         unit_to_follow=temp;
+                         ar_paths=tag(ar_paths,i,[[unit_to_follow]]);      //path list is modified with the id of player unit to follow
+                         ar_groupfollowing=tag(ar_groupfollowing,i,1);
+
+
+                         //the leading player unit speaks up
+                         character = [Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy];
+                         line = ['He', 'Os', 'Olaf', 'So', 'Ra', 'Ko', 'Av', 'Sw', 'Dw', 'Kh', 'Ev', 'Ch'];
+
+                         if GetControl(unit_to_follow) = control_manual then
+                            temp = IsDrivenBy(unit_to_follow)
+                         else
+                             temp = unit_to_follow;
+
+                         async;
+                         if not temp in character then
+                         begin
+                              if not GetClass(temp) in [class_apeman, class_apeman_soldier, class_apeman_kamikaze] then
+                                 if GetSex(temp) = sex_male then
+                                    Say(temp, 'follow_SomeM')
+                                 else Say(temp, 'follow_SomeF');
+                         end
+                            else
+                                for l = 1 to character do
+                                    if temp = character[l] then
+                                       Say(character[l], 'follow_' & line[l]);
+                         sync;
+                    end;
+               end;
+          end
+          else
+              begin                                                       //the tag says if they are following: 0 - when not selected and moving along their path, 1 - when selected and start following a player unit, 2 - when deselected (still following), -1 -if selected while following (tag=2) they will move along a closest path pu the map, 0 - when deselected after that
+                   if ar_groupfollowing[i]=1 then
+                      ar_groupfollowing=tag(ar_groupfollowing,i,2);
+                   if ar_groupfollowing[i]=-1 then
+                      ar_groupfollowing=tag(ar_groupfollowing,i,0);
+
+              end;
+
+                                                   
+          if ar_paths[i]=0 then                                                    //if the group is released, it follows the closest path
+          begin
+               temp=escaping_arabians[i][1];
+               temp_dist=getdistunitxy(temp,escapees_path1[1][1],escapees_path1[1][2]);
+               temp_list=escapees_path1;
+               temp_list2=[escapees_path1,escapees_path2,escapees_path3,escapees_path4,escapees_path5];
+               for j in temp_list2 do
+                   for k in j do
+                       if getdistunitxy(temp,k[1],k[2])<temp_dist then
+                       begin
+                            temp_dist=getdistunitxy(temp,k[1],k[2]);
+                            temp_list=j;
+                       end;
+              
+               ar_paths=tag(ar_paths,i,temp_list);
+               ar_groupfollowing=tag(ar_groupfollowing,i,-1);
+               for j=1 to temp_list do
+                   if temp_list[j][2]>gety(temp) then
+                      ar_grouphexcount=tag(ar_grouphexcount,i,j);
+          end;
+        
+
+          if ar_groupfollowing[i]<1 then       //ar_groupfollowing 0 and -1 means they move along their path, 1 and 2 means they follow the player
+          begin
+               //Move Along
+
+               group=escaping_arabians[i];              //apparently defining additional variables makes less lag than refering to the actual lists every time
+               path=ar_paths[i];
+               group_type=ar_grouptypes[i];
+               group_number=i;
+               passed_hex=ar_grouphexcount[i];
+               dlg_status=ar_dlg[i];
+
+               nexthex=0;
+               unittoberemoved=0;
+
+               temp_val=6;
+
+               {  for j=1 to group do                     //Don't wait for dying units to catch up
+                      if not isok(group[j]) then
+                         UnitToBeRemoved=UnitToBeRemoved^j;
+
+               if unittoberemoved>0 then
+                  for j in UnitToBeRemoved do
+                      group=delete(group,j);             }
+
+               if dlg_status>0 then                                                  //if a group has been choosen to speak up
+               begin
+                    for j in group do
+                        if see(2,j) and getdistunits(j,NearestUnitToUnit(filterallunits([f_side,2]),j))<12 then
+                        begin
+                             temp=0;
+                             for k in group do
+                                 if k in detected_arabians then
+                                    temp=1;
+
+                             if temp=0 and ar_dlg[i]>0 then                          //if the group sees player units and there are no Russians around
+                             begin
+                                  async;
+                                  if getsex(j)=sex_male then
+                                     temp_line=['esc1_SomeM1','esc1_SomeM2','esc1_SomeM3','esc1_SomeM4'][rand(1,4)]
+                                  else temp_line=['esc1_SomeF1','esc1_SomeF2','esc1_SomeF3','esc1_SomeF4'][rand(1,4)];
+                                  sync;
+
+                                  Say(j,temp_line);
+                             end;
+
+                             ar_dlg=tag(ar_dlg,group_number,0);
+                        end;
+
+                    for j in group do
+                        if j in detected_arabians then
+                        begin
+                             temp=0;
+
+                             for k in group do
+                                 if see(2,k) then
+                                    temp=1;
+
+                             if temp=0 and ar_dlg[i]>0 then                           //if the group is pursued and there are no frendiles in sight
+                             begin
+                                  ar_dlg=tag(ar_dlg,group_number,0);
+
+                                  async;
+                                  if getsex(j)=sex_male then
+                                     temp_line=['esc2_SomeM1','esc2_SomeM2','esc2_SomeM3','esc2_SomeM4'][rand(1,4)]
+                                  else temp_line=['esc2_SomeF1','esc2_SomeF2','esc2_SomeF3','esc2_SomeF4'][rand(1,4)];
+                                  sync;
+
+                                  SayRadio(j,temp_line);
+                             end;
+                        end;
+               end;
+
+
+               for j=1 to path do                           //check if the whole group is at their target hex. If so update the list.
+                   if j>passed_hex[1] then
+                   begin
+                        temp=0;
+                        for k in group do
+                            if getdistunitxy(k,path[j][1],path[j][2])>temp_val then
+                               temp=1;
+
+                        if temp=0 then
+                        begin
+                             ar_grouphexcount=tag(ar_grouphexcount,group_number,j);
+                             break;
+                        end;
+               end;
+
+               if ar_paths[i]=1 then
+                  ar_grouphexcount=tag(ar_grouphexcount,group_number,0);
+   
+               for j=1 to path do                              //Nexthex is the next one to the memorized "passed" hex.
+                   if j>passed_hex[1] then
+                   begin
+                        nexthex=path[j];
+                        break;
+                   end;
+          
+               if nexthex=0 and ar_paths[i]>1 then      //there is no nexthex and the path still has some hexes (is >1), as opposed to only the last exit hex, then the group has reached the end of it's path
+               begin
+                    temp=getdistunitxy(group[1],MoveOutHexes[1][1],MoveOutHexes[1][2]);           //find the closest exit point from list
+                    hex=1;
+                    for j in group do
+                        for k=1 to MoveOutHexes do
+                            if getdistunitxy(j,MoveOutHexes[k][1],MoveOutHexes[k][2])<temp then
+                            begin
+                                 temp=getdistunitxy(j,MoveOutHexes[k][1],MoveOutHexes[k][2]);
+                                 hex=k;
+                            end;
+                    temp=[[MoveOutHexes[hex][1],MoveOutHexes[hex][2]]];
+  
+                    ar_paths=tag(ar_paths,group_number,temp);                    //put the exit hex in path list
+                    ar_grouphexcount=tag(ar_grouphexcount,group_number,0);       //reset the count of passed hexes
+               end;
+      
+       
+               if nexthex>0 then
+                  commovexy(group,nexthex[1],nexthex[2]);
+          
+           
+               for j in group do                         //If the path has only one hex, it means it's the last one, at the edge of the map
+                   if ar_paths[i]=1 and getdistxy(ar_paths[i][1][1],getY(j),ar_paths[i][1][1],ar_paths[i][1][2])<4 then
+                   begin
+                        removeunit(j);                       //removing by distance to the last hex worked better than moving to and removing when in area
+                   end;
+
+
+               temp=0;
+               for j in group do
+                   if filterallunits([[f_nation,nation_russian],[f_dist,j,30]])>0 then
+                      temp=1;
+               temp_list=[];
+               if temp=0 and unitfilter(group,[f_class,class_scientistic])>0 and ar_groupstatus[group_number]>-1 then        //if there are no Russians around and the group has scientists and the whole group has passed Y160
+                  for j in group do
+                      if getlives(j)<600 then                                            //if there are injured
+                         temp_list=temp_list^j;
+               if unitfilter(group,[f_class,class_scientistic])=1 then                   
+                  temp_list=temp_list diff unitfilter(group,[f_class,class_scientistic])[1];    //if there's only one scientist don't count him
+
+               if temp_list>0 then                                                       //heal the injured
+               begin
+                    comstop(group);
+                    comheal(unitfilter(group,[f_class,class_scientistic]),temp_list[1]);
+               end;
+
+
+               if temp=0 and joining_escapees_count>0 and tick>joining_escapees_count[1] then    //if the randomized time for joining comes, select on of the safe people to join the player
+                  for j in group do
+                      if GetY(j)>174 and GetY(j)<184 then
+                      begin
+                           temp_val=[GetX(j),GetY(j)];
+                           removeunit(j);
+                           case rand(1,3) of                                           //randomize his skills
+                                1: begin setskill(j,skill_combat,rand(6,8));
+                                         setskill(j,skill_mechanical,rand(3,5));
+                                         setskill(j,skill_scientistic,rand(3,5));
+                                   end;
+                                2: begin setskill(j,skill_combat,rand(3,5));
+                                         setskill(j,skill_mechanical,rand(6,8));
+                                         setskill(j,skill_scientistic,rand(3,5));
+                                   end;
+                                3: begin setskill(j,skill_combat,rand(3,5));
+                                         setskill(j,skill_mechanical,rand(3,5));
+                                         setskill(j,skill_scientistic,rand(6,8));
+                                   end;
+                           end;
+                           setattr(j,attr_speed,10); setattr(j,attr_stamina,10);
+
+                           placeunitxy(j,temp_val[1],temp_val[2],false);
+
+                           joinig_escapees=joinig_escapees^j;
+                           escaping_arabians=tag(escaping_arabians,i,group diff j);
+                           joining_escapees_count=delete(joining_escapees_count,1);
+                           break;
+                      end;
+
+
+               if ar_groupstatus[i]<0 then                              //initial value of the "status" is -1. Once the whole group gets passed Y160 it counts as an escapee group, and "status" goes to 0
+               begin
+                    temp_val=0;
+                    for j in escaping_arabians[i] do                             //in case a group gets killed right after spawning it won't count as a valid group and the next cycle will have one additional group to spawn
+                        if getY(j)>160 or isdead(j) then
+                           temp_val=1;
+
+                    if temp_val=0 then
+                    begin
+                         number_of_Ar5_groups_to_go=number_of_Ar5_groups_to_go-1;   //if the whole group reaches Y 160 they do count
+                         ar_groupstatus=Tag(ar_groupstatus,i,0);                                //note that if some get killed and the remainder reaches Y160 the group will count, though the casualties before Y160 will be ignored
+                         st_argroupscount=st_argroupscount+1;      //used is testing only
+                    end;
+               end;
+          end
+          else
+              begin
+                   group=escaping_arabians[i];
+                   nexthex=ar_paths[i][1][1];
+                   for j in group do
+                       if getdistunits(j,nexthex)>4 then
+                          moveclosetounit(j,nexthex,2);
+
+                   if isselected(escaping_arabians[i]) and ar_groupfollowing[i]=2 then  //if the group is selected while following, after being deselected
+                      ar_paths=tag(ar_paths,i,0);          //tag the path as 0 to make them search for a new one
+
+                   if tick>[20$0,20$0,25$0][difficulty] then   //all groups should be released after the time of final groups
+                      ar_paths=tag(ar_paths,i,0);
+              end;
+     end;
+
+     if grouptodelete>0 then       //removing the empty group
+     begin
+          escaping_arabians=delete(escaping_arabians,grouptodelete);
+          ar_paths=delete(ar_paths,grouptodelete);
+          ar_grouptypes=delete(ar_grouptypes,grouptodelete);
+          ar_groupstatus=delete(ar_groupstatus,grouptodelete);
+          ar_grouphexcount=delete(ar_grouphexcount,grouptodelete);
+          ar_groupfollowing=delete(ar_groupfollowing,grouptodelete);
+          ar_targetlist=delete(ar_targetlist,grouptodelete);
+          ar_dlg=delete(ar_dlg,grouptodelete);
+          grouptodelete=0;
+     end;
+
+enable;
+end;
+
+//controlling the joining escapee
+every 0$1 trigger joinig_escapees>0 do
+var i,temp;
+begin
+     for i=1 to joinig_escapees do
+     begin
+          temp=NearestUnitToUnit(filterallunits([[f_side,2],[f_not,[f_and,[f_control,control_manual],[f_empty]]]]),joinig_escapees[i]);
+          commoveunit(joinig_escapees[i],temp);
+
+          if GetDistUnits(joinig_escapees[i],temp)<15 and see(2,joinig_escapees[i]) and filterallunits([[f_side,3],[f_dist,joinig_escapees[i],15]])=0 then
+          begin
+               EscDialogue(joinig_escapees[i]);
+               joinig_escapees=joinig_escapees diff joinig_escapees[i];
+               break;
+          end;
+
+          if GetLives(joinig_escapees[i])=0 then
+          begin
+               joinig_escapees=joinig_escapees diff joinig_escapees[i];
+               joining_escapees_count=insert(joining_escapees_count,1,tick);
+               break;
+          end;
+     end;
+enable;
+end;
+
+//Generating times for new cycle of arabian escapees and keeping count of the groups.
+Every 0$0.1 trigger tick>escapees_cycle and gamestage>0 do
+var i,n_groups_to_spawn,temp,temp_val;
+begin
+     randomize;
+     escapees_cycle=escapees_cycle+[4$30,5$0,6$0][difficulty];                            //new time limit for Ar5 spawn. Means the 6 + possible extra will spawn within next 5 min time
+     escapees_errormargin=1;                                                             //ignore loses of 1 group beneath half the map each cycle
+     escapees_errormargin_group=[];                                       
+
+     if number_of_Ar5_groups_to_go>0 then
+     begin
+          if cyclenumber>0 then
+          begin
+               temp=number_of_Ar5_groups_to_go-cyclenumber[1];               //number of groups left - expected value. gives the minimal 6 + whatever got stopped too soon in previous  cycle
+               cyclenumber=delete(cyclenumber,1);
+          end
+          else temp=number_of_Ar5_groups_to_go;                      //in case tick goes beyond expected time limit but there's still some groups to spawn i.e. if some got killed too soon in the last cycle
+
+          Ar5_time=[];
+          for i=1 to temp do
+          begin
+               temp_val=rand(tick,escapees_cycle);
+               Ar5_time=Ar5_time^temp_val;                              //create the list of random values within given timeframe
+          end;
+          Ar5_time=SortByValueAsc(Ar5_time);                         //Arrange from smallest.
+          Ar5_timeup=Ar5_time[1];
+     end;
+
+     enable;
+end;
+
+
+//Control Russians
+every 0$1 trigger Russians>0 do
+var i,j,pathway,ru_squad,on_map,count,Russian_group;
+var nearest_enemy,temp_list,Arabians,k;
+var l,ref_hex,lead,lead1,lead2,temp_lead, follower,temp,temp_hex,temp_hex1,temp_hex2,temp_val;
+var n,m,nexthex,hex,lasthex,yval,unittoberemoved,group;
+var heavy_guns,guns,gatlings,machine_guns,rockets,time_lapsers;
+var path,group_type, group_number,passed_hex;
+var effective_range,grouptodelete;
+var empty_veh,bazookers;
+begin
+     //Determinig ranges for each group
+     arabian_units=filterallunits([f_or,[f_side,2],[f_side,5],[f_and,[f_side,0],[f_class,class_tiger]]])^prisoners;    //A constant set of Arabians
+
+     temp=0;
+     for i in arabian_units do                       //setting and reseting the priority attack (which is only used for attacking mortars)
+     begin
+          for j in target_gun do
+              if i=j and gettype(i)=unit_human then
+                 temp=temp^i;
+          for j in target_all do
+              if i=j and gettype(i)=unit_human then
+                 temp=temp^i;
+          normalattack(3,i);
+     end;
+     for i in temp do
+         priorityattack(3,i);
+
+     for i in arabian_units do
+     begin
+          temp=0;
+          if see(3,i) or see(6,i) then           //Player units are added to detected list when seen by Russians and kept there, so they may be chased,
+          begin                                  //for as long as they are in pursuing range specific to a Russian group.
+               for j in detected_Arabians do
+                   if i=j then                   //Make sure a unit is added only once to detected list
+                      temp=1;
+               if temp=0 then
+                  detected_Arabians=detected_Arabians^i;
+          end;
+     end;
+
+     if detected_Arabians>0 then
+     begin
+          Range_list=[];            ///Lists the conditions for pursuing detected units and the extent of it depending on group type. Was supposed to be more refined than this, but works well egnough
+
+          for i=1 to Russians do
+          begin
+               if ru_grouptypes[i]=1 then     //grouptype 1 - heavy
+               begin
+                    //ignore vehicles further than three hexes past seeing range (9 hexes on 0 or 1 upgrade,11 on higher)
+                    if GetTech(tech_comp2,3)=state_researched then
+                       effective_range=14
+                    else effective_range=12;
+               end;
+
+               if ru_grouptypes[i]=2 then     //grouptype 2 - scout
+               begin
+                    //ignore vehicles further than three hexes past seeing range (9 hexes on 0 or 1 upgrade,11 on higher)
+                    if GetTech(tech_comp2,3)=state_researched then
+                       effective_range=13
+                    else effective_range=11;
+               end;
+
+               if ru_grouptypes[i]=3 then    //grouptype 3 - seek
+               begin
+                    effective_range=30;
+               end;
+
+               if ru_grouptypes[i]=4 then   //grouptype 4 - hunt
+               begin
+                    effective_range=20;
+               end;
+
+               Range_list=Range_list^effective_range;      //this list will keep ranges of each group in which they should pursue arabian units
+          end;                                             
+
+
+          temp_list=[];
+
+          for j=1 to detected_Arabians do            //If a detected player unit has moved out of effective(pursuing) range of every group - delete from the list
+          begin
+               temp=0;
+
+               for k=1 to Russians do
+                   if SmallestDistance(Russians[k],detected_Arabians[j])<Range_list[k] then
+                      temp=1;  
+
+               if temp=0 then
+                  temp_list=temp_list^detected_Arabians[j];
+          end;
+
+          if temp_list>0 then
+             detected_Arabians=detected_Arabians diff temp_list;
+     end;
+
+
+
+
+     for l=1 to Russians do
+     begin
+          //Remove dead units and empty groups
+          for j in russians[l] do
+              if isok(j)=0 then
+              begin
+                   temp_val=[];
+                   temp_list=[];
+
+                   for i=1 to russians do
+                       if i=l then
+                       begin
+                            for k in russians[i] do
+                                if isok(k) then
+                                   temp_val=temp_val^k;
+                            temp_list=temp_list^[temp_val];
+                       end
+                       else temp_list=temp_list^[russians[i]];
+                   russians=temp_list;
+              end;
+
+          temp=0;
+          for j in russians[l] do                       //set the group to be deleted if there are only emopty vehicles left in it
+              if isok(j) then
+                 if getcontrol(j)=control_manual then
+                 begin
+                      if isdrivenby(j)>0 then
+                         temp=1;
+                 end
+                 else temp=1;
+          if temp=0 then
+          begin
+               grouptodelete=l;
+               break;
+          end;
+
+
+          //Check if a group has spotted the enemy
+          Russian_group=[];
+          for j in Russians[l] do                     //Don't count dying units or removed or out of fuel as members of a group
+          begin
+               if gettype(j)=unit_human and isok(j) then
+                  Russian_group=Russian_group^j;
+               if gettype(j)=unit_vehicle and getengine(j)=engine_combustion and getfuel(j)>0 and isok(j) then
+                  Russian_group=Russian_group^j;
+               if gettype(j)=unit_vehicle and getengine(j)=engine_siberite and isok(j) then
+                  Russian_group=Russian_group^j;
+          end;
+
+
+          if detected_Arabians>0 and not ru_groupstatus[l]=2 then
+          begin
+               if SmallestDistance(Russian_group,detected_Arabians)<Range_list[l] then      //if there are more than 1 group around detected player unit they will react according to their pursuing range
+                  ru_groupstatus=tag(ru_groupstatus,l,1);                                 //If a group comes across the enemy it is marked by changing the status to 1
+          end;
+
+          if DisableAttacking=1 then
+             ru_groupstatus=Tag(ru_groupstatus,l,0);
+
+
+          //Move or Attack
+          if ru_groupstatus[l]=1 then
+             Attack(l,ru_grouptypes[l],Range_list[l]);      //Attack if in contact
+
+          if ru_groupstatus[l]=0 then
+          begin                                                             //These aren't the droids we're looking for...move along
+
+                                               //apparently defining additional variables makes less lag than refering to the actual lists every time
+               group=russians[l];              //list of units in Russian group
+               path=ru_paths[l];               //list of hexes for it to follo
+               group_type=ru_grouptypes[l];    //what type it is (group heavy, scout, seek or hunt)
+               group_number=l;                 //which number in lists holds the informations about this group
+               passed_hex=ru_grouphexcount[l]; //count of how many hexes in the list has the group passed
+
+               heavy_guns=[];                  //group compositiondivided into sets
+               guns=[];
+               gatlings=[];
+               machine_guns=[];
+               rockets=[];
+               time_lapsers=[];
+
+               follower=[];                    //used for movement: Lead1 goes first, Lead2 follows, followers at the end
+               lead=[];
+               lead1=[];
+               lead2=[];
+
+               nexthex=0;                      //the hex this group is moving to (as [x,y])
+               unittoberemoved=0;              //holds units that are damaged or out of fuel
+
+
+               for i=1 to group do                     //Don't wait for dying units or removed or out of fuel to catch up
+               begin
+                    if not isok(group[i]) then
+                       UnitToBeRemoved=UnitToBeRemoved^i;
+                    if gettype(group[i])=unit_vehicle and getengine(group[i])=engine_combustion and getfuel(group[i])=0 then
+                    begin
+                         UnitToBeRemoved=UnitToBeRemoved^i;
+                         setfuel(i,0);        //getfuel rounds down so a vehicle with 0.9 fuel would be abandonned (left docile) even though it can still move
+                    end;
+               end;
+
+               if unittoberemoved>0 then
+                  for i in UnitToBeRemoved do
+                      group=delete(group,i);
+
+                                                                     
+               if passed_hex>0 then                                  //check which hex in the list is closest to the group. Implemented in case a group happens to move up the path while attacking, so they'l just follow up from where they are once they return to moving along
+               begin
+                    temp=averagegrouppos(group);                                    
+                    temp_val=getdistxy(temp[1],temp[2],path[passed_hex][1],path[passed_hex][2]);
+
+                    for i=1 to path do
+                        if getdistxy(temp[1],temp[2],path[i][1],path[i][2])<temp_val then
+                        begin
+                             temp_val=getdistxy(temp[1],temp[2],path[i][1],path[i][2]);
+                             ru_grouphexcount=tag(ru_grouphexcount,group_number,i);
+                        end;
+               end;
+
+
+               if group<5 then
+                  temp_val=6                            //in what distance the whole group must gather around a hex befre moving on
+               else temp_val=9;
+
+               if target_list[group_number]=-1 then
+                  temp_val=12;                           //must be big because commove is used in that case, and that tends to get stuck
+
+               if group_type=1 then
+                  temp_val=13;                           //the heavy groups naturally need more space than others
+
+
+               for i=1 to path do                           //check if the whole group is at their target hex. If so update the list.
+                   if i>passed_hex[1] then
+                   begin
+                        temp=0;
+                        for j in group do
+                            if getdistunitxy(j,path[i][1],path[i][2])>temp_val then
+                               temp=1;                                                                      
+                                                                                                              
+                        if temp=0 then                                                                         
+                        begin                                                                                   
+                             ru_grouphexcount=tag(ru_grouphexcount,group_number,i);                              
+                             break;                                                                               
+                        end;                                                                                       
+                   end;                                                                                             
+                                                                                                     
+               if group_type=2 then                          
+                  if ru_groupstatus[group_number]=2 then      //scout groups retreating after meeting a significant player force
+                     passed_hex=0;                 //must be zero since there is only 1 hex (the exiting hex) in path list
+
+               if ru_paths[l]=1 then
+                  ru_grouphexcount=tag(ru_grouphexcount,group_number,0);   //same for units reaching the top of the map
+
+               for i=1 to path do                              //Nexthex is the next one to the memorized "passed" hex count.
+                   if i>passed_hex[1] then
+                   begin
+                        nexthex=path[i];
+                        break;
+                   end;
+
+               if nexthex=0 and ru_paths[l]>1 then          //no nexthex and more than 1 hex in the list means the group has just now reached the end of it's path
+               begin
+                    temp=getdistunitxy(group[1],MoveOutHexes[1][1],MoveOutHexes[1][2]);           
+                    hex=1;
+                    for i in group do                                                       
+                        for j=1 to MoveOutHexes do
+                            if getdistunitxy(i,MoveOutHexes[j][1],MoveOutHexes[j][2])<temp then
+                            begin
+                                 temp=getdistunitxy(i,MoveOutHexes[j][1],MoveOutHexes[j][2]);      //find the closest exiting hex
+                                 hex=j;
+                            end;
+                    temp=[[MoveOutHexes[hex][1],MoveOutHexes[hex][2]]];
+                    if group_type[1]<5 then
+                    begin
+                         ru_paths=tag(ru_paths,group_number,temp);             //edit the path for the last hex only
+                         ru_grouphexcount=tag(ru_grouphexcount,group_number,0);                //reset the passed hex count
+                         nexthex=[MoveOutHexes[hex][1],MoveOutHexes[hex][2]];
+                    end;
+
+               end;
+
+              
+               for i in group do                       //Choose formation(so to speak - only choosing who is to move in front)
+               begin
+                    if getweapon(i)=ru_heavy_gun then            //check what is there in the group
+                       heavy_guns=heavy_guns^i;
+                    if getweapon(i)=ru_gun then
+                       guns=guns^i;
+                    if getweapon(i)=ru_gatling_gun then
+                       gatlings=gatlings^i;
+                    if getweapon(i)=ru_heavy_machine_gun then
+                       machine_guns=machine_guns^i;
+                    if getweapon(i)=ru_rocket_launcher or getweapon(i)=ru_rocket then
+                       rockets=rockets^i;
+                    if getweapon(i)=ru_time_lapser then
+                       time_lapsers=time_lapsers^i;
+
+                    if GetType(i)=unit_human then
+                       follower=follower^i;           //Set humans to be alays following
+               end;
+ 
+
+
+               if heavy_guns>0 then                                 //if heavy guns are present it can only be group seek or heavy
+               begin
+                    lead=lead^heavy_guns^guns^time_lapsers;               //heavy guns and guns take the lead 
+                    follower=follower^rockets^machine_guns^gatlings;     
+               end
+               else
+               begin
+                    lead=lead^guns^machine_guns^gatlings;               //if there are no heavy guns, all except rockets are in the lead
+                    follower=follower^rockets^time_lapsers;
+               end;
+
+
+               if unitfilter(group,[f_empty])>0 then       //if there are empty vehicles, wait for bazookers to enter or destroy the remainder
+               begin
+                    lead=0;
+                    follower=0;
+
+                    empty_veh=unitfilter(group,[f_empty]);
+                    bazookers=unitfilter(group,[ [f_class,class_bazooker],[f_not,[f_driving]] ]);
+                    if bazookers>0 then
+                    begin
+                         for i in bazookers do
+                             commoveunit(i,nearestunittounit(empty_veh,i));
+                    end
+                    else comattackunit(group,empty_veh[1]);
+
+               end;
+
+
+               if lead>0 then        //separating the lead into two groups, to make sure medium vehicles wait for the heavies. Lead 1 is the lighter of the two (in practice used just for group seek - makes the heavy guns keep the smaller guns moving in front of them)
+               begin
+                    lead1=unitfilter(lead, [f_and, [f_or,[f_chassis,ru_medium_wheeled],[f_chassis,ru_medium_tracked]], [f_not,[f_weapon,ru_time_lapser]] ]);
+                    lead2=unitfilter(lead, [f_or, [f_chassis,ru_heavy_wheeled], [f_chassis,ru_heavy_tracked], [f_weapon,ru_time_lapser] ]);
+               end;
+
+
+               if lead1>0 then
+               begin
+                    for i in lead1 do    //if nexthex>0 was in next line
+                        if getdistunitxy(i,nexthex[1],nexthex[2])>3  then
+                        begin
+                             comagressivemove(i,nexthex[1],nexthex[2]);         //comagressivemove makes them move in a tighter formation, but they tend to block and push each other out
+                             if target_list[l]=-1 then
+                                commovexy(i,nexthex[1],nexthex[2]);             //commove required for scout group to pass along the enemy instead of standing and fighting
+                        end;
+
+                             if lead2>0 then
+                                for j in lead2 do
+                                begin
+                                     if getdistunitxy(j,nexthex[1],nexthex[2])-10 > getdistunitxy(i,nexthex[1],nexthex[2]) then
+                                        comstop(i);                                                                                 //make sure the front lead group waits for lead 2
+                                     if getdistunitxy(i,nexthex[1],nexthex[2])<4 then
+                                        if getdistunits(i,j)<5 then                                                                  //let lead1 move forward a bit, instead of blocking the hex for lead2
+                                           commovexy(i,ru_paths[l][passed_hex[1]+2][1],ru_paths[l][passed_hex[1]+2][2])
+                                        else comstop(i);
+
+                                     temp=0;                                                                                        //the lead 2 should not get ahead of lead 1
+                                     for k in lead1 do
+                                         if getdistunitxy(k,nexthex[1],nexthex[2]) > getdistunitxy(j,nexthex[1],nexthex[2]) then
+                                            temp=1;
+                                     if temp=0 then
+                                     begin
+                                          if getdistunitxy(j,nexthex[1],nexthex[2])>3 and hastask(i)=0 then
+                                             comagressivemove(j,nexthex[1],nexthex[2]);
+                                     end
+                                     else comstop(j);
+                                end;
+               end
+               else
+               begin
+                    if lead2>0 then
+                       for i in lead2 do
+                           if getdistunitxy(i,nexthex[1],nexthex[2])>3 and hastask(i)=0 then
+                              comagressivemove(i,nexthex[1],nexthex[2]);         //comagressivemove makes them move in a tighter formation, but they tend to block and push each other out
+               end;
+
+               if lead1>0 or lead2>0 then
+                  for i in follower do
+                  begin
+                       temp=0;
+                       if lead2>0 then
+                          temp_lead=lead2
+                       else temp_lead=lead1;
+
+                       for j in temp_lead do
+                           if islive(j) and getdistunitxy(j,nexthex[1],nexthex[2])+2 > getdistunitxy(i,nexthex[1],nexthex[2]) then
+                              temp=1;                               //The follower units should keep all lead units 2 hexes ahead
+                       if temp=0 then
+                       begin
+
+                               commovexy(i,nexthex[1],nexthex[2]);
+                       end
+                       else comstop(i);
+
+                  end;
+
+               if lead=0 then                           //If there is no one to take the lead, the group doesn't care about it's order
+                  for i in group do
+                      commovexy(i,nexthex[1],nexthex[2]);
+
+
+               for i in group do                         //If the path has only one hex, it means it's the last one, at the edge of the map
+                   if ru_paths[l]=1 and getdistxy(ru_paths[l][1][1],getY(i),ru_paths[l][1][1],ru_paths[l][1][2])<5 then    //comparing only Y coordinate
+                   begin
+                        if ru_paths[l][1][2]=1 then                           //add them if the exit hex has Y 1, meaning it's at the top not bottom of the map
+                           RussiansPassed=RussiansPassed+1;
+
+                        if group_type=1 then
+                           RussiansPassed=RussiansPassed+100;              //none of the heavies allowed to reach the end of the map, triggers loosing
+
+                        removeunit(i);     //removing units by hex wokrs better than by area
+                   end;
+          end;
+
+
+
+          if ru_groupstatus[l]=2 then                                 //scout group that has met a big player force
+             for j in russians[l] do                                  //remove if they get close to exit hex
+             begin
+                  commovexy(j,ru_paths[l][1][1],ru_paths[l][1][2]);
+                  if getdistxy(ru_paths[l][1][1],getY(j),ru_paths[l][1][1],ru_paths[l][1][2])<5 then    //comparing only Y coordinate
+                  begin
+                       if gamestage>1 then
+                          seek_n_destroy(l,Target_List[l]);      //this creates group seek that will go to where the player was seen
+
+                       removeunit(j);          //removing units by hex wokrs better than by area
+                  end;
+             end;                            
+     end;                                    
+
+     if grouptodelete>0 then     //if the set is empty delete the group
+     begin
+          if ru_groupside[grouptodelete]=6 and not ru_grouptypes[grouptodelete]=1 then   //if it's a magenta group that's destroyed set one of it's timers (doesn't matter which) to spawn another after a while
+             for i=1 to ru_spawning_time do
+                 if ru_spawning_time[i] = 100$0 then
+                 begin
+                      ru_spawning_time=tag(ru_spawning_time,i,0);
+                      break;
+                 end;
+
+
+          russians=delete(russians,grouptodelete);                        //delete all values of this group
+          ru_paths=delete(ru_paths,grouptodelete);
+          ru_grouptypes=delete(ru_grouptypes,grouptodelete);
+          ru_groupstatus=delete(ru_groupstatus,grouptodelete);
+          ru_grouphexcount=delete(ru_grouphexcount,grouptodelete);
+          target_list=delete(target_list,grouptodelete);
+          ru_targethex=delete(ru_targethex,grouptodelete);
+          ru_groupside=delete(ru_groupside,grouptodelete);
+
+          target_hg=delete(target_hg,grouptodelete);
+          target_gun=delete(target_gun,grouptodelete);
+          target_all=delete(target_all,grouptodelete);
+          target_bazooka=delete(target_bazooka,grouptodelete);
+
+          bazooka_engagetime=delete(bazooka_engagetime,grouptodelete);
+
+          grouptodelete=0;
+     end;
+
+enable;
+end;
+
+
+//Control unattended Russian units. Happens only if player heals a dying Russian unit
+every 0$1 trigger filterallunits([f_nation,nation_russian]) do
+var i,j,temp;
+begin
+     for i in filterallunits([f_nation,nation_russian]) do
+     begin
+          temp=0;
+          for j in Russians do
+              if i in j then
+                 temp=1;
+
+          if temp=0 then
+             Comattackunit(i,NearestUnitToUnit(filterallunits([f_nation,nation_russian]),i));   //Any 'free' russian unit will keep attacking closest player unit
+     end;
+
+enable;
+end;
+
+

@@ -1,0 +1,254 @@
+Export testing;
+
+Export you, russians, americans, nature, you_alt;
+
+Export Heike, Olaf;
+Export recon_vehicle, recon_driver, lost_american;
+
+Export rusforce1, rusforce2, rusforce3, rus_vehicles, mechanic_vehicle_map;
+Export american_pursuer1, american_pursuer2, american_pursuers;
+{
+Export has_met_olaf, has_seen_tracks, vehicle_can_go, you_kill_am, has_met_am, lost_am_red_hex;
+Export dia_skip, controlling_more_units_hint_given, olaf_dialogue_started, east_escape_enabled, south_escape_enabled;
+}
+
+Export roadguard_hunters, lost_americanreaction, am_query_answer;
+
+
+Starting
+begin
+     RandomizeAll;
+     ResetFog;
+     EnableExclamations;  //DisableExclamations tends to be carried over from mission to mission and there have been reports of mission exclamations in the first 3 missions. This is an attempt at a simple fix.
+
+     testing = false;  //Testing mission or real campaign? (currently not used in this mission)
+
+     {
+     has_met_olaf = false;  //True if the player has met Olaf (and their dialogue is over).
+     olaf_dialogue_started = false;  //True when the meeting dialogue with Olaf starts.
+     has_met_am = false;  //True when Heike finds the lost American.
+     am_query_answer = 0;  //The player's choice what to do with the American.
+     lost_am_red_hex = [];  //The coodinates where the lost American goes to red life (if he does).
+     you_kill_am = false;  //True if Heike lands the killing shot on the American (brings him to red life) (and some other criteria) - used to determine what the Amerian hunters will say.
+     dia_skip = false;  //Used when Olaf shows Heike things around the map. If the player skips the dialogue the camera won't pan around either.
+     controlling_more_units_hint_given = false;  //True when the player has been given the hint about controlling more units.
+     roadguard_hunters = [];  //Russians rushing to aid the roadguard if she spots the player.
+     east_escape_enabled = false;  //True when Heike can end the mission by reaching the eastern border.
+     south_escape_enabled = false;  ////True when Heike can end the mission by reaching the southern border in a vehicle.
+     }
+
+     PrepareSides;
+     PrepareNature;
+     PrepareArabians;
+     PrepareComputerSides;
+
+           
+     case difficulty of
+          1: begin
+               // how quickly returns lost_american fire
+               lost_americanreaction:=0$1;
+
+               // some parametres of soldier american_pursuer1
+               SetSkill(american_pursuer1,skill_combat,1);
+
+               // how much damaged is reckon vehicle
+               //SetLives(recon_vehicle,330);
+
+               // ... and what about the girl who guards the roads around the bases
+               //SetSkill(roadguard,skill_combat,0);
+               //SetAttr(roadguard,attr_stamina,8);
+          end;
+          2: begin
+               lost_americanreaction:=0$0.5;
+               SetSkill(american_pursuer1,skill_combat,2);
+               //SetLives(recon_vehicle,350);
+               //SetSkill(roadguard,skill_combat,1);
+               //SetAttr(roadguard,attr_stamina,9);
+          end;
+          3: begin
+               lost_americanreaction:=0$0.1;
+               SetSkill(american_pursuer1,skill_combat,2);
+               //SetLives(recon_vehicle,380);
+               //SetSkill(roadguard,skill_combat,2);
+               //SetAttr(roadguard,attr_stamina,10);
+          end;
+     end;              
+
+     SpawnEnemy;
+     Action;
+end;
+
+Function PrepareSides;
+     begin
+          //Who is who and decide initial attitudes
+          nature = 0;
+          americans = 1;
+          you = 2;
+          russians = 3;
+          you_alt = 5;
+
+          SetAttitude(americans,you,att_neutral,true);
+          SetAttitude(americans,russians,att_enemy,true);
+          SetAttitude(americans,you_alt,att_neutral,true);
+
+          SetAttitude(you,russians,att_enemy,true);
+          SetAttitude(you,you_alt,att_friend,true);
+
+          SetAttitude(russians,you_alt,att_enemy,true);
+     end;
+
+Function PrepareNature;
+     var i, spots, num, count;
+     begin
+          spots = [[90,30],[23,15],[44,49],[91,75],[76,98]];
+
+          InitUc;
+          InitHc;
+
+          uc_side = nature;
+          uc_nation = nation_nature;
+
+          //Baggies
+          count = 2;
+          hc_gallery = 'nature_foreg';
+          hc_face_number = 4;
+          hc_class = class_baggie;
+          hc_sex = sex_male;
+          hc_agressivity = -50;
+
+          for i = 1 to count do
+               begin
+                    if spots = 0 then
+                         exit;
+
+                    uc_direction = Rand(0,5);
+
+                    hc_attr = [Rand(8,10),Rand(10,11)];
+                    hc_skills = [0,0,0,0];
+
+                    num = Rand(1,spots);
+                    PlaceUnitXYR(CreateHuman,spots[num][1],spots[num][2],5,false);
+                    spots = Delete(spots,num);
+               end;
+     end;
+
+Function PrepareArabians;
+     var human_list, i, temp_unit, val, k;
+     begin
+          InitHc;
+          InitUc;
+          uc_side = you;
+          uc_nation = nation_arabian;
+
+          Heike := NewCharacter('Heike');
+
+          uc_side = you_alt;
+          Olaf := NewCharacter('Olaf');
+     end;
+
+Function PrepareComputerSides;
+     var i, temp_list, side, base, num, j, un;
+     begin
+          //Americans
+          uc_nation = nation_american;
+          uc_side = americans;
+
+          //The lost american
+          lost_american = NewCharacter('Williams');
+          
+
+
+          //Russians
+          uc_side = russians;
+          uc_nation = nation_russian;
+
+          PrepareSoldier(sex_male, 0);
+          uc_direction = 2;
+          un = CreateHuman;
+          PlaceUnitXY(un, 77, 15, 0);
+          SetDir(un, 2);
+          SetLives(un, 0);
+
+
+          //Russian pursuers of the American unit
+          uc_direction = 1;
+
+          PrepareSoldier(sex_male,0);
+          american_pursuer1 = CreateHuman;
+
+          PrepareEngineer(false,1);
+          american_pursuer2 = CreateHuman;
+
+          american_pursuers=[american_pursuer1,american_pursuer2];
+     end;
+
+
+//End
+on UnitGoesToRed(un) do
+begin
+     if un = lost_american and GetSide(un) = 2 then
+        SetSide(un, 1);
+
+     if un = Heike then
+     begin
+          wait(0$2);
+          YouLost('HeikeDead');
+     end;
+end;
+
+every 0$1 trigger met_olaf and ((IsInArea(Heike, escapesouth) and IsInUnit(Heike)) or IsInArea(Heike, escapeeast)) do
+begin
+     DialogueOn;
+
+     if IsOk(Olaf) then
+     begin
+          Say(Olaf, 'D11O1');
+          Say(Heike, 'D11H1');
+     end;
+
+     WinMap;
+     DialogueOff;
+end;
+
+function WinMap;
+var veh_build, veh;
+begin
+    AddMedal('Heike',1);
+
+    if IsInArea(Heike,escapesouth) then
+         begin
+              AddMedal('SouthSide',1);
+              veh = IsInUnit(Heike);
+              veh_build = [GetChassis(veh),GetEngine(veh),control_manual,GetWeapon(veh),GetLives(veh)];
+         end
+    else
+         begin
+              AddMedal('SouthSide',2);
+              veh_build = [];
+         end;
+
+    if IsOk(Olaf) then
+         AddMedal('Olaf',1)
+    else
+         AddMedal('Olaf',-1);
+
+    GiveMedals('MAIN');
+
+    if not IsOK(Olaf) then
+         RewardPeople(Heike)
+    else
+         begin
+              RewardPeople([Heike,Olaf]);
+              SaveCharacters(Olaf,'Olaf_01_cont');
+         end;
+
+    SaveCharacters(Heike,'Heike_01_cont');
+
+    if GetLives(lost_american) > 0 and not player_attacked_soldier then
+         SaveCharacters(lost_american,'lost_american_01_cont');
+
+    SaveVariable(veh_build,'vehicle_01_cont');
+
+    YouWin;
+  end;
+

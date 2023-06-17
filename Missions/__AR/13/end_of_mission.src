@@ -1,0 +1,168 @@
+{duration   total     126000 ticks
+ medium     1 min =    2200 ticks     = total duration 57.3 min
+ fast       1 min =    6050 ticks     = total duration 20.8 min
+
+
+          }
+ {loosing conditions:
+          prsoner list = 0
+          group_heavy reaches end of the map
+          too many russian units have passed
+          too many escapees have died
+          Heike is dead
+          Omar is dead
+
+winning condition: destroying the last heavy group
+
+medals
+      + measuremants taken
+      - measurements not taken
+
+      + no russians have passed
+      - some russians have passed
+
+      + all (or almost) escapees survived
+      - too many escapees died
+
+      (alternatively: keep all prisoners)
+                         }
+
+//Loosing conditions:
+every 0$1 trigger prisoners=0 marked 1 do
+var i, all_dead;
+begin
+     centernowonxy(prisoner_lastposition[1],prisoner_lastposition[2]);
+     placeseeing(prisoner_lastposition[1],prisoner_lastposition[2],2,10);
+     wait(0$1);
+
+     all_dead = true;
+     for i in prisoners_initial do
+          if not IsDead(i) then
+               begin
+                    all_dead = false;
+                    break;
+               end;
+
+     if all_dead then
+        YouLost('prisoners_dead')
+     else
+         YouLost('prisoners_gone');
+end;
+
+
+
+every 0$1 trigger RussiansPassed>[20,15,10][difficulty] do
+YouLost('light_units_passed');
+
+every 0$1 trigger RussiansPassed>99 do
+YouLost('heavies_passed');
+
+every 0$1 trigger escapees_dead>[30,20,10][difficulty] do
+YouLost('escapees_dead');
+
+every 0$1 trigger isdead(heike) do
+YouLost('Heike_dead');
+
+every 0$1 trigger isdead(omar) do
+YouLost('Omar_dead');
+
+//Winning condition:
+Export Function EndMission; 
+var i,temp,player_units,un_list,name_list,apes;
+begin
+     //Medals:
+     if art_leftdone=1 and art_rightdone=1 and art_centredone=1 and art_southdone=1 then          //all measurement done
+     begin
+          Addmedal('measurement',1);
+          SaveVariable(1,'Artifact_measurement_done_13');
+     end
+     else
+         if art_leftdone=1 or art_rightdone=1 or art_centredone=1 or art_southdone=1 then         //not all done
+         begin
+              Addmedal('measurement',-1);
+              SaveVariable(-1,'Artifact_measurement_done_13');
+         end
+         else
+             if artifacton>0 then
+             begin                                                                                //none done
+                  Addmedal('measurement',-2);
+                  SaveVariable(-2,'Artifact_measurement_done_13');
+             end
+             else
+                 begin
+                      Addmedal('measurement',-3);                                                  //Not even mentionned because Chrissy died in first 10 min
+                      SaveVariable(-3,'Artifact_measurement_done_13');
+                 end;
+
+     if RussiansPassed=0 then                                 //Total limit: [20,15,10][difficulty]
+     begin
+          Addmedal('Russians_Passed',1);                        //      tolerance: 0,9,15     0,6,12     0,3,6
+          SaveVariable(2,'Russians_Passed_13');
+     end
+     else
+         if RussiansPassed<[10,7,4][difficulty] then
+         begin
+              Addmedal('Russians_Passed',2);
+              SaveVariable(1,'Russians_Passed_13');
+         end
+         else
+             if RussiansPassed<[16,13,7][difficulty] then
+             begin
+                  Addmedal('Russians_Passed',-1);
+                  SaveVariable(-1,'Russians_Passed_13');
+             end
+             else
+                 begin
+                      Addmedal('Russians_Passed',-2);
+                      SaveVariable(-2,'Russians_Passed_13');
+                 end;
+
+
+     if RescueStatus=2 then                                         //Total limit: [30,20,10][difficulty
+        Addmedal('escapees_saved',1)                                  
+     else                                                             //      tolerance: 0,10,20     0,6,13     0,2,4
+         if RescueStatus=1 then
+            Addmedal('escapees_saved',2)
+         else
+             if RescueStatus=-1 then
+                Addmedal('escapees_saved',-1)
+             else
+                 Addmedal('escapees_saved',-2);
+
+     SaveVariable(RescueStatus,'RescueStatus_13');
+
+
+     GiveMedals('medals');
+
+     apes=filterallunits([[f_side,2],[f_type,unit_human],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze]]]);
+     player_units=filterallunits([[f_side,2],[f_type,unit_human]]);
+
+     player_units=player_units diff apes;
+
+     if islive(Gonzo) then
+        player_units=player_units^gonzo;
+
+     RewardPeople(player_units);
+
+     SaveCharacters(Heike,'Heike_13');
+     SaveCharacters(Omar,'Omar_13');
+     SaveCharacters(Scout,'Snake_13');
+
+     SaveCharacters(prisoners,'Prisoners_13');
+
+     un_list = [Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Gonzo, Chrissy];
+     name_list = ['Oswald', 'Olaf', 'Sonya', 'Ralph', 'Kowalski', 'Aviradze', 'Swansson', 'Dwayne', 'Khattam', 'Evelyn', 'Gonzo', 'Makise'];
+     for i = 1 to un_list do
+         if un_list[i] in player_units then
+            SaveCharacters(un_list[i],name_list[i] & '_13');
+
+     SaveCharacters(player_units diff (Heike ^ Omar ^ un_list),'Others_13');
+
+     temp=[];
+     for i in filterallunits([[f_side,2],[f_type,unit_vehicle],[f_not,[f_weapon,ru_heavy_gun]]]) do
+         temp=temp^[[GetChassis(i),GetControl(i),GetEngine(i),GetWeapon(i),GetNation(i)]];
+
+     SaveVariable(temp,'Vehicles_left_13');
+
+     YouWin;
+end;

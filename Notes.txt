@@ -1,0 +1,16 @@
+Peter Williams (Am01) should match the American Heike meets in Ar01_cont.
+
+Am09_cont -> Use identifier in CharName.wri and portrait from ar_new for Louis Gali, Maria Bogdanovic and Nicholas Vervecken.
+
+Am11 intro (the killing scene) may have some familiar Arabian characters.
+
+Ru14 may have that other sheikh Hassan, along with any others that may be introduced in pro Arab missions, in new Samarkand.
+
+Am15 -> Use "Hadarach" identifier in CharName.wri for Ali Haradach's name + use portrait from this campaign.
+
+Am11_cont -> Use identifier in CharName.wri for Lucy Sebel's name + use portrait from this campaign.
+
+Am11_cont -> Use identifier in CharName.wri for Hans Fliege's name + use portrait from this campaign.
+
+-----------------
+When reviewing the dialogues, make sure a main character dialogue is spoken by the character and the same for a non-main character dialogue. In the latter case also make sure the character sex is accounted for.

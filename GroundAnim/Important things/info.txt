@@ -1,0 +1,4 @@
+main-frame for animation in ar04 (rgb color not index!!!)
+pallete for animation in ar04 (photoshop pallete)
+
+by SerpentSierp

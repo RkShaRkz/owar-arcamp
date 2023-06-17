@@ -1,0 +1,953 @@
+
+Export Function GetApes(side);
+     begin
+          result = FilterAllUnits([[f_side,side],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+     end;
+
+On UnitDestroyed(un) do
+     var veh;
+     begin
+          case un of
+               Heike: begin
+                    ExclusiveOn;
+                    Wait(0$1);
+                    YouLost('HeikeDead');
+                    ExclusiveOff;
+               end;
+               power_plant: begin
+                    power_plant = 0;
+                    SibGameTickPerImplementationCalc;
+                    SetRestrict(b_siberite_power,you,true);  //allow construction of sib power plant
+
+                    if ToDouble(core_health) = 0 then
+                         begin
+                              DialogueOn;
+
+                              case power_plant_sci of
+                                   Heike: Say(power_plant_sci,'D7FH1');
+                                   Sonya: Say(power_plant_sci,'D7FSo1');
+                                   Oswald: Say(power_plant_sci,'D7FOs1');
+                                   Ralph: Say(power_plant_sci,'D7FRa1');
+                                   Aviradze: Say(power_plant_sci,'D7FAv1');
+                                   Aviradze_standin: Say(power_plant_sci,'D7FAvs1');
+                                   Kowalski: Say(power_plant_sci,'D7FKo1');
+                                   Willard: Say(power_plant_sci,'D7FWi1');
+                                   Evelyn: Say(power_plant_sci,'D7FEv1');
+                                   Gordon: Say(power_plant_sci,'D7FGo1');
+                                   Suze: Say(power_plant_sci,'D7FSu1');
+                                   MarkB: Say(power_plant_sci,'D7FMa1');
+                                   Olaf: Say(power_plant_sci,'D7FOl1');
+                                   Kurt: Say(power_plant_sci,'D7FKu1');
+                                   Swansson: Say(power_plant_sci,'D7FSw1');
+                                   else
+                                        if GetSex(power_plant_sci) = sex_male then
+                                             Say(power_plant_sci,'D7FSciM1')
+                                        else
+                                             Say(power_plant_sci,'D7FSciF1');
+                              end;
+
+                              DialogueOff;
+                         end;
+               end;
+               else
+                    begin
+                         if un in attacking_drivers then
+                              begin
+                                   //Also remove the driver's vehicle - it's to no use now
+                                   veh = GetTag(un);
+                                   RemoveFromAttackingUnits(veh);
+                              end;
+
+                         RemoveFromAttackingUnits(un);
+                    end;
+          end;
+     end;
+
+
+//When depot is built Heike reports to Abdul.
+//Furthermore, after some time, Aviradze asks for a bio lab to research ape vehicles.
+//Furthermore if Abdul doesn't doubt Heike can handle the mission, Farmer calls some time later.
+Every 0$0.5 do
+     var temp_list, temp_unit, val;
+     begin
+          repeat
+               wait(0$0.5);
+          until player_depot_built; //FilterAllUnits([[f_side,you],[f_btype,b_depot],[f_not,[f_constructed]]]) >= 1;
+
+          //update siberite_time according to when the player finished the depot.
+          //If the player took too long then the player gets less time to gather the siberite.
+          siberite_time = siberite_time + tick;
+          val = tick - [10$0,7$30,4$0][difficulty];
+          if val > 0 then
+               begin
+                    if val > 5$0 then  //max penalty
+                         val = 5$0;
+
+                    siberite_time = siberite_time - val;
+               end;
+
+          //Start countdown for American attack and countdown for the siberite convoy to appear
+          start_countdowns = true;
+
+          DialogueOn;
+
+          Say(Heike,'D3H1');
+          SayRadio(Abdul,'D3Ab1');
+          Say(Heike,'D3H2');
+          SayRadio(Abdul,'D3Ab2');
+          Say(Heike,'D3H3');
+
+          if begging then
+               begin
+                    temp_list = FilterAllUnits([[f_type,unit_human],[f_ok],[f_side,you]]) diff ([Heike,Aviradze,Aviradze_standin,Evelyn,Olaf,Farmer,Kurt,Swansson] ^ GetApes(you));
+
+                    if temp_list > 0 then
+                         begin
+                              temp_unit = temp_list[Rand(1,temp_list)];
+                              case temp_unit of
+                                   Sonya: Say(temp_unit,'D3So1b');
+                                   Oswald: Say(temp_unit,'D3Os1b');
+                                   Ralph: Say(temp_unit,'D3Ra1b');
+                                   Kowalski: Say(temp_unit,'D3Ko1b');
+                                   Willard: Say(temp_unit,'D3Wi1b');
+                                   Gordon: Say(temp_unit,'D3Go1b');
+                                   Suze: Say(temp_unit,'D3Su1b');
+                                   MarkB: Say(temp_unit,'D3Ma1b');
+                                   else
+                                        if GetSex(temp_unit) = sex_male then
+                                             Say(temp_unit,'D3SomeM1b')
+                                        else Say(temp_unit,'D3SomeF1b');
+                              end;
+
+                              temp_list = temp_list diff temp_unit;
+
+                              if temp_list > 0 then
+                                   begin
+                                        temp_unit = temp_list[Rand(1,temp_list)];
+                                        case temp_unit of
+                                             Sonya: Say(temp_unit,'D3So2b');
+                                             Oswald: Say(temp_unit,'D3Os2b');
+                                             Ralph: Say(temp_unit,'D3Ra2b');
+                                             Kowalski: Say(temp_unit,'D3Ko2b');
+                                             Willard: Say(temp_unit,'D3Wi2b');
+                                             Gordon: Say(temp_unit,'D3Go2b');
+                                             Suze: Say(temp_unit,'D3Su2b');
+                                             MarkB: Say(temp_unit,'D3Ma2b');
+                                             else
+                                                  if GetSex(temp_unit) = sex_male then
+                                                       Say(temp_unit,'D3SomeM2b')
+                                                  else Say(temp_unit,'D3SomeF2b');
+                                        end;
+                                   end;
+
+                              if Aviradze > 0 then
+                                   Say(Heike,'D3H4ba')
+                              else
+                                   Say(Heike,'D3H4bb');
+                         end;
+               end;
+
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M2');
+
+
+          wait( Rand(0$55,1$10) );
+
+          //Aviradze asks for a bio lab to research ape vehicles.
+          DialogueOn;
+
+          if Aviradze > 0 then
+               begin
+                    Say(Aviradze,'D4Av1a');
+                    Say(Heike,'D4H1a');
+                    Say(Aviradze,'D4Av2a');
+                    Say(Heike,'D4H2a');
+                    Say(Aviradze,'D4Av3a');
+                    Say(Heike,'D4H3a');
+                    Say(Aviradze,'D4Av4a');
+                    Say(Aviradze,'D4Av5a');
+               end
+          else
+               begin
+                    Say(Aviradze_standin,'D4Avs1b');
+                    Say(Heike,'D4H1b');
+                    Say(Aviradze_standin,'D4Avs2b');
+                    Say(Heike,'D4H2b');
+                    Say(Aviradze_standin,'D4Avs3b');
+                    Say(Aviradze_standin,'D4Avs4b');
+               end;
+
+          dwait(0$0.2);
+          bio_answer = Query('QBio');
+          case bio_answer of
+               1: begin  //Yes
+                    Say(Heike,'D41H1');
+
+                    if Aviradze > 0 then
+                         Say(Aviradze,'D41Av1')
+                    else Say(Aviradze_standin,'D41Avs1');
+               end;
+               2: begin  //No
+                    Say(Heike,'D42H1');
+
+                    if Aviradze > 0 then
+                         Say(Aviradze,'D42Av1')
+                    else Say(Aviradze_standin,'D42Avs1');
+               end;
+          end;
+
+          DialogueOff;
+
+          if bio_answer = 1 then
+               begin
+                    wait(0$0.2);
+                    ChangeMissionObjectives('MBio');
+               end;
+
+          SetRestrict(b_lab_biological,you,true);
+
+
+          //Farmer calls
+          if not Abdul_doubt then
+               begin
+                    wait( Rand(2$30,3$30) );
+
+                    DialogueOn;
+
+                    SayRadio(Farmer,'D5Fa1a');
+                    Say(Heike,'D5H1a');
+                    SayRadio(Farmer,'D5Fa2a');
+                    Say(Heike,'D5H2a');
+                    SayRadio(Farmer,'D5Fa3a');
+                    Say(Heike,'D5H3a');
+
+                    temp_list = UnitFilter([Sonya, Oswald, Ralph, Kowalski, Willard, Evelyn, Gordon, Suze, MarkB, Olaf, Swansson] diff 0,[f_ok]);
+                    if temp_list = 0 then
+                         temp_list = FilterAllUnits([[f_type,unit_human],[f_ok],[f_side,you]]) diff ([Heike, Aviradze, Aviradze_standin, Kurt] ^ GetApes(you));
+                                                    
+                    if temp_list > 0 then
+                         begin
+                              temp_unit = temp_list[Rand(1,temp_list)];
+                              case temp_unit of
+                                   Sonya: Say(temp_unit,'D5So1a');
+                                   Oswald: Say(temp_unit,'D5Os1a');
+                                   Ralph: Say(temp_unit,'D5Ra1a');
+                                   Kowalski: Say(temp_unit,'D5Ko1a');
+                                   Willard: Say(temp_unit,'D5Wi1a');
+                                   Evelyn: Say(temp_unit,'D5Ev1a');
+                                   Gordon: Say(temp_unit,'D5Go1a');
+                                   Suze: Say(temp_unit,'D5Su1a');
+                                   MarkB: Say(temp_unit,'D5Ma1a');
+                                   Olaf: Say(temp_unit,'D5Ol1a');
+                                   Swansson: Say(temp_unit,'D5Sw1a');
+                                   else
+                                        if GetSex(temp_unit) = sex_male then
+                                             Say(temp_unit,'D5SomeM1a')
+                                        else Say(temp_unit,'D5SomeF1a');
+                              end;
+
+                              Say(Heike,'D5H4a');
+                         end;
+
+                    DialogueOff;
+               end;
+     end;
+
+//If player didn't agree with Aviradze in building a bio lab in the first place but builds one anyway
+//there is a little dialogue and update mission objectives.
+On UpgradeComplete(building) do
+     begin
+          if GetBType(building) in [b_lab,b_lab_half,b_lab_full] and bio_answer = 2 then
+               if b_lab_biological in [GetLabKind(building,1),GetLabKind(building,2)] then
+                    begin
+                         bio_answer = 1;
+
+                         DialogueOn;
+
+                         if Aviradze > 0 then
+                              Say(Aviradze,'D42Av2')
+                         else Say(Aviradze_standin,'D42Avs2');
+
+                         DialogueOff;
+
+                         wait(0$0.2);
+                         ChangeMissionObjectives('MBio');
+                    end;
+     end;
+
+//When player researches tech_sibpow: Dialogue about siberite in general and about siberite power plant.
+//When all siberite technologies are researched.
+On ResearchComplete(tech,lab) do
+     var temp_list, temp_unit, list, t;
+     begin
+          if tech = tech_sibpow then
+               begin
+                    DialogueOn;
+
+                    temp_list = UnitsInside(lab) diff ([Heike, Oswald, Ralph, Kowalski, Willard, Evelyn, Gordon, Suze, MarkB, Olaf, Swansson] ^ GetApes(you));
+                    temp_list = UnitFilter(temp_list,[f_ok]);
+                    if temp_list = 0 then
+                         temp_list = UnitFilter([Sonya,Aviradze,Aviradze_standin] diff 0,[f_ok]);
+
+                    if temp_list > 0 then begin
+
+                    temp_unit = temp_list[Rand(1,temp_list)];
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D6So1');
+                         Aviradze: Say(temp_unit,'D6Av1');
+                         Aviradze_standin: Say(temp_unit,'D6Avs1');
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   Say(temp_unit,'D6SciM1')
+                              else Say(temp_unit,'D6SciF1');
+                    end;
+
+                    Say(Heike,'D6H1');
+
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D6So2');
+                         Aviradze: Say(temp_unit,'D6Av2');
+                         Aviradze_standin: Say(temp_unit,'D6Avs2');
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   Say(temp_unit,'D6SciM2')
+                              else Say(temp_unit,'D6SciF2');
+                    end;
+
+                    if Aviradze > 0 then
+                         ForceSay(Aviradze,'D6Av3')
+                    else ForceSay(Aviradze_standin,'D6Avs3');
+
+                    ForceSay(MarkB,'D6Ma1');
+
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D6So3');
+                         Aviradze: Say(temp_unit,'D6Av4');
+                         Aviradze_standin: Say(temp_unit,'D6Avs4');
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   Say(temp_unit,'D6SciM3')
+                              else Say(temp_unit,'D6SciF3');
+                    end;
+
+                    Say(Heike,'D6H2');
+
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D6So4');
+                         Aviradze: Say(temp_unit,'D6Av5');
+                         Aviradze_standin: Say(temp_unit,'D6Avs5');
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   Say(temp_unit,'D6SciM4')
+                              else Say(temp_unit,'D6SciF4');
+                    end;
+
+                    Say(Heike,'D6H3');
+
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D6So5');
+                         Aviradze: Say(temp_unit,'D6Av6');
+                         Aviradze_standin: Say(temp_unit,'D6Avs6');
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   Say(temp_unit,'D6SciM5')
+                              else Say(temp_unit,'D6SciF5');
+                    end;
+
+                    Say(Heike,'D6H4');
+
+                    DialogueOff;
+
+                    end;
+
+                    wait(0$0.2);
+                    ChangeMissionObjectives('MSib');
+               end;
+
+          list = [tech_sibpow,tech_sib1];
+          if tech in list then
+               begin
+                    for t in list do
+                         if not Researched(you,t) then
+                              exit;
+
+                    sib_techs_researched = true;
+                    ChangeMissionObjectives('MResearchOut');
+               end;
+     end;
+
+//If Abdul doubts Heike can manage the mission he sends Farmer to inspect.
+Every 2$0 trigger Abdul_doubt do
+     var q, temp_list, time;
+     begin
+          //Spawn Farmer in vehicle
+          PlaceUnitXYR(Farmer_vehicle,145,106,5,false);
+
+          //Move towards Heike until seen
+          while not See(you,Farmer_vehicle) do
+               begin
+                    //Don't run out of fuel
+                    if GetFuel(Farmer_vehicle) < 50 then
+                         SetFuel(Farmer_vehicle,50);
+
+                    ComMoveUnit(Farmer_vehicle,Heike);
+                    wait(0$1);
+               end;
+
+          CenterOnUnits(Farmer_vehicle);
+          ComStop(Farmer_vehicle);
+
+          DialogueOn;
+
+          Say(Farmer,'D5Fa1b');
+          Say(Heike,'D5H1b');
+          Say(Farmer,'D5Fa2b');
+          Say(Heike,'D5H2b');
+          Say(Farmer,'D5Fa3b');
+          Say(Heike,'D5H3b');
+          Say(Farmer,'D5Fa4b');
+
+          dwait(0$0.2);
+          q = Query('QFarmer');
+          case q of
+               1: Say(Heike,'D51H1');  //"Let him stay"
+               2: begin  //"Send him away"
+                    Say(Heike,'D52H1');
+                    Say(Farmer,'D52Fa1');
+                    Say(Heike,'D52H2');
+               end;
+          end;
+
+          DialogueOff;
+
+          if q = 1 then
+               begin
+                    //Share vision
+                    ChangeSideFog(you_alt,you);
+
+                    //Farmer stays, moves around a little and taunts Heike every now and then
+                    RaiseSailEvent(1);  //Farmer reports to Abdul - if the player is too slow with some things, he/she loses
+                    RaiseSailEvent(2);  //Taunts
+
+                    //Movement
+                    repeat
+                         time = Rand(0$30,1$0);
+                         q = tick;
+                         repeat
+                              wait(0$1);
+                         until tick - q >= time or ContactTime([you,americans]) <= 0$10;
+
+                         if ContactTime([you,americans]) <= 0$10 then
+                              begin
+                                   //If there are nearby Americans then run away.
+                                   temp_list = FilterAllUnits([[f_side,americans],[f_ok],[f_dist,Farmer,14]]);
+                                   if temp_list > 0 then
+                                        AI_GetAwayFromXY(Farmer,GetX(temp_list[1]),GetY(temp_list[1]),16,false);
+
+                                   continue;
+                              end;
+
+                         //Moves around from building to building (if any). Else just sticks to Heike.
+                         temp_list = FilterAllUnits([[f_side,you],[f_type,unit_building]]);
+                         if temp_list > 0 then
+                              begin
+                                   q = Rand(1,temp_list);
+                                   if GetDistUnits(Farmer,temp_list[q]) > 7 then
+                                        ComMoveXY(Farmer,GetX(temp_list[q]),GetY(temp_list[q]));
+                              end
+                         else
+                              if GetDistUnits(Farmer,Heike) > 15 then
+                                   ComMoveXY(Farmer,GetX(Heike),GetY(Heike));
+
+                    until false;
+               end
+          else
+               begin
+                    //Farmer returns back to from where he came.
+                    //The player gets less time to mine the required siberite
+                    siberite_time = siberite_time - 5$0;
+
+                    repeat
+                         //Don't run out of fuel
+                         if GetFuel(Farmer_vehicle) < 50 then
+                              SetFuel(Farmer_vehicle,50);
+
+                         wait(0$1);
+                         ComMoveXY(Farmer_vehicle,146,107);
+
+                    until GetDistUnitXY(Farmer_vehicle,146,107) <= 5 and GetY(Farmer_vehicle) >= 105;
+
+                    RemoveUnit(Farmer_vehicle);
+
+                    Wait( Rand(3$30,4$30) );
+
+                    DialogueOn;
+
+                    SayRadio(Abdul,'D52Ab1');
+                    Say(Heike,'D52H3');
+                    SayRadio(Abdul,'D52Ab2');
+                    Say(Heike,'D52H4');
+                    SayRadio(Abdul,'D52Ab3');
+                    Say(Heike,'D52H5');
+                    SayRadio(Abdul,'D52Ab4');
+                    Say(Heike,'D52H6');
+                    SayRadio(Abdul,'D52Ab5');
+                    Say(Heike,'D52H7');
+
+                    DialogueOff;
+               end;
+     end;
+//If the player attacks Farmer...
+Every 0$0.5 trigger IsPlaced(Farmer_vehicle) do
+     begin
+          repeat
+               wait(0$0.5);
+               if GetSide(UnitShoot(Farmer_vehicle)) = you or GetSide(UnitShoot(Farmer)) = you then
+                    begin
+                         DialogueOn;
+
+                         Say(Farmer,'D5Fa5b');
+                         SayRadio(Abdul,'D5Ab1b');
+                         SayRadio(Abdul,'D5ab2b');
+
+                         dwait(0$0.2);
+                         YouLost('HeikeDefected');
+
+                         DialogueOff;                         
+                    end;
+
+          until not IsPlaced(Farmer_vehicle);
+     end;
+On SailEvent(int) do
+     var val, i, list, time, temp_list_2, found_crate;
+     begin
+          case int of
+               1: begin  //Farmer inspecting Heike's leadership
+                    //Only building the depot within reasonable time the player can figure out. The other
+                    //criteria aren't obvious. So one must be very careful with setting the time out times
+                    //too low. This could easily trigger frustration.
+
+                    {wait([2$0,1$0,0$0][difficulty]);
+
+                    //Depot built
+                    wait( Rand(2$0,2$15) );
+                    if FilterAllUnits([[f_side,you],[f_or,[f_and,[f_btype,b_depot],[f_not,[f_constructed]]],[f_btype,b_warehouse]]]) = 0 then
+                         FarmerReport;
+
+                    //Siberium lab built
+                    wait( [7$0,6$0,5$0][difficulty] );
+                    val = false;
+                    for i in FilterAllUnits([[f_side,you],[f_or,[f_btype,b_lab_half],[f_btype,b_lab_full]]]) do
+                         if b_lab_siberium in [GetLabKind(i,1),GetLabKind(i,2)] then
+                              begin
+                                   val = true;
+                                   break;
+                              end;
+                    if not val then
+                         FarmerReport;
+
+                    //Armoury built
+                    wait( [5$0,4$0,3$0][difficulty] );
+                    if FilterAllUnits([[f_side,you],[f_or,[f_and,[f_btype,b_armoury],[f_not,[f_constructed]]],[f_btype,b_barracks]]]) = 0 then
+                         FarmerReport;
+
+                    //tech_sib1 researched
+                    wait( [6$0,5$0,4$0] );
+                    if not Researched(you,tech_sib1) then
+                         FarmerReport;}
+               end;
+               2: begin  //Farmer taunting Heike
+                    list = ['D51Fa1','D51Fa3','D51Fa4','D51Fa5','D51Fa6','D51Fa7','D51Fa8'];  //First taunt is crate taunt
+                    if begging then
+                         list = list ^ 'D51Fa2';
+
+                    repeat
+                         time = Rand(3$0,4$0);
+
+                         if 'D51Fa1' in list then  //crate taunt - only if there is a (visible) crate near Farmer
+                              begin
+                                   val = 0$0;
+                                   found_crate = false;
+
+                                   repeat
+                                        wait(0$3);
+                                        val = val + 0$3;
+
+                                        MoveAreaXY(Farmer_area,ShiftX(GetX(Farmer),5,8),ShiftY(GetY(Farmer),5,8));  //Move area so Farmer is in its center
+                                        
+                                        temp_list_2 = GetListOfCratesInArea(Farmer_area);
+                                        i = 1;
+                                        while i < temp_list_2 do
+                                             begin
+                                                  if SeeXY(you,temp_list_2[i],temp_list_2[i+1]) then
+                                                       begin
+                                                            found_crate = true;
+                                                            break;
+                                                       end;
+                                     
+                                                  i = i + 2;
+                                             end;
+
+                                   until val >= time or found_crate;
+
+                                   if found_crate then
+                                        begin
+                                             Say(Farmer,list[1]);
+                                             list = Delete(list,1);
+
+                                             continue;
+                                        end;
+                              end
+                         else
+                              wait(time);
+
+                         if list >= 2 then
+                              begin
+                                   val = Rand(2,list);
+                                   Say(Farmer,list[val]);
+                                   list = Delete(list,val);
+                              end;
+
+                    until list = 0;
+               end;
+          end;
+     end;
+{Function FarmerReport;
+     begin
+          DialogueOn;
+
+          SayRadio(Abdul,'D51Ab1');
+          SayRadio(Abdul,'D51Ab2');
+          Say(Heike,'D51H2');
+          SayRadio(Abdul,'D51Ab3');
+
+          dwait(0$0.2);
+          YouLost('HeikeDemote');
+
+          DialogueOff;
+     end;}
+
+//When player constructs an apeman controlled vehicle
+On VehicleConstructed(veh,fact) do
+     var temp_unit, string1, string2;
+     begin
+          if GetControl(veh) = control_apeman and first_ape_veh then
+               begin
+                    first_ape_veh = false;
+                    ChangeMissionObjectives('MBioOut');
+
+                    wait(0$4);  //wait until vehicle is pushed out of the factory
+
+                    if not ( IsOk(MarkB) and ( IsOk(Aviradze) or IsOk(Aviradze_standin) ) ) then
+                         exit;
+
+                    if Aviradze > 0 then
+                         begin
+                              temp_unit = Aviradze;
+                              string1 = 'Av';
+                              string2 = 'a';
+                         end
+                    else
+                         begin
+                              temp_unit = Aviradze_standin;
+                              string1 = 'Avs';
+                              string2 = 'b';
+                         end;
+
+                    CenterOnUnits(veh);
+
+                    DialogueOn;
+
+                    Say(MarkB,'D8Ma1');
+                    Say(temp_unit,'D8' & string1 & '1');
+                    Say(MarkB,'D8Ma2' & string2);
+                    Say(temp_unit,'D8' & string1 & '2');
+                    Say(MarkB,'D8Ma3' & string2);
+                    Say(temp_unit,'D8' & string1 & '3');
+                    Say(MarkB,'D8Ma4' & string2);
+
+                    if Aviradze > 0 then
+                         Say(Heike,'D8H1a')
+                    else
+                         Say(Heike,'D8H1b');
+
+                    DialogueOff;
+               end;
+     end;
+
+//Suddenly the bushes are stirred and on the scene enters Kurt.
+Every 12$0 do
+     var temp_unit, temp_list, i;
+     begin
+          wait( Rand(0$0,2$0) );
+
+          repeat
+          wait(0$1);
+          until PlaceUnitXY(Kurt,9,15,false);
+
+          //Walk towards the player's base (the depot). If there is no depot then go for Heike.
+          temp_list = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]);
+          if temp_list > 0 then
+               temp_unit = temp_list[1]
+          else
+               temp_unit = Heike;
+
+          repeat
+               if IsDead(temp_unit) then
+                    temp_unit = Heike;
+
+               if IsLive(temp_unit) then
+                    begin
+                         ComMoveXY(Kurt,GetX(temp_unit),GetY(temp_unit));
+
+                         //Keep attacking animals away from Kurt
+                         for i in FilterAllUnits([[f_side,nature],[f_or,[f_class,class_tiger],[f_class,class_apeman]]]) do
+                              AI_GetAwayFromXY(i,GetX(Kurt),GetY(Kurt),4,false);
+                    end;
+
+               wait(0$1);
+          until See(you,Kurt);
+
+          DialogueOn;
+
+          temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff GetApes(you);
+          if temp_list > 0 then  //should be the case
+               begin
+                    temp_unit = AllNearestUnitToUnit(temp_list,Kurt);
+
+                    case temp_unit of
+                         Heike: ;  //Nothing happens
+                         Sonya: Say(temp_unit,'D9So1');
+                         Oswald: Say(temp_unit,'D9Os1');
+                         Ralph: Say(temp_unit,'D9Ra1');
+                         Aviradze: Say(temp_unit,'D9Av1');
+                         Aviradze_standin: Say(temp_unit,'D9Avs1');
+                         Kowalski: Say(temp_unit,'D9Ko1');
+                         Willard: Say(temp_unit,'D9Wi1');
+                         Evelyn: Say(temp_unit,'D9Ev1');
+                         Gordon: Say(temp_unit,'D9Go1');
+                         Suze: Say(temp_unit,'D9Su1');
+                         MarkB: Say(temp_unit,'D9Ma1');
+                         Olaf: Say(temp_unit,'D9Ol1');
+                         Swansson: Say(temp_unit,'D9Sw1');
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   Say(temp_unit,'D9SomeM1')
+                              else
+                                   Say(temp_unit,'D9SomeF1');
+                    end;
+               end;
+
+          CenterOnUnits(Kurt);
+          Say(Kurt,'D9Ku1');
+
+          if IsOk(Olaf) then
+               Say(Olaf,'D9Ol2')
+          else
+               Say(Heike,'D9H1');
+
+          Say(Kurt,'D9Ku2');
+          Say(Heike,'D9H2');
+          Say(Kurt,'D9Ku3');
+          Say(Heike,'D9H3');
+
+          if IsOk(Ralph) then
+               Say(Ralph,'D9Ra2');
+
+          Say(Kurt,'D9Ku4');
+          Say(Heike,'D9H4');
+
+          if IsPlaced(Farmer) then
+               Say(Heike,'D9H5');
+
+          DialogueOff;
+
+          SetSide(Kurt,you);
+          ComStop(Kurt);
+     end;
+
+//If Kurt is placed inside a building with other people they start playing poker.
+Every 0$1 do
+     var temp_unit, temp_list, building, i;
+     begin
+
+          repeat
+               wait(0$10);
+
+               if IsDead(Kurt) then
+                    exit;
+
+               if not IsOk(Kurt) then
+                    continue;
+
+               building = IsInUnit(Kurt);
+
+               if building = 0 then
+                    continue;
+
+               if attack_status = 1 then
+                    continue;
+
+               temp_list = [];
+               for i in FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff ([Heike,Aviradze,Aviradze_standin,Kowalski,Evelyn,MarkB,Olaf,Kurt,Swansson] ^ GetApes(you)) do  //These people either don't player poker or know Kurt too well to challenge him
+                    if IsInUnit(i) = building then
+                         temp_list = temp_list ^ i;
+
+               if temp_list > 0 then
+                    begin
+                         DialogueOn;
+
+                         temp_unit = temp_list[Rand(1,temp_list)];
+                         case temp_unit of
+                              Sonya: Say(temp_unit,'D10So1');
+                              Ralph: Say(temp_unit,'D10Ra1');
+                              Oswald: Say(temp_unit,'D10Os1');
+                              Willard: begin
+                                   Say(temp_unit,'D10Wi1');
+                                   Say(Kurt,'D10Ku1');
+                                   Say(temp_unit,'D10Wi2');
+                              end;
+                              Gordon: Say(temp_unit,'D10Go1');
+                              Suze: Say(temp_unit,'D10Su1');
+                              else
+                                   if GetSex(temp_unit) = sex_male then
+                                        Say(temp_unit,'D10SomeM1')
+                                   else
+                                        Say(temp_unit,'D10SomeF1');
+                         end;
+
+                         Say(Kurt,'D10Ku2');
+
+                         case temp_unit of
+                              Sonya: Say(temp_unit,'D10So2');
+                              Ralph: Say(temp_unit,'D10Ra2');
+                              Oswald: Say(temp_unit,'D10Os2');
+                              Willard: Say(temp_unit,'D10Wi3');
+                              Gordon: Say(temp_unit,'D10Go2');
+                              Suze: Say(temp_unit,'D10Su2');
+                              else
+                                   if GetSex(temp_unit) = sex_male then
+                                        Say(temp_unit,'D10SomeM2')
+                                   else
+                                        Say(temp_unit,'D10SomeF2');
+                         end;
+
+                         Say(Kurt,'D10Ku3');
+
+                         DialogueOff;
+
+                         exit;
+                    end;
+
+          until false;
+     end;
+
+//When time is up the convoy appears to pick up the gathered siberite.
+//Also controls the counter when that time comes.
+Every 0$1 + 0$0.7 trigger start_countdowns do
+     var i, temp_list, move_to_un;
+     begin
+          repeat
+               wait(0$1);
+          until tick > siberite_time - 20$0;  //#-# (marker - don't remove!)
+
+          DialogueOn;
+          SayRadio(Abdul,'Di14Ab1');
+          DialogueOff;
+
+          convoy_sent = true;
+
+          repeat
+               UpdateDisplay;
+               wait(0$1);
+          until tick > siberite_time;
+          UpdateDisplay;
+
+          //The vehicles follow each other in a straight line, so they also appear in such order.
+          move_to_un = 0;
+          while UnitFilter(abdul_convoy,[f_see,you]) = 0 do
+               begin
+                    for i = 1 to abdul_convoy do
+                         if not IsPlaced(abdul_convoy[i]) then
+                              begin
+                                   PlaceUnitXY(abdul_convoy[i],144,106,false);
+                                   break;
+                              end
+                         else
+                              if i = 1 then
+                                   begin
+                                        //Move towards the depot. If none then Heike
+                                        temp_list = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]);
+                                        if temp_list > 0 then
+                                             move_to_un = temp_list[1]
+                                        else
+                                             move_to_un = Heike;
+
+                                        ComMoveXY(abdul_convoy[1],GetX(move_to_un),GetY(move_to_un));
+                                   end
+                              else
+                                   ComMoveUnit(abdul_convoy[i],abdul_convoy[i-1]);
+
+                    if move_to_un > 0 then
+                         if GetDistUnits(abdul_convoy[1],move_to_un) <= 9 then
+                              break;
+
+                    wait(0$0.5);
+               end;
+
+          //Share vision
+          ChangeSideFog(you_alt_alt,you);
+
+          CenterOnUnits(abdul_convoy);
+
+          DialogueOn;
+
+          Say(UnitsInside(abdul_convoy[1])[1],'Di13SomeM1');
+
+          for i in FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]) do
+               sib_gathered = sib_gathered + GetResourceType(GetBase(i),mat_siberit);
+
+          if sib_gathered >= sib_to_gather then
+               Say(Heike,'Di13H1a')
+          else
+               Say(Heike,'Di13H1b');
+
+          dwait(0$0.5);
+          CenterOnUnits(Heike);
+
+          SayRadio(Abdul,'Di13Ab1');
+          Say(Heike,'Di13H2');
+          SayRadio(Abdul,'Di13Ab2');
+          Say(Heike,'Di13H3');
+
+          dwait(0$0.2);
+          EndMission;
+                     
+          DialogueOff;
+     end;
+
+//Updater for display_strings
+Export Function UpdateDisplay;
+     var val;
+     begin
+          display_strings = [];
+
+          if convoy_sent and tick <= siberite_time then
+               display_strings = display_strings ^ ['#Ar07-ConvoyTime',siberite_time-tick,''];
+
+          if not ( ToDouble(data_implemented) = 100 and power_plant = 0 ) and not first_power_plant then
+               begin
+                    case ToDouble(core_health) of
+                         0..30: val = 3; //red
+                         30..70: val = 2; //yellow
+                         else val = 7; //green
+                    end;
+
+                    display_strings = display_strings ^ ['#Ar07-CoreHealth',val,ToDouble(core_health),''];
+                    display_strings = display_strings ^ ['#Ar07-DataImplemented',ToDouble(data_implemented),''];
+                    display_strings = display_strings ^ ['#Ar07-DataGather',ToDouble(data_gathered),''];
+                    display_strings = display_strings ^ ['#Ar07-ShutdownTime',shutdown_time];
+               end;
+     end;

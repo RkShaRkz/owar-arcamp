@@ -1,0 +1,1061 @@
+
+
+Function PlayerApes;
+     begin
+          result = FilterAllUnits([[f_side,you],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+     end;
+
+
+//When player researches stimulation drugs.
+//When player researches explosives.
+On ResearchComplete(tech,lab) do
+     var temp_unit, temp_list, temp_list_2, un;
+     begin
+          if tech = tech_explos then
+               begin
+                    Hint('Mines');
+               end;
+
+          if tech = tech_stimdrugs then
+               begin
+                    //Find the scientist to talk. Preferrably of class scientist and inside the lab
+                    //which made the research (and not Martin, Louis or Erwin).
+                    temp_list = FilterAllUnits([[f_side,you],[f_class,class_scientistic],[f_ok]]) diff Heike;
+                    temp_list_2 = [];
+                    for un in temp_list do
+                         if IsInUnit(un) = lab then
+                              temp_list_2 = temp_list_2 ^ un;
+
+                    if temp_list_2 > 0 then
+                         temp_unit = temp_list_2[1]
+                    else
+                         if temp_list > 0 then
+                              temp_unit = temp_list[1]
+                         else
+                              begin
+                                   temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff ([Heike,Martin,Louis,Erwin] ^ PlayerApes);
+                                   if temp_list > 0 then
+                                        temp_unit = temp_list[1]
+                                   else
+                                        begin
+                                             temp_list = UnitFilter([Martin,Louis,Erwin],[f_ok]);
+                                             if temp_list > 0 then
+                                                  temp_unit = temp_list[Rand(1,temp_list)]
+                                             else
+                                                  exit;  //No dialogue
+                                        end;
+                              end;
+
+                    DialogueOn;
+
+                    case temp_unit of
+                         Martin: begin
+                              Say(temp_unit,'DStimMartin1');
+                              Say(temp_unit,'DStimMartin2');
+                         end;
+                         Louis: begin
+                              Say(temp_unit,'DStimLo1');
+                              Say(temp_unit,'DStimLo2');
+                         end;
+                         Erwin: begin
+                              Say(temp_unit,'DStimEr1');
+                              Say(temp_unit,'DStimEr2');
+                         end;
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   begin
+                                        Say(temp_unit,'DStimSciM1');
+                                        Say(temp_unit,'DStimSciM2');
+                                   end
+                              else
+                                   begin
+                                        Say(temp_unit,'DStimSciF1');
+                                        Say(temp_unit,'DStimSciF2');
+                                   end;
+                    end;
+
+                    Say(Heike,'DStimH1');
+
+                    case temp_unit of
+                         Martin: Say(temp_unit,'DStimMartin3');
+                         Louis: Say(temp_unit,'DStimLo3');
+                         Erwin: Say(temp_unit,'DStimEr3');
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   Say(temp_unit,'DStimSciM3')
+                              else
+                                   Say(temp_unit,'DStimSciF3');
+                    end;
+
+                    Say(Heike,'DStimH2');
+
+                    DialogueOff;
+               end;
+
+          if tech = tech_explos and ( apeman_vehicles_researched_07 or testing ) then
+               begin
+                    wait(0$10);
+
+                    //Wait for battles to cease
+                    repeat
+                    wait(0$1);
+
+                    if IsDead(Louis) or deserter_begin then
+                         exit;
+
+                    if not IsOk(Louis) then
+                         continue;
+
+                    until ContactTime(you) >= 0$10;
+
+                    DialogueOn;
+
+                    Say(Louis,'D10Lo1');
+                    ForceSay(Heike,'D10H1');
+                    Say(Louis,'D10Lo2');
+                    ForceSay(Heike,'D10H2');
+                    Say(Louis,'D10Lo3');
+
+                    dwait(0$0.2);
+
+                    case Query('QKamikaze') of
+                         1: begin
+                              ForceSay(Heike,'D101H1');
+                         end;
+                         2: begin
+                              ForceSay(Heike,'D102H1');
+                              Say(Louis,'D102Lo1');
+                              ForceSay(Heike,'D102H2');
+                              Say(Louis,'D102Lo2');
+                         end;
+                    end;
+
+                    DialogueOff;
+
+                    SetTech(tech_apebrain,you,state_enabled);
+               end;
+     end;
+
+
+//Most events in this mission must occur in a specific order so this every
+//takes care of starting those events so the correct order is guaranteed.
+//The player isn't supposed to be able to destroy the big Russian base but it is
+//possible (it's not easy, though), so we have to take this into consideration.
+Every 0$1.9 do
+     var temp_list, temp_unit, un, temp_list_2;
+     begin
+          //Burlak calling and offers player to surrender.
+          //Should occur shortly after the first attack with vehicles.
+          repeat
+               wait(0$1);
+          until ai_vehicles_attack[1] > 0 or IsDead(ai_depot[1]);  //attack begun
+          repeat
+               wait(0$1);
+          until UnitFilter(ai_vehicles_attack[1],[f_ok]) = 0 or IsDead(ai_depot[1]);  //attack over
+          wait( Rand(0$10,0$30) );
+
+          DialogueOn;
+
+          Say(Burlak,'D2Bu1');
+
+          if IsOk(Erwin) then
+               Say(Erwin,'D2Er1');
+
+          Say(Heike,'D2H1');
+          Say(Burlak,'D2Bu2');
+          Say(Heike,'D2H2');
+          Say(Burlak,'D2Bu3');
+
+          dwait(0$0.2);
+          case Query('QSurrender') of  //yes|no
+               1: begin
+                    Say(Heike,'D21H1');
+                    Say(Heike,'D21H2');
+
+                    dwait(0$0.2);
+                    EndMission(true);
+               end;
+               2: Say(Heike,'D22H1');
+          end;
+
+          DialogueOff;
+
+
+          //Whispering in the corners. Preferably among two in the same building.
+          wait( Rand(1$0,2$0) );
+
+          for un in FilterAllUnits([[f_side,you],[f_type,unit_building]]) do
+               begin
+                    temp_list = UnitsInside(un) diff ([Heike,Martin,Erwin,Louis] ^ PlayerApes);
+                    if temp_list >= 2 then
+                         break
+                    else
+                         temp_list = [];
+               end;
+
+          if temp_list = 0 then
+               temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff ([Heike,Martin,Erwin,Louis] ^ PlayerApes);
+
+          if temp_list >= 2 then
+               begin
+                    temp_list_2 = [];
+
+                    for un = 1 to 2 do
+                         if GetSex(temp_list[un]) = sex_male then
+                              temp_list_2 = temp_list_2 ^ 'M'
+                         else
+                              temp_list_2 = temp_list_2 ^ 'F';
+
+                    DialogueOn;
+
+                    Say(temp_list[1],'D3Some' & temp_list_2[1] & '1-1');
+                    Say(temp_list[2],'D3Some' & temp_list_2[2] & '2-1');
+                    Say(temp_list[1],'D3Some' & temp_list_2[1] & '1-2');
+
+                    DialogueOff;
+               end;
+
+
+          //Yashin is coming to town
+          wait( Rand(9$0,10$0) );
+
+          temp_list = FilterAllUnits([[f_side,you],[f_class,class_scientistic],[f_ok]]) diff [Heike,Martin,Erwin,Louis];
+          if temp_list > 0 then
+               temp_unit = temp_list[Rand(1,temp_list)]
+          else
+               begin
+                    temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff ([Heike,Martin,Erwin,Louis] ^ PlayerApes);
+                    if temp_list > 0 then
+                         temp_unit = temp_list[Rand(1,temp_list)]
+                    else
+                         temp_unit = 0;
+               end;
+
+          if temp_unit > 0 then
+               begin
+                    if GetSex(temp_unit) = sex_male then
+                         un = 'M'
+                    else
+                         un = 'F';
+
+                    DialogueOn;
+
+                    Say(temp_unit,'D4Sci' & un & '1');
+                    SayRadio(Yashin,'D4Ya1');
+                    SayRadio(Burlak,'D4Bu1');
+                    SayRadio(Yashin,'D4Ya2');
+                    Say(Heike,'D4H1');
+                    Say(temp_unit,'D4Sci' & un & '2');
+                    Say(Heike,'D4H2');
+                    Say(temp_unit,'D4Sci' & un & '3');
+                    Say(Heike,'D4H3');
+
+                    DialogueOff;
+
+                    wait(0$0.2);
+                    ChangeMissionObjectives('MKillYashin');
+               end;
+
+          yashin_begin = true;
+
+
+          //Martin is coming to town
+          wait( Rand(9$0,10$0) );  //delay must ensure Martin spawns later than Yashin
+
+          PlaceUnitXYR(Martin,73,131,5,true);
+          DoNotAttack(nature,Martin);
+          wait(0$6);  //wait for boom to cease
+
+          temp_list = FilterAllUnits([[f_side,you],[f_class,class_scientistic],[f_ok]]) diff [Heike,Martin,Erwin,Louis];
+          if temp_list > 0 then
+               temp_unit = temp_list[Rand(1,temp_list)]
+          else
+               begin
+                    temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff ([Heike,Martin,Erwin,Louis] ^ PlayerApes);
+                    if temp_list > 0 then
+                         temp_unit = temp_list[Rand(1,temp_list)]
+                    else
+                         temp_unit = 0;
+               end;
+
+          DialogueOn;
+
+          SayRadio(Martin,'D5Martin1');
+          Say(Heike,'D5H1');
+          SayRadio(Martin,'D5Martin2');
+          Say(Heike,'D5H2');
+          SayRadio(Martin,'D5Martin3');
+
+          if temp_unit > 0 then
+               if GetSex(temp_unit) = sex_male then
+                    Say(temp_unit,'D5SciM1')
+               else
+                    Say(temp_unit,'D5SciF1');
+
+          DialogueOff;
+
+          martin_begin = true;
+          RevealFogArea(you,martin_area);
+
+
+          //Burlak calling and offers player to surrender - again.
+          //Should occur shortly after an attack with vehicles.
+          wait( Rand(13$0,15$0) );  //delay should ensure Martin is either dead or rescued
+          repeat
+               wait(0$1);
+          until ai_vehicles_attack[1] > 0 or IsDead(ai_depot[1]);  //attack begun
+          repeat
+               wait(0$1);
+          until UnitFilter(ai_vehicles_attack[1],[f_ok]) = 0 or IsDead(ai_depot[1]);  //attack over
+          wait( Rand(0$10,0$30) );
+
+          DialogueOn;
+
+          Say(Burlak,'D6Bu1');
+
+          dwait(0$0.2);
+          case Query('QSurrender') of  //yes|no
+               1: begin
+                    Say(Heike,'D61H1');
+                    Say(Heike,'D61H2');
+
+                    dwait(0$0.2);
+                    EndMission(true);
+               end;
+               2: begin
+                    Say(Heike,'D62H1');
+                    Say(Burlak,'D62Bu1');
+               end;
+          end;
+
+          DialogueOff;
+
+
+          //More whispering in the corners. Preferably among people in the same building.
+          //Will not happen if Louis is dead.
+          wait( Rand(0$30,1$0) );
+
+          if not IsDead(Louis) then
+               begin
+                    for un in FilterAllUnits([[f_side,you],[f_type,unit_building]]) do
+                         begin
+                              temp_list = UnitsInside(un) diff ([Heike,Martin,Erwin] ^ PlayerApes);
+                              if temp_list >= 3 and Louis in temp_list then
+                                   break
+                              else
+                                   temp_list = [];
+                         end;
+
+                    if temp_list = 0 then
+                         temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff ([Heike,Martin,Erwin,Louis] ^ PlayerApes);
+
+                    if temp_list >= 2 then
+                         begin
+                              temp_list_2 = [];
+
+                              for un = 1 to 2 do
+                                   if GetSex(temp_list[un]) = sex_male then
+                                        temp_list_2 = temp_list_2 ^ 'M'
+                                   else
+                                        temp_list_2 = temp_list_2 ^ 'F';
+
+                              DialogueOn;
+
+                              ForceSay(Louis,'D7Lo1');
+                              Say(temp_list[1],'D7Some' & temp_list_2[1] & '1-1');
+                              Say(temp_list[2],'D7Some' & temp_list_2[2] & '2-1');
+
+                              DialogueOff;
+                         end;
+               end;
+
+
+          //Louis and some others desert.
+          //Will not happen if Louis has died.
+          //Should occur shortly after the an attack with vehicles so the deserters won't
+          //stumble into some Russians on their way out.
+          wait( Rand(4$0,5$0) );
+          repeat
+               wait(0$1);
+          until ai_vehicles_attack[1] > 0 or IsDead(ai_depot[1]);  //attack begun
+          repeat
+               wait(0$1);
+          until UnitFilter(ai_vehicles_attack[1],[f_ok]) = 0 or IsDead(ai_depot[1]);  //attack over
+          wait( Rand(0$20,0$40) );
+
+          deserter_begin = true;
+          repeat
+          wait(0$1);
+          until deserters_are_done;
+
+          wait( Rand(4$0,5$0) );
+          final_battle_begin = true;  //normally activated when the deserters are done
+     end;
+
+//Yashin.
+//Spawns in lower left corner of map.
+//Walks to the biggest Russian base. Gets a vehicle. Drives between the two Russian bases
+//a couple of times before exiting the map to the southwest. Won't go the the sourthern base
+//if it has been destroyed or captured.
+Every 0$1+0$0.3 trigger yashin_begin do
+     var yashin_vehicle, rounds, target_base, wait_time, veh_arg, going_to_exit, i;
+     begin
+          wait( Rand(2$30,3$30) );
+
+          SetDir(Yashin,1);
+
+          repeat
+               wait(0$1);
+          until PlaceUnitXYR(Yashin,66,130,1,false);  //until successful
+
+          DoNotAttack(nature,Yashin);
+
+          rounds = [5,4,3][difficulty];  //How many times will Yashin patrol back and forth between the two bases?
+          target_base = 1;  //The base Yashin is moving to at the moment
+          yashin_vehicle = 0;
+          going_to_exit = false;  //True if Yashin should exit the map
+
+          repeat
+               //Move around
+               wait_time = 0$0;
+               repeat
+                    wait(0$1);
+
+                    if IsDead(Yashin) then
+                         exit;
+
+                    //Apparently it's not enough to tell nature to not attack someone. Aggressive apes and the like are still aggressive.
+                    if IsInUnit(Yashin) = 0 then
+                         begin
+                              for i in FilterAllUnits([[f_side,nature],[f_dist,Yashin,4]]) do
+                                   AI_GetAwayFromXY(i,GetX(Yashin),GetY(Yashin),4,false);
+                         end;
+
+                    veh_arg = not IsOk(yashin_vehicle) or yashin_vehicle = 0;
+                    if veh_arg then  //pull back to main base to get a new vehicle
+                         begin
+                              target_base = 1;
+                              going_to_exit = false;  //He won't go without a vehicle
+                         end;
+
+                    if going_to_exit then
+                         begin
+                              if IsInArea(Yashin,yashin_exit_area) then
+                                   begin
+                                        RemoveUnit(Yashin); //Only remove! If we destroy him then code below checking if medal is earned will think he is dead (and we can't save him)
+                                        RemoveUnit(yashin_vehicle);
+                                        exit;
+                                   end;
+
+                              ComMoveXY(Yashin,70,137);  //Not agressive move so he will be distracted by enemies
+                         end
+                    else
+                         begin
+                              if GetDistUnitXY(Yashin,ai_human_pullback_hex[target_base][1],ai_human_pullback_hex[target_base][2]) < 6 then
+                                   begin
+                                        wait_time = wait_time + 0$1;
+
+                                        if wait_time >= 1$0 then
+                                             begin
+                                                  if not veh_arg and target_base = 1 then
+                                                       rounds = rounds - 1;
+
+                                                  //Determine if it's time for Yashin to exit the map
+                                                  if rounds <= 0 then
+                                                       going_to_exit = true
+                                                  else
+                                                       going_to_exit = false;
+
+                                                  if 2 in ai_bases then
+                                                       target_base = [2,1][target_base]
+                                                  else
+                                                       target_base = 1;  //Stay put in the main base
+
+                                                  if veh_arg then
+                                                       break;
+                                             end;
+                                   end
+                              else
+                                  ComAgressiveMove(Yashin,ai_human_pullback_hex[target_base][1],ai_human_pullback_hex[target_base][2]);
+                         end;
+
+               until false;
+
+               //Vehicle miracurously spawns near Yashin.
+               InitUc;
+               InitVc;
+               uc_side = russians_alt;
+               uc_nation = nation_russian;
+               vc_control = control_manual;
+               vc_engine = engine_combustion;
+               vc_chassis = [ru_medium_wheeled,ru_medium_tracked][Rand(1,2)];
+               if difficulty = 1 then
+                    vc_weapon = ru_heavy_machine_gun
+               else
+                    vc_weapon = [ru_gatling_gun,ru_gun][Rand(1,2)];
+
+               yashin_vehicle = CreateVehicle;
+
+               repeat
+                    wait(0$0.5);
+
+                    if IsDead(Yashin) then
+                         exit;
+
+               until PlaceUnitXYR(yashin_vehicle,GetX(Yashin),GetY(Yashin),8,false);  //until successful
+
+               //Enter vehicle
+               repeat
+                    ComEnterUnit(Yashin,yashin_vehicle);
+                    wait(0$1);
+
+                    if IsDead(Yashin) then
+                         exit;
+
+               until IsInUnit(Yashin) = yashin_vehicle;
+
+          until IsDead(Yashin);
+     end;
+Every 0$1+0$0.2 trigger yashin_begin do
+     begin
+          if IsDead(Yashin) then
+               begin
+                    ChangeMissionObjectives('MOutKillYashin');
+                    exit;
+               end;
+
+          enable;
+     end;
+
+//Martin
+//Ensure Martin won't walk too far away from his spawn area.
+//If the player doesn't find him within some time some Russians find him and kill him.
+Every 0$1+0$0.5 trigger martin_begin do
+     var time, russian_killers, i, rus_see_dialogue, under_attack;
+     begin
+          russian_killers = [];
+          time = 0$0;
+          rus_see_dialogue = false;
+          under_attack = false;
+
+          repeat
+               if GetDistUnitXY(Martin,73,131) > 4 and GetSide(Martin) = you_alt then
+                    ComMoveXY(Martin,73,131);
+
+               if russian_killers > 0 then
+                    begin
+                         russian_killers = UnitFilter(russian_killers,[f_alive]);
+
+                         if IsLive(Martin) and GetSide(Martin) = you_alt then
+                              ComAgressiveMove(russian_killers,GetX(Martin),GetY(Martin))
+                         else
+                              for i in russian_killers do
+                                   if not IsInArea(i,ru_enter_area) then
+                                        ComMoveToArea(i,ru_enter_area)
+                                   else
+                                        DestroyUnit(i);
+                    end
+               else
+                    begin
+                         if IsLive(Martin) and GetSide(Martin) = you_alt then
+                              begin
+                                   if time >= [9$0,6$30,5$0][difficulty] then
+                                        begin
+                                             russian_killers = CreateUnitsWithClass(2,class_soldier,russians);
+
+                                             for i in russian_killers do
+                                                  PlaceUnitArea(i,ru_enter_area,false);
+
+                                             time = 0$0;  //So a second wave probably never will spawn
+                                        end
+                                   else
+                                        time = time + 0$1;
+                              end
+                         else
+                              exit;
+
+                         under_attack = false;
+                    end;
+
+               
+               if not under_attack then
+                    for i in russian_killers do
+                         if Attacks(i) = Martin then
+                              begin
+                                   under_attack = true;
+                                   break;
+                              end;
+
+               if under_attack then  //killers have found Martin
+                    begin
+                         if not rus_see_dialogue then
+                              begin
+                                   DialogueOn;
+                                   SayRadio(Martin,'D5Martin4a');
+                                   DialogueOff;
+
+                                   rus_see_dialogue = true;
+                              end;
+                    end
+               else
+                    if See(you,Martin) and IsOk(Martin) and GetSide(Martin) = you_alt then
+                         begin
+                              CenterOnUnits(Martin);
+                              DialogueOn;
+                              Say(Martin,'D5Martin4b');
+                              DialogueOff;
+
+                              SetSide(Martin,you);
+                              NormalAttack(nature,Martin);
+                         end;
+
+               wait(0$1);
+
+          until false;
+     end;
+
+//Deserters
+Every 0$1+0$0.9 trigger deserter_begin do
+     var deserters_list, dialogue_played, i, temp_list, time, hex_list_home, hex_list_out, is_gathered, out_hex_index, under_attack, k;
+     var escaped_list;
+     begin
+          if IsDead(Louis) then
+               begin
+                    deserters_are_done = true;
+                    exit;
+               end;
+
+          escaped_list = [];
+          deserters_list = [Louis];
+          dialogue_played = false;
+          time = 0$0;
+          out_hex_index = 1;
+          SetAttitude(russians,you_alt,att_friend,true);  //The Russians shouldn't kill the deserters
+
+          //This list of hexes are used as waypoints for deserters out in the field to navigate safely home to the player's base.
+          hex_list_home = [];
+          temp_list = [[22,14],[30,14],[38,14],[45,14]];  //North of main Russian base, West of player base
+          hex_list_home = hex_list_home ^ temp_list;
+          temp_list = [[137,132],[135,128],[122,102],[113,84],[106,69],[99,53],[91,37],[84,23]];  //South of player base, East of Russian bases
+          hex_list_home = hex_list_home ^ temp_list;
+          temp_list = [[74,129],[76,123],[75,115],[68,104],[69,98],[70,91],[70,89],[86,90],[93,87],[112,81],[105,66],[97,50],[89,34],[82,21]];  //Between the two Russian bases
+          hex_list_home = hex_list_home ^ temp_list;
+
+          //Waypoints out of the player's base and eventually out of the map
+          hex_list_out = [[88,12],[75,12],[61,4],[48,4],[38,4],[28,4],[18,4],[3,2]];
+
+          //Pick 3 more deserters, preferably humans (not apes!) inside the player's base.
+          if IsOk(Martin) and GetSide(Martin) = you then
+               deserters_list = deserters_list ^ Martin;
+
+          for i in louis_main_companions do
+               if IsOk(i) then
+                    deserters_list = deserters_list ^ i;
+
+          if deserters_list+0 < 4 then
+               begin
+                    temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_inarea,player_base],[f_ok]]) diff ([Heike,Martin,Erwin,Louis] ^ PlayerApes ^ louis_main_companions);
+                    if temp_list < 4 - deserters_list then
+                         begin
+                              temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff ([Heike,Martin,Erwin,Louis] ^ PlayerApes ^ louis_main_companions);
+                              if temp_list < 4 - deserters_list then
+                                   begin
+                                        deserters_are_done = true;
+                                        exit;  //Not enough rebels for this uprising
+                                   end;
+                         end;
+
+                    for i = 1 to 4 - deserters_list do
+                         deserters_list = deserters_list ^ temp_list[i];
+               end;
+
+          for i in deserters_list do
+               SetSide(i,you_alt);
+
+          repeat
+               deserters_list = UnitFilter(deserters_list,[f_alive]);
+
+               //Check if the deserters are being attacked by the player
+               under_attack = false;
+               //for i in FilterAllUnits([f_side,you]) do
+               //     if GetSide(Attacks(i)) = you_alt then
+               for i in deserters_list do
+                    if SideShoot(i) = you then
+                         begin
+                              under_attack = true;
+                              break;
+                         end;
+
+
+               //Dialogue when Heike spots something is wrong
+               if not dialogue_played then
+                    if time >= 0$3 then
+                         begin
+                              if IsDead(Louis) then
+                                   begin
+                                        for i in deserters_list do
+                                             SetSide(i,you);
+
+                                        deserters_are_done = true;
+                                        exit;
+                                   end;
+
+                              CenterOnUnits(Louis);
+
+                              DialogueOn;
+
+                              Say(Heike,'D8H1');
+                              Say(Louis,'D8Lo1');
+                              Say(Heike,'D8H2');
+                              Say(Louis,'D8Lo2');
+                              Say(Heike,'D8H3');
+                              Say(Louis,'D8Lo3');
+                              Say(Heike,'D8H4');
+                              Say(Louis,'D8Lo4');
+
+                              DialogueOff;
+
+                              dialogue_played = true;
+                              SetAttitude(you,you_alt,att_neutral,true);  //The player can shoot the deserters if he/she wants
+                         end
+                    else
+                         time = time + 0$0.5;
+
+
+               //Move the deserters. Get them out of vehicles/buildings. At first gather around the
+               //first waypoint out of the base. When everybody is there then go for the next. Wait
+               //for all to reach the waypoint and then continue. Agressive move if we are being attacked.
+               is_gathered = true;
+
+               for i in deserters_list do
+                    case GetType(IsInUnit(i)) of
+                         unit_vehicle: begin
+                              ComExitVehicle(i);
+                              is_gathered = false;
+                         end;
+                         unit_building: begin
+                              ComExitBuilding(i);
+                              is_gathered = false;
+                         end;
+                         else
+                              if out_hex_index = 1 and not IsInArea(i,player_base) then  //first gathering and outside the base
+                                   begin
+                                        //Move using the waypoints outside the base
+                                        is_gathered = false;
+
+                                        k = FindClosestHexIndex(i,hex_list_home) + 1;
+                                        if k > hex_list_home then
+                                             k = hex_list_home+0;
+
+                                        if under_attack then
+                                             ComAgressiveMove(i,hex_list_home[k][1],hex_list_home[k][2])
+                                        else
+                                             ComMoveXY(i,hex_list_home[k][1],hex_list_home[k][2]);
+                                   end
+                              else
+                                   if GetDistUnitXY(i,hex_list_out[out_hex_index][1],hex_list_out[out_hex_index][2]) > 5 then
+                                        begin
+                                             is_gathered = false;
+
+                                             if under_attack then
+                                                  ComAgressiveMove(i,hex_list_out[out_hex_index][1],hex_list_out[out_hex_index][2])
+                                             else
+                                                  ComMoveXY(i,hex_list_out[out_hex_index][1],hex_list_out[out_hex_index][2]);
+                                        end
+                                   else
+                                        if out_hex_index = hex_list_out+0 then  //last hex out of the base
+                                             if GetDistUnitXY(i,hex_list_out[out_hex_index][1],hex_list_out[out_hex_index][2]) > 2 then
+                                                  ComMoveXY(i,hex_list_out[out_hex_index][1],hex_list_out[out_hex_index][2])
+                                             else
+                                                  begin
+                                                       escaped_list = escaped_list ^ i;
+                                                       RemoveUnit(i);
+                                                  end;
+                    end;
+
+               if is_gathered and out_hex_index < hex_list_out+0 then
+                    out_hex_index = out_hex_index + 1;
+
+
+               wait(0$0.5);
+
+          until UnitFilter(deserters_list,[f_placed]) = 0;
+
+
+          //Save units
+          //for i in deserters_list do
+          //     if GetLives(i) > 250 then
+          //          deserters = deserters ^ i;
+          deserters = escaped_list;
+
+          deserters_are_done = true;
+     end;
+Function FindClosestHexIndex(un,hex_list);
+     var low_dist, dist, b;
+     begin
+          low_dist = GetDistUnitXY(un,hex_list[1][1],hex_list[1][2]);
+          result = 1;
+
+          for b = 2 to hex_list do
+               begin
+                    dist = GetDistUnitXY(un,hex_list[b][1],hex_list[b][2]);
+                    if dist < low_dist then
+                         begin
+                              low_dist = dist;
+                              result = b;
+                         end;
+               end;
+
+     end;
+
+//Final battle.
+//Spawn units.
+Every 0$1+0$0.8 trigger final_battle_begin do
+     var temp_list, i, k;
+     var num_veh, time, veh_start_time;
+     begin
+          //Wait for all ongoing attacks to cease.
+          repeat
+          wait(0$1);
+          until (ai_attacking_soldiers[1] ^ ai_attacking_scientists[1] ^ ai_vehicles_attack[1]) = 0;
+
+          //Create units for invasion and spawn them.
+          //Maintain a constant amount of vehicles in case the player is a douche and has mined and/or
+          //fortified the spawn area. A constant amount of humans are not feasible since humans attack
+          //in groups so a newly spawned human would screw up the attack algorithm.
+          //Add units to the attack procedure so they will attack the player.
+          //Vehicles are added with delay so humans and vehicles arrive approximately at the same time.
+
+          human_attack_strategy = 2;
+          vehicle_attack_strategy = 1;
+
+          num_veh = 8;
+
+          final_battle_units = CreateUnitsWithClass(12,class_bazooker,russians);
+          final_battle_units = final_battle_units ^ CreateUnitsWithClass(8,class_soldier,russians);
+          final_battle_units = final_battle_units ^ CreateUnitsWithClass(6,class_scientistic,russians);
+
+          for i in final_battle_units do
+               begin
+                    SetAttr(i,attr_speed,10);  //All humans have same speed
+
+                    if GetClass(i) = class_scientistic then
+                         begin
+                              temp_list = ai_attacking_scientists[1] ^ i;
+                              ai_attacking_scientists = Replace(ai_attacking_scientists,1,temp_list);
+                         end
+                    else
+                         begin
+                              temp_list = ai_attacking_soldiers[1] ^ i;
+                              ai_attacking_soldiers = Replace(ai_attacking_soldiers,1,temp_list);
+                         end;
+               end;
+
+          time = 0$0;
+          veh_start_time = 1$0;
+
+          repeat
+          wait(0$1);
+
+          time = time + 0$1;
+
+          if time = veh_start_time then
+               begin
+                    temp_list = ai_vehicles_attack[1] ^ UnitFilter(final_battle_units,[f_type,unit_vehicle]);
+                    ai_vehicles_attack = Replace(ai_vehicles_attack,1,temp_list);
+               end;
+
+          temp_list = [];
+          for i in final_battle_units do
+               if GetLives(i) > 0 then
+                    temp_list = temp_list ^ i;
+          final_battle_units = temp_list;
+
+          k = UnitFilter(final_battle_units,[f_type,unit_vehicle]);
+          if k < num_veh then
+               begin
+                    InitUc;
+                    InitVc;
+                    uc_side = russians;
+                    uc_nation = nation_russian;
+                    vc_engine = engine_combustion;
+                    vc_control = control_computer;
+                    vc_chassis = ru_heavy_tracked;
+
+                    temp_list = [];
+                    for i = k+0 to num_veh-1 do
+                         begin
+                              vc_weapon = [ru_gun,ru_heavy_gun][Rand(1,2)];
+                              temp_list = temp_list ^ CreateVehicle;
+                         end;
+
+                    final_battle_units = final_battle_units ^ temp_list;
+
+                    if time >= veh_start_time then
+                         begin
+                              temp_list = ai_vehicles_attack[1] ^ temp_list;
+                              ai_vehicles_attack = Replace(ai_vehicles_attack,1,temp_list);
+                         end;
+               end;
+
+          for i in final_battle_units do
+               if not IsPlaced(i) and GetLives(i) > 0 then
+                    begin
+                         temp_list = Replace(ai_attacking_unit_hex_index[1],i,1);
+                         ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,1,temp_list);
+
+                         PlaceUnitArea(i,ru_enter_area_west,false);
+                    end
+               else
+                    if GetType(i) = unit_vehicle and time < veh_start_time then
+                         begin
+                              if GetDistUnitXY(i,53,57) > 10 then
+                                   ComMoveXY(i,53,57);
+                         end;
+
+          until false;
+     end;
+//Final battle. Cinematic.
+Every 0$1+0$0.9 trigger final_battle_begin do
+     var temp_list, i, k, time, dir, un_list;
+     begin
+          //When one of the units attack one of the player's buildings we assume they have reached the player's base.
+          //Center on the conflict, play dialogue,
+          //super-nerf all the player's buildings and super-buff the Russian units.
+          k = false;
+          repeat
+               wait(0$1);
+
+               for i in final_battle_units do
+                    if GetType(Attacks(i)) = unit_building then
+                         begin
+                              k = true;
+                              break;
+                         end;
+
+          until k;
+
+          CenterOnUnits(i);
+
+          //Buff and nerf
+          for i in final_battle_units do
+               if GetType(i) = unit_human then
+                    begin
+                         if GetClass(i) = class_scientistic then
+                              SetSkill(i,skill_scientistic,10)
+                         else
+                              SetSkill(i,skill_combat,10);
+
+                         SetAttr(i,attr_stamina,999);
+                    end;
+
+          SetTech(tech_comp1,russians,state_researched);
+          SetTech(tech_comp2,russians,state_researched);
+          SetTech(tech_comp3,russians,state_researched);
+
+          for i in FilterAllUnits([[f_side,you],[f_type,unit_building]]) do
+               SetBLevel(i,0);
+
+          SetTech(tech_tech3,you,state_enabled);
+          SetTech(tech_tech2,you,state_enabled);
+          SetTech(tech_tech1,you,state_enabled);
+
+          //Heike must be captured
+          DoNotAttack(russians,Heike);
+
+          //Showtime
+          InGameOn;
+          ExclusiveOff;
+          RaiseSailEvent(1);  //Make Heike invinsible so she doesn't die by accident
+
+          DialogueOn;
+          SayRadio(Burlak,'D9Bu1');
+          DialogueOff;
+
+          //Center on different scenes in the war for a while. Centering directly on the attacking
+          //Russians gives unsatisfying results because you can't really see what happens to your
+          //own units, so instead we just use the attacking units as a starting point to calculate
+          //which hex to center on.
+          un_list = final_battle_units;
+          time = 0;
+          repeat
+               if time mod 2 = 0 then
+                    k = unit_vehicle
+               else
+                    k = unit_human;
+
+               un_list = UnitFilter(un_list,[f_ok]);
+               temp_list = UnitFilter(un_list,[[f_type,k],[f_see,you]]);
+
+               if temp_list > 0 then
+                    begin
+                         k = temp_list[Rand(1,temp_list)];
+                         temp_list = [GetX(k),GetY(k)];
+                         dir = AI_GetTurnDirection(temp_list[1],temp_list[2],99,4);
+                         temp_list = [ShiftX(temp_list[1],dir,10) , ShiftY(temp_list[2],dir,10) ];
+
+                         if not ValidHex(temp_list[1],temp_list[2]) then
+                              temp_list = [99,4];
+
+                         CenterOnXY(temp_list[1],temp_list[2]);
+                    end;
+
+               wait(0$5);
+               time = time + 5;
+
+          until time >= 50 or ( time >= 30 and FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) < 5 );
+
+          DialogueOn;
+
+          if See(russians,Heike) then
+               Say(Burlak,'D9Bu2a')
+          else
+               Say(Burlak,'D9Bu2b');
+
+          DialogueOff;
+
+          wait(0$0.2);
+          EndMission(false);
+
+          InGameOff;
+     end;
+On SailEvent(arg) do
+     begin
+          case arg of
+               1: begin
+                    heike_original_stamina = GetAttr(Heike,attr_stamina);
+                    SetAttr(Heike,attr_stamina,9999);
+                    repeat
+                         wait(0$1);
+                         SetLives(Heike,1000);
+                    until end_of_mission;
+               end;
+          end;
+     end;
+//Function which returns the direction in which the unit one the specified hex ([x1,y1]) would turn if it was asked to face
+//the other specified hex ([x,y]) (ComTurnXY)
+Function AI_GetTurnDirection(x1,y1,x,y);
+     var dist_1, dist_2, b, temp_dist, dir;
+     begin
+          if not ValidHex(x1,y1) or not ValidHex(x,y) then
+               begin
+                    result = -1;
+                    exit;
+               end;
+
+          dist_1 = GetDistXY(x1,y1,x,y);
+          dist_2 = 99999;
+
+          //this is the algorithm
+          for b = 0 to 5 do
+               begin
+                    temp_dist = GetDistXY(ShiftX(x1,b,dist_1),ShiftY(y1,b,dist_1),x,y);
+                    if temp_dist < dist_2 then
+                         begin
+                              dist_2 = temp_dist;
+                              dir = b;
+                         end;
+               end;
+
+          result = dir;
+     end;

@@ -1,0 +1,82 @@
+
+Export Function EndMission(human_list,num_less_people_chosen);
+     var val, temp_list, vehicle_list, blitz, un_list, name_list;
+     begin
+          //Medals
+          AddMedal('QuickAction',quick_buildup);
+
+          if flamethrower_constructed then
+               val = 1
+          else
+               val = -1;
+          AddMedal('Flamethrower',val);
+
+          if attack_timer <= blitzkrieg_time then
+               blitz = 1
+          else blitz = -1;
+          AddMedal('Blitzkrieg',blitz);
+
+          GiveMedals('Medals');
+
+
+          //Reward and save people. Save variables.
+          val = 1;
+          if quick_buildup > 0 then
+               val = val + 1;
+          if blitz > 0 then
+               val = val + 1;
+          SaveVariable(val,'Time_determined_situation_05_cont');  //How fast the player was determines how bad the situation in mission 06 is.
+
+          //The surplus number of people the player could have brought with him/her, e.g. the player could bring 4 people (exclusive Heike)
+          //but only took 3 then this would be 1.
+          SaveVariable(num_less_people_chosen,'Num_less_people_chosen_05_cont');
+
+          temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]);
+          RewardPeople(temp_list);
+
+          temp_list = temp_list diff [Heike,Gordon,Suze,Ralph,Sonya,Oswald,Kowalski,Willard,Evelyn];
+          if mes_is_olaf then
+               temp_list = temp_list diff Messenger;
+
+          SaveCharacters(temp_list diff human_list,'Others_05_cont');
+
+          SaveCharacters(Heike,'Heike_05_cont_sel');
+          human_list = human_list diff Heike;
+
+          un_list = [Sonya,Ralph,Oswald,Kowalski,Willard,Evelyn,Gordon,Suze];
+          name_list = ['Sonya','Ralph','Oswald','Kowalski','Willard','Evelyn','Gordon','Suze'];
+          for val = 1 to un_list do
+               if un_list[val] in human_list then
+                    begin
+                         human_list = human_list diff un_list[val];
+                         SaveCharacters(un_list[val],name_list[val] & '_05_cont_sel');
+                    end
+               else
+                    if IsLive(un_list[val]) then
+                         SaveCharacters(un_list[val],name_list[val] & '_05_cont');
+
+          if Messenger in human_list then
+               begin
+                    human_list = human_list diff Messenger;
+
+                    if mes_is_olaf then
+                         SaveCharacters(Messenger,'Olaf_05_cont_sel')
+                    else
+                         SaveCharacters(Messenger,'Messenger_05_cont_sel');
+               end
+          else
+               if mes_is_olaf then
+                    SaveCharacters(Messenger,'Olaf_05_cont');
+
+          SaveCharacters(human_list,'Others_05_cont_sel');
+
+          vehicle_list = FilterAllUnits([[f_side,you],[f_inarea,move_on_area],[f_type,unit_vehicle],[f_occupied]]);
+          temp_list = [];
+          for val in vehicle_list do
+               temp_list = Insert(temp_list,1, [GetChassis(val),GetEngine(val),GetControl(val),GetWeapon(val),GetLives(val),GetNation(val),GetCargo(val,mat_cans),GetCargo(val,mat_oil),GetCargo(val,mat_siberit)] );
+
+          SaveVariable(temp_list,'Vehicles_05_cont');
+
+
+          YouWin;
+     end;

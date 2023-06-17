@@ -1,0 +1,100 @@
+begin
+? ident "sand: JenPisek1 (4)"
+ ! contr 122
+ ! all 63
+new
+? ident "sand: JenPisek2 (4)"
+ ! all 63
+ ! add 10 004000
+new
+? ident "sand, trampled: JenPisek1 (4)"
+ ! contr 122
+ ! all 63
+new
+? ident "sand, trampled: JenPisek2 (4)"
+ ! all 63
+ ! add 10 004000
+new
+? ident "jitrocel: JenJitrocel1 (4)"
+ ! contr 122
+ ! all 77
+new
+? ident "vres: JenVres (4)"
+ ! contr 150
+ ! add 14 0000FF
+new
+? ident "Boulder: stone_02"
+ ! all 60
+ ! contr 130
+new
+? ident "STree: jehl-smrk-maly"
+ ! all 91
+ ! contr 122
+new
+? ident "STree: jehl-smrk-silny"
+ ! contr 130
+ ! all 90
+ ! sat 80
+new
+? ident "STree: jehl-smrk-stredni"
+ ! all 70
+ ! contr 120
+new
+? ident "STree: jehl-smrk-uzky"
+ ! sat 60
+ ! contr 125
+new
+? ident "STree: jehl-smrk-stredni-spal"
+ ! contr 140
+new
+? ident "STree: jehl-smrk-stredni-suchy"
+ ! contr 130
+new
+? type grass
+ ! contr 120
+ ! all 80
+new
+? type terrain
+ ! contr 115
+new
+? ident "STree: ker-rosti"
+ ! contr 122
+ ! all 70
+new
+? ident "STree: list-kastan"
+ ! all 90
+ ! contr 125
+ ! add 10 008000
+new
+? ident "STree: ker-husty"
+ ! all 71
+ ! contr 115
+new
+? ident "Boulder: stone_05"
+ ! all 80
+ ! add 10 004000
+new
+? ident "Boulder: monolit"
+ ! all 80
+new
+? ident "STree: jehl-borovice"
+ ! all 70
+ ! contr 115
+new
+? ident "STree: jehl-borov-vysoka"
+ ! contr 80
+ ! all 50
+new
+? ident "STree: jehl-borovice-mala"
+ ! all 98
+ ! contr 115
+ ! sat 170
+new
+? ident "Boulder: ker"
+ ! all 80
+ ! contr 133
+new
+? ident "STree: list-dub"
+ ! contr 133
+ ! all 80
+end

@@ -1,0 +1,735 @@
+
+Export testing;
+Export Heike, Sonya, Oswald, Ralph, Kowalski, Willard, Evelyn, Gordon, Suze, Abdul, MarkB, Olaf, Aviradze, tiger, Aviradze_standin, Swansson;
+Export engi, others, people_from_last_mission, tiger_is_tamed;
+
+Starting
+begin
+     ResetFog;
+     ClearAllFogForSide(2);
+     RandomizeAll;
+
+     testing = false;  //Just testing or playing for real?
+     tiger_is_tamed = false;
+
+     Disable(1);  //Apemen soldiers event
+
+     PlaceUnits;
+     Action;
+end;
+
+Function PlaceUnits;
+     var val;
+     begin
+          SetBName(dep,'vnewnish');
+
+          InitUc;
+          InitHc;
+          uc_side = 2;
+          uc_nation = nation_arabian;
+          
+          //Create people for base
+          for val in [b1,b2,b3,arm,arm] do
+               begin
+                    PrepareSoldier(false,0);
+                    PlaceHumanInUnit(CreateHuman,val);
+               end;
+               
+          for val in [lab1,lab2] do
+               begin
+                    PrepareScientist(false,0);
+                    PlaceHumanInUnit(CreateHuman,val);
+
+                    SetSpecResearch(val,100,false);
+               end;
+
+          PrepareEngineer(false,0);
+          PlaceHumanInUnit(CreateHuman,dep);
+
+          for val = 1 to 2 do
+               begin
+                    PrepareMechanic(false,0);
+                    PlaceHumanInUnit(CreateHuman,fact);
+               end;
+          ComConstruct(fact,ar_medium_trike,engine_combustion,control_manual,ar_light_gun);
+
+
+          //Create Heike and others
+          uc_direction = 5;
+
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_06');
+                    MarkB = CreateCharacter('MarkB_06');
+
+                    people_from_last_mission = [Heike,MarkB];
+
+                    if TestCharacters('Aviradze_03_cont') then
+                         begin
+                              Aviradze = CreateCharacter('Aviradze_03_cont');
+                              Aviradze_standin = 0;
+                              SetClass(Aviradze,class_scientistic);
+                         end
+                    else
+                         begin
+                              Aviradze = 0;
+                              InitHc;
+                              PrepareScientist(sex_male,5);
+                              hc_name = 'Marcel'; //References CharName.wri
+                              Aviradze_standin = CreateHuman;
+                              SetSkill(Aviradze_standin,skill_scientistic,4);
+                         end;
+
+                    //Characters left (or dead) in mission 05_cont (not taken on to 06) is not available here for picking
+                    if TestCharacters('Sonya_06') then
+                         begin
+                              Sonya = CreateCharacter('Sonya_06');
+                              people_from_last_mission = people_from_last_mission ^ Sonya;
+                         end
+                    else
+                         if TestCharacters('Sonya_04') and not TestCharacters('Sonya_05_sel') then
+                              Sonya = CreateCharacter('Sonya_04')
+                         else
+                              Sonya = 0;
+
+                    if TestCharacters('Oswald_06') then
+                         begin
+                              Oswald = CreateCharacter('Oswald_06');
+                              people_from_last_mission = people_from_last_mission ^ Oswald;
+                         end
+                    else
+                         if TestCharacters('Oswald_04') and not TestCharacters('Oswald_05_sel')  then
+                              Oswald = CreateCharacter('Oswald_04')
+                         else
+                              Oswald = 0;
+
+                    if TestCharacters('Ralph_06') then
+                         begin
+                              Ralph = CreateCharacter('Ralph_06');
+                              people_from_last_mission = people_from_last_mission ^ Ralph;
+                         end
+                    else
+                         if TestCharacters('Ralph_04') and not TestCharacters('Ralph_05_sel')  then
+                              Ralph = CreateCharacter('Ralph_04')
+                         else
+                              Ralph = 0;
+
+                    if TestCharacters('Kowalski_06') then
+                         begin
+                              Kowalski = CreateCharacter('Kowalski_06');
+                              people_from_last_mission = people_from_last_mission ^ Kowalski;
+                         end
+                    else
+                         if TestCharacters('Kowalski_04') and not TestCharacters('Kowalski_05_sel') then
+                              Kowalski = CreateCharacter('Kowalski_04')
+                         else
+                              Kowalski = 0;
+
+                    if TestCharacters('Willard_06') then
+                         begin
+                              Willard = CreateCharacter('Willard_06');
+                              people_from_last_mission = people_from_last_mission ^ Willard;
+                         end
+                    else
+                         if TestCharacters('Willard_04') and not TestCharacters('Willard_05_sel') then
+                              Willard = CreateCharacter('Willard_04')
+                         else
+                              Willard = 0;
+
+                    if TestCharacters('Evelyn_06') then
+                         begin
+                              Evelyn = CreateCharacter('Evelyn_06');
+                              people_from_last_mission = people_from_last_mission ^ Evelyn;
+                         end
+                    else
+                         if TestCharacters('Evelyn_04') and not TestCharacters('Evelyn_05_sel') then
+                              Evelyn = CreateCharacter('Evelyn_04')
+                         else
+                              Evelyn = 0;
+
+                    if TestCharacters('Gordon_06') then
+                         begin
+                              Gordon = CreateCharacter('Gordon_06');
+                              people_from_last_mission = people_from_last_mission ^ Gordon;
+                         end
+                    else
+                         Gordon = 0;
+
+                    if TestCharacters('Suze_06') then
+                         begin
+                              Suze = CreateCharacter('Suze_06');
+                              people_from_last_mission = people_from_last_mission ^ Suze;
+                         end
+                    else
+                         Suze = 0;
+
+                    if TestCharacters('Olaf_06') then
+                         begin
+                              Olaf = CreateCharacter('Olaf_06');
+                              people_from_last_mission = people_from_last_mission ^ Olaf;
+                         end
+                    else
+                         Olaf = 0;
+
+                    if TestCharacters('Swansson_06') then
+                         begin
+                              Swansson = CreateCharacter('Swansson_06');
+                              people_from_last_mission = people_from_last_mission ^ Swansson;
+                         end
+                    else
+                         Swansson = 0;
+
+                    others = CreateCharacterSet('Others_06') diff 0;
+                    people_from_last_mission = people_from_last_mission ^ others;
+                    others = others ^ (CreateCharacterSet('Others_05_not_sel') diff 0);
+                    others = others ^ (CreateCharacterSet('Others_02') diff 0);
+
+                    for val in people_from_last_mission do
+                         begin
+                              SetDir(val,uc_direction);
+
+                              if val in [MarkB,Sonya] then
+                                   SetClass(val,class_scientistic)
+                              else
+                                   if GetNation(val) = nation_nature then  //apemen
+                                        SetClass(val,class_apeman_soldier)
+                                   else
+                                        SetClass(val,class_soldier);
+                         end;
+               end
+          else
+               begin
+                    PrepareSoldier(sex_female,0);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+
+                    PrepareScientist(sex_male,0);
+                    hc_name = 'Mark';
+                    MarkB = CreateHuman;
+
+                    PrepareScientist(sex_male,0);
+                    hc_name = 'Aviradze';
+                    Aviradze = CreateHuman;
+
+                    PrepareSoldier(sex_male,0);
+                    hc_name = 'Kowalski';
+                    Kowalski = CreateHuman;
+
+                    Sonya = 0;
+                    Oswald = 0;
+                    Ralph = 0;
+                    Willard = 0;
+                    Evelyn = 0;
+                    Gordon = 0;
+                    Suze = 0;
+                    Olaf = 0;
+                    Aviradze_standin = 0;
+                    Swansson = 0;
+
+                    others = [];
+                    InitHc;
+                    for val = 1 to 4 do
+                         begin
+                              PrepareSoldier(false,0);
+                              others = others ^ CreateHuman;
+                         end;
+
+                    people_from_last_mission = [Heike,MarkB,Kowalski] ^ others;
+               end;
+
+          for val in people_from_last_mission do
+               if val = Heike then
+                    PlaceUnitXY(Heike,59,63,false)
+               else
+                    PlaceUnitXYR(val,64,67,4,false);
+
+          if Aviradze > 0 then
+               PlaceHumanInUnit(Aviradze,lab2);
+
+
+          //Create Abdul and a tiger and place them outside the base.
+          //You can't create a tamed tiger so Abdul has to tame it himself before
+          //Heike and others arrive.
+          //Taming goes faster with high skills (about 9-11 seconds).
+          //This is only applicable if Aviradze survived mission 03.
+          Abdul = NewCharacter('Abdul');
+          if Aviradze > 0 then
+               begin
+                    SetSide(Abdul,8);  //To prevent a "tame complete" message to the player (the tiger keeps the color. I think white looks best).
+          
+                    SetSkill(Abdul,skill_combat,10);
+                    SetSkill(Abdul,skill_mechanical,10);
+                    SetSkill(Abdul,skill_engineering,10);
+                    SetSkill(Abdul,skill_scientistic,10);
+
+                    InitHc;
+                    InitUc;
+                    uc_nation = nation_nature;
+                    uc_side = 0;
+                    hc_class = class_tiger;
+                    hc_agressivity = 0;
+                    tiger = CreateHuman;
+
+                    PlaceUnitXY(Abdul,67,12,false);
+                    PlaceUnitXY(tiger,69,12,false);
+
+                    //Surround Abdul and the tiger with environment so the tiger doesn't run away
+                    for val in GetHexesDistFromHex(68,12,4) do
+                         PlaceEnvironment(val[1],val[2],12,1);
+               end;
+          RaiseSailEvent(1);  //tame tiger and "teleport" to base (among others)
+     end;
+//Returns all hexes with "dist" distance of hex [x,y].
+Function GetHexesDistFromHex(x,y,dist);
+     var d, list_coords, b;
+     begin
+          d = dist;
+                    list_coords = [];
+
+                    //This is the 'corner hexes'
+                    list_coords = Insert(list_coords,1,[x,y-d]);
+                    list_coords = Insert(list_coords,1,[x+d,y]);
+                    list_coords = Insert(list_coords,1,[x+d,y+d]);
+                    list_coords = Insert(list_coords,1,[x,y+d]);
+                    list_coords = Insert(list_coords,1,[x-d,y]);
+                    list_coords = Insert(list_coords,1,[x-d,y-d]);
+
+                    //This is all the hexes in between the 'corner hexes'
+                    b = 1;
+                    while b <= (d - 1) do
+                         begin
+                              list_coords = Insert(list_coords, 1, [x+b, y-d+b]);
+                              list_coords = Insert(list_coords, 1, [x+d, y+b]);
+                              list_coords = Insert(list_coords, 1, [x+d-b, y+d]);
+                              list_coords = Insert(list_coords, 1, [x-b, y+d-b]);
+                              list_coords = Insert(list_coords, 1, [x-d, y-b]);
+                              list_coords = Insert(list_coords, 1, [x-d+b, y-d]);
+
+                              b = b + 1;
+                         end;
+
+                    result = list_coords;
+     end;
+
+On SailEvent(i) do
+     begin
+          case i of
+               1: begin
+                    if Aviradze > 0 then
+                         begin
+                              repeat
+                              ComTameXY(Abdul,GetX(tiger),GetY(tiger));
+
+                              repeat
+                              wait(0$1);
+                              SetLives(Abdul,1000);  //If tiger attacks him
+                              until tiger_is_tamed or not HasTask(Abdul);
+
+                              until tiger_is_tamed;
+
+                              RemoveUnit(Abdul);
+                              RemoveUnit(tiger);
+                    
+                              PlaceUnitXY(tiger,5,5,false);
+                              SetSide(Abdul,2);
+
+                              ComHold(tiger);
+                         end
+                    else
+                         DestroyUnit(tiger);
+
+                    PlaceUnitXY(Abdul,18,14,false);
+
+                    //Abdul is talking with an engineer when Heike arrives
+                    InitHc;
+                    InitUc;
+                    uc_nation = nation_arabian;
+                    uc_side = 2;
+                    PrepareEngineer(sex_male,0);
+
+                    engi = CreateHuman;
+                    PlaceUnitXY(engi,16,12,false);
+
+                    ComTurnUnit(Abdul,engi);
+                    ComTurnUnit(engi,Abdul);
+                    AddComStand([Abdul,engi]);
+               end;
+               2: begin
+                    ComExitBuilding(Aviradze);
+                    Wait(5);
+                    ComMoveXY(Aviradze,16,15);
+                    AddComTurnUnit(Aviradze,Heike);
+                    AddComStand(Aviradze);
+               end;
+          end;
+     end;
+On TigerTamed(tamed_tiger,tamer) do
+     begin
+          tiger_is_tamed = true;
+     end;
+
+Function Action;
+     var temp_list, Abdul_doubt, retreated_prematurely, temp_unit, begging;
+     begin
+          //Deselect all units
+          for temp_unit in all_units do  
+               DeselectUnits(temp_unit);  //can produce an error if too many units in the specified list
+
+          InGameOn;
+          ExclusiveOff;
+          CenterNowOnUnits(people_from_last_mission);
+
+          ComMoveXY(Heike,18,19);
+          ComMoveXY(people_from_last_mission diff Heike,19,21);
+          AddComTurnUnit(people_from_last_mission,Abdul);
+          AddComStand(people_from_last_mission);
+
+          repeat
+               Wait(0$2.5);
+               CenterOnUnits(people_from_last_mission);
+          until getdistunitxy(heike,18,19) <= 2;
+       
+          Wait(0$2.5);
+          CenterOnXY(18,15);
+
+          Wait(0$0.5);
+          Say(engi,'D1SomeM1');
+
+          ComMoveXY(engi,86,15);  //Go to Eastern New Nishamir (the base the player built in mission 04)
+
+          Wait(0$1);
+          Say(Heike,'D1H1');
+
+          Wait(0$0.5);
+          ComTurnUnit(Abdul,Heike);
+
+          enable(1);
+
+          //Did the player retreat prematurely in last mission?
+          retreated_prematurely = LoadVariable('Retreated_prematurely_06',false);
+
+          Wait(0$0.5);
+          if Aviradze > 0 then
+               begin
+                    if retreated_prematurely then
+                         begin
+                              Say(Abdul,'D1Ab1c');
+                              Say(Heike,'D1H2c');
+                         end
+                    else
+                         Say(Abdul,'D1Ab1');
+
+                    //Tiger approaches
+                    repeat
+                         ComMoveXY(tiger,GetX(Abdul),GetY(Abdul));
+                         wait(0$0.5);
+                    until GetDistUnits(tiger,Abdul) <= 7;
+
+                    AddComFree(tiger);
+
+                    Say(Heike,'D1H2');
+                    Say(Abdul,'D1Ab2');
+                    Say(Heike,'D1H3');
+
+                    //Aviradze enters the scene
+                    RaiseSailEvent(2);
+                    Say(Aviradze,'D1Av1');
+
+                    Say(Heike,'D1H4');
+                    Say(MarkB,'D1Ma1');
+                    Say(Aviradze,'D1Av2');
+                    Say(MarkB,'D1Ma2');
+                    Say(Aviradze,'D1Av3');
+                    Say(MarkB,'D1Ma3');
+                    Say(Aviradze,'D1Av4');
+                    Say(Heike,'D1H5');
+
+                    Wait(0$0.5);
+                    if retreated_prematurely then
+                         begin
+                              Say(Abdul,'D1Ab3c');
+                              Say(Abdul,'D1Ab4c');
+                              Say(Heike,'D1H3c');
+                              Say(Abdul,'D1Ab5a');
+                              wait(0$1);
+                         end
+                    else
+                         begin
+                              Say(Heike,'D1H6');
+                              Say(Abdul,'D1Ab3');
+                         end;
+
+                    Say(Abdul,'D1Ab4');
+                    Say(MarkB,'D1Ma4');
+                    Say(Aviradze,'D1Av5');
+                    Say(MarkB,'D1Ma5');
+                    Say(Aviradze,'D1Av6');
+               end
+          else
+               begin
+                    if retreated_prematurely then
+                         begin
+                              Say(Abdul,'D1Ab1c');
+                              Say(Heike,'D1H2c');
+                              Say(Abdul,'D1Ab2c');
+                              Say(Abdul,'D1Ab4c');
+                              Say(Heike,'D1H3c');
+                              Say(Abdul,'D1Ab5a');
+                              Wait(0$0.5);
+                         end
+                    else
+                         begin
+                              Say(Abdul,'D1Ab1b');
+                              Say(Heike,'D1H6');
+                              Say(Abdul,'D1Ab3');
+                         end;
+                    
+                    Say(Abdul,'D1Ab4');
+               end;
+
+          if LoadVariable('Siberite_stolen_06',false) then
+               begin
+                    if Aviradze > 0 then
+                         begin
+                              Say(Heike,'D1H7b');
+                              wait(0$0.5);
+                         end;
+
+                    Say(Heike,'D1H8b');
+                    Say(Abdul,'D1Ab5b');
+               end
+          else
+               begin
+                    if Aviradze > 0 then
+                         begin
+                              Say(Abdul,'D1Ab5a');
+                              wait(0$0.5);
+                         end;
+
+                    Say(Abdul,'D1Ab6a');
+               end;
+
+          Say(Abdul,'D1Ab7');
+          Say(Abdul,'D1Ab8');
+
+          if Aviradze > 0 then
+               begin
+                    Say(Abdul,'D1Ab9');
+                    Say(MarkB,'D1Ma6');
+               end
+          else
+               Say(Abdul,'D1Ab9c');
+
+          Say(Abdul,'D1Ab10');
+
+          wait(0$0.2);
+          temp_list = [1];
+          if LoadVariable('Remote_control_tested_06',false) then
+               temp_list = temp_list ^ 2;
+          if LoadVariable('Siberite_stolen_06',false) then
+               temp_list = temp_list ^ 3;
+          if LoadVariable('Base_dismantled_06',false) then
+               temp_list = temp_list ^ 4;
+
+          if temp_list - 1 < difficulty then
+               Abdul_doubt = true
+          else Abdul_doubt = false;
+
+          begging = false;
+
+          case SelectiveQuery('Q1',temp_list) of
+               1: begin
+                    Abdul_doubt = true;
+                    begging = true;
+
+                    Say(Heike,'D11H1');
+                    Say(Abdul,'D11Ab1');
+                    Say(Heike,'D11H2');
+                    Say(Abdul,'D11Ab2');
+                    Say(Heike,'D11H3');
+                    wait(0$2);
+
+                    temp_list = UnitFilter([Sonya,Oswald,Ralph,Kowalski,Willard,Gordon,Suze,Olaf],[f_ok]);
+                    if temp_list > 0 then
+                         temp_unit = temp_list[Rand(1,temp_list)]
+                    else temp_unit = MarkB;  //We know Mark is present
+
+                    case temp_unit of
+                         Sonya: Say(Sonya,'D11So1');
+                         Oswald: Say(Oswald,'D11Os1');
+                         Ralph: Say(Ralph,'D11Ra1');
+                         Kowalski: Say(Kowalski,'D11Ko1');
+                         Willard: Say(Willard,'D11Wi1');
+                         Gordon: Say(Gordon,'D11Go1');
+                         Suze: Say(Suze,'D11Su1');
+                         MarkB: Say(MarkB,'D11Ma1');
+                    end;
+               end;
+               2: begin
+                    Say(Heike,'D12H1');
+                    Say(Abdul,'D12Ab1');
+                    Say(Heike,'D12H2');
+                    Say(MarkB,'D12Ma1');
+                    Wait(0$1);
+               end;
+               3: begin
+                    Say(Heike,'D13H1');
+                    Say(Abdul,'D13Ab1');
+                    Wait(0$1);
+               end;
+               4: begin
+                    Say(Heike,'D14H1');
+                    Say(Abdul,'D14Ab1');
+                    Say(Heike,'D14H2');
+                    Wait(0$1);
+               end;
+          end;
+
+          SaveVariable(Abdul_doubt,'Abdul_doubt_07');  //Does Abdul doubt Heike can handle the mission?
+          SaveVariable(begging,'Begging_07');  //Did Heike beg for the mission?
+          
+          Say(Abdul,'D1xAb1');
+          Say(Heike,'D1xH1');
+
+          Wait(0$0.5);
+          SelectPeopleAndChangeMap;
+
+          InGameOff;
+     end;
+
+//Delaying vehicle production a little so ape and vehicle events don't coincide.
+Every 0$25 do
+     begin
+          SetWorkingProgress(fact,1);
+     end;
+
+//Factory produces a vehicle. The vehicle sets off and new construction commences.
+On VehicleConstructed(vehicle,factory) do
+     begin
+          ComMoveXY(vehicle,12,1);
+
+          repeat
+          wait(1);
+          until GetDistUnitXY(vehicle,12,1) <= 2;
+
+          DestroyUnit(vehicle);
+
+          wait(0$3);
+
+          SetSpecResearch(fact,100,false);
+     end;
+
+//Some apeman soldiers come by
+Every 0$1 Marked 1 do
+     var val, ape_list, temp_unit;
+     begin
+          InitHc;
+          InitUc;
+          uc_nation = nation_nature;
+          uc_side = 2;
+          hc_class = class_apeman_soldier;
+          hc_attr = [10,10];  //Just make sure they have equal speed
+
+          ape_list = [];
+          for val = 1 to 3 do
+               begin
+                    temp_unit = CreateHuman;
+                    ape_list = ape_list ^ temp_unit;
+                    PlaceUnitXYR(temp_unit,70,42,2,false);
+               end;
+
+          ComMoveXY(ape_list,24,29);
+          AddComHold(ape_list);
+
+          repeat
+          wait(0$1);
+          until GetDistUnitXY(ape_list[1],24,29) <= 3 or GetDistUnitXY(ape_list[2],24,29) <= 3 or GetDistUnitXY(ape_list[3],24,29) <= 3;
+
+          wait(0$5);
+
+          temp_unit = UnitsInside(arm)[1];
+          ComExitBuilding(temp_unit);
+          wait(0$0.2);
+          ComMoveXY(temp_unit,23,31);
+          AddComStand(temp_unit);
+
+          repeat
+          wait(0$1);
+          until GetDistUnitXY(temp_unit,23,31) <= 2;
+
+          wait(0$2);
+
+          ComMoveXY(temp_unit,63,68);
+
+          repeat
+          ComMoveXY(ape_list,GetX(temp_unit),GetY(temp_unit));
+          wait(0$1);
+          until GetDistUnitXY(temp_unit,63,68) <= 3;
+
+          for val in temp_unit ^ ape_list do
+               DestroyUnit(val);
+     end;
+
+Function SelectPeopleAndChangeMap;
+     var selected_people, temp_list, val, i, temp_list_2, un;
+     begin
+          temp_list = others ^ ([Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn,Gordon,Suze,Olaf,Swansson] diff 0);
+
+          //There must be at least 12 people to choose among.
+          //Add two new random people under all circumstances.
+          InitUc;
+          InitHc;
+          uc_side = 2;
+          uc_nation = nation_arabian;
+
+          if temp_list < 12 then
+               val = 12 - temp_list
+          else val = 0;
+          val = val + 2;
+
+          for i = 1 to val do
+               begin
+                    PrepareHuman(false,[class_soldier,class_engineer,class_mechanic,class_scientistic][Rand(1,4)],4);
+                    un = CreateHuman;
+                    temp_list = temp_list ^ un;
+                    others = others ^ un;
+               end;
+
+          //Already hired people does not count towards the min/max limits.
+          selected_people = CharacterSelection('',6,8,[sel_change_class,sel_hired,sel_not_changeable,Heike,sel_dont_change_class] ^ ([Aviradze,Aviradze_standin] diff 0) ^ [sel_change_class,MarkB] ^
+                                                        [sel_not_hired,sel_changeable] ^ temp_list,
+                                                        [class_soldier,[class_engineer,1],class_mechanic,class_scientistic]);
+
+
+          SaveCharacters(Heike,'Heike_07_sel');
+          SaveCharacters(MarkB,'MarkB_07_sel');
+
+          //We have to save Aviradze here because bonus xp granted is random (the player will notice if Aviradze has other skills in the
+          //selection menu than in the next map).
+          //All other main characters are saved here if they aren't chosen to make things consistent (some may be from mission 04 and so
+          //must be saved to preserve xp bonuses).
+          if Aviradze > 0 then
+               SaveCharacters(Aviradze,'Aviradze_07_sel')
+          else SaveCharacters(Aviradze_standin,'Aviradze_standin_07_sel');
+
+          temp_list = [Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn,Gordon,Suze,Olaf,Swansson];
+          temp_list_2 = ['Sonya','Oswald','Ralph','Kowalski','Willard','Evelyn','Gordon','Suze','Olaf','Swansson'];
+          for i = 1 to temp_list do
+               if temp_list[i] in selected_people then
+                    SaveCharacters(temp_list[i],temp_list_2[i] & '_07_sel')
+               else
+                    if IsLive(temp_list[i]) then  //return false if argument is 0
+                         begin
+                              SetLastMission(temp_list[i],6);  //for correct xp bonus later on
+                              SaveCharacters(temp_list[i],temp_list_2[i] & '_07_not_sel');
+                         end;
+
+          SaveCharacters(selected_people diff ([Heike,MarkB,Aviradze,Aviradze_standin] ^ temp_list),'Others_07_sel');
+
+          temp_list = others diff selected_people;
+          SetLastMission(temp_list,6);
+          SaveCharacters(temp_list,'Others_07_not_sel');
+
+
+          ChangeMap('%_cont','%_cont');
+     end;

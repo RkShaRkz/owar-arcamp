@@ -1,0 +1,454 @@
+
+On BuildingComplete(building) do
+     var temp_unit, temp_list, sci;
+     begin
+          if GetBType(building) = b_depot then
+               player_depot_built = true;
+
+          //Name the base the player builds
+          if GetBType(building) = b_depot and FilterAllUnits([[f_side,you],[f_btype,b_depot],[f_not,[f_constructed]]]) = 1 then
+               SetBName(building,'newkhand');
+
+          if GetBType(building) = b_siberite_power then
+               begin
+                    if first_power_plant then
+                         begin
+                              DialogueOn;
+
+                              temp_list = FilterAllUnits([[f_side,you],[f_dist,building,4],[f_class,class_engineer]]);
+                              if temp_list = 0 then
+                                   temp_list = FilterAllUnits([[f_side,you],[f_dist,building,4],[f_type,unit_human],[f_ok]]) diff GetApes(you);
+                              if temp_list = 0 then
+                                   temp_list = [Heike];
+
+                              temp_unit = temp_list[Rand(1,temp_list)];
+                              case temp_unit of
+                                   Heike: Say(temp_unit,'D7H1');
+                                   Sonya: Say(temp_unit,'D7So1');
+                                   Oswald: Say(temp_unit,'D7Os1');
+                                   Ralph: Say(temp_unit,'D7Ra1');
+                                   Aviradze: Say(temp_unit,'D7Av1');
+                                   Aviradze_standin: Say(temp_unit,'D7Avs1');
+                                   Kowalski: Say(temp_unit,'D7Ko1');
+                                   Willard: Say(temp_unit,'D7Wi1');
+                                   Evelyn: Say(temp_unit,'D7Ev1');
+                                   Gordon: Say(temp_unit,'D7Go1');
+                                   Suze: Say(temp_unit,'D7Su1');
+                                   MarkB: Say(temp_unit,'D7Ma1');
+                                   Olaf: Say(temp_unit,'D7Ol1');
+                                   Kurt: Say(temp_unit,'D7Ku1');
+                                   Swansson: Say(temp_unit,'D7Sw1');
+                                   else
+                                        if GetSex(power_plant_sci) = sex_male then
+                                             Say(temp_unit,'D7SomeM1')
+                                        else
+                                             Say(temp_unit,'D7SomeF1');
+                              end;
+
+                              if IsOk(Sonya) then
+                                   sci = Sonya
+                              else
+                                   begin
+                                        temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok],[f_class,class_scientistic]]) diff [Heike, Sonya, Oswald, Ralph, Aviradze, Aviradze_standin, Kowalski, Willard, Evelyn, Gordon, Suze, MarkB, Olaf, Swansson];
+                                        if temp_list > 0 then
+                                             sci = temp_list[1]
+                                        else
+                                             sci = ([Aviradze,Aviradze_standin] diff 0)[1];
+                                   end;
+
+                              case sci of
+                                   Sonya: Say(sci,'D7So2');
+                                   Aviradze: Say(sci,'D7Av2');
+                                   Aviradze_standin: Say(sci,'D7Avs2');
+                                   else
+                                        if GetSex(sci) = sex_male then
+                                             Say(sci,'D7SciM1')
+                                        else
+                                             Say(sci,'D7SciF1');
+                              end;
+
+                              if IsOk(Oswald) then
+                                   Say(Oswald,'D7Os2');
+
+                              Say(Heike,'D7H2');
+
+                              case sci of
+                                   Sonya: Say(sci,'D7So3');
+                                   Aviradze: Say(sci,'D7Av3');
+                                   Aviradze_standin: Say(sci,'D7Avs3');
+                                   else
+                                        if GetSex(sci) = sex_male then
+                                             Say(sci,'D7SciM2')
+                                        else
+                                             Say(sci,'D7SciF2');
+                              end;
+
+                              temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human],[f_ok]]) diff ([Sonya, Aviradze, Aviradze_standin, MarkB, sci, Heike, Kurt, Swansson] ^ GetApes(you));
+                              if temp_list = 0 then
+                                   temp_list = [Heike];
+
+                              temp_unit = temp_list[Rand(1,temp_list)];
+
+                              case temp_unit of
+                                   Heike: Say(temp_unit,'D7H3');
+                                   Oswald: Say(temp_unit,'D7Os3');
+                                   Ralph: Say(temp_unit,'D7Ra2');
+                                   Kowalski: Say(temp_unit,'D7Ko2');
+                                   Willard: Say(temp_unit,'D7Wi2');
+                                   Evelyn: Say(temp_unit,'D7Ev2');
+                                   Gordon: Say(temp_unit,'D7Go3');
+                                   Suze: Say(temp_unit,'D7Su2');
+                                   Olaf: Say(temp_unit,'D7Ol2');
+                                   else
+                                        if GetSex(power_plant_sci) = sex_male then
+                                             Say(temp_unit,'D7SomeM2')
+                                        else
+                                             Say(temp_unit,'D7SomeF2');
+                              end;
+
+                              case sci of
+                                   Sonya: Say(sci,'D7So4');
+                                   Aviradze: Say(sci,'D7Av4');
+                                   Aviradze_standin: Say(sci,'D7Avs4');
+                                   else
+                                        if GetSex(sci) = sex_male then
+                                             Say(sci,'D7SciM3')
+                                        else
+                                             Say(sci,'D7SciF3');
+                              end;
+
+                              if IsOk(Oswald) then
+                                   Say(Oswald,'D7Os4');
+
+                              Say(MarkB,'D7Ma2');
+                              Say(Heike,'D7H4');
+                              Say(MarkB,'D7Ma3');
+
+                              DialogueOff;
+
+                              wait(0$0.2);
+                              Query('QSiberitePowerPlant');  //instructions
+                         end;
+
+                    SibGameInitiate(building);
+               end;
+     end;
+
+On BuildingStarted(building,builder) do
+     begin
+          if GetBType(building) = b_siberite_power and ToDouble(data_implemented) < 100 then
+               SetRestrict(b_siberite_power,you,false);   //Only allow one siberite power plant to be built
+     end;
+
+//When a new siberite power plant is created, initiate the necessary variables.
+Function SibGameInitiate(b);
+     var un;
+     begin
+          power_plant = b;
+
+          //Place the button in the depot the power plant belongs to.
+          for un in FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]) do
+               if GetBase(un) = GetBase(b) then
+                     begin
+                          power_plant_depot = un;
+                          break;
+                     end;
+
+
+          SetArtifactUse(you,art_use_power,art_instant,power_plant_depot);
+
+          ComPause(power_plant);  //no power plant activity
+          started = false;  //is the power plant turned on?
+          started_first_time = false;  //Has the power plant been turned on the first time?
+          core_health = ToInteger(100.0);
+
+          if first_power_plant then
+               begin
+                    first_power_plant = false;
+                    data_gathered = ToInteger(0.0);  //The data gathered (percentage)
+
+                    //The player is told it takes more time to implement data the more data there is. That is not true
+                    //but it hints the player to implement data early which is the way to win this game.
+                    implement_time = 0$5;
+
+                    game_duration = 100;  //seconds
+                    modifier_t = [14,15,16][difficulty];  //Cf. program "SibGameCalculator" in the mod directory
+               end;
+
+          shutdown_time = implement_time*3 + (implement_time - 0$1); //3 stops + time to waste
+          ticks_per_implementation = 1;  //default value
+
+          UpdateDisplay;
+     end;
+
+//When the player clicks the custom button either stop or start the power plant.
+On ArtifactUsed(side,art,c1,c2) do
+     var time;
+     begin
+          //side = you, art = art_use_power
+
+          if not started then
+               begin
+                    SibGameStartedFunc;
+                    started_first_time = true;
+               end
+          else
+               if ToDouble(core_health) > 0 and shutdown_time > 0$0 then  //If the machine is dying it cannot be stopped
+                    begin
+                         started = false;
+                         ComPause(power_plant);  //shut down
+
+                         SibGameTickPerImplementationCalc;
+                    end;
+     end;
+//When the player starts the power plant
+Function SibGameStartedFunc;
+     var info_list;
+     begin
+          started = true;
+
+          //You can only pause a sib power plant. Not unpause. So we
+          //remove the old power plant and replace it with a newly
+          //created one.
+          info_list = [GetX(power_plant),GetY(power_plant),GetDir(power_plant),GetLives(power_plant),GetBLevel(power_plant)];
+          InitBc;
+          InitUc;
+          uc_side = you;
+          uc_nation = nation_arabian;
+          bc_type = b_siberite_power;
+          DestroyUnit(power_plant);  //remove old power plant
+          power_plant = CreateAndPlaceBuildingXYD(info_list[1],info_list[2],info_list[3]);  //create a new in its place
+          SetLives(power_plant,info_list[4]);
+          SetBLevel(power_plant,info_list[5]);
+
+          if ToDouble(data_implemented) = 100 then  //Game is over
+               begin
+                    SetArtifactUse(you,art_use_power,art_no,power_plant_depot);
+                    SetRestrict(b_siberite_power,you,true);  //allow building of siberite power plant
+                    power_plant = 0;
+
+                    DialogueOn;
+
+                    case power_plant_sci of
+                         Heike: Say(power_plant_sci,'D7FH2');
+                         Sonya: Say(power_plant_sci,'D7FSo2');
+                         Oswald: Say(power_plant_sci,'D7FOs2');
+                         Ralph: Say(power_plant_sci,'D7FRa2');
+                         Aviradze: Say(power_plant_sci,'D7FAv2');
+                         Aviradze_standin: Say(power_plant_sci,'D7FAvs2');
+                         Kowalski: Say(power_plant_sci,'D7FKo2');
+                         Willard: Say(power_plant_sci,'D7FWi2');
+                         Evelyn: Say(power_plant_sci,'D7FEv2');
+                         Gordon: Say(power_plant_sci,'D7FGo2');
+                         Suze: Say(power_plant_sci,'D7FSu2');
+                         MarkB: Say(power_plant_sci,'D7FMa2');
+                         Olaf: Say(power_plant_sci,'D7FOl2');
+                         Kurt: Say(power_plant_sci,'D7FKu2');
+                         Swansson: Say(power_plant_sci,'D7FSw2');
+                         else
+                              if GetSex(power_plant_sci) = sex_male then
+                                   Say(power_plant_sci,'D7FSciM2')
+                              else
+                                   Say(power_plant_sci,'D7FSciF2');
+                    end;
+
+                    DialogueOff;
+
+                    wait(0$0.2);
+                    ChangeMissionObjectives('MSibOut');
+               end;
+
+          UpdateDisplay;
+     end;
+//Calculate the time each percentage of data implementation will take this session.
+Export Function SibGameTickPerImplementationCalc;
+     begin
+          if ToDouble(data_gathered) > 0 then
+               ticks_per_implementation = implement_time / ToDouble(data_gathered)
+          else ticks_per_implementation = 1;
+
+          //Always round tick down. It's a little tricky since SAIL tends to convert
+          //doubles to integers.
+          //ticks_per_implementation = ( ticks_per_implementation * 10000 - (ticks_per_implementation * 10000) mod 10000 ) div 10000;7
+          ticks_per_implementation = Round(ticks_per_implementation);
+     end;
+
+//What should happen when the power plant is turned off.
+//If a scientist is near, data is implemented.
+//The total shutdown time available diminishes.
+Every 0$1 do
+     begin
+          repeat
+
+               repeat
+                    wait(ticks_per_implementation);
+
+                    if started or power_plant = 0 then
+                         continue;
+
+                    //SAIL rounds doubles to integers following the normal rules for this except
+                    //*.5 is always rounded towards 0, so 4.5 is 4 and -2.5 is -2.
+                    //Doubles are rounded when displayed in special strings (cf. function UpdateDisplay).
+                    if ToDouble(data_gathered) > 0.5 and ToDouble(data_implemented) < 100 then  //showed as "1" in displayed strings
+                         begin
+                              if power_plant_sci > 0 then
+                                   begin
+                                        data_gathered = ToInteger(ToDouble(data_gathered) - 1);
+                                        data_implemented = ToInteger(ToDouble(data_implemented) + 1);
+                                   end;
+                         end
+                    else
+                         data_gathered = ToInteger(0.0);  //Clean zero
+
+                    //Shutdown time only decreases after the power plant was turned on the first time.
+                    if started_first_time then
+                         begin
+                              shutdown_time = shutdown_time - ticks_per_implementation;
+                              if shutdown_time < 0 then
+                                   shutdown_time = 0$0;
+                         end;
+
+                    UpdateDisplay;
+
+               until started or shutdown_time = 0$0;
+
+               if shutdown_time = 0$0 then  //power plant is forced to start
+                    SibGameStartedFunc;
+
+          until ToDouble(data_implemented) = 100;
+     end;
+
+//What should happen when the power plant is turned on.
+//The core takes damage.
+//Data is gathered if a scientist is nearby.
+//If the core health reaches zero, the power plant takes damage fast, explodes and spreads siberite contamination.
+Every 0$1 do
+     var x, y, val;
+     begin
+          repeat
+
+               repeat
+                    wait(5);
+
+                    if not started or power_plant = 0 then
+                         continue;
+
+                    if ToDouble(data_implemented) = 100 then
+                         exit;
+
+                    //SAIL rounds doubles to integers following the normal rules for this except
+                    //*.5 is always rounded towards 0, so 4.5 is 4 and -2.5 is -2.
+                    //Doubles are rounded when displayed in special strings (cf. function UpdateDisplay).
+                    core_health = ToInteger(ToDouble(core_health) - SibGameCoreDamageTaken(5/35)); //35 ticks per second
+                    if ToDouble(core_health) <= 0.5 then  //showed as "0" in displayed strings
+                         core_health = ToInteger(0);
+
+                    if power_plant_sci > 0 and ToDouble(data_implemented) + ToDouble(data_gathered) <= 99.5 then
+                         data_gathered = ToInteger(ToDouble(data_gathered) + SibGameDataGather(5/35));
+
+                    UpdateDisplay;
+
+               until ToDouble(core_health) = 0;
+
+               //Boooooommm!
+               x = GetX(power_plant);
+               y = GetY(power_plant);
+               repeat
+                    val = GetLives(power_plant) - 250;
+                    if val < 0 then
+                         val = 0;
+
+                    SetLives(power_plant,val);
+
+                    wait(0$0.6);
+               until power_plant = 0;
+               ArtContamination(x,y,15);  //Contaminate area around power plant with 15% of contamination done by siberite rocket
+
+          until ToDouble(data_implemented) = 100;
+     end;
+
+//Control of the scientist inspecting the power plant.
+Every 0$1 do
+     var time, temp_list;
+     begin
+          time = 0$0;
+
+          repeat
+              wait(0$0.5);
+
+              if not IsOk(power_plant_sci) or GetDistUnits(power_plant_sci,power_plant) > 3 or power_plant = 0 then
+                   power_plant_sci = 0;
+
+              if power_plant = 0 then
+                   continue;
+
+              if power_plant_sci = 0 then
+                   begin
+                        temp_list = FilterAllUnits([[f_side,you],[f_class,class_scientistic],[f_dist,power_plant,3]]);
+                        if temp_list > 0 then
+                             begin
+                                  power_plant_sci = temp_list[1];
+                                  SibGameSciMove;
+                                  time = 0$0;
+                             end;
+                   end;
+
+              if power_plant_sci = 0 then
+                   continue;
+
+              time = time + 0$0.5;
+
+              if time >= Rand(0$7,0$15) then
+                   begin
+                        time = 0$0;
+                        SibGameSciMove;
+                   end;
+
+          until ToDouble(data_implemented) = 100;
+     end;
+//Scientist moves to a new spot near the power plant and turns towards the building (inspecting instruments and such).
+Function SibGameSciMove;
+     var dir_list, dir;
+     begin
+          dir_list = [0,1,2,3,4,5] diff InvertDir(GetDir(power_plant_sci));
+          dir = dir_list[Rand(1,dir_list)];
+          ComMoveXY(power_plant_sci, ShiftX(GetX(power_plant),dir,2), ShiftY(GetY(power_plant),dir,2) );
+          AddComHold(power_plant_sci);
+          AddComTurnXY(power_plant_sci,GetX(power_plant),GetY(power_plant));
+     end;
+Function InvertDir(dir);
+     begin
+          result = dir + 3;
+          if result > 5 then
+               result = result - 6;
+     end;
+
+//Calculates the damage the core has taken after "time" time. The amount of damage depends on how much data has
+//been implemented.
+Function SibGameCoreDamageTaken(time);
+     var a;
+     begin
+          a = 100 / game_duration;
+          result = ( 1 - ToDouble(data_implemented)/(modifier_t + ToDouble(data_implemented)) ) * 2*a*time;
+     end;
+
+//Calculates the amount of data gathered after "time" time (as a percentage).
+Function SibGameDataGather(time);
+     var a;
+     begin
+          a = 100 / game_duration;
+          result = a * time;
+     end;
+
+//The game engine still doesn't save doubles correctly (they are saved as "0.0" no matter what)
+//so we have to save all variables as integers.
+//An integer in SAIL is a standard 32 signed integer ranging from -2,147,483,648 to 2,147,483,647.
+//These functions will save and load a double with 6 decimal precision as an integer.
+Export Function ToInteger(d);
+     begin
+          result = (d * 1000000) div 1;
+     end;
+Export Function ToDouble(i);
+     begin
+          result = i / 1000000;
+     end;

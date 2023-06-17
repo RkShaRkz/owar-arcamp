@@ -1,0 +1,1013 @@
+// export testing ; export Heike , Sonya , Oswald , Ralph , Kowalski , Evelyn , Olaf , Dwayne , Aviradze , Swansson , Khattam , Makise , Gonzo ; export other_folks , cargo_bays , other_vehicles , folks_on_foot ; export Abdul ; starting begin ResetFog ;
+   0: CALL_OW 335
+// RandomizeAll ;
+   4: CALL_OW 11
+// testing = false ;
+   8: LD_ADDR_EXP 1
+  12: PUSH
+  13: LD_INT 0
+  15: ST_TO_ADDR
+// Init ;
+  16: CALL 25 0 0
+// Action ;
+  20: CALL 1167 0 0
+// end ;
+  24: END
+// function Init ; var i , un , k , temp_list ; begin
+  25: LD_INT 0
+  27: PPUSH
+  28: PPUSH
+  29: PPUSH
+  30: PPUSH
+  31: PPUSH
+// uc_side = 2 ;
+  32: LD_ADDR_OWVAR 20
+  36: PUSH
+  37: LD_INT 2
+  39: ST_TO_ADDR
+// uc_nation = nation_arabian ;
+  40: LD_ADDR_OWVAR 21
+  44: PUSH
+  45: LD_INT 2
+  47: ST_TO_ADDR
+// if not testing then
+  48: LD_EXP 1
+  52: NOT
+  53: IFFALSE 243
+// begin Heike = LoadPlayerChar ( Heike ) ;
+  55: LD_ADDR_EXP 2
+  59: PUSH
+  60: LD_STRING Heike
+  62: PPUSH
+  63: CALL 1115 0 1
+  67: ST_TO_ADDR
+// Sonya = LoadPlayerChar ( Sonya ) ;
+  68: LD_ADDR_EXP 3
+  72: PUSH
+  73: LD_STRING Sonya
+  75: PPUSH
+  76: CALL 1115 0 1
+  80: ST_TO_ADDR
+// Oswald = LoadPlayerChar ( Oswald ) ;
+  81: LD_ADDR_EXP 4
+  85: PUSH
+  86: LD_STRING Oswald
+  88: PPUSH
+  89: CALL 1115 0 1
+  93: ST_TO_ADDR
+// Ralph = LoadPlayerChar ( Ralph ) ;
+  94: LD_ADDR_EXP 5
+  98: PUSH
+  99: LD_STRING Ralph
+ 101: PPUSH
+ 102: CALL 1115 0 1
+ 106: ST_TO_ADDR
+// Kowalski = LoadPlayerChar ( Kowalski ) ;
+ 107: LD_ADDR_EXP 6
+ 111: PUSH
+ 112: LD_STRING Kowalski
+ 114: PPUSH
+ 115: CALL 1115 0 1
+ 119: ST_TO_ADDR
+// Evelyn = LoadPlayerChar ( Evelyn ) ;
+ 120: LD_ADDR_EXP 7
+ 124: PUSH
+ 125: LD_STRING Evelyn
+ 127: PPUSH
+ 128: CALL 1115 0 1
+ 132: ST_TO_ADDR
+// Olaf = LoadPlayerChar ( Olaf ) ;
+ 133: LD_ADDR_EXP 8
+ 137: PUSH
+ 138: LD_STRING Olaf
+ 140: PPUSH
+ 141: CALL 1115 0 1
+ 145: ST_TO_ADDR
+// Dwayne = LoadPlayerChar ( Dwayne ) ;
+ 146: LD_ADDR_EXP 9
+ 150: PUSH
+ 151: LD_STRING Dwayne
+ 153: PPUSH
+ 154: CALL 1115 0 1
+ 158: ST_TO_ADDR
+// Aviradze = LoadPlayerChar ( Aviradze ) ;
+ 159: LD_ADDR_EXP 10
+ 163: PUSH
+ 164: LD_STRING Aviradze
+ 166: PPUSH
+ 167: CALL 1115 0 1
+ 171: ST_TO_ADDR
+// Swansson = LoadPlayerChar ( Swansson ) ;
+ 172: LD_ADDR_EXP 11
+ 176: PUSH
+ 177: LD_STRING Swansson
+ 179: PPUSH
+ 180: CALL 1115 0 1
+ 184: ST_TO_ADDR
+// Khattam = LoadPlayerChar ( Khattam ) ;
+ 185: LD_ADDR_EXP 12
+ 189: PUSH
+ 190: LD_STRING Khattam
+ 192: PPUSH
+ 193: CALL 1115 0 1
+ 197: ST_TO_ADDR
+// Makise = LoadPlayerChar ( Makise ) ;
+ 198: LD_ADDR_EXP 13
+ 202: PUSH
+ 203: LD_STRING Makise
+ 205: PPUSH
+ 206: CALL 1115 0 1
+ 210: ST_TO_ADDR
+// Gonzo = LoadPlayerChar ( Gonzo ) ;
+ 211: LD_ADDR_EXP 14
+ 215: PUSH
+ 216: LD_STRING Gonzo
+ 218: PPUSH
+ 219: CALL 1115 0 1
+ 223: ST_TO_ADDR
+// other_folks = CreateCharacterSet ( Others_12_sel ) diff 0 ;
+ 224: LD_ADDR_EXP 15
+ 228: PUSH
+ 229: LD_STRING Others_12_sel
+ 231: PPUSH
+ 232: CALL_OW 31
+ 236: PUSH
+ 237: LD_INT 0
+ 239: DIFF
+ 240: ST_TO_ADDR
+// end else
+ 241: GO 464
+// begin InitHc ;
+ 243: CALL_OW 19
+// PrepareSoldier ( sex_female , 7 ) ;
+ 247: LD_INT 2
+ 249: PPUSH
+ 250: LD_INT 7
+ 252: PPUSH
+ 253: CALL_OW 381
+// hc_name = Heike ;
+ 257: LD_ADDR_OWVAR 26
+ 261: PUSH
+ 262: LD_STRING Heike
+ 264: ST_TO_ADDR
+// Heike = CreateHuman ;
+ 265: LD_ADDR_EXP 2
+ 269: PUSH
+ 270: CALL_OW 44
+ 274: ST_TO_ADDR
+// PrepareScientist ( sex_female , 7 ) ;
+ 275: LD_INT 2
+ 277: PPUSH
+ 278: LD_INT 7
+ 280: PPUSH
+ 281: CALL_OW 384
+// hc_name = Makise ;
+ 285: LD_ADDR_OWVAR 26
+ 289: PUSH
+ 290: LD_STRING Makise
+ 292: ST_TO_ADDR
+// Makise = CreateHuman ;
+ 293: LD_ADDR_EXP 13
+ 297: PUSH
+ 298: CALL_OW 44
+ 302: ST_TO_ADDR
+// PrepareScientist ( sex_male , 7 ) ;
+ 303: LD_INT 1
+ 305: PPUSH
+ 306: LD_INT 7
+ 308: PPUSH
+ 309: CALL_OW 384
+// hc_name = Aviradze ;
+ 313: LD_ADDR_OWVAR 26
+ 317: PUSH
+ 318: LD_STRING Aviradze
+ 320: ST_TO_ADDR
+// Aviradze = CreateHuman ;
+ 321: LD_ADDR_EXP 10
+ 325: PUSH
+ 326: CALL_OW 44
+ 330: ST_TO_ADDR
+// InitHc ;
+ 331: CALL_OW 19
+// uc_nation = nation_nature ;
+ 335: LD_ADDR_OWVAR 21
+ 339: PUSH
+ 340: LD_INT 0
+ 342: ST_TO_ADDR
+// hc_class = class_apeman_soldier ;
+ 343: LD_ADDR_OWVAR 28
+ 347: PUSH
+ 348: LD_INT 15
+ 350: ST_TO_ADDR
+// hc_name = Gonzo ;
+ 351: LD_ADDR_OWVAR 26
+ 355: PUSH
+ 356: LD_STRING Gonzo
+ 358: ST_TO_ADDR
+// Gonzo = CreateHuman ;
+ 359: LD_ADDR_EXP 14
+ 363: PUSH
+ 364: CALL_OW 44
+ 368: ST_TO_ADDR
+// uc_nation = nation_arabian ;
+ 369: LD_ADDR_OWVAR 21
+ 373: PUSH
+ 374: LD_INT 2
+ 376: ST_TO_ADDR
+// other_folks = [ ] ;
+ 377: LD_ADDR_EXP 15
+ 381: PUSH
+ 382: EMPTY
+ 383: ST_TO_ADDR
+// InitHc ;
+ 384: CALL_OW 19
+// for i = 1 to 5 do
+ 388: LD_ADDR_VAR 0 2
+ 392: PUSH
+ 393: DOUBLE
+ 394: LD_INT 1
+ 396: DEC
+ 397: ST_TO_ADDR
+ 398: LD_INT 5
+ 400: PUSH
+ 401: FOR_TO
+ 402: IFFALSE 462
+// begin PrepareHuman ( false , [ class_soldier , class_engineer , class_mechanic , class_scientistic ] [ Rand ( 1 , 4 ) ] , 7 ) ;
+ 404: LD_INT 0
+ 406: PPUSH
+ 407: LD_INT 1
+ 409: PUSH
+ 410: LD_INT 2
+ 412: PUSH
+ 413: LD_INT 3
+ 415: PUSH
+ 416: LD_INT 4
+ 418: PUSH
+ 419: EMPTY
+ 420: LIST
+ 421: LIST
+ 422: LIST
+ 423: LIST
+ 424: PUSH
+ 425: LD_INT 1
+ 427: PPUSH
+ 428: LD_INT 4
+ 430: PPUSH
+ 431: CALL_OW 12
+ 435: ARRAY
+ 436: PPUSH
+ 437: LD_INT 7
+ 439: PPUSH
+ 440: CALL_OW 380
+// other_folks = other_folks ^ CreateHuman ;
+ 444: LD_ADDR_EXP 15
+ 448: PUSH
+ 449: LD_EXP 15
+ 453: PUSH
+ 454: CALL_OW 44
+ 458: ADD
+ 459: ST_TO_ADDR
+// end ;
+ 460: GO 401
+ 462: POP
+ 463: POP
+// end ; Abdul = NewCharacter ( Abdul ) ;
+ 464: LD_ADDR_EXP 19
+ 468: PUSH
+ 469: LD_STRING Abdul
+ 471: PPUSH
+ 472: CALL_OW 25
+ 476: ST_TO_ADDR
+// cargo_bays = [ ] ;
+ 477: LD_ADDR_EXP 16
+ 481: PUSH
+ 482: EMPTY
+ 483: ST_TO_ADDR
+// other_vehicles = [ ] ;
+ 484: LD_ADDR_EXP 17
+ 488: PUSH
+ 489: EMPTY
+ 490: ST_TO_ADDR
+// InitVc ;
+ 491: CALL_OW 20
+// uc_direction = 3 ;
+ 495: LD_ADDR_OWVAR 24
+ 499: PUSH
+ 500: LD_INT 3
+ 502: ST_TO_ADDR
+// vc_chassis = ar_half_tracked ;
+ 503: LD_ADDR_OWVAR 37
+ 507: PUSH
+ 508: LD_INT 14
+ 510: ST_TO_ADDR
+// vc_engine = engine_siberite ;
+ 511: LD_ADDR_OWVAR 39
+ 515: PUSH
+ 516: LD_INT 3
+ 518: ST_TO_ADDR
+// vc_control = control_manual ;
+ 519: LD_ADDR_OWVAR 38
+ 523: PUSH
+ 524: LD_INT 1
+ 526: ST_TO_ADDR
+// vc_weapon = ar_cargo_bay ;
+ 527: LD_ADDR_OWVAR 40
+ 531: PUSH
+ 532: LD_INT 32
+ 534: ST_TO_ADDR
+// un = CreateVehicle ;
+ 535: LD_ADDR_VAR 0 3
+ 539: PUSH
+ 540: CALL_OW 45
+ 544: ST_TO_ADDR
+// SetCargo ( un , mat_artifact , 40 ) ;
+ 545: LD_VAR 0 3
+ 549: PPUSH
+ 550: LD_INT 4
+ 552: PPUSH
+ 553: LD_INT 40
+ 555: PPUSH
+ 556: CALL_OW 290
+// cargo_bays = cargo_bays ^ un ;
+ 560: LD_ADDR_EXP 16
+ 564: PUSH
+ 565: LD_EXP 16
+ 569: PUSH
+ 570: LD_VAR 0 3
+ 574: ADD
+ 575: ST_TO_ADDR
+// un = CreateVehicle ;
+ 576: LD_ADDR_VAR 0 3
+ 580: PUSH
+ 581: CALL_OW 45
+ 585: ST_TO_ADDR
+// SetCargo ( un , mat_cans , 80 ) ;
+ 586: LD_VAR 0 3
+ 590: PPUSH
+ 591: LD_INT 1
+ 593: PPUSH
+ 594: LD_INT 80
+ 596: PPUSH
+ 597: CALL_OW 290
+// AddCargo ( un , mat_siberit , 20 ) ;
+ 601: LD_VAR 0 3
+ 605: PPUSH
+ 606: LD_INT 3
+ 608: PPUSH
+ 609: LD_INT 20
+ 611: PPUSH
+ 612: CALL_OW 291
+// cargo_bays = cargo_bays ^ un ;
+ 616: LD_ADDR_EXP 16
+ 620: PUSH
+ 621: LD_EXP 16
+ 625: PUSH
+ 626: LD_VAR 0 3
+ 630: ADD
+ 631: ST_TO_ADDR
+// if difficulty <= 2 then
+ 632: LD_OWVAR 67
+ 636: PUSH
+ 637: LD_INT 2
+ 639: LESSEQUAL
+ 640: IFFALSE 740
+// begin un = CreateVehicle ;
+ 642: LD_ADDR_VAR 0 3
+ 646: PUSH
+ 647: CALL_OW 45
+ 651: ST_TO_ADDR
+// if difficulty = 2 then
+ 652: LD_OWVAR 67
+ 656: PUSH
+ 657: LD_INT 2
+ 659: EQUAL
+ 660: IFFALSE 694
+// begin SetCargo ( un , mat_cans , 40 ) ;
+ 662: LD_VAR 0 3
+ 666: PPUSH
+ 667: LD_INT 1
+ 669: PPUSH
+ 670: LD_INT 40
+ 672: PPUSH
+ 673: CALL_OW 290
+// AddCargo ( un , mat_oil , 60 ) ;
+ 677: LD_VAR 0 3
+ 681: PPUSH
+ 682: LD_INT 2
+ 684: PPUSH
+ 685: LD_INT 60
+ 687: PPUSH
+ 688: CALL_OW 291
+// end else
+ 692: GO 724
+// begin SetCargo ( un , mat_cans , 80 ) ;
+ 694: LD_VAR 0 3
+ 698: PPUSH
+ 699: LD_INT 1
+ 701: PPUSH
+ 702: LD_INT 80
+ 704: PPUSH
+ 705: CALL_OW 290
+// AddCargo ( un , mat_oil , 20 ) ;
+ 709: LD_VAR 0 3
+ 713: PPUSH
+ 714: LD_INT 2
+ 716: PPUSH
+ 717: LD_INT 20
+ 719: PPUSH
+ 720: CALL_OW 291
+// end ; cargo_bays = cargo_bays ^ un ;
+ 724: LD_ADDR_EXP 16
+ 728: PUSH
+ 729: LD_EXP 16
+ 733: PUSH
+ 734: LD_VAR 0 3
+ 738: ADD
+ 739: ST_TO_ADDR
+// end ; for i = 1 to [ 3 , 2 , 1 ] [ difficulty ] do
+ 740: LD_ADDR_VAR 0 2
+ 744: PUSH
+ 745: DOUBLE
+ 746: LD_INT 1
+ 748: DEC
+ 749: ST_TO_ADDR
+ 750: LD_INT 3
+ 752: PUSH
+ 753: LD_INT 2
+ 755: PUSH
+ 756: LD_INT 1
+ 758: PUSH
+ 759: EMPTY
+ 760: LIST
+ 761: LIST
+ 762: LIST
+ 763: PUSH
+ 764: LD_OWVAR 67
+ 768: ARRAY
+ 769: PUSH
+ 770: FOR_TO
+ 771: IFFALSE 818
+// begin vc_weapon = [ ar_gun , ar_rocket_launcher ] [ Rand ( 1 , 2 ) ] ;
+ 773: LD_ADDR_OWVAR 40
+ 777: PUSH
+ 778: LD_INT 27
+ 780: PUSH
+ 781: LD_INT 28
+ 783: PUSH
+ 784: EMPTY
+ 785: LIST
+ 786: LIST
+ 787: PUSH
+ 788: LD_INT 1
+ 790: PPUSH
+ 791: LD_INT 2
+ 793: PPUSH
+ 794: CALL_OW 12
+ 798: ARRAY
+ 799: ST_TO_ADDR
+// other_vehicles = other_vehicles ^ CreateVehicle ;
+ 800: LD_ADDR_EXP 17
+ 804: PUSH
+ 805: LD_EXP 17
+ 809: PUSH
+ 810: CALL_OW 45
+ 814: ADD
+ 815: ST_TO_ADDR
+// end ;
+ 816: GO 770
+ 818: POP
+ 819: POP
+// temp_list = ( [ Heike , Sonya , Oswald , Ralph , Kowalski , Evelyn , Olaf , Dwayne , Aviradze , Swansson , Khattam , Makise ] diff 0 ) ^ other_folks ;
+ 820: LD_ADDR_VAR 0 5
+ 824: PUSH
+ 825: LD_EXP 2
+ 829: PUSH
+ 830: LD_EXP 3
+ 834: PUSH
+ 835: LD_EXP 4
+ 839: PUSH
+ 840: LD_EXP 5
+ 844: PUSH
+ 845: LD_EXP 6
+ 849: PUSH
+ 850: LD_EXP 7
+ 854: PUSH
+ 855: LD_EXP 8
+ 859: PUSH
+ 860: LD_EXP 9
+ 864: PUSH
+ 865: LD_EXP 10
+ 869: PUSH
+ 870: LD_EXP 11
+ 874: PUSH
+ 875: LD_EXP 12
+ 879: PUSH
+ 880: LD_EXP 13
+ 884: PUSH
+ 885: EMPTY
+ 886: LIST
+ 887: LIST
+ 888: LIST
+ 889: LIST
+ 890: LIST
+ 891: LIST
+ 892: LIST
+ 893: LIST
+ 894: LIST
+ 895: LIST
+ 896: LIST
+ 897: LIST
+ 898: PUSH
+ 899: LD_INT 0
+ 901: DIFF
+ 902: PUSH
+ 903: LD_EXP 15
+ 907: ADD
+ 908: ST_TO_ADDR
+// for i in cargo_bays ^ other_vehicles do
+ 909: LD_ADDR_VAR 0 2
+ 913: PUSH
+ 914: LD_EXP 16
+ 918: PUSH
+ 919: LD_EXP 17
+ 923: ADD
+ 924: PUSH
+ 925: FOR_IN
+ 926: IFFALSE 1072
+// begin un = 0 ;
+ 928: LD_ADDR_VAR 0 3
+ 932: PUSH
+ 933: LD_INT 0
+ 935: ST_TO_ADDR
+// for k in temp_list do
+ 936: LD_ADDR_VAR 0 4
+ 940: PUSH
+ 941: LD_VAR 0 5
+ 945: PUSH
+ 946: FOR_IN
+ 947: IFFALSE 978
+// if GetClass ( k ) = class_mechanic then
+ 949: LD_VAR 0 4
+ 953: PPUSH
+ 954: CALL_OW 257
+ 958: PUSH
+ 959: LD_INT 3
+ 961: EQUAL
+ 962: IFFALSE 976
+// begin un = k ;
+ 964: LD_ADDR_VAR 0 3
+ 968: PUSH
+ 969: LD_VAR 0 4
+ 973: ST_TO_ADDR
+// break ;
+ 974: GO 978
+// end ;
+ 976: GO 946
+ 978: POP
+ 979: POP
+// if un = 0 and temp_list > 0 then
+ 980: LD_VAR 0 3
+ 984: PUSH
+ 985: LD_INT 0
+ 987: EQUAL
+ 988: PUSH
+ 989: LD_VAR 0 5
+ 993: PUSH
+ 994: LD_INT 0
+ 996: GREATER
+ 997: AND
+ 998: IFFALSE 1028
+// un = temp_list [ Rand ( 1 , temp_list + 0 ) ] ;
+1000: LD_ADDR_VAR 0 3
+1004: PUSH
+1005: LD_VAR 0 5
+1009: PUSH
+1010: LD_INT 1
+1012: PPUSH
+1013: LD_VAR 0 5
+1017: PUSH
+1018: LD_INT 0
+1020: PLUS
+1021: PPUSH
+1022: CALL_OW 12
+1026: ARRAY
+1027: ST_TO_ADDR
+// if un = 0 then
+1028: LD_VAR 0 3
+1032: PUSH
+1033: LD_INT 0
+1035: EQUAL
+1036: IFFALSE 1040
+// break ;
+1038: GO 1072
+// PlaceHumanInUnit ( un , i ) ;
+1040: LD_VAR 0 3
+1044: PPUSH
+1045: LD_VAR 0 2
+1049: PPUSH
+1050: CALL_OW 52
+// temp_list = temp_list diff un ;
+1054: LD_ADDR_VAR 0 5
+1058: PUSH
+1059: LD_VAR 0 5
+1063: PUSH
+1064: LD_VAR 0 3
+1068: DIFF
+1069: ST_TO_ADDR
+// end ;
+1070: GO 925
+1072: POP
+1073: POP
+// folks_on_foot = temp_list ;
+1074: LD_ADDR_EXP 18
+1078: PUSH
+1079: LD_VAR 0 5
+1083: ST_TO_ADDR
+// if Gonzo > 0 then
+1084: LD_EXP 14
+1088: PUSH
+1089: LD_INT 0
+1091: GREATER
+1092: IFFALSE 1110
+// folks_on_foot = folks_on_foot ^ Gonzo ;
+1094: LD_ADDR_EXP 18
+1098: PUSH
+1099: LD_EXP 18
+1103: PUSH
+1104: LD_EXP 14
+1108: ADD
+1109: ST_TO_ADDR
+// end ;
+1110: LD_VAR 0 1
+1114: RET
+// function LoadPlayerChar ( c_name ) ; begin
+1115: LD_INT 0
+1117: PPUSH
+// if TestCharacters ( c_name & _12_sel ) then
+1118: LD_VAR 0 1
+1122: PUSH
+1123: LD_STRING _12_sel
+1125: STR
+1126: PPUSH
+1127: CALL_OW 28
+1131: IFFALSE 1154
+// result = CreateCharacter ( c_name & _12_sel ) else
+1133: LD_ADDR_VAR 0 2
+1137: PUSH
+1138: LD_VAR 0 1
+1142: PUSH
+1143: LD_STRING _12_sel
+1145: STR
+1146: PPUSH
+1147: CALL_OW 34
+1151: ST_TO_ADDR
+1152: GO 1162
+// result = 0 ;
+1154: LD_ADDR_VAR 0 2
+1158: PUSH
+1159: LD_INT 0
+1161: ST_TO_ADDR
+// end ;
+1162: LD_VAR 0 2
+1166: RET
+// function Action ; var i , temp_list ; begin
+1167: LD_INT 0
+1169: PPUSH
+1170: PPUSH
+1171: PPUSH
+// RevealFogArea ( 2 , gray_fog_area ) ;
+1172: LD_INT 2
+1174: PPUSH
+1175: LD_INT 1
+1177: PPUSH
+1178: CALL_OW 332
+// InGameOn ;
+1182: CALL_OW 8
+// CenterNowOnXY ( 14 , 14 ) ;
+1186: LD_INT 14
+1188: PPUSH
+1189: LD_INT 14
+1191: PPUSH
+1192: CALL_OW 86
+// for i in cargo_bays ^ other_vehicles ^ folks_on_foot do
+1196: LD_ADDR_VAR 0 2
+1200: PUSH
+1201: LD_EXP 16
+1205: PUSH
+1206: LD_EXP 17
+1210: ADD
+1211: PUSH
+1212: LD_EXP 18
+1216: ADD
+1217: PUSH
+1218: FOR_IN
+1219: IFFALSE 1244
+// PlaceUnitXYR ( i , 121 , 29 , 7 , false ) ;
+1221: LD_VAR 0 2
+1225: PPUSH
+1226: LD_INT 121
+1228: PPUSH
+1229: LD_INT 29
+1231: PPUSH
+1232: LD_INT 7
+1234: PPUSH
+1235: LD_INT 0
+1237: PPUSH
+1238: CALL_OW 50
+1242: GO 1218
+1244: POP
+1245: POP
+// ComMoveXY ( cargo_bays ^ other_vehicles ^ folks_on_foot , 100 , 45 ) ;
+1246: LD_EXP 16
+1250: PUSH
+1251: LD_EXP 17
+1255: ADD
+1256: PUSH
+1257: LD_EXP 18
+1261: ADD
+1262: PPUSH
+1263: LD_INT 100
+1265: PPUSH
+1266: LD_INT 45
+1268: PPUSH
+1269: CALL_OW 111
+// wait ( 0 0$1 ) ;
+1273: LD_INT 35
+1275: PPUSH
+1276: CALL_OW 67
+// CenterNowOnUnits ( cargo_bays ^ other_vehicles ^ folks_on_foot ) ;
+1280: LD_EXP 16
+1284: PUSH
+1285: LD_EXP 17
+1289: ADD
+1290: PUSH
+1291: LD_EXP 18
+1295: ADD
+1296: PPUSH
+1297: CALL_OW 87
+// i = 0 ;
+1301: LD_ADDR_VAR 0 2
+1305: PUSH
+1306: LD_INT 0
+1308: ST_TO_ADDR
+// repeat i = i + 1 ;
+1309: LD_ADDR_VAR 0 2
+1313: PUSH
+1314: LD_VAR 0 2
+1318: PUSH
+1319: LD_INT 1
+1321: PLUS
+1322: ST_TO_ADDR
+// if ( i mod 3 ) = 0 then
+1323: LD_VAR 0 2
+1327: PUSH
+1328: LD_INT 3
+1330: MOD
+1331: PUSH
+1332: LD_INT 0
+1334: EQUAL
+1335: IFFALSE 1358
+// CenterOnUnits ( cargo_bays ^ other_vehicles ^ folks_on_foot ) ;
+1337: LD_EXP 16
+1341: PUSH
+1342: LD_EXP 17
+1346: ADD
+1347: PUSH
+1348: LD_EXP 18
+1352: ADD
+1353: PPUSH
+1354: CALL_OW 85
+// wait ( 0 0$1 ) ;
+1358: LD_INT 35
+1360: PPUSH
+1361: CALL_OW 67
+// until UnitFilter ( cargo_bays ^ other_vehicles ^ folks_on_foot , [ f_not , [ f_distxy , 100 , 45 , 10 ] ] ) = 0 or i >= 30 ;
+1365: LD_EXP 16
+1369: PUSH
+1370: LD_EXP 17
+1374: ADD
+1375: PUSH
+1376: LD_EXP 18
+1380: ADD
+1381: PPUSH
+1382: LD_INT 3
+1384: PUSH
+1385: LD_INT 92
+1387: PUSH
+1388: LD_INT 100
+1390: PUSH
+1391: LD_INT 45
+1393: PUSH
+1394: LD_INT 10
+1396: PUSH
+1397: EMPTY
+1398: LIST
+1399: LIST
+1400: LIST
+1401: LIST
+1402: PUSH
+1403: EMPTY
+1404: LIST
+1405: LIST
+1406: PPUSH
+1407: CALL_OW 72
+1411: PUSH
+1412: LD_INT 0
+1414: EQUAL
+1415: PUSH
+1416: LD_VAR 0 2
+1420: PUSH
+1421: LD_INT 30
+1423: GREATEREQUAL
+1424: OR
+1425: IFFALSE 1309
+// CenterOnXY ( 100 , 45 ) ;
+1427: LD_INT 100
+1429: PPUSH
+1430: LD_INT 45
+1432: PPUSH
+1433: CALL_OW 84
+// SayRadio ( Abdul , D2-Ab-1 ) ;
+1437: LD_EXP 19
+1441: PPUSH
+1442: LD_STRING D2-Ab-1
+1444: PPUSH
+1445: CALL_OW 94
+// Say ( Heike , D2-H-1 ) ;
+1449: LD_EXP 2
+1453: PPUSH
+1454: LD_STRING D2-H-1
+1456: PPUSH
+1457: CALL_OW 88
+// SayRadio ( Abdul , D2-Ab-2 ) ;
+1461: LD_EXP 19
+1465: PPUSH
+1466: LD_STRING D2-Ab-2
+1468: PPUSH
+1469: CALL_OW 94
+// Say ( Heike , D2-H-2 ) ;
+1473: LD_EXP 2
+1477: PPUSH
+1478: LD_STRING D2-H-2
+1480: PPUSH
+1481: CALL_OW 88
+// SayRadio ( Abdul , D2-Ab-3 ) ;
+1485: LD_EXP 19
+1489: PPUSH
+1490: LD_STRING D2-Ab-3
+1492: PPUSH
+1493: CALL_OW 94
+// Say ( Heike , D2-H-3 ) ;
+1497: LD_EXP 2
+1501: PPUSH
+1502: LD_STRING D2-H-3
+1504: PPUSH
+1505: CALL_OW 88
+// SayRadio ( Abdul , D2-Ab-4 ) ;
+1509: LD_EXP 19
+1513: PPUSH
+1514: LD_STRING D2-Ab-4
+1516: PPUSH
+1517: CALL_OW 94
+// Say ( Heike , D2-H-4 ) ;
+1521: LD_EXP 2
+1525: PPUSH
+1526: LD_STRING D2-H-4
+1528: PPUSH
+1529: CALL_OW 88
+// SayRadio ( Abdul , D2-Ab-5 ) ;
+1533: LD_EXP 19
+1537: PPUSH
+1538: LD_STRING D2-Ab-5
+1540: PPUSH
+1541: CALL_OW 94
+// Say ( Heike , D2-H-5 ) ;
+1545: LD_EXP 2
+1549: PPUSH
+1550: LD_STRING D2-H-5
+1552: PPUSH
+1553: CALL_OW 88
+// wait ( 0 0$0.5 ) ;
+1557: LD_INT 18
+1559: PPUSH
+1560: CALL_OW 67
+// ComMoveXY ( cargo_bays ^ other_vehicles ^ folks_on_foot , 64 , 45 ) ;
+1564: LD_EXP 16
+1568: PUSH
+1569: LD_EXP 17
+1573: ADD
+1574: PUSH
+1575: LD_EXP 18
+1579: ADD
+1580: PPUSH
+1581: LD_INT 64
+1583: PPUSH
+1584: LD_INT 45
+1586: PPUSH
+1587: CALL_OW 111
+// wait ( 0 0$7 ) ;
+1591: LD_INT 245
+1593: PPUSH
+1594: CALL_OW 67
+// temp_list = [ ] ;
+1598: LD_ADDR_VAR 0 3
+1602: PUSH
+1603: EMPTY
+1604: ST_TO_ADDR
+// for i in cargo_bays ^ other_vehicles do
+1605: LD_ADDR_VAR 0 2
+1609: PUSH
+1610: LD_EXP 16
+1614: PUSH
+1615: LD_EXP 17
+1619: ADD
+1620: PUSH
+1621: FOR_IN
+1622: IFFALSE 1761
+// temp_list = Insert ( temp_list , 1 , [ GetNation ( i ) , GetChassis ( i ) , GetEngine ( i ) , GetControl ( i ) , GetWeapon ( i ) , GetCargo ( i , mat_cans ) , GetCargo ( i , mat_oil ) , GetCargo ( i , mat_siberit ) , GetCargo ( i , mat_artifact ) > 0 ] ) ;
+1624: LD_ADDR_VAR 0 3
+1628: PUSH
+1629: LD_VAR 0 3
+1633: PPUSH
+1634: LD_INT 1
+1636: PPUSH
+1637: LD_VAR 0 2
+1641: PPUSH
+1642: CALL_OW 248
+1646: PUSH
+1647: LD_VAR 0 2
+1651: PPUSH
+1652: CALL_OW 265
+1656: PUSH
+1657: LD_VAR 0 2
+1661: PPUSH
+1662: CALL_OW 262
+1666: PUSH
+1667: LD_VAR 0 2
+1671: PPUSH
+1672: CALL_OW 263
+1676: PUSH
+1677: LD_VAR 0 2
+1681: PPUSH
+1682: CALL_OW 264
+1686: PUSH
+1687: LD_VAR 0 2
+1691: PPUSH
+1692: LD_INT 1
+1694: PPUSH
+1695: CALL_OW 289
+1699: PUSH
+1700: LD_VAR 0 2
+1704: PPUSH
+1705: LD_INT 2
+1707: PPUSH
+1708: CALL_OW 289
+1712: PUSH
+1713: LD_VAR 0 2
+1717: PPUSH
+1718: LD_INT 3
+1720: PPUSH
+1721: CALL_OW 289
+1725: PUSH
+1726: LD_VAR 0 2
+1730: PPUSH
+1731: LD_INT 4
+1733: PPUSH
+1734: CALL_OW 289
+1738: PUSH
+1739: LD_INT 0
+1741: GREATER
+1742: PUSH
+1743: EMPTY
+1744: LIST
+1745: LIST
+1746: LIST
+1747: LIST
+1748: LIST
+1749: LIST
+1750: LIST
+1751: LIST
+1752: LIST
+1753: PPUSH
+1754: CALL_OW 2
+1758: ST_TO_ADDR
+1759: GO 1621
+1761: POP
+1762: POP
+// SaveVariable ( temp_list , Vehicles_12_sel ) ;
+1763: LD_VAR 0 3
+1767: PPUSH
+1768: LD_STRING Vehicles_12_sel
+1770: PPUSH
+1771: CALL_OW 39
+// ChangeMap ( %2 , %2 ) ;
+1775: LD_STRING %2
+1777: PPUSH
+1778: LD_STRING %2
+1780: PPUSH
+1781: CALL_OW 340
+// InGameOff ;
+1785: CALL_OW 9
+// end ;
+1789: LD_VAR 0 1
+1793: RET

@@ -1,0 +1,814 @@
+Export testing, gamestage;
+
+Export group_heavy, group_seek, group_hunt, group_scout, group_escapees, Group_Leg, Group_Omar, Russians, RussiansPassed;
+
+Export magenta;
+Export group_to_delete, Target_List, Range_list;
+Export target_hg,target_gun,target_all,target_bazooka,bazooka_engagetime;
+Export ru_paths,ru_grouptypes,ru_groupstatus,ru_grouphexcount,ru_targethex,ru_groupside;
+Export Ru_spawning_time, ru_heavy_times, ru_limit;
+Export incomming_seek_group;
+Export DisableAttacking;
+
+Export Ru_prep_red,Ru_prep_mag,scout_warning,scout_gone,no_seek_groups;
+
+Export seek_hex_set1,seek_hex_set2,seek_hex_set3,seek_hex_set4,seek_hex_set5,seek_hex_set6,seek_hex_set7,seek_hex_set8,seek_hex_set9,seek_hex_set10;
+Export path_scout1,path_scout1a,path_scout1b,path_scout1c,path_scout1d,path_scout1e,path_scout2,path_scout3,path_scout3a,path_scout3b,path_scout3c,path_scout3d,path_scout3e,path_scout3f,path_scout4,path_scout4a,path_scout4b,path_scout4c,scout_getaway,MoveOutHexes;
+Export path1a, path1b, path1c, path1d, path1e, path1f, path2a, path2b, path2c, path2d, path2e, path2f, path3a, path3b, path3c, path3d, path3e, path4a, path4b, path4c;
+
+Export Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Abdul, Omar, scout, Gensher, Gonzo, Chrissy;
+Export player_forces, omar_forces_main, omar_forces_random, cargo1, cargo2,Scientist,Soldier,Mechanic,Engineer;
+Export detected_units, detected_Arabians,  arabian_units;
+Export escaping_arabians,friendlyfire,intentional_ff_count,ff_count2;
+Export Ar5_time, Ar5_timeup, escapees_cycle, number_of_Ar5_groups_to_go, cyclenumber, escapees_dead, escapees_errormargin, escapees_errormargin_group;
+Export joining_escapees_count,joinig_escapees,esc_dlg,joining_main,snake_aid,clear_spawn_location,esc_drivers;
+
+Export ar_paths,ar_grouptypes,ar_groupstatus,ar_grouphexcount,ar_groupfollowing,ar_targetlist,ar_areas,ar_liveslist,ar_dlg;
+Export escapees_path5,escapees_path4,escapees_path3,escapees_path2,escapees_path1;
+Export RescueStatus;
+
+Export Legion,LegionSpawnTime,Legion_path,Legion_attack;
+
+Export Randomized_1_4_list;
+Export Artifact,ArtifactOn,artifact_cargo,artifact_ready,artifact_hex,art_leftdone,art_rightdone,art_centredone,art_southdone;
+Export art_checktime;
+Export Measurement_start,Measurement_timecount,Measurement_loc,Measurement_ani,Measurement_sci,Measurement_delay;
+
+Export prisoners,prisoners_initial,prisoners_status,prisoners_armed,prisoners_delay,prisoner_cargo,prisoner_escapehexes,prisoners_escaping,prisoner_lives,prisoner_lastposition,prisonersattacked;
+
+Export st_argroupscount,st_arunitsdead,st_measurementtime,st_measurement_interrupted;
+Export exclamation,cameracount,camerasplaced,CameraMarkList,CameraMarkListUsed,query1_time,query2_time,query3_time,LastSelectedPlayerUnit;
+Export cargo_UnitList,ClassChangedList,EmptyCargos;
+Export mark_spotenemy,mark_contact,mark_contact_status,mark_damaged;
+Export showerror;
+
+Export PlanetOfTheApes,Apes;
+Export kitty,cat;
+Export Mastodon,Mastodon_list,Mastodon_tick;
+
+Starting
+begin
+testing=false;
+
+RandomizeAll;
+ResetFog;
+
+Russians=[];             //List containing all Russian troops - [ [group1],[group2],... ]
+RussiansPassed=[];       //count of how many Russians dissapear on the top of the map
+
+ru_paths=[];             //Holds individual sets of hexes to follow for every Russian group present on the map - [ [path1],[path2],... ]
+ru_grouptypes=[];        //Holds types of every separate group (heavy,scout,seek or hunt)
+ru_groupstatus=[];       //A tag telling whether a group is attacking (value 1) or not (value 0)
+ru_grouphexcount=[];     //A count of hexes that a group has passed and which one from the list is currently moving to
+ru_targethex=[];         //Not used
+ru_groupside=[];         //Side of russian group (3 or 6)
+                         //All of the above are kept in order, so that first lists or values from above ru_ lists attribute to first group appearing, second to the second and so on. New values are added to all lists every time when a new group is created, and all lists are cleared of related values when the group is removed.
+
+magenta=0;               //A switch for spawning side 6 russians instead of side 3
+
+Target_List=[];          //Used to be a list of units a given group is attacking. Still used by scout groups to memorise a hex where the player was present
+
+group_heavy=[];          //Types of Russian attacking groups. Used only with spawning
+group_seek=[];
+group_hunt=[];
+group_scout=[];
+
+target_hg=[];            //Holds a choosen target for separate units within the group
+target_gun=[];           //The group is divided into four subgroups: Heavy guns, guns, bazookas, and the rest, all target separately
+target_all=[];
+target_bazooka=[];
+bazooka_engagetime=[];   //Time when a bazooka in group is to fire a time rocket
+                         //All of these work the same way as ru_ lists
+
+//Difficulty
+//easy:
+//     times:
+//           gamestage1:-5min -- russian heavy 8-12min 
+//                     : 2 timers of red groups respawning every 1$30-2$30, no seek groups, tech: comp1 and weap1 researched
+//           gamestage2:-10min -- russian heavy 16-20min -- Legion 14-22min -- Omar 23min
+//                     : 3 timers of red groups, tech: weap1 and comp2 researched, legion tech: bio3 disabled, weap3 disabled for the first attack
+//           gamestage3:-27min -- russian heavy 30-32min -- Legion 34-38min -- russian heavy 40min
+//                     : 3 timers of red groups, tech ST2 researched, comp1 and 2 enabled (downgraded)
+//                     : 2 timers of magenta groups, respawning after 1.5-3 min, tech: all researched except ST3
+//
+//     escapees go in 4min cycles, should end at 20 min
+//medium:
+//       times:
+//             gamestage1:-3min -- russian heavy 8-12min
+//                       : 2 timers of red groups respawning every 1$30-2$30, no seek groups, tech: comp1 and weap1 researched
+//             gamestage2:-10min -- russian heavy 18-22min -- Legion 14-25min -- Omar 27min
+//                       : 4 timers of red groups, tech: weap1 and comp2 researched,  legion tech: weap3 disabled for the first attack
+//             gamestage3:-30min -- russian heavy 33-36min -- Legion 37-43min -- russian heavy 45min
+//                       : 3 timers of red groups, tech ST2 researched 
+//                       : 2 timers of magenta groups, respawning after 1.5-3 min, tech: all researched except ST3
+//
+//     escapees go in 4min cycles, should end at 20 min
+//hard:
+//     times:
+//           gamestage1:-2min -- russian heavy 8-12min
+//                     : 2 timers of red groups respawning every 1$30-2$30, no seek groups, tech: comp1 and weap1 researched
+//           gamestage2:-10min -- russian heavy 18-22min -- Legion 24-32min -- russian heavy 27-30min  -- Omar 33min
+//                     : 4 timers of red groups, tech: weap2,weap3 and comp2 researched
+//           gamestage3:-35min -- russian heavy 38-41min -- Legion 42-48min-- russian heavy 50min
+//                     : 4 timers of red groups, tech ST2 researched
+//                     : 2 timers of magenta groups, respawning after 1.5-3 min, tech: all researched
+//     escapees go in 5min cycles, should end at 25 min
+//
+//
+//
+//
+//  Outline:
+//       gamestage1:
+//          first 3 minutes no escapees are chased:  3-6min / 3-6min / 2-5min
+//          first heavy:                             11-15min 
+//          snake aid call:                          13min
+//          2 escapees joinig                        11-15min
+//       gamestage2:
+//          snake warning about the seek groups:     15.5min
+//          snake aid vehicles appear:               16min
+//          one of main characters appears:          22min    / 22min       / 22min
+//          second heavy:                            21-25min / 21min-25min / 21min-25min
+//          snake sabotaged communications:          30min    / 31min       / 32min
+//          Legon                                    25-33    / 26-34       / 27-35min
+//          third heavy                              28-31    / 29-32       / 30-33min
+//          Omar:                                    34min    / 35min       / 36min
+//          snake's in trouble, elite groups incomming: 35min / 36min       / 37min
+//          snake calls back:                        36min    / 37min       / 38min
+//       gamestage3:
+//          fourth heavy:                            42-45min / 43-46min    / 44-47min
+//          Legion:                                  46-52min / 47-53min    / 48-54min
+//          last heavy:                              53min    / 54min       / 55min
+//
+//
+
+
+                                                                      
+Ru_spawning_time=[[6$0,6$0,5$0][difficulty], [rand(7$0,8$0),rand(7$0,8$0),rand(5$0,6$0)][difficulty], 999$0, 999$0, 999$0, 100$0, 100$0];     //Separate timers kept for spawning Russian units. The first 5 is used to spawn red Russian groups, the other two magentas. Note that the timers work differently for each
+                                                                                                     //100min is kept for magenta groups, 999min means the timer is switched off
+scout_warning=[0,0,0,0,0,0,0];                     //Holds whether or not there should be a warning. corresponds to the list below
+scout_gone=0;                                      //during one time he's supposed to be out of contact
+No_seek_groups=0;
+
+Ru_prep_red=[ 0,0,0,0,0,0,0 ];                     //Holds predetermined area and path for the warning [grouptype,groupunits,area,path]
+Ru_prep_mag=[ 0,0,0,0,0,0,0 ];
+
+case difficulty of
+     1: ru_heavy_times=[rand(11$0,15$0),rand(21$0,25$0),rand(28$0,31$0),rand(42$0,45$0),53$0];   //Times when the heave groups should appear
+
+     2: ru_heavy_times=[rand(11$0,15$0),rand(21$0,25$0),rand(29$0,32$0),rand(43$0,46$0),54$0];
+
+     3: ru_heavy_times=[rand(11$0,15$0),rand(21$0,25$0),rand(30$0,33$0),rand(44$0,47$0),55$0];
+end;
+
+
+
+ru_limit=[0,1,2][difficulty];               //Used for last heavy group. Tells how many times over will it spawn
+
+                          //Arabian units    All of these work the same way as Russian lists
+detected_arabians=[];     //player's that get spotted
+escaping_arabians=[];     //escaping side 5
+ar_paths=[];              //Keeps paths for escaping Arabians
+ar_grouptypes=[];         //Types of groups. Should be all 5.
+ar_groupstatus=[];        //Used as a safeguard against getting killed right after spawning. Initial value is set to -1 and doesn't count as an escapee group unless all units pass Y 160 coordinate, when the status becomes 0
+ar_grouphexcount=[];      //Count which hex in the list is the group moving to
+ar_groupfollowing=[];     //A tag telling if a group is following their own path or a player unit.
+ar_targetlist=[];         //
+ar_areas=[];              //List of areas that escapees were spawned at. Kept for Russian groups to spawn after them.
+ar_liveslist=[];          //List of lives (hp) the units have. Used for friendly fire warnings.
+ar_dlg=[];                //Holds whether a group should speak one of the random escapee dialogue lines
+
+                               //Possible paths to be taken by Russians
+path1a=[ [158,169],[137,154],[121,136],[112,121],[104,106],[100,87],[103,73],[111,57],[116,45],[121,26],[124,20],[126,10],[132,4] ];
+path1b=[ [158,169],[137,154],[121,136],[112,121],[92,107],[69,96],[56,78],[46,56],[40,26],[50,13] ];
+path1c=[ [148,180],[123,174],[100,155],[86,128],[71,103],[56,78],[46,56],[40,26],[50,13] ];
+path1d=[ [177,182],[173,168],[157,153],[143,138],[135,124],[131,113],[130,106],[129,89],[127,72],[122,62],[122,53],[126,45],[129,36],[137,34],[144,22],[148,10] ];
+path1e=[ [177,182],[178,170],[174,155],[161,141],[146,125],[134,111],[131,98],[126,79],[127,72],[122,62],[122,53],[126,45],[129,36],[144,22],[148,10] ];
+path1f=[ [177,182],[178,170],[174,155],[161,141],[152,128],[166,121],[166,107],[165,88],[175,67],[179,56],[162,32],[149,17] ];
+
+path2a=[ [99,177],[90,160],[82,145],[81,127],[77,112],[63,90],[47,61],[40,36],[38,22] ];
+path2b=[ [113,184],[117,171],[106,150],[95,133],[77,112],[63,90],[47,61],[40,36],[38,22] ];
+path2c=[ [113,184],[117,171],[106,150],[95,133],[89,119],[99,102],[98,87],[103,70],[102,52],[80,29] ];
+path2d=[ [113,184],[117,171],[124,154],[125,139],[131,125],[133,109],[136,94],[133,75],[137,57],[141,36],[134,19] ];
+path2e=[ [113,184],[117,171],[124,154],[125,139],[131,125],[147,123],[166,121],[166,107],[165,88],[175,67],[179,56],[162,32],[149,17] ];
+path2f=[ [99,177],[90,160],[82,145],[81,127],[89,119],[99,102],[98,87],[103,70],[102,52],[80,29] ];
+
+                                //NOTE: Areas in editor are called "pathway", lists of hexes are called "path"
+path3a=[ [206,190],[191,182],[173,168],[157,153],[143,138],[135,124],[131,113],[130,106],[131,98],[129,89],[126,79],[127,72],[122,62],[122,53],[126,45],[129,36],[137,34],[142,29],[144,22],[148,10] ];
+path3b=[ [206,190],[191,182],[178,170],[174,155],[161,141],[146,125],[134,111],[131,98],[129,89],[126,79],[127,72],[122,62],[122,53],[126,45],[129,36],[137,34],[142,29],[144,22],[148,10] ];
+path3c=[ [206,190],[191,182],[178,170],[174,155],[161,141],[152,128],[166,121],[166,107],[165,88],[175,67],[179,56],[162,32],[149,17] ];
+path3d=[ [234,184],[231,163],[211,150],[188,133],[174,119],[168,102],[165,88],[175,67],[179,56],[162,32],[149,17] ];
+path3e=[ [234,184],[241,175],[232,161],[218,132],[213,122],[201,111],[193,99],[187,85],[175,67],[179,56],[162,32],[149,17] ];
+
+path4a=[ [239,174],[231,163],[211,150],[188,133],[167,123],[150,119],[140,104],[129,89],[126,79],[127,72],[122,62],[122,53],[126,45],[129,36],[126,19] ];
+path4b=[ [239,174],[231,163],[211,150],[188,133],[174,119],[168,102],[165,88],[175,67],[179,56],[162,32],[149,17] ];
+path4c=[ [241,175],[232,161],[218,132],[213,122],[201,111],[193,99],[187,85],[175,67],[179,56],[162,32],[149,17] ];
+
+incomming_seek_group=[];            //holds the seek groups to be prepared: [[spawn area],[path],[time of spawn]];
+//sets of hexes for seek groups to follow: [approach the area          patrol the area         move on to the end of the map]
+seek_hex_set1=[[244,180], [233,162],[218,133],[207,134],[198,141],[182,131],[166,122],[173,113],[165,93],[177,69],[178,49], [160,44],[142,58],[132,84],[132,105],[122,117],[93,82],[95,51],[110,34],[122,15] ];
+seek_hex_set2=[ [207,187],[207,171],[191,153],[226,180],[239,180], [233,162],[218,133],[187,125],[166,122],[136,105],[125,179],[103,44],[87,15] ];
+seek_hex_set3=[[178,178],[173,161],[143,132],[136,118],[140,98], [139,69],[129,52],[149,44],[153,23],[155,11],[130,12],[123,38],[99,13],[79,33],[49,41],[26,17] ];
+seek_hex_set4=[[178,178],[173,161], [148,139],[139,125],[128,99],[126,80],[145,90], [165,123],[172,105],[183,90],[176,59],[154,27],[145,13] ];
+seek_hex_set5=[[103,176],[98,157],[82,120],[61,83], [40,60],[39,32],[61,40],[78,32],[96,33],[70,14],[39,14],[16,13],[22,32],[15,11],[31,9] ];
+seek_hex_set6=[[103,176],[106,152],[103,127],[105,112], [98,97],[96,84],[90,67],[102,58],[120,59], [126,40],[106,19],[95,20],[66,15] ];
+seek_hex_set7=[[99,176],[91,149],   [82,133],[74,123],[103,140],[121,136],[119,122],[72,103],[56,82],   [48,59],[73,63],[78,51],[67,22],[122,15]];
+seek_hex_set8=[ [103,176],[127,180],[80,167],[109,156], [75,137],[67,118],[80,115],[104,115],[100,91],[104,65],[11,53],[119,35],[125,13] ];
+seek_hex_set9=[ [148,182],[130,153],[169,174],[173,160], [144,130],[135,115],[135,97],[137,68],[143,42],[128,17] ];
+seek_hex_set10=[[244,180], [233,162],[218,133],[200,113],[191,99],[186,85],[184,70],[179,52], [160,44],[142,58],[132,84],[132,105],[122,117],[93,82],[95,51],[110,34],[122,15] ];
+
+
+                                         //Numbered them differently: from right to left. Paths 1 start at enter4, paths2 at enter3, paths3 at enter1, paths4 at enter 2
+    path_scout1=[ [244,177],[233,162],[219,135],[208,120],[198,106],[191,91],[178,75],[178,60],[178,49],[162,33] ];
+path_scout1a=path_scout1^[[158,22]]^[[153,9]];
+path_scout1b=path_scout1^[ [153,39],[149,56],[145,73],[137,80],[128,82],[131,93],[135,109],[131,119],[137,133],[150,145],[165,159],[178,169],[183,186] ];
+path_scout1c=path_scout1^[ [147,24],[133,16],[115,16],[107,24],[87,26],[74,27],[50,18],[31,16],[34,29],[62,40],[80,54],[78,65],[49,63],[66,90],[72,102],[82,121],[95,142],[102,160],[105,173] ];
+path_scout1d=[ [241,175],[222,158],[194,138],[175,125],[148,128],[142,137],[166,162],[180,171],[183,186] ];
+path_scout1e=[ [241,175],[233,162],[219,135],[208,120],[198,106],[191,91],[178,75],[166,82],[163,99],[165,112],[160,120],[148,128],[142,137],[166,162],[180,171],[183,186] ];
+path_scout2=[ [216,186],[208,172],[200,154],[225,172],[236,186] ];
+    path_scout3=[ [180,184],[180,176],[174,163],[154,147],[145,129],[162,122],[170,108],[164,88],[172,73],[176,62],[176,47],[158,28] ];
+path_scout3a=path_scout3^[[152,15]];
+path_scout3b=path_scout3^[ [147,24],[133,16],[115,16],[107,24],[87,26],[74,27],[50,18],[31,16],[34,29],[62,40],[80,54],[78,65],[49,63],[66,90],[72,102],[82,121],[95,142],[102,160],[105,173] ];
+    path_scout3c=makealist(scoutpath3c);
+path_scout3c=path_scout3c^[ [173,130],[188,134],[202,135],[207,147],[228,162] ];
+path_scout3d=makealist(scoutpath3d);
+    path_scout3e=makealist(scoutpath3e);
+path_scout3e=path_scout3e^[ [73,102],[83,123],[81,142],[104,160],[111,182] ];
+    path_scout3f=makealist(scoutpath3f);
+path_scout3f=path_scout3f^[ [120,79],[132,93],[137,107],[143,127],[152,147],[174,163],[180,184] ];
+    path_scout4=makealist(scoutpath4);
+path_scout4a=path_scout4^[ [111,47],[119,61],[127,75],[138,104],[123,119],[122,134],[124,161],[122,174],[115,187] ];
+    path_scout4b=makealist(scoutpath4b);                                                                         
+path_scout4b=path_scout4b^[ [144,63],[138,83],[114,94],[136,116],[143,140],[174,172] ];
+    path_scout4c=makealist(scoutpath4c);
+path_scout4c=path_scout4c^[ [183,70],[189,85],[195,99],[186,101],[190,112],[205,123],[221,140],[231,161],[241,180] ];
+
+scout_getaway=[[101,193],[174,195],[223,197],[253,192]];
+              //hexes in exit or enter areas, used to remove AI units + scoutgetaway
+MoveOutHexes=[ [2,1],[6,1],[10,1],[14,1],[18,1],[22,1],[26,1],[30,1],[34,1],[38,1],[42,1],[46,1],[50,1],[54,1],[58,1],[62,1],[66,1],[70,1],[74,1],[78,1],[82,1],[86,1],[90,1],[94,1],[98,1],[102,1],[106,1],[110,1],[114,1],[118,1],[122,1],[126,1],[130,1],[134,1],[138,1],[142,1],[146,1],[150,1],[154,1],[158,1] , [101,193],[174,195],[223,197],[253,192] ];
+
+
+//as from escapeeswaypoints area, going from left to right
+escapees_path1=[ [109,176],[98,155],[87,129],[65,93],[42,53],[44,31] ];
+escapees_path2=[ [109,176],[131,162],[119,131],[94,98],[89,63],[66,18] ];
+escapees_path3=[ [172,171],[140,125],[137,95],[131,65],[128,39],[155,23] ];
+escapees_path4=[ [227,156],[188,134],[165,105],[179,62],[155,23] ];
+escapees_path5=[ [227,156],[212,130],[192,98],[179,62],[155,23] ];
+
+
+friendlyfire=0;  //Triggers a dialogue line only. The loosing condition is to give the command to attack or indirectly kill allied unit.
+
+omar_forces_main=[];        //Lists of units the Omar reinforcements are made from.
+omar_forces_random=[];
+
+randomize;                                                   //There is a fixed numer of escaping groups to spawn per time cycle
+
+Ar5_time=[rand(1$0,4$0),rand(1$0,4$0),rand(1$0,4$0),rand(1$0,4$0),rand(1$0,4$0),rand(1$0,4$0)];        //The predetermined list of times at which escapees are spawned
+Ar5_time=SortByValueAsc(Ar5_time);                           //Arrange from smallest.
+Ar5_timeup=Ar5_time[1];                                      //Time of next spawn i.e. when next time in list < tick
+escapees_cycle=[4$0,4$0,5$0][difficulty];                    //Time period within which a constant number of escaping arabian groups will spawn at random times. If some group isn't given a chance to spawn properly, next cycle will include the extra.
+number_of_Ar5_groups_to_go=30;                               //Total amount of escapees groups that will go through the map
+cyclenumber=[18,12,6,0];                                     //Expected values at the end of each cycle
+escapees_dead=[];                                            //Dead allies counted as fault of the player
+escapees_errormargin=1;                                      //The number of groups the deaths of which are ignored per time cycle. Works only between Y 160 and Y 133 coordinates.
+escapees_errormargin_group=[];                               //Holds the group ignored
+
+
+
+joining_escapees_count=[ rand(11$0,13$0), rand(13$0,15$0), 999$0 ];                                    //Holds the number of escapees that will join the player
+joinig_escapees=[];                                          //The list of them in transition between being picked and actually joining player side
+esc_dlg=0;                                                   //The whole joining dialogue is played only once. This holds if it has.
+joining_main=[];                                             //One of the main characters joining the player
+snake_aid=[];                                                //Special group of escapees bringing captured tanks from snake
+clear_spawn_location=[[enter1,enter2,enter3][rand(1,3)],16$0];                               //In special cases some areas must be kept free of spawning enemies, to ensure a spawned group of escapees won't get attacked. [area_number, tick]
+esc_drivers=[];                                                     //holds escapees driving the captured
+
+
+prisoners=[];          //list of prisoner units
+prisoners_escaping=[]; //list of prisoner units that are on the run
+prisoners_status=0;    //0 when following the cargo, 1 when attempting to run
+prisoners_armed=0;     //1 when changed class to soldier
+prisoners_delay=0;     //how long can they be left alone before attempting to run
+prisoner_lives=[];     //what hp did each prisoner have at the start of escape attempt
+prisoner_lastposition=[];
+prisonersattacked=0;
+                       //escapehexes same as for russians minus the scout moveouts
+prisoner_escapehexes=[ [2,1],[6,1],[10,1],[14,1],[18,1],[22,1],[26,1],[30,1],[34,1],[38,1],[42,1],[46,1],[50,1],[54,1],[58,1],[62,1],[66,1],[70,1],[74,1],[78,1],[82,1],[86,1],[90,1],[94,1],[98,1],[102,1],[106,1],[110,1],[114,1],[118,1],[122,1],[126,1],[130,1],[134,1],[138,1],[142,1],[146,1],[150,1],[154,1],[158,1] ];
+
+Legion=[];
+LegionSpawnTime=[rand(25$0,33$0),rand(26$0,34$0),rand(27$0,35$0)][difficulty];
+if LegionSpawnTime>ru_heavy_times[3]-1$0 and LegionSpawnTime<ru_heavy_times[3]+1$0 then     //make sure the Legion doesnt appear at the same time as heavy
+   LegionSpawnTime=ru_heavy_times[3]+1$30;
+Legion_attack=0;
+
+disable(1);                       
+
+Artifact=4;
+
+st_argroupscount=0;            //Strings to display. First two used only in testing
+st_arunitsdead=0;
+st_measurementtime=0;
+
+cameracount=[10,8,6][difficulty];
+camerasplaced=[];
+CameraMarkList=[CameraMark1,CameraMark2,CameraMark3,CameraMark4,CameraMark5,CameraMark6,CameraMark7,CameraMark8,CameraMark9,CameraMark10];
+CameraMarkListUsed=[];
+
+LastSelectedPlayerUnit=0;
+
+cargo_UnitList=[];             //holds the units waiting to change their class
+ClassChangedList=[];
+EmptyCargos=[];
+
+mark_spotenemy=[];
+mark_contact=[];
+mark_damaged=[];
+
+
+Apes=[];
+PlanetOfTheApes=['Cornelius','Zira','Dr Zaius', 'Lucius', 'Ursus', 'Caesar', 'Galen',    'Maximus', 'Honorious', 'Julius', 'Aldo', 'Virgil', 'Urko', 'Kira',    'Tylor', 'Nova', 'Landon', 'Dodge', 'Brent'];
+PrepareNature;
+
+Mastodon_list=[Mastodon1,Mastodon2,Mastodon3,Mastodon4,Mastodon5];
+Mastodon_tick=999$0;
+
+StartSequence;
+
+end;
+
+
+                           
+
+
+Function StartSequence;
+var unit_list,Human_list,StartingList,StartingList1,StartingList2,StartingList3,StartingList4;
+var i,j,roll,top_mech,temp,temp_val,temp_list,temp_driver,control,temp_control,footmen,prisoner1,prisoner2,prisoner3,others;
+begin
+     Randomize;
+
+     uc_nation=nation_nature; uc_side=7;
+     hc_class=class_tiger; hc_attr=[16,11]; hc_skills=[5,5,5,5]; hc_gallery='nature_foreg'; hc_face_number=3; hc_name='Marcus Brutus'; kitty=CreateHuman; hc_name='Caius Cassius'; cat=createhuman;
+     placeunitxy(kitty,157,3,0);
+     placeunitxy(cat,159,5,0);
+
+     mastodon=mastodon1;
+     removeunit(mastodon1);
+     removeunit(mastodon2);
+     removeunit(mastodon3);
+     removeunit(mastodon4);
+     removeunit(mastodon5);
+
+     InitHc;
+     InitUc;
+     uc_side = 2;
+     uc_nation = nation_arabian;
+
+
+     if testing=false then
+     begin                       
+          //Loading Humans
+          Heike = CreateCharacter('Heike_12_cont2');
+
+          if TestCharacters('Makise_12_cont2') then
+             Chrissy = CreateCharacter('Makise_12_cont2')
+          else
+             Chrissy = 0;
+
+          if TestCharacters('Oswald_12_cont2') then
+             Oswald = CreateCharacter('Oswald_12_cont2')
+          else
+              if TestCharacters('Oswald_12_not_sel') then
+              begin
+                   Oswald = CreateCharacter('Oswald_12_not_sel');
+                   omar_forces_main=omar_forces_main^Oswald;
+              end
+              else Oswald = 0;
+
+          if TestCharacters('Olaf_12_cont2') then
+             Olaf = CreateCharacter('Olaf_12_cont2')
+          else
+              if TestCharacters('Olaf_12_not_sel') then
+              begin
+                   Olaf = CreateCharacter('Olaf_12_not_sel');
+                   omar_forces_main=omar_forces_main^Olaf;
+              end
+              else Olaf = 0;
+
+          if TestCharacters('Sonya_12_cont2') then
+             Sonya = CreateCharacter('Sonya_12_cont2')
+          else
+              if TestCharacters('Sonya_12_not_sel') then
+              begin
+                   Sonya = CreateCharacter('Sonya_12_not_sel');
+                   omar_forces_main=omar_forces_main^Sonya;
+              end
+              else Sonya = 0;
+              
+
+          if TestCharacters('Ralph_12_cont2') then
+             Ralph = CreateCharacter('Ralph_12_cont2')
+          else
+              if TestCharacters('Ralph_12_not_sel') then
+              begin
+                   Ralph = CreateCharacter('Ralph_12_not_sel');
+                   omar_forces_main=omar_forces_main^Ralph;
+              end
+              else Ralph = 0;
+
+          if TestCharacters('Kowalski_12_cont2') then
+             Kowalski = CreateCharacter('Kowalski_12_cont2')
+          else
+              if TestCharacters('Kowalski_12_not_sel') then
+              begin
+                   Kowalski = CreateCharacter('Kowalski_12_not_sel');
+                   omar_forces_main=omar_forces_main^Kowalski;
+              end
+              else Kowalski = 0;
+
+          if TestCharacters('Aviradze_12_cont2') then
+             Aviradze = CreateCharacter('Aviradze_12_cont2')
+          else
+              if TestCharacters('Aviradze_12_not_sel') then
+              begin
+                   Aviradze = CreateCharacter('Aviradze_12_not_sel');
+                   omar_forces_main=omar_forces_main^Aviradze;
+              end
+              else
+                  Aviradze = 0;
+
+          if TestCharacters('Swansson_12_cont2') then
+             Swansson = CreateCharacter('Swansson_12_cont2')
+          else
+              if TestCharacters('Swansson_12_not_sel') then
+              begin
+                   Swansson = CreateCharacter('Swansson_12_not_sel');
+                   omar_forces_main=omar_forces_main^Swansson;
+              end
+              else Swansson = 0;
+
+          if TestCharacters('Evelyn_12_cont2') then
+             Evelyn = CreateCharacter('Evelyn_12_cont2')
+          else
+              if TestCharacters('Evelyn_12_not_sel') then
+              begin
+                   Evelyn = CreateCharacter('Evelyn_12_not_sel');
+                   omar_forces_main=omar_forces_main^Evelyn;
+              end
+              else Evelyn = 0;
+
+          if TestCharacters('Dwayne_12_cont2') then
+             Dwayne = CreateCharacter('Dwayne_12_cont2')
+          else
+              if TestCharacters('Dwayne_12_not_sel') then
+              begin
+                   Dwayne = CreateCharacter('Dwayne_12_not_sel');
+                   omar_forces_main=omar_forces_main^Dwayne;
+              end
+              else Dwayne = 0;
+
+          if TestCharacters('Gonzo_12_cont2') then
+             Gonzo = CreateCharacter('Gonzo_12_cont2')
+          {else
+              if TestCharacters('Gonzo_12_not_sel') then
+              begin
+                   Gonzo = CreateCharacter('Gonzo_12_not_sel');
+                   omar_forces_main=omar_forces_main^Gonzo;
+              end }
+              else Gonzo = 0;
+
+          if TestCharacters('Khattam_12_cont2') then
+             Khattam = CreateCharacter('Khattam_12_cont2')
+          else
+              if TestCharacters('Khattam_12_not_sel') then
+              begin
+                   Khattam = CreateCharacter('Khattam_12_not_sel');
+                   omar_forces_main=omar_forces_main^Khattam;
+              end
+              else Khattam = 0;
+
+
+          others=CreateCharacterSet('Others_12_cont2') diff 0;
+
+
+          omar_forces_random=CreateCharacterSet('NewKaaba_folks_12_cont2');                         //The omar_forces is a list of possible candidates for Omar reinforcements. The selection happens in Function Determine_group
+
+
+          prisoners=CreateCharacterSet('Prisoners_12_cont2');
+          prisoners_initial=prisoners;
+          for i in prisoners do
+          begin
+               setside(i,7);
+               setclass(i,class_engineer);
+          end;
+     
+
+
+         Human_list=[Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy]^others diff omar_forces_main diff 0;
+
+
+         if omar_forces_main>0 then
+         begin
+              joining_main=omar_forces_main[rand(1,omar_forces_main)];
+              omar_forces_main=omar_forces_main diff joining_main;
+         end
+         else joining_escapees_count=joining_escapees_count^ 16$0;               //if there's no main character to place there, just use another of random ones instead
+
+
+         //maintain minimal amount of people from joining escapees [15,13,11][difficulty]
+         temp_val = (Human_list diff Heike ^ Chrissy) + 0;
+
+         while temp_val < [13,11,09][difficulty] do
+         begin
+              joining_escapees_count = Rand(1$0,5$0) ^ joining_escapees_count;
+              temp_val = temp_val + 1;
+         end;
+
+
+          //Customizing player forces, adding vehicles                                         class= 0-random, 1-sol, 2-eng, 3-mech, 4-sci, 5-mortar 6-sheikh 7-sniper
+          //Player_forces=[ [Humans],[vehicles] ];                                             chasis= 0-random, 1-hovercraft, 2-lighttrike, 3-mediumtrike, 4-halftracked
+          //                                                                                   control= 0-random, 1-manual, 2-remote, 3-ape
+          //  =[ [[attr_str, attr_spd, class, skill_sol, skill_eng, skill_mech, skill_sci]] ,  engine= 0-random, 1-combustion, 2-solar, 3-siberite
+          //     [[chasis, control, engine, weapon]]     ];                                    weapon= 0-random, 1-balista, 2-lightgun, 3-doublemachine, 4-gatling, 5-flamethrower, 6-gun, 7-rocket, 8-bomb, 9-radar, 10-controltower, 11-cargo
+
+          
+          //Function Create_player_Forces will read the list and create the rest of player units
+
+          Player_forces=[ Human_List,           //Humans loaded, 0 new ones
+                     [[2, 1, 1, 3],               //trike      - manual, machine, combustion
+                     [2, 1, 2, 2],                //trike      - manual, light gun, solar
+                     [1, 1, 2, 3],                //hovercraft - manual, machine, solar
+                     [1, 1, 2, 2],                //hovercraft - manual, light gun, solar
+                     [1, 3, 1, 9],                //hovercraft - apeman, radar, combustion
+                     [1, 2, 1, 9],                //hovercraft - remote, radar, combustion
+                     [3, 1, 3, 4],                //med trike  - manual, gatling, siberite
+                     [3, 2, 1, 4],                //med trike  - remote, gatling, combustion
+                     [3, 2, 1, 6],                //med trike  - remote, gun, combustion
+                     [3, 1, 1, 5],                //med trike  - manual, flamer, combustion
+                     [3, 3, 3, 5],                //med trike  - apeman, flamer, siberite
+                     [4, 1, 1, 10],               //half track - manual, control, combustion
+                     [4, 1, 1, 11],               //half track - manual, cargo, combustion
+                     [4, 2, 3, 11],               //half track - remote, cargo, siberite
+                     [4, 3, 1, 6],                //half track - apeman, gun, combustion
+                     [4, 2, 3, 6],                //half track - remote, gun, siberite
+                     [4, 1, 3, 6],                //half track - manual, gun, siberite
+                     [4, 1, 3, 7],                //half track - manual, rocket, siberite
+                     [4, 2, 1, 7]] ];             //half track - remote, rocket, combustion
+
+                                                  //add another control and turn cargo or radar remote if necessary
+
+
+     end
+     else begin   //In testing there's Heike, Chrissy, Aviradze, 4 randomly choosen main characters and 4 randoms (2 soldiers and 2 mechs)
+
+               hc_class=class_soldier; hc_attr=[12,12]; hc_skills=[9,4,7,6]; hc_sex=2; hc_gallery='ru'; hc_face_number=24; hc_name = 'Heike'; Heike=CreateHuman;
+               hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[4,5,8,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=2; hc_name = 'Olaf'; Olaf=CreateHuman;
+               hc_class=class_soldier; hc_attr=[10,10]; hc_skills=[9,6,5,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=15; hc_name = 'Oswald'; Oswald=CreateHuman;
+               hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[7,5,8,5]; hc_sex=1; hc_gallery='ar'; hc_face_number=5; hc_name = 'Ralph'; Ralph=CreateHuman;
+               hc_class=class_scientistic; hc_attr=[10,10]; hc_skills=[4,5,8,8]; hc_sex=2; hc_gallery='ar'; hc_face_number=6; hc_name = 'Sonya'; Sonya=CreateHuman;
+               hc_class=class_scientistic; hc_attr=[10,10]; hc_skills=[4,6,6,9]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=1; hc_name = 'Aviradze'; Aviradze=CreateHuman;
+               hc_class=class_soldier; hc_attr=[10,10]; hc_skills=[7,6,7,4]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=2; hc_name = 'Kowalski'; Kowalski=CreateHuman;
+               hc_class=class_engineer; hc_attr=[10,10]; hc_skills=[5,9,6,5]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=5; hc_name = 'Evelyn'; Evelyn=CreateHuman;
+               hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[7,6,8,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=31; hc_name = 'Swansson'; Swansson=CreateHuman;
+               hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[7,5,8,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=13; hc_name = 'Dwayne'; Dwayne=CreateHuman;
+               hc_class=class_scientistic; hc_attr=[10,10]; hc_skills=[3,6,4,8]; hc_sex=1; hc_gallery='us'; hc_face_number=10; hc_name = 'Khattam'; Khattam=CreateHuman;
+               hc_class=class_scientistic; hc_attr=[10,10]; hc_skills=[4,7,7,10]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=34; hc_name = 'Makise'; Chrissy=CreateHuman;
+
+               Human_list=[Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Chrissy];
+
+               temp_list=[Heike,Chrissy,Aviradze];
+               temp=[Oswald, Olaf, Sonya, Ralph, Kowalski, Swansson, Dwayne, Khattam, Evelyn];
+               for i=1 to 4 do
+               begin
+                    roll=rand(1,temp);
+                    temp_list=temp_list^temp[roll];
+                    temp=delete(temp,roll);
+               end;
+
+               omar_forces_main=Human_list diff temp_list;           //Whoever doesn't get choosen now can come in with Omar
+
+
+               joining_main=omar_forces_main[rand(1,omar_forces_main)];
+               omar_forces_main=omar_forces_main diff joining_main;
+
+
+               uc_side=7; hc_gallery='';
+               InitHc;
+               hc_class=class_engineer; hc_attr=[10,10]; hc_skills=[rand(1,10),rand(1,10),rand(1,10),rand(1,10)]; hc_sex=rand(1,2); prisoner1=CreateHuman;
+               hc_class=class_engineer; hc_attr=[10,10]; hc_skills=[rand(1,10),rand(1,10),rand(1,10),rand(1,10)]; hc_sex=rand(1,2); prisoner2=CreateHuman;
+               hc_class=class_engineer; hc_attr=[10,10]; hc_skills=[rand(1,10),rand(1,10),rand(1,10),rand(1,10)]; hc_sex=rand(1,2); prisoner3=CreateHuman;
+               prisoners=[prisoner1,prisoner2,prisoner3];
+
+
+               //3 morters, 3 soldiers, 4 mechs, 1 medic
+               Player_forces=[ [{[10, 10, 5, 8, 3, 2, 1], [10, 10, 5, 8, 3, 2, 1], [10, 10, 5, 8, 3, 2, 1],      //mortars
+                               [10, 10, 1, 8, 5, 5, 5], [10, 10, 1, 8, 5, 5, 5], [10, 10, 1, 8, 5, 5, 5],      //soldiers
+                               [10, 10, 3, 3, 8, 8, 2], [10, 10, 3, 3, 8, 8, 2], [10, 10, 3, 3, 8, 8, 2], [10, 10, 3, 3, 8, 8, 2],        //mechs
+                               [9, 11, 4, 3, 2, 6, 10],}        //sci
+                               {[12,10,6,1,1,1,1],            //sheikh
+                               [10,10,7,8,5,5,5]}             //sniper
+                               temp_list,
+                               [10, 10, 1, rand(5,8), 5, 5, 5],[10, 10, 1, rand(5,8), 5, 5, 5],             //2 soldiers
+                               [10, 10, 3, 3, 3, rand(5,8), 2],[10, 10, 3, 3, 3, rand(5,8), 2],             //2 mechs
+                               ] ,
+
+                               [[2, 1, 1, 3],               //trike      - manual, machine, combustion
+                               [2, 1, 2, 2],                //trike      - manual, light gun, solar
+                               [1, 1, 2, 3],                //hovercraft - manual, machine, solar
+                               [1, 1, 2, 2],                //hovercraft - manual, light gun, solar
+                               [1, 3, 1, 9],                //hovercraft - apeman, radar, combustion
+                               [1, 2, 1, 9],                //hovercraft - remote, radar, combustion
+                               [3, 1, 3, 4],                //med trike  - manual, gatling, siberite
+                               [3, 2, 1, 4],                //med trike  - remote, gatling, combustion
+                               [3, 2, 1, 6],                //med trike  - remote, gun, combustion
+                               [3, 1, 1, 5],                //med trike  - manual, flamer, combustion
+                               [3, 3, 3, 5],                //med trike  - apeman, flamer, siberite
+                               [4, 1, 1, 10],               //half track - manual, control, combustion
+                               [4, 1, 1, 11],               //half track - manual, cargo, combustion
+                               [4, 2, 3, 11],               //half track - remote, cargo, siberite
+                               [4, 3, 1, 6],                //half track - apeman, gun, combustion
+                               [4, 2, 3, 6],                //half track - remote, gun, siberite
+                               [4, 1, 3, 6],                //half track - manual, gun, siberite
+                               [4, 1, 3, 7],                //half track - manual, rocket, siberite
+                               [4, 2, 1, 7]] ];             //half track - remote, rocket, combustion
+
+          end;
+
+
+     //Create non player characters
+     uc_side=5;
+     Omar=NewCharacter('Omar');
+
+     uc_side=2;
+     Gensher=NewCharacter('Dietrich');
+     Abdul=NewCharacter('Abdul');
+     Scout=NewCharacter('Snake');
+
+
+     unit_list=Create_player_Forces(player_forces);       //the function is set to switch remote control to apeman, if there are too much vehs for best mech to control
+   
+     //Order of appearance - hovercrafts, and light trikes go first, then one of the guns and lighter weapons, then controls, radars,cargos, then guns and rockets.
+
+     StartingList1=unitfilter(unit_list[2],[f_or,[f_chassis,ar_light_trike],[f_chassis,ar_hovercraft]]);
+     StartingList2=unitfilter(unit_list[2],[f_or,[f_weapon,ar_gatling_gun],[f_weapon,ar_flame_thrower]]);
+     StartingList3=unitfilter(unit_list[2],[f_or,[f_weapon,ar_cargo_bay],[f_weapon,ar_control_tower]]);
+     StartingList4=unitfilter(unit_list[2],[f_or,[f_weapon,ar_gun],[f_weapon,ar_rocket_launcher]]);
+
+     temp=StartingList4[1];                   //transfer one from list 3 to list 2
+     StartingList4=delete(StartingList4,1);
+     StartingList2=StartingList2^temp;
+
+     //find the best mech to put in control tower
+
+     temp_val=0;
+     for i in unit_list[1] do
+         if getskill(i,skill_mechanical)>temp_val then
+         begin
+              temp_val=getskill(i,skill_mechanical);
+              top_mech=i;
+         end;
+
+     control=unitfilter(StartingList3,[f_weapon,ar_control_tower])[1];
+     setclass(top_mech,class_mechanic);
+     placeHumanInUnit(top_mech,control);
+
+
+     //place other units. order doesn't matter
+     footmen=[];
+     for i in unit_list[1] do
+     begin
+          for j in StartingList1 do
+              if GetControl(j)=control_manual and unitsinside(j)=0 and isinunit(i)=0 then
+                 placeHumanInUnit(i,j);
+
+          for j in StartingList2 do
+              if GetControl(j)=control_manual and unitsinside(j)=0 and isinunit(i)=0 then
+                 placeHumanInUnit(i,j);
+
+          for j in StartingList3 do
+              if GetControl(j)=control_manual and unitsinside(j)=0 and isinunit(i)=0 then
+                 placeHumanInUnit(i,j);
+
+          for j in StartingList4 do
+              if GetControl(j)=control_manual and unitsinside(j)=0 and isinunit(i)=0 then
+                 placeHumanInUnit(i,j);
+
+          if IsInUnit(i)=0 then                   // if there are not egnough vehicles the remainder will walk
+             footmen=footmen^i;
+     end;
+
+
+
+     footmen=footmen^prisoners;
+     if Gonzo>0 then
+        footmen=footmen^Gonzo;
+
+
+     //place another control tower just for he intro - if any remotes appear on map before the control tower, must be linked to something
+     uc_side=2;
+     hc_skills=[0,0,10,0];
+     hc_class=class_mechanic;
+     temp_driver=createhuman;
+     uc_nation=nation_arabian;
+     vc_weapon=ar_control_tower;
+     vc_control=control_manual;
+     temp_control=createvehicle;
+     placehumaninunit(temp_driver,temp_control);
+     placeunitxy(temp_control,102,70,0);
+
+
+     temp_list=[];
+     temp_list=temp_list^StartingList1^StartingList2^StartingList3^footmen^StartingList4;
+     StartingList=[];
+
+
+     for i in temp_list do
+         if getcontrol(i)=control_manual and isdrivenby(i)=0 then       //if any manuals are left empty change them to ape controlled
+         begin                                                                      //i.e. if it happens that there's fewer humans than vehicles
+              vc_weapon=getweapon(i);
+              vc_chassis=getchassis(i);
+              vc_engine=getengine(i);
+              vc_control=control_apeman;
+              temp=createvehicle;
+              StartingList=StartingList^temp;
+         end
+         else StartingList=StartingList^i;
+
+     player_forces=StartingList;
+     temp=unitfilter(startinglist,[f_weapon,ar_cargo_bay]);     //Prepare cargos
+
+     cargo1=temp[1];
+     addcargo(cargo1,mat_artifact,40);
+     addcargo(cargo1,mat_oil,60);
+     artifact_cargo=cargo1;
+
+     cargo2=temp[2];
+     addcargo(cargo2,mat_oil,70);
+
+     prisoner_cargo=temp[rand(1,2)];
+
+     //Begin
+     CenterNowOnXY(16,9);
+     InGameOn;
+
+     SayRadio(Abdul,'In_Ab1');
+     Say(Heike,'In_He1');
+
+     ExclusiveOff;      //couldn't do the spawning and talking go smoothly in one block.
+
+     for i=1 to StartingList do  //this could probably use some makeover, to make them look more like they're moving in formation
+     begin
+          repeat
+                wait(0$0.5);
+                setdir(StartingList[i],rand(1,2));
+                placeunitxy(StartingList[i],6,8,0);
+          until IsPlaced(StartingList[i]);
+
+          if getcontrol(StartingList[i])=control_remote then
+             if isplaced(control) then
+                LinkVehicleToHuman(StartingList[i],top_mech)
+             else
+                 LinkVehicleToHuman(StartingList[i],temp_driver);
+
+          commovexy(StartingList[i],14,13);
+          addcommovexy(StartingList[i],31,14);
+
+          if i=7 then
+             commovexy([StartingList[1],StartingList[2],StartingList[3],StartingList[4],StartingList[5]],33,13);
+          if i=12 then
+          begin
+               commovexy([StartingList[1],StartingList[2],StartingList[3],StartingList[4],StartingList[5]],40,13);
+               commovexy([StartingList[6],StartingList[7],StartingList[8],StartingList[9],StartingList[10]],33,13);
+          end;
+          if i=16 then
+          begin
+               commovexy([StartingList[1],StartingList[2],StartingList[3],StartingList[4],StartingList[5]],46,13);
+               commovexy([StartingList[6],StartingList[7],StartingList[8],StartingList[9],StartingList[10]],40,13);
+               commovexy([StartingList[11],StartingList[12],StartingList[13],StartingList[14],StartingList[15]],33,13);
+               CenterOnXY(40,13);
+          end;
+
+
+          if isplaced(control) and isplaced(temp_control) then
+          begin
+               wait(0$1);
+               for j in player_forces do                         //remove the temporary control tower and replace the fog
+                   if getcontrol(j)=control_remote and isplaced(j) then
+                      LinkVehicleToHuman(j,top_mech);
+
+               removeunit(temp_control);
+               resetfog;
+               placeseeing(15,13,2,10);
+               removeseeing(15,13,2);
+          end;
+
+
+          temp=filterallunits([[f_side,0],[f_distxy,6,8,10]]);      //sometimes an ape can block the entering hex jam the intro
+          if temp>0 then
+             commovexy(temp,23,35);
+
+          //wait(rand(0$2,0$3.5));      //this must be in place or most of the units won't spawn due to lack of space
+     end;
+
+end;
+
+
+

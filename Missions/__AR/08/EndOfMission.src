@@ -1,0 +1,90 @@
+
+//If New Kabul falls before the final attack the player loses.
+Every 0$1+0$0.7 do
+     var i, bol;
+     begin
+          repeat
+          wait(0$4);
+
+          bol = false;
+          for i in FilterAllUnits([[f_side,you],[f_inarea,player_base],[f_type,unit_building]]) do
+               if GetBType(i) in [b_depot,b_warehouse,b_workshop,b_factory,b_armoury,b_barracks,b_lab,b_lab_half,b_lab_full] then
+                    begin
+                         bol = true;
+                         break;
+                    end;
+
+          if not bol then
+               YouLost('NewKabulDestroyed');
+
+          until final_battle_begin;
+     end;
+
+
+Export Function EndMission(heike_surrendered);
+     var val;
+     begin
+          //Medals
+          //Crates deny
+          //These numbers are also used in function "NumOfVehicleReqToAttack" module "AI".
+          if deny_crates_gathered = deny_crates_spawned then
+               val = -3
+          else
+               case deny_crates_gathered / deny_crates_spawned of
+                    0..0.2: val = 2;
+                    0..0.5: val = 1;
+                    0..0.8: val = -1;
+                    else val = -2;
+               end;
+
+          AddMedal('CrateDeny',val);
+
+          //Yashin handled
+          if IsDead(Yashin) then
+               val = 1
+          else
+               begin
+                    SaveCharacters(Yashin,'Yashin_08');
+
+                    if yashin_begin then
+                         val = -1
+                    else  //Heike gave up before Yashin arrived
+                         val = -2;
+               end;
+
+          AddMedal('YashinKill',val);
+
+          //Player kept fighting until the bitter end
+          if heike_surrendered then
+               val = -1
+          else
+               val = 1;
+
+          AddMedal('BitterEnd',val);
+          SaveVariable(heike_surrendered,'Heike_surrendered_08');
+
+          GiveMedals('Medals');
+
+
+          //Reward and save people
+          RewardPeople(Heike);
+
+          SetAttr(Heike,attr_stamina,heike_original_stamina);
+          SaveCharacters(Heike,'Heike_08');
+
+          if {not heike_surrendered and} deserters+0 > 0 then
+               begin
+                    if GetLives(Louis) > 250 then  //If Louis got away alive
+                         SaveCharacters(Louis,'Louis_08');
+
+                    if GetLives(Martin) > 250 and Martin in deserters then
+                         SaveCharacters(Martin,'Martin_08');
+
+                    deserters = deserters diff [Louis,Martin];
+                    if deserters > 0 then
+                         SaveCharacters(deserters,'other_deserters_08');
+               end;
+
+
+          YouWin;
+     end;

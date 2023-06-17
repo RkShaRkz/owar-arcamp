@@ -1,0 +1,358 @@
+
+var dont_gather_crates, going_to_drop_material_units, known_crates_list;
+
+Export Function InitCrateModule;
+     begin
+          dont_gather_crates = [];  //[[x,y],[x,y]]; List of hexes with crates/material the computer should not gather (because the player deliberately dropped the material).
+          going_to_drop_material_units = [];  //Identifiers of the player units that are going to drop materials (crates, oil etc.).
+          known_crates_list = [[],[],[],[],[],[],[],[]];  //[[x,y],[x,y]]; List of hexes with crates/material for each fog number (not base or side!). A hex is only removed when we have seen there is no crates on the hex any more.
+     end;
+
+//Crate spawning - whole map
+//The spawning frequency should be reflected in function "CalculateCargoBayCooldown" module "AI".
+Every 0$1 + 0$0.4 do
+     begin
+          wait( Rand(1$30,2$0) );
+
+          if Rand(1,3) = 1 then
+               CreateCratesAnywhere(Rand(3,5),true)
+          else
+               CreateCratesArea(Rand(3,5),player_crate_deny_area,true);
+
+          //Chance of extra crates with little delay
+          if Rand(1,4) = 1 then
+               begin
+                    wait( Rand(0$5,0$20) );
+                    CreateCratesAnywhere(Rand(2,4),true);
+               end;
+
+          enable;
+     end;
+
+//Update the number of crates the player is expected to deny.
+//The player can cheat this system by dropping crates himself/herself outside the player's base
+//area, wait a little, and then pick them up again but the player won't see the effect of this
+//directly (and only vaguely when the medals are given) so we presume the player won't figure
+//this out.
+Every 0$1+0$0.6 do
+     var crate_list, temp_list, i, temp_list_2, hex;
+     begin
+          crate_list = [];
+
+          repeat
+               //Check if positions in the list no longer contains any crates
+               i = 1;
+               while i <= crate_list do
+                    begin
+                         if GetResourceAmountXY(crate_list[i][1],crate_list[i][2]) = 0 then
+                              begin
+                                   crate_list = Delete(crate_list,i);
+                                   continue;
+                              end;
+
+                         i = i + 1;
+                    end;
+
+               //Check for new crate spawns in the area
+               temp_list = GetListOfCratesInArea(player_crate_deny_area);
+               temp_list_2 = [];
+               i = 1;
+               while i < temp_list do
+                    begin
+                         hex = [temp_list[i],temp_list[i+1]];
+
+                         if not hex in crate_list and GetResourceTypeXY(hex[1],hex[2]) = mat_cans then  //GetListOfCratesInArea checks for crates, oil barrels, siberite barrels and artifacts
+                              temp_list_2 = temp_list_2 ^ [hex];
+
+                         i = i + 2;
+                    end;
+
+               //Count the amount of new crates and add the new crate hexes to the crate list
+               for hex in temp_list_2 do
+                    begin
+                         deny_crates_spawned = deny_crates_spawned + GetResourceAmountXY(hex[1],hex[2]);
+                         crate_list = crate_list ^ [hex];
+                    end;
+
+               wait(0$1);
+
+          until false;
+     end;
+
+//Update how many crates, which the player should have denied, the computer has gathered.
+Every 0$1+0$0.7 do
+     var i, val, russian_gatherers, temp;
+     var rus_gatherers_deny_crates_amount, rus_gatherers_nondeny_crates_amount;
+     begin
+          rus_gatherers_deny_crates_amount = [];  //Number of deny crates each Russian gatherer carries
+          rus_gatherers_nondeny_crates_amount = [];  //Number of "normal" crates each Russian gatherer carries
+
+          repeat
+               //Find the Russian gatherers (engineer, apeman engineer, cargo bay)
+               russian_gatherers = [];
+               for i in ai_engineers ^ ai_apemen_engineers ^ (ai_cargo_bay diff 0) do
+                    russian_gatherers = russian_gatherers ^ i;
+
+               
+               //Update how many crates each Russian gatherer carries and check if they have delivered
+               //some crates which should have been denied.
+               for i in russian_gatherers do
+                    begin
+                         val = GetCargo(i,mat_cans);
+
+                         if rus_gatherers_deny_crates_amount < i then
+                              rus_gatherers_deny_crates_amount = Replace(rus_gatherers_deny_crates_amount,i,0);
+
+                         if rus_gatherers_nondeny_crates_amount < i then
+                              rus_gatherers_nondeny_crates_amount = Replace(rus_gatherers_nondeny_crates_amount,i,0);
+
+                         temp = val - rus_gatherers_deny_crates_amount[i] - rus_gatherers_nondeny_crates_amount[i];
+
+                         if IsInArea(i,player_crate_deny_area) and temp > 0 then
+                              begin
+                                   rus_gatherers_deny_crates_amount = Replace(rus_gatherers_deny_crates_amount,i, rus_gatherers_deny_crates_amount[i] + temp);
+                              end
+                         else
+                              if temp > 0 then
+                                   begin
+                                        rus_gatherers_nondeny_crates_amount = Replace(rus_gatherers_nondeny_crates_amount,i, rus_gatherers_nondeny_crates_amount[i] + temp);
+                                   end
+                              else
+                                   if temp < 0 and val = 0 and IsOk(i) then  //delivered goods (update when all goods are loaded off)
+                                        begin
+                                             deny_crates_gathered = deny_crates_gathered + rus_gatherers_deny_crates_amount[i] div 10;  //GetCargo returns 30 where GetResourceAmountXY returns 3
+                                             rus_gatherers_deny_crates_amount = Replace(rus_gatherers_deny_crates_amount,i,0);
+                                             rus_gatherers_nondeny_crates_amount = Replace(rus_gatherers_nondeny_crates_amount,i,0);
+                                        end;
+                    end;
+
+               wait(0$1);
+
+          until false;
+     end;
+
+
+//Detect if the player gives orders to an engineer or cargo bay to drop materials. This could be done
+//just to lure the computer's cargo bay out so it can be easily destroyed.
+Function OnCommand_CrateDropDetection(com);
+     var b, temp_list, t;
+     begin
+          if com <> 74 then  //Drop material
+               exit;
+
+          for b in FilterAllUnits([[f_side,you],[f_or,[f_class,class_engineer],[f_class,class_apeman_engineer],[f_weapon,us_cargo_bay],[f_weapon,ru_cargo_bay]]]) do
+               if IsSelected(b) and not b in going_to_drop_material_units then
+                    if HasTask(b) then
+                         //Drop material in task list format is ['m',0,0,0,0,0,0]
+                         begin
+                              for t in GetTaskList(b) do
+                                   begin
+                                        if t[1] = 'm' then
+                                             begin
+                                                  going_to_drop_material_units = going_to_drop_material_units ^ b;
+                                                  break;
+                                             end;
+                                   end;
+                         end;
+
+     end;
+on Command(com) do
+     begin
+          OnCommand_CrateDropDetection(com);
+     end;
+
+//Determine if a unit has dropped some cargo and add the cargo to the list of materials not to gather.
+//If the player gives an engineer/cargo bay not carrying anything the following orders (chaining):
+//Pick up material, drop material; then this every will mark all materials close to the engineer/
+//cargo bay until he/she picks up the designated material (i.e. put them in dont_gather_hexes).
+//This is rare so we will ignore it.
+Every 0$1+0$0.1 do
+     var un, temp_list, t, dist, hex;
+     begin
+          repeat
+          wait(0$0.5);
+
+          if going_to_drop_material_units = 0 then
+               continue;
+
+          for un in going_to_drop_material_units do
+               if not Carry(un) then
+                    begin
+                         if GetType(un) = unit_human then
+                              dist = 2
+                         else
+                              dist = 4;  //cargo bay
+
+                         for hex in GetHexesNearHex(GetX(un),GetY(un),dist) do
+                              if GetResourceAmountXY(hex[1],hex[2]) > 0 then
+                                   dont_gather_crates = Insert(dont_gather_crates,1,hex);
+                    end;
+
+          going_to_drop_material_units = UnitFilter(going_to_drop_material_units,[f_hastask]);
+
+          temp_list = [];
+          for un in going_to_drop_material_units do
+               begin
+                    for t in GetTaskList(un) do
+                         if t[1] = 'm' then
+                              begin
+                                   temp_list = temp_list ^ un;
+                                   break;
+                              end;
+               end;
+
+          going_to_drop_material_units = temp_list;
+
+          until false;
+     end;
+
+//Returns all hexes within "dist" distance of hex [x,y] including hex [x,y] itself.
+Function GetHexesNearHex(x,y,dist);
+     var d, list_coords, b;
+     begin
+          result = [[x,y]];
+
+          for d = 1 to dist do
+               begin
+                    list_coords = [];
+
+                    //This is the 'corner hexes'
+                    list_coords = Insert(list_coords,1,[x,y-d]);
+                    list_coords = Insert(list_coords,1,[x+d,y]);
+                    list_coords = Insert(list_coords,1,[x+d,y+d]);
+                    list_coords = Insert(list_coords,1,[x,y+d]);
+                    list_coords = Insert(list_coords,1,[x-d,y]);
+                    list_coords = Insert(list_coords,1,[x-d,y-d]);
+
+                    //This is all the hexes in between the 'corner hexes'
+                    b = 1;
+                    while b <= (d - 1) do
+                         begin
+                              list_coords = Insert(list_coords, 1, [x+b, y-d+b]);
+                              list_coords = Insert(list_coords, 1, [x+d, y+b]);
+                              list_coords = Insert(list_coords, 1, [x+d-b, y+d]);
+                              list_coords = Insert(list_coords, 1, [x-b, y+d-b]);
+                              list_coords = Insert(list_coords, 1, [x-d, y-b]);
+                              list_coords = Insert(list_coords, 1, [x-d+b, y-d]);
+
+                              b = b + 1;
+                         end;
+
+                    result = result ^ list_coords;
+               end;
+     end;
+
+//Update the list of materials not to gather, i.e. remove the hex when there is nothing on it any more.
+Every 0$1 do
+     var i;
+     begin
+          repeat
+          wait(0$1);
+
+          if dont_gather_crates = 0 then
+               continue;
+
+          i = 1;
+          while i <= dont_gather_crates do
+               begin
+                    if GetResourceAmountXY(dont_gather_crates[i][1],dont_gather_crates[i][2]) = 0 then
+                         begin
+                              dont_gather_crates = Delete(dont_gather_crates,i);
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          until false;
+     end;
+
+//Detect new materials on the whole map. We only remove a material from our list of materials when we have seen
+//there is no crate on the hex any more. This way the cargo bay/apes/engineers will continue towards places
+//where there have been crates even though the player has gathered/destroyed them rather than returning back
+//to base immediately as though they knew there was no crates any more.
+Every 0$1+0$0.1 do
+     var temp_list, c, i, fog_numbers, crates_list;
+     begin
+          repeat
+          wait(0$1);
+
+          temp_list = GetListOfCratesInArea(whole_map_area);
+          if temp_list = 0 then
+               continue;
+
+          fog_numbers = [];
+          for i in ai_bases do
+               fog_numbers = fog_numbers union GetSideFog(GetBaseSide(i));
+
+          if fog_numbers = 0 then
+               continue;
+
+          c = 1;
+          crates_list = [];
+          repeat
+          crates_list = Insert(crates_list,1,[temp_list[c],temp_list[c+1]]);
+
+          c = c + 2;
+          until c > temp_list;
+
+          for i in fog_numbers do
+               begin
+                    temp_list = known_crates_list[i] union crates_list;
+                    known_crates_list = Replace(known_crates_list,i,temp_list);
+               end;
+
+          until false;
+     end;
+//Remove crates.
+Every 0$1+0$0.2 do
+     var i, fog_numbers, k, temp_list;
+     begin
+          repeat
+          wait(0$1);
+
+          fog_numbers = [];
+          for i in ai_bases do
+               fog_numbers = fog_numbers union GetSideFog(GetBaseSide(i));
+
+          if fog_numbers = 0 then
+               continue;
+
+          for i in fog_numbers do
+               begin
+                    k = 1;
+                    while k <= known_crates_list[i]+0 do
+                         begin
+                              if SeeXY(i,known_crates_list[i][k][1],known_crates_list[i][k][2]) and GetResourceAmountXY(known_crates_list[i][k][1],known_crates_list[i][k][2]) = 0 then
+                                   begin
+                                        temp_list = Delete(known_crates_list[i],k);
+                                        known_crates_list = Replace(known_crates_list,i,temp_list);
+
+                                        continue;
+                                   end;
+
+                              k = k + 1;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//Returns a list [[x,y],[x,y]...] with materials in the specified area omitting material which shouldn't be
+//gathered.
+Export Function GetListOfCratesInArea_ForGathering(base,area);
+     var temp_list, c;
+     begin
+          result = [];
+          temp_list = [];
+
+          for c in known_crates_list[GetSideFog(GetBaseSide(base))] do
+               if InArea(c[1],c[2],area) then
+                    temp_list = temp_list ^ [c];
+
+          for c in temp_list do
+               begin
+                    if GetResourceTypeXY(c[1],c[2]) <> mat_artifact and ( InArea(c[1],c[2],GetBaseArea(base)) or not c in dont_gather_crates ) then
+                         result = result ^ [c];
+               end;
+     end;

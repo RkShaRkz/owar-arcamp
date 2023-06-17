@@ -1,0 +1,60 @@
+
+Export Function EndMission;
+     var val, all_list, un_list, name_list;
+     begin
+          //Medals + save variables
+          //Siberite power plant built and data implemented
+          if ToDouble(data_implemented) = 100 then
+               val = 1
+          else
+               if not first_power_plant then
+                    val = -1
+               else
+                    val = -2;
+
+          AddMedal('SiberitePowerPlant',val);
+
+          if val = 1 then
+             SaveVariable(1, 'SibPlantDeveloped_07_cont')
+          else SaveVariable(0, 'SibPlantDeveloped_07_cont');
+
+          //Siberite techs researched
+          if sib_techs_researched then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('SiberiteTechs',val);
+
+          //Siberite gathered within time limit
+          if sib_gathered >= sib_to_gather then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('SiberiteGather',val);
+          SaveVariable(val = 1,'Siberite_gathered_on_time_07_cont');
+
+          GiveMedals('Medals');
+
+
+          //Other variables to save
+          SaveVariable(not first_ape_veh,'Apeman_controlled_vehicle_constructed_07_cont');
+
+          //Reward and save people
+          all_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff GetApes(you);
+          RewardPeople(all_list);
+
+          SaveCharacters(Heike,'Heike_07_cont');
+
+          un_list = [Sonya, Oswald, Ralph, Aviradze, Aviradze_standin, Kowalski, Willard, Evelyn, Gordon, Suze, MarkB, Olaf, Kurt, Swansson];
+          name_list = ['Sonya','Oswald','Ralph','Aviradze','Aviradze_standin','Kowalski','Willard','Evelyn','Gordon','Suze','MarkB','Olaf','Kurt','Swansson'];
+          for val = 1 to un_list do
+               if un_list[val] in all_list then
+                    SaveCharacters(un_list[val],name_list[val] & '_07_cont');
+
+          SaveCharacters(all_list diff (Heike ^ un_list),'Others_07_cont');
+
+
+          YouWin;
+     end;

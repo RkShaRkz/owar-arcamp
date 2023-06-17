@@ -1,0 +1,1460 @@
+[TEMPLATE MainMenu]
+[FrameFlow window]
+53 240
+7 16
+"window_mainmenu"
+NoCenter
+[end]
+
+[Text ver]
+0 0
+0 0
+"Version text"
+[end]
+
+[ButtonFlow current user]
+3 100
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow campaign]
+3 130
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow multiplayer]
+999 999
+0
+"main_menu_button"
+"DisabledButton text"
+NotVisible
+[end]
+
+
+[ButtonFlow skirmish]
+3 180
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow mods]
+3 160
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow options]
+3 190
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow credits]
+3 220
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow quit]
+3 250
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Query]
+[FrameFlow window]
+0 0
+1 1
+"window_query"
+[end]
+
+[Text textbox]
+20 25
+260 25
+"Listbox text"
+[end]
+
+[ButtonFlow button]
+7 96
+17
+"button_nafuk"
+"Button text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Load edit]
+[FrameFlow window]
+0 0
+18 2
+"loadedit_editbox"
+[end]
+
+[Text caption]
+8 7
+182 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Load listbox]
+[FrameFlow window]
+0 0
+5 7
+"listbox_nafuk"
+[end]
+
+[Scrollbar scroll]
+0 0
+1 0
+"vertscrollbar"
+[end]
+
+[Text strings]
+8 8
+159 210
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Load]
+[FrameFlow window]
+0 0
+7 5
+"window_load"
+[end]
+
+[Text caption]
+150 330
+160 20
+"Loading Label text"
+[end]
+
+[Area edit]
+6 23
+200 30
+[end]
+
+[Area listbox]
+6 51
+200 220
+[end]
+
+[Checkbox sort by description]
+213 79
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox sort by campaign&mission]
+213 54
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox sort by date]
+213 29
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[ButtonFlow camp. over. - amer]
+10 325
+6
+"button"
+"Button text"
+[end]
+
+[ButtonFlow camp. over. - rus]
+310 325
+6
+"button"
+"Button text"
+[end]
+
+[ButtonFlow load]
+296 280
+7
+"button_load"
+"Button text"
+[end]
+
+[ButtonFlow delete]
+153 280
+7
+"button_load"
+"Button text"
+[end]
+
+[ButtonFlow back]
+10 280
+7
+"button_load"
+"Button text"
+[end]
+
+[Area picture]
+211 109
+220 160
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Options]
+[FrameFlow window]
+0 0
+7 6
+"window_options"
+[end]
+
+[Text Soundopts]
+303 40
+230 15
+"Button text"
+[end]
+
+[Text Graficopts]
+547 40
+230 15
+"Button text"
+[end]
+
+[Text Gameopts]
+303 205
+230 15
+"Button text"
+[end]
+
+[Text Unitopts]
+547 205
+230 15
+"Button text"
+[end]
+
+[Text scrolltext]
+303 56
+30 15
+"Button text"
+[end]
+
+[Scrollbar music]
+302 71
+75 0
+"horizScrollBar"
+[end]
+
+[Scrollbar speech]
+302 105
+75 0
+"horizScrollBar"
+[end]
+
+[Scrollbar effects]
+302 139
+75 0
+"horizScrollBar"
+[end]
+
+[Scrollbar gamma]
+547 71
+75 0
+"horizScrollBar"
+[end]
+
+[Scrollbar bri]
+547 105
+75 0
+"horizScrollBar"
+[end]
+
+[Scrollbar speed]
+302 236
+75 0
+"horizScrollBar"
+[end]
+
+[Checkbox subtitles]
+305 285
+"checkbox"
+"800Factory listbox text"
+[end]
+
+[Checkbox ground]
+550 154
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox shadows]
+550 129
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox water]
+550 179
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox automission objectives]
+305 260
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox permanent sg]
+305 310
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox runawaywounded]
+550 260
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox runawaynoncombat]
+550 285
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Checkbox runawayvehicles]
+550 310
+"CheckBox"
+"800Factory listbox text"
+[end]
+
+[Text unitlabel]
+560 223
+225 20
+"CheckBox text"
+[end]
+
+[ButtonFlow ok]
+56 200
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow cancel]
+56 229
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Tree]
+[Scrollbar Vscroll]
+0 0
+0 0
+"vertscrollbarT"
+[end]
+
+[Scrollbar Hscroll]
+0 0
+0 0
+"horizScrollBar"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Choose side]
+[FrameFlow window]
+0 70
+0 0
+"window_side"
+[end]
+
+[Button cancel]
+56 438
+"main_menu_button"
+"NewButton text"
+[end]
+
+[Button amer]
+999 999
+"main_menu_button"
+"DisabledButton text"
+NotEnabled
+[end]
+
+[Button arab]
+56 370
+"main_menu_button"
+"NewButton text"
+[end]
+
+[Button rus]
+999 999
+"main_menu_button"
+"DisabledButton text"
+NotEnabled
+[end]
+
+[Button load]
+56 409
+"main_menu_button"
+"NewButton text"
+[end]
+
+[Text why]
+163 377
+475 43
+"Combobox text"
+NotVisible
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Profile edit]
+[FrameFlow window]
+0 0
+10 2
+"editname_listbox"
+[end]
+
+[Text caption]
+4 4
+260 13
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Profile listbox]
+[FrameFlow window]
+0 0
+6 10
+"profile_listbox"
+[end]
+
+[Scrollbar scroll]
+195 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+8 13
+176 258
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Profile]
+[FrameFlow window]
+0 200
+5 4
+"window_profile"
+NoCenter
+[end]
+
+[Area listbox]
+400 19
+160 280
+[end]
+
+[ButtonFlow new]
+56 120
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow erase]
+56 149
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow rename]
+56 178
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow ok]
+56 207
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow cancel]
+56 236
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Add_or_Rename]
+[FrameFlow window]
+0 0
+3 1
+"editname_window"
+[end]
+
+[Area edit]
+16 24
+240 20
+[end]
+
+[ButtonFlow ok]
+7 51
+17
+"button"
+"Button text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Multi]
+[FrameFlow window]
+0 0
+1 1
+"window_multi"
+[end]
+
+[Frame kick-listicka]
+241 164
+"window_kick_lista"
+[end]
+
+[ButtonFlow start]
+16 87
+8
+"button"
+"Button text"
+[end]
+
+[ButtonFlow leave]
+16 53
+8
+"button"
+"Button text"
+[end]
+
+[Checkbox lock]
+178 32
+"checkbox"
+"800Factory listbox text"
+[end]
+
+[Checkbox rndpositions]
+178 63
+"checkbox"
+"800Factory listbox text"
+[end]
+
+[Checkbox rndsidecol]
+178 81
+"checkbox"
+"800Factory listbox text"
+[end]
+
+[Checkbox multiside]
+178 99
+"checkbox"
+"800Factory listbox text"
+[end]
+
+[Text caption]
+12 8
+340 15
+"Listbox text"
+[end]
+
+[Text status]
+13 127
+370 10
+"Listbox text"
+[end]
+
+[Text joinresult]
+13 142
+370 10
+"Listbox text"
+[end]
+
+[Text playernum]
+354 8
+35 15
+"Listbox text"
+[end]
+
+[Checkbox zal1]
+4 164
+"multizalozka_players"
+""
+[end]
+
+[Checkbox zal2]
+64 164
+"multizalozka_options"
+""
+[end]
+
+[Checkbox zal3]
+123 164
+"multizalozka_map&game"
+""
+[end]
+
+[Checkbox zal4]
+241 164
+"multizalozka_kick"
+""
+[end]
+
+[Checkbox zal5]
+182 164
+"multizalozka_servers"
+""
+[end]
+
+[Checkbox zal6]
+301 164
+"multizalozka_clanbase"
+""
+[end]
+
+[Area panel]
+10 191
+780 402
+[end]
+
+[Area chat]
+400 8
+400 115
+[end]
+
+[Area chatedit]
+400 151
+400 25
+[end]
+
+[Area nameedit]
+14 32
+140 20
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE MultiTeam]
+[FrameFlow window]
+5 0
+29 1
+"window_nafuk_ver2"
+[end]
+
+[ButtonFlow J/L]
+18 4
+6
+"multi_button"
+"Button text"
+[end]
+
+[Area TeamName]
+168 4
+135 20
+[end]
+
+[Area Position]
+305 4
+135 20
+[end]
+
+[Text TeamNum]
+693 4
+75 20
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Player]
+[FrameFlow window]
+0 0
+28 1
+"window_nafuk_ver2Brown"
+[end]
+
+[Area status]
+9 2
+22 22
+[end]
+
+[Text Nameteam]
+35 5
+130 15
+"Listbox text"
+[end]
+
+[Area Color combo]
+164 3
+55 20
+[end]
+
+[Area Nation combo]
+378 3
+115 20
+[end]
+
+[Area Position combo]
+229 3
+130 20
+[end]
+
+[ButtonFlow Join/Leave]
+505 3
+6
+"multi_button"
+"Button text"
+[end]
+
+[Checkbox Lock]
+659 4
+"checkbox"
+"Button text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE MapGame]
+[Text hint1]
+20 7
+200 20
+"Edit text"
+[end]
+
+[Text hint2]
+520 7
+200 20
+"Edit text"
+[end]
+
+[Area map]
+5 58
+500 330
+[end]
+
+[Area mapname]
+20 30
+350 25
+[end]
+
+[Area gametyp]
+520 30
+200 25
+[end]
+
+[Text content]
+520 58
+255 330
+"Edit text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Servers]
+[Text hint1]
+20 7
+200 20
+"Edit text"
+[end]
+
+[Text hint2]
+400 7
+200 20
+"Edit text"
+[end]
+
+[Area serverslst]
+400 30
+360 140
+[end]
+
+[Area playerslst]
+20 30
+360 140
+[end]
+
+[ButtonFlow join]
+278 224
+8
+"button"
+"Button text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Kick]
+[Text hint1]
+20 7
+200 20
+"Edit text"
+[end]
+
+[Area playerslst]
+20 30
+385 140
+[end]
+
+[ButtonFlow kick]
+390 29
+8
+"button"
+"Button text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Name edit]
+[FrameFlow window]
+0 0
+6 2
+"multi_namedit"
+[end]
+
+[Text caption]
+3 2
+146 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE TeamName edit]
+[FrameFlow window]
+0 0
+10 2
+"edit_nafuk"
+[end]
+
+[Text caption]
+5 4
+110 14
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Chat edit]
+[FrameFlow window]
+0 0
+21 2
+"multi_chatedit"
+[end]
+
+[Text caption]
+3 0
+380 14
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Chat listbox]
+[FrameFlow window]
+0 0
+20 4
+"multi_chatlistbox"
+[end]
+
+[Scrollbar scroll]
+0 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+2 2
+361 138
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Nation listbox]
+[FrameFlow window]
+0 2
+2 1
+"listbox_nafukC_Invert"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarC_Invert"
+[end]
+
+[Text strings]
+4 4
+88 66
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Nation combobox]
+[Combobox combobox]
+0 0
+"combo_nation_Invert"
+[end]
+
+[Text caption]
+4 2
+90 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Position combobox]
+[Combobox combobox]
+0 0
+"combo_position_Invert"
+[end]
+
+[Text caption]
+4 2
+115 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Position listbox]
+[FrameFlow window]
+0 2
+3 1
+"listbox_nafukC_Invert"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarC_Invert"
+[end]
+
+[Text strings]
+4 4
+113 66
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE MapName combobox]
+[Combobox combobox]
+0 0
+"combo_mapname"
+[end]
+
+[Text caption]
+5 4
+290 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE MapName listbox]
+[FrameFlow window]
+0 2
+10 4
+"listbox_nafuk"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+8 8
+284 136
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE GameTyp combobox]
+[Combobox combobox]
+0 0
+"combo_gametyp"
+[end]
+
+[Text caption]
+5 4
+190 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE GameTyp listbox]
+[FrameFlow window]
+0 2
+6 4
+"listbox_nafuk"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+8 8
+184 136
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Color combobox]
+[Combobox combobox]
+0 0
+"combo_color_Invert"
+[end]
+
+[Text caption]
+3 3
+30 12
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Color listbox]
+[FrameFlow window]
+0 2
+1 5
+"window_color"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarC_Invert"
+[end]
+
+[Text strings]
+3 3
+30 126
+"Barvy text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Servers listbox]
+[FrameFlow window]
+0 0
+15 6
+"servers_listbox"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+11 8
+264 166
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Players listbox]
+[FrameFlow window]
+0 0
+15 6
+"servers_listbox"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+11 8
+264 166
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Server_players listbox]
+[FrameFlow window]
+0 0
+15 6
+"servers_listbox_malej"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+11 8
+236 166
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Options combobox]
+[Combobox combobox]
+0 0
+"combo_options"
+[end]
+
+[Text caption]
+5 4
+165 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Options listbox]
+[FrameFlow window]
+0 2
+5 2
+"listbox_nafuk"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+8 8
+159 86
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Location combobox]
+[Combobox combobox]
+0 0
+"combo_location"
+[end]
+
+[Text caption]
+4 2
+113 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Location listbox]
+[FrameFlow window]
+0 2
+3 2
+"listbox_nafukC"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarC"
+[end]
+
+[Text strings]
+4 4
+113 87
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Start MultiServer]
+[FrameFlow window]
+0 0
+7 6
+"servers_window"
+[end]
+
+[ButtonFlow join]
+56 250
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow create]
+56 279
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow enterip]
+56 308
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow return]
+56 337
+8
+"main_menu_button"
+"NewButton text"
+[end]
+
+[Area servers]
+395 140
+200 155
+[end]
+
+[Area players]
+395 330
+200 155
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Waitfor]
+[FrameFlow window]
+0 0
+15 8
+"window_nafuk"
+[end]
+
+[Text caption]
+30 11
+365 20
+"Button text"
+[end]
+
+[Area listbox]
+27 33
+365 165
+[end]
+
+[ButtonFlow left]
+216 211
+11
+"button_nafuk"
+"Button text"
+[end]
+
+[ButtonFlow right]
+14 211
+11
+"button_nafuk"
+"Button text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE Waitfor listbox]
+[FrameFlow window]
+0 0
+13 5
+"listbox_nafuk"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+""
+[end]
+
+[Text strings]
+8 8
+359 159
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE skirmish listbox]
+[Frame window]
+0 0
+"skirmish_listbox"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+11 8
+275 166
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE mods listbox]
+[Frame window]
+0 0
+"skirmish_listbox"
+[end]
+
+[Scrollbar scroll]
+100 0
+1 0
+"vertscrollbarT"
+[end]
+
+[Text strings]
+11 8
+275 166
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE skirmish]
+[Frame window]
+0 0
+"window_skirmish"
+[end]
+
+
+[Area listbox]
+7 18
+50 50
+[end]
+
+[ButtonFlow cancel]
+11 204
+3
+"button_PlayersServers"
+"Button text"
+[end]
+
+[ButtonFlow load]
+169 204
+3
+"button_PlayersServers"
+"Button text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE mods]
+[Frame window]
+0 0
+"window_mods"
+[end]
+
+
+[Area listbox]
+372 18
+50 50
+[end]
+
+[ButtonFlow cancel]
+56 169
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[ButtonFlow load]
+56 140
+0
+"main_menu_button"
+"NewButton text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE EnterIP edit]
+[FrameFlow window]
+0 0
+18 2
+"enterip_edit"
+[end]
+
+[Text caption]
+8 7
+182 15
+"Listbox text"
+[end]
+
+[end TEMPLATE]
+
+[TEMPLATE EnterIP]
+[FrameFlow window]
+0 0
+7 5
+"window_enterip"
+[end]
+
+[Text caption]
+150 330
+160 20
+"Loading Label text"
+[end]
+
+[Area edit]
+6 23
+200 30
+[end]
+
+[ButtonFlow ok]
+154 56
+7
+"button_load"
+"Button text"
+[end]
+
+[ButtonFlow cancel]
+10 56
+7
+"button_load"
+"Button text"
+[end]
+
+[Area picture]
+211 109
+220 160
+[end]
+
+[end TEMPLATE]

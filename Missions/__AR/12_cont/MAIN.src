@@ -1,0 +1,214 @@
+Export testing;
+
+Export Heike, Sonya, Oswald, Ralph, Kowalski, Evelyn, Olaf, Dwayne, Aviradze, Swansson, Khattam, Makise, Gonzo;
+Export other_folks, cargo_bays, other_vehicles, folks_on_foot;
+Export Abdul;
+
+
+Starting
+begin
+     ResetFog;
+     RandomizeAll;
+     
+     testing = false;  //Just testing or playing for real?
+
+     Init;
+
+     Action;
+end;
+
+Function Init;
+     var i, un, k, temp_list;
+     begin
+          uc_side = 2;
+          uc_nation = nation_arabian;
+
+          if not testing then
+               begin
+                    Heike = LoadPlayerChar('Heike');
+                    Sonya = LoadPlayerChar('Sonya');
+                    Oswald = LoadPlayerChar('Oswald');
+                    Ralph = LoadPlayerChar('Ralph');
+                    Kowalski = LoadPlayerChar('Kowalski');
+                    Evelyn = LoadPlayerChar('Evelyn');
+                    Olaf = LoadPlayerChar('Olaf');
+                    Dwayne = LoadPlayerChar('Dwayne');
+                    Aviradze = LoadPlayerChar('Aviradze');
+                    Swansson = LoadPlayerChar('Swansson');
+                    Khattam = LoadPlayerChar('Khattam');
+                    Makise = LoadPlayerChar('Makise');
+                    Gonzo = LoadPlayerChar('Gonzo');
+
+                    other_folks = CreateCharacterSet('Others_12_sel') diff 0;
+               end
+          else
+               begin
+                    InitHc;
+
+                    PrepareSoldier(sex_female,7);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+
+                    PrepareScientist(sex_female,7);
+                    hc_name = 'Makise';
+                    Makise = CreateHuman;
+
+                    PrepareScientist(sex_male,7);
+                    hc_name = 'Aviradze';
+                    Aviradze = CreateHuman;
+
+                    InitHc;
+                    uc_nation = nation_nature;
+                    hc_class = class_apeman_soldier;
+                    hc_name = 'Gonzo';
+                    Gonzo = CreateHuman;
+                    uc_nation = nation_arabian;
+
+                    other_folks = [];
+                    InitHc;
+                    for i = 1 to 5 do
+                         begin
+                              PrepareHuman(false,[class_soldier,class_engineer,class_mechanic,class_scientistic][Rand(1,4)],7);
+                              other_folks = other_folks ^ CreateHuman;
+                         end;
+               end;
+
+          Abdul = NewCharacter('Abdul');
+
+
+          //Vehicles
+          cargo_bays = [];
+          other_vehicles = [];
+
+          InitVc;
+          uc_direction = 3;
+          vc_chassis = ar_half_tracked;
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          vc_weapon = ar_cargo_bay;
+
+          un = CreateVehicle;
+          SetCargo(un,mat_artifact,40);
+          cargo_bays = cargo_bays ^ un;
+          
+          un = CreateVehicle;
+          SetCargo(un,mat_cans,80);
+          AddCargo(un,mat_siberit,20);
+          cargo_bays = cargo_bays ^ un;
+
+          if difficulty <= 2 then
+               begin
+                    un = CreateVehicle;
+
+                    if difficulty = 2 then
+                         begin
+                              SetCargo(un,mat_cans,40);
+                              AddCargo(un,mat_oil,60);
+                         end
+                    else
+                         begin
+                              SetCargo(un,mat_cans,80);
+                              AddCargo(un,mat_oil,20);
+                         end;
+
+                    cargo_bays = cargo_bays ^ un;
+               end;
+
+          for i = 1 to [3,2,1][difficulty] do
+               begin
+                    vc_weapon = [ar_gun, ar_rocket_launcher][Rand(1,2)];
+                    other_vehicles = other_vehicles ^ CreateVehicle;
+               end;
+
+          //Drivers (preferable mechanics)
+          temp_list = ([Heike, Sonya, Oswald, Ralph, Kowalski, Evelyn, Olaf, Dwayne, Aviradze, Swansson, Khattam, Makise] diff 0) ^ other_folks;
+          for i in cargo_bays ^ other_vehicles do
+               begin
+                    un = 0;
+                    for k in temp_list do
+                         if GetClass(k) = class_mechanic then
+                              begin
+                                   un = k;
+                                   break;
+                              end;
+
+                    if un = 0 and temp_list > 0 then
+                         un = temp_list[Rand(1,temp_list+0)];
+
+                    if un = 0 then
+                         break;
+
+                    PlaceHumanInUnit(un,i);
+                    temp_list = temp_list diff un;
+               end;
+
+          folks_on_foot = temp_list;
+          if Gonzo > 0 then
+               folks_on_foot = folks_on_foot ^ Gonzo;
+     end;
+Function LoadPlayerChar(c_name);
+     begin
+          if TestCharacters(c_name&'_12_sel') then
+               result = CreateCharacter(c_name&'_12_sel')
+          else
+               result = 0;
+     end;
+
+Function Action;
+     var i, temp_list;
+     begin
+          RevealFogArea(2,gray_fog_area);
+
+          InGameOn;
+          
+          CenterNowOnXY(14,14);  //Just somewhere black
+
+          for i in cargo_bays ^ other_vehicles ^ folks_on_foot do
+               PlaceUnitXYR(i,121,29,7,false);
+          
+          ComMoveXY(cargo_bays ^ other_vehicles ^ folks_on_foot,100,45);
+
+          //Wait for movement. Then center on units.
+          wait(0$1);
+          CenterNowOnUnits(cargo_bays ^ other_vehicles ^ folks_on_foot);
+
+          i = 0;
+          repeat
+          i = i + 1;
+          
+          if (i mod 3) = 0 then
+               CenterOnUnits(cargo_bays ^ other_vehicles ^ folks_on_foot);
+
+          wait(0$1);
+          until UnitFilter(cargo_bays ^ other_vehicles ^ folks_on_foot,[f_not,[f_distxy,100,45,10]]) = 0 or i >= 30;
+
+          CenterOnXY(100,45);
+          
+          SayRadio(Abdul,'D2-Ab-1');
+          Say(Heike,'D2-H-1');
+          SayRadio(Abdul,'D2-Ab-2');
+          Say(Heike,'D2-H-2');
+          SayRadio(Abdul,'D2-Ab-3');
+          Say(Heike,'D2-H-3');
+          SayRadio(Abdul,'D2-Ab-4');
+          Say(Heike,'D2-H-4');
+          SayRadio(Abdul,'D2-Ab-5');
+          Say(Heike,'D2-H-5');
+
+          wait(0$0.5);
+
+          ComMoveXY(cargo_bays ^ other_vehicles ^ folks_on_foot,64,45);
+
+          wait(0$7);
+
+          //Save vehicles and change map
+          temp_list = [];
+          for i in cargo_bays ^ other_vehicles do
+               temp_list = Insert(temp_list,1,[GetNation(i),GetChassis(i),GetEngine(i),GetControl(i),GetWeapon(i),GetCargo(i,mat_cans),GetCargo(i,mat_oil),GetCargo(i,mat_siberit),GetCargo(i,mat_artifact) > 0]);
+
+          SaveVariable(temp_list,'Vehicles_12_sel');
+
+          ChangeMap('%2','%2');
+
+          InGameOff;
+     end;

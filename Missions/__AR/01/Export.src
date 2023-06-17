@@ -1,0 +1,5 @@
+// export ident's
+
+Export arab_group_1,arab_group_2,arab_group_3,all_arab_groups;
+Export Sheik1,Sheik2;
+Export Joan, Heike, americans, Joan_flee, joan_escaped, joan_killers, eon_positions, Abdul, Farmer, Comm, Winston;

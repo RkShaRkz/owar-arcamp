@@ -1,0 +1,28 @@
+
+
+//Whole map
+Every 0$1 + 0$0.4 do
+     begin
+          wait( Rand(1$30,2$0) );
+
+          CreateCratesAnywhere(Rand(3,5),true);
+
+          enable;
+     end;
+
+Export Function PrepareCrates;
+     var all, i;
+     begin
+          //Create initial crates for the map
+          all = [40,30,20][difficulty];
+          repeat
+               if all >= 5 then
+                    i = Rand(2,5)
+               else i = all;
+
+               all = all - i;
+
+               CreateCratesAnywhere(i,false);
+
+          until all <= 0;
+     end;

@@ -1,0 +1,63 @@
+
+Export Function EndMission;
+     var val, all_list, un_list, name_list;
+     begin
+          //Medals
+          //Siberite implosion vehicle dismantled
+          if sib_imp_veh_dismantled then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('ImpVeh',val);
+
+          //Contaminating scientist taken to a lab with Makise
+          if contaminating_scientist_went_to_lab then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('ContSci',val);
+
+          //No Legion prisoners lost
+          if legion_prisoners+0 = num_legion_prisoners then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('LegPri',val);
+
+          GiveMedals('Medals');
+
+
+          //Variables
+          SaveVariable(sib_imp_veh_dismantled,'Implosion_vehicle_dismantled_12_cont2');
+          SaveVariable(contaminating_scientist_went_to_lab,'Contaminating_sci_brought_to_lab_12_cont2');
+
+
+          //Reward and save people
+          //FilterAllUnits is only concerned with units placed on the map.
+          all_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff GetApes(you);
+          if GetLives(Gonzo) > 0 then
+               all_list = all_list ^ Gonzo;
+
+          all_list = all_list ^ UnitFilter(traveling_humans,[f_not,[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+
+          RewardPeople(all_list);
+
+          SaveCharacters(Heike,'Heike_12_cont2');
+
+          un_list = [Sonya, Oswald, Ralph, Kowalski, Evelyn, Olaf, Dwayne, Aviradze, Swansson, Khattam, Makise, Gonzo];
+          name_list = ['Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Evelyn', 'Olaf', 'Dwayne', 'Aviradze', 'Swansson', 'Khattam', 'Makise', 'Gonzo'];
+          for val = 1 to un_list do
+               if un_list[val] in all_list then
+                    SaveCharacters(un_list[val],name_list[val] & '_12_cont2');
+
+          SaveCharacters(all_list diff (un_list ^ Heike),'Others_12_cont2');
+
+          //The Legion prisoners
+          SaveCharacters(legion_prisoners,'Prisoners_12_cont2');
+
+
+          YouWin;
+     end;

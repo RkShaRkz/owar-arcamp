@@ -1,0 +1,127 @@
+
+Export Function GameOver(val);
+var i, temp;
+begin
+     Randomize;
+
+     case val of
+          0: begin
+                  InGameOn;
+
+                  CenterNowOnXY(207,217);
+
+                  wait(0$4);
+                  PlaceSeeing(207,217,2,-35);
+                  CenterNowOnXY(207,217);
+
+                  SetAreaMapShow(ContaminationArea, 0);
+                  SetAreaMapShow(ContaminationArea1, 0);
+                  SetAreaMapShow(ContaminationArea2, 0);
+                  SetAreaMapShow(ContaminationArea3, 0);
+
+
+                  for i = 1 to rand(10,20) do
+                  begin
+                       temp = RandHexXYR(207,217,20,0);
+                       MineExplosion(temp[1],temp[2],1);
+
+                       wait(rand(5,40));
+                  end;
+
+                  YouLost('Apocalyse');
+
+                  IngameOff;
+             end;
+
+          1: begin
+                  InGameOn;
+
+                  CenterOnXY(207,217);
+                  PlaceSeeing(207,217,2,-35);
+
+                  ArtContamination(207,217,10);
+
+                  for i in FilterAllUnits([f_side,2]) do
+                      SetLives(i,1000);
+
+                  wait(0$4);
+
+                  DialogueOn;
+
+                  Say(Heike, 'End_Heike');
+
+                        if IsPlaced(Ralph) and IsPlaced(Sonya) then
+                  begin
+                       Say(Sonya, 'End_Sonya1');
+                       Say(Ralph, 'End_Ralph1');
+                  end
+                  else
+                      begin
+                           if IsPlaced(Sonya) then
+                              Say(Sonya, 'End_Sonya2');
+
+                           if IsPlaced(Ralph) then
+                              Say(Ralph, 'End_Ralph2');
+                      end;
+                              
+                  if IsPlaced(Oswald) then
+                     Say(Oswald, 'End_Oswald');
+
+                  if IsPlaced(Makise) then
+                     Say(Makise, 'End_Makise');
+
+                  if IsPlaced(Gensher) then
+                     Say(Gensher, 'End_Gensher');
+
+                  if IsPlaced(Olaf) then
+                     Say(Olaf, 'End_Olaf');
+
+                  if IsPlaced(Aviradze) then
+                     Say(Aviradze, 'End_Aviradze');
+
+                  if IsPlaced(Kowalski) then
+                     Say(Kowalski, 'End_Kowalski');
+
+                  if IsPlaced(Evelyn) then
+                     Say(Evelyn, 'End_Evelyn');
+
+                  if IsPlaced(Swansson) then
+                     Say(Swansson, 'End_Swansson');
+
+                  if IsPlaced(Dwayne) then
+                     Say(Dwayne, 'End_Dwayne');
+
+                  if IsPlaced(Khattam) then
+                     Say(Khattam, 'End_Khattam');
+
+                  if IsPlaced(Snake) then
+                     Say(Snake, 'End_Snake');
+
+                  DialogueOff;
+
+                  AddMedal('World',1);
+
+                  if 1 in [ATech_SibPlant,ATech_Beh,ATech_TimeLapse,ATech_Laser,ATech_SuperStim,ATech_SPBomb] then
+                     AddMedal('Art',1)
+                  else
+                      AddMedal('Art',2);
+
+                  if BasesDestroyed = 2 then
+                     AddMedal('Destruction',1)
+                  else
+                      AddMedal('Destruction',2);
+
+                  GiveMedals('Medals');
+
+
+                  Query('EndCutscene_replacement');
+                  wait(0$0.5);
+
+                  YouWin;
+
+                  InGameOff;
+             end;
+
+     end;
+end;
+

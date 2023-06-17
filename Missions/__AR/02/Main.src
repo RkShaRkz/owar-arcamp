@@ -1,0 +1,308 @@
+
+export you,russians,americans, nature;
+export Heike, Aviradze;
+EXPORT Oswald, Ralph, Sonya, Lister, Gladstone;
+export CarHeike;
+export ArSo1,ArSo2,ArSo3,ArSo4,ArEn1,ArEn2;
+export Rusak1, Rusak2;
+export ScenarZacatek, reinforcements_have_arrived, center_of_base;
+Export let_carheike_explode, scientist_escape, dismantle_the_lab, player_units;
+EXPORT testing;
+
+
+function prepare_sides;
+  begin
+// who is who in this mission
+    you:=2;
+    americans:=1;
+    russians:=3;
+    nature:=0;
+
+    SetAttitude(russians,you,att_enemy,true);
+    SetAttitude(americans,you,att_enemy,true);
+    SetAttitude(americans,russians,att_enemy,true);
+    SetAttitude(you,5,att_friend,true);
+  end;
+
+
+function prepare_units;
+var temp_list, i;
+begin
+    InitUc;
+    InitHc;
+    InitVc;
+
+    uc_nation = nation_arabian;
+    uc_side = you;
+    uc_direction = 1;
+
+    if testing > 0 then
+         begin
+              hc_sex = sex_female;
+              hc_class = class_soldier;
+              hc_skills = [4,0,1,1];
+              hc_name = 'Heike';
+              hc_gallery = 'ru';
+              hc_face_number = 24;
+              hc_attr = [10,12];
+              Heike = CreateHuman;
+         end
+    else
+         begin
+              Heike:=LoadCharacter('Heike_01_cont',0,0);
+              SetDir(Heike,uc_direction);
+         end;
+
+// prepares human unit Ralph
+    InitUc;
+    InitHc;
+    uc_nation = nation_arabian;
+    uc_side = you;
+
+    Ralph:=NewCharacter('Ralph');
+
+// prepares human unit Oswald
+    Oswald:=NewCharacter('Oswald');;
+
+// prepares human unit Sonya
+    Sonya:=NewCharacter('Sonya');;
+
+    Lister = NewCharacter('Lister');
+
+// prepares human unit Aviradze
+    Aviradze:=NewCharacter('Aviradze');
+    SetDir(Aviradze,4);
+
+    case testing of
+         0,2: begin
+              uc_nation:=nation_american;
+              uc_side:=you;
+              uc_direction = 1;
+
+              if testing = 0 then
+                   temp_list = LoadVariable('vehicle_01_cont',[])
+              else temp_list = [us_light_wheeled,engine_combustion,control_manual,us_machine_gun,1000];
+
+              if temp_list > 0 then
+                   begin
+                        vc_chassis=temp_list[1];
+                        vc_engine=temp_list[2];
+                        vc_control=temp_list[3];
+                        vc_weapon=temp_list[4];
+                        // creates car
+                        CarHeike:=CreateVehicle;
+
+                        //Don't carry over the exact HP total from last mission. The cutscene depends on
+                        //the vehicle not being completely broken. So just make it smoke if it had yellow
+                        //health in last mission (note: 500 HP is yellow but a vehicle only starts smoking
+                        //when going below 500 HP).
+                        if temp_list+0 < 5 or temp_list[5] >= 500 then  //backwards compatibility for HP carry-over
+                             SetLives(CarHeike, 500)
+                        else
+                             SetLives(CarHeike, 499);
+
+                        SetLives(Heike,700);
+
+                        PlaceHumanInUnit(Heike,CarHeike);
+                        ScenarZacatek = 2;
+                   end
+              else
+                   ScenarZacatek = 1;
+         end;
+         1: ScenarZacatek = 1;
+    end;
+
+
+    InitHc;
+    uc_nation = nation_arabian;
+    uc_direction = 4;
+    for i = 1 to 4 do
+         begin
+              if i = 1 then
+                   PrepareSoldier(false,-2)
+              else
+                   PrepareSoldier(false,3);
+
+              case i of
+                   1: ArSo1:=CreateHuman;
+                   2: ArSo2:=CreateHuman;
+                   3: ArSo3:=CreateHuman;
+                   4: ArSo4:=CreateHuman;
+              end;
+         end;
+
+
+    for i = 1 to 2 do
+         begin
+              PrepareEngineer(false,3);
+              case i of
+                   1: ArEn1:=CreateHuman;
+                   2: ArEn2:=CreateHuman;
+              end;
+         end;
+
+
+   if ScenarZacatek = 1 then
+        begin
+             // prepares human unit Rusak1
+             uc_nation=nation_russian;
+             uc_side=russians;
+             uc_direction = 1;
+
+             hc_sex=sex_male;
+             hc_class=class_soldier;
+             hc_skills=[0,0,0,0];
+             hc_name='';
+             hc_attr=[10,10];
+             // creates human
+             Rusak1:=CreateHuman;
+
+             hc_sex:=Rand(sex_male,sex_female);
+             // creates human
+             Rusak2:=CreateHuman;
+        end;
+end;
+
+
+FUNCTION SetDifficulty;
+  var t1;
+  begin
+
+    // ... and some properties depending on the difficulty
+    case difficulty of
+      1:
+          for t1 in FilterAllUnits([[f_side,americans],[f_class,class_soldier]]) do begin
+              SetAttr(t1, attr_stamina, GetAttr(t1,attr_stamina)-2);
+              SetAttr(t1, attr_speed, GetAttr(t1,attr_speed)-1);
+          end;
+
+      3:
+          for t1 in FilterAllUnits([[f_side,americans],[f_class,class_soldier]]) do begin
+              SetAttr(t1, attr_stamina, GetAttr(t1,attr_stamina)+1);
+              SetAttr(t1, attr_speed, GetAttr(t1,attr_speed)+1);
+          end;
+    end;
+
+  end;
+
+//------------------------------------------------------------------------------------------------------
+//-------- Main Starting Block -------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+
+var i, j;
+starting
+  begin
+    RandomizeAll;
+    ResetFog;
+
+    //Set to "0" if not testing, "1" to test using start scene 1 (Heike on foot), "2" to test using start scene 2 (Heike in car).
+    testing = 0;
+
+    prepare_sides;
+    prepare_units;
+    units_create;
+    SetDifficulty;
+
+    reinforcements_have_arrived := false;  //Has Dr. ApeFreak entered the scene with reinforcements?
+    let_carheike_explode = false;    //For intro 2 (Heike arrives in car)
+    spare_mechanics_working_on = 0;  //Which vehicle group are the spare mechanics helping (index number of "am_vehicle_groups)
+    going_to_be_healed = [];   //Human units being healed
+    center_of_base = [42,19];  //Center of the American base
+    will_heal = true;  //Will the scientists in the base heal? Or are they too frightened
+    vehicles_being_repaired = [];  //Vehicles being repaired
+    scientist_escape = false;   //Scientists try to escape
+    dismantle_the_lab = false;  //Should Americans try and destroy their lab?
+    player_units = []; //All units the player has and gets. Used to determine if some die (casualties medal).
+
+    //Misc.
+    SetResourceType(GetBase(amdep),mat_cans,Rand(5,8)*10);  //Realistic they have some ressources in that depot
+    SetTech(tech_tech1,americans,state_researched);  //speed solar recharging up
+
+    Intro;
+  end;
+
+
+//American lab is constantly working (on some monkey-tech? :P)
+Every 0$5 do
+     begin
+          if scientist_escape then
+               ComCancel(amlab)  //cancel spec research
+          else
+               begin
+                    if IsIdle(amlab) and IsOk(amlab) then
+                         SetSpecResearch(amlab,100,true);
+
+                    enable;
+               end;
+     end;
+
+
+//Ending conditions
+Every 0$1 do
+begin
+   if GetLives(Heike) = 0 then
+      YouLost('HeikeDead');
+
+   if GetLives(Aviradze) = 0 then
+      YouLost('AviradzeDead');
+
+   if GetLives(AmLab) = 0 and reinforcements_have_arrived then
+      YouLost('LabDead');
+
+   enable;
+end;
+On EnterBuilding(building,un) do
+     var num, list, un_list, name_list;
+     begin
+          if building = amlab and un = Aviradze then
+               begin
+                    CenterOnUnits(amlab);
+
+                    DialogueOn;
+                    Say(Aviradze,'D10Av1');
+                    Say(Heike,'D10H1');
+                    Say(Aviradze,'D10Av2');
+                    dwait(0$0.5);
+                    DialogueOff;
+                    ExclusiveOn;
+
+                    if UnitFilter(lab_scientists,[f_lives,251]) > 0 then  //some scientists from the base escaped
+                         num = -1
+                    else num = 1;
+                    AddMedal('Scientists_inside',num);
+
+                    list = UnitFilter(player_units,[f_alive]);
+                    case player_units - list of
+                         0: num = 1;
+                         1: num = 2;
+                         else num = -1;
+                    end;
+                    AddMedal('Loses',num);
+
+                    if AmericansInTheFieldAreFine(false,true) then
+                         num = -1
+                    else num = 1;
+                    AddMedal('Scientists_outside',num);
+
+                    GiveMedals('MAIN');
+
+
+                    RewardPeople(list);
+
+                    SaveCharacters(Heike,'Heike_02');
+                    SaveCharacters(Aviradze,'Aviradze_02');
+
+                    un_list = [Ralph,Oswald,Sonya,Lister];
+                    name_list = ['Ralph','Oswald','Sonya','Lister'];
+                    for num = 1 to un_list do
+                         if un_list[num] in list then
+                              SaveCharacters(un_list[num],name_list[num] & '_02');
+
+                    SaveCharacters(list diff ([Heike,Aviradze] ^ un_list),'Others_02');
+
+                    SaveVariable(AmericansInTheFieldAreFine(false,true) or UnitFilter(lab_scientists,[f_lives,251]) > 0,'scientists_got_away_02');
+
+
+                    YouWin;
+               end;
+     end;

@@ -1,0 +1,657 @@
+Export Testing;
+Export Gensher, UPFPeople, UPFVehicles, MissionFailed, EndingCutscene;
+Export Legion, LegionNoRetreat, LegionRetreating, LegionRemoteMech, Farmer, FarmerVehicle, Farmertroops, FarmerBombs, AmbushBombs, FarmerRemoteMech, emptyveh, BombStatus, FarmerStatus, FightingStarted, ContactCount;
+Export UPFRetreat, UPFRetUnits, UPFRetHexes, UPFCount, UPFRepairMech, UPFRear;
+
+Export Snake,Elizabeth,Pierre;
+Export Heike,Olaf,Sonya,Oswald,Ralph,Kowalski,Aviradze,Swansson,Dwayne,Khattam,Evelyn,Makise,Gonzo,others,PlayerPeople;
+Export Escort_others,playerpeople_previous_map;
+
+Starting
+begin
+     testing = false;
+
+     disable(1);
+     disable(2);                          
+     disable(3);
+
+     UPFPeople=[];
+     UPFVehicles=[];
+     Legion=[];
+     LegionNoRetreat=[];
+     LegionRetreating=[];
+     farmertroops=[];
+     AmbushBombs=[];
+     FarmerBombs=[];
+
+     SetDifficulty;
+     SpaghettiAndCorpses;
+     LoadUPF;
+     LoadFarmer;
+     LoadPlayer;
+     
+
+end;
+
+
+
+Function LoadUPF;
+var i,temp,temp2,controlmech;
+begin
+     Randomize;
+
+     uc_nation=nation_arabian;
+     uc_side=5;
+
+     if testing then
+          Gensher = NewCharacter('Dietrich')
+     else
+          Gensher = LoadCharacter('Gensher_11_cont',class_soldier,0);
+     placeunitxy(Gensher,62,89,false);
+     comhold(Gensher);
+
+     for i=1 to 3 do
+     begin
+          PrepareSoldier(false,10);
+          temp=createhuman;
+          UPFPeople=UPFPeople^temp;
+
+          placeunitxy(temp,[54,58,66][i],[89,89,89][i],false);
+          comturnxy(temp,[55,60,68][i],[91,91,91][i]);
+          addcomcrawl(temp);
+          addcomhold(temp);
+          //commovexy(temp,[55,60,68][i],[91,91,91][i]);
+     end;
+
+     for i=1 to 3 do
+     begin
+          PrepareSoldier(false,10);
+          temp=createhuman;
+          UPFPeople=UPFPeople^temp;
+          setclass(temp,class_mortar);
+   
+          placeunitxy(temp,[57,68,69][i],[89,90,89][i],false);
+          comhold(temp);
+     end;
+
+     PrepareScientist(false,10);
+     temp=createhuman;
+     UPFPeople=UPFPeople^temp;
+
+     placeunitxy(temp,54,80,false);
+     comhold(temp);
+
+
+
+     vc_chassis=ar_half_tracked;
+     vc_engine=engine_siberite;
+     vc_control=control_manual;
+     vc_weapon=ar_rocket_launcher;
+     for i=1 to 7 do
+     begin
+          if i>2 then
+             vc_weapon=ar_gun;
+          if i=5 then
+             vc_weapon=ar_gatling_gun;
+          if i=6 then
+             vc_weapon=ar_control_tower;
+          if i=7 then
+          begin
+               vc_weapon=ar_radar;
+               vc_chassis=ar_hovercraft;
+               vc_engine=engine_combustion;
+          end;
+
+          if i=3 or i=6 then
+             vc_control=control_manual
+          else
+              if i=4 then
+                 vc_control=control_apeman
+              else
+                  vc_control=control_remote;
+
+          temp=createvehicle;
+          UPFVehicles=UPFVehicles^temp;
+
+          setdir(temp,[3,2,2,3,2,3,2][i]);
+          placeunitxy(temp,[59,66,71,53,57,52,60][i],[88,87,90,91,91,77,85][i],false);
+
+          if i=3 or i=6 then
+          begin
+               preparemechanic(false,10);
+               temp2=createhuman;
+               UPFPeople=UPFPeople^temp2;
+               placehumaninunit(temp2,temp);
+
+               if i=6 then
+                  controlmech=temp2;
+          end;
+
+          if i = 1 then
+          begin
+               preparemechanic(false,10);
+               temp2=createhuman;
+               UPFPeople=UPFPeople^temp2;
+
+               UPFRepairMech = temp2;
+               PlaceUnitXY(UPFRepairMech,51,79,false);
+          end;
+     end;
+
+     for i in UPFVehicles do
+     begin
+          comlinkto(i,controlmech);
+          addcomhold(i);
+     end;
+
+     vc_engine=engine_combustion;
+     vc_control=control_manual;
+
+     for i=1 to 7 do
+     begin
+          if i=1 or i=2 then
+          begin
+               vc_chassis=ar_hovercraft;
+               if i=1 then
+                  vc_weapon=ar_light_gun
+               else
+                   vc_weapon=ar_double_machine_gun;
+          end;
+
+          if i=3 or i=4 then
+          begin
+               vc_chassis=ar_light_trike;
+               vc_weapon=ar_light_gun;
+          end;
+
+          if i=5 or i=6 then
+          begin
+               vc_chassis=ar_medium_trike;
+               if i=1 then
+                  vc_weapon=ar_flame_thrower
+               else
+                   vc_weapon=ar_gatling_gun;
+          end;
+
+          if i=7 then
+          begin
+               vc_chassis=ar_half_tracked;
+               vc_weapon=ar_gun;
+          end;
+
+          temp=createvehicle;
+          setdir(temp,[5,3,4,5,0,1,0][i]);
+          placeunitxy(temp,[47,45,45,54,59,60,54][i],[80,77,72,72,75,79,76][i],false);
+                          
+          setfuel(temp,rand(30,70));
+          if i=7 then
+          begin
+               setfuel(temp,0);
+               UPFVehicles=UPFVehicles^temp;
+          end;
+     end;
+
+     temp = AreaToList(minearea1,0);
+     for i = 1 to 8 do
+     begin
+          temp2 = Rand(1,temp[1]);
+          PlaceMine(temp[1][temp2],temp[2][temp2],5,0);
+          ViewMineAtPos(temp[1][temp2],temp[2][temp2],2);
+     end;
+
+     temp = AreaToList(minearea2,0);
+     for i = 1 to temp[1] do
+     begin
+          PlaceMine(temp[1][i],temp[2][i],5,0);
+          ViewMineAtPos(temp[1][i],temp[2][i],2);
+     end;
+
+     UPFRear = [];
+     vc_chassis = ar_half_tracked;
+     vc_engine = engine_combustion;
+     vc_weapon = ar_gatling_gun;
+     vc_control = control_apeman;
+
+     UPFRear = CreateVehicle;
+     SetDir(UPFRear[1], 0);
+     PlaceUnitXY(UPFRear[1], 46, 66, 0);
+     SetFuel(UPFRear[1], 33);
+
+     vc_weapon = ar_rocket_launcher;
+     UPFRear = UPFRear ^ CreateVehicle;
+     SetDir(UPFRear[2], 0);
+     PlaceUnitXY(UPFRear[2], 50, 70, 0);
+     SetFuel(UPFRear[2], 58);
+     ComHold(UPFRear);
+
+      //53,91 - gun; 57,89 - mortar; 59,88 - rocket; 66,87 - rocket; 68,90 - mortar
+     UPFretreat = [HexInfo(53,91), HexInfo(57,89), HexInfo(59,88), HexInfo(66,87), HexInfo(68,90)];
+     UPFRetUnits = [];
+     UPFRetHexes = [[49,82],[53,80],[54,82],[63,80],[55,80]];
+     UPFCount = [0,0,0,0,0];
+end;
+
+
+Function SpaghettiAndCorpses;
+var i,temp;
+begin
+     InGameOn;
+     centeronxy(101,78);
+
+     Randomize;
+
+     uc_nation=nation_arabian;
+     uc_side=5;
+     vc_chassis=ar_half_tracked;
+
+     for i=1 to 15 do
+     begin
+          if rand(1,3)=1 then
+             preparehuman(false,class_mechanic,0)
+          else
+              preparehuman(false,[class_soldier,class_mortar][rand(1,2)],0);
+
+          temp=createhuman;
+          placeunitarea(temp,deadarea,false);
+          setlives(temp,0);
+     end;
+
+     for i=1 to 15 do
+     begin
+          temp=createvehicle;
+          placeunitarea(temp,deadarea,false);
+          setlives(temp,0);
+     end;
+
+     wait(0$2);
+     enable(1);
+end;
+
+
+Function LoadPlayer;
+var PlayerVehicles,drivers;
+var i,j,veh,temp_list,apes;
+begin
+     Randomize;
+
+     if testing=true then
+     begin
+          uc_side=2;
+          Snake=NewCharacter('Snake');
+
+          uc_nation=nation_nature;
+          hc_class=class_apeman_soldier; hc_attr=[10,16]; hc_skills=[4,5,8,4]; hc_sex=1;  hc_name = 'Gonzo'; Gonzo=CreateHuman;
+          uc_nation=nation_arabian;
+
+          hc_class=class_mechanic; hc_attr=[12,10]; hc_skills=[4,5,9,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=2; hc_name = 'Olaf'; Olaf=CreateHuman;
+          hc_class=class_mortar; hc_attr=[11,10]; hc_skills=[9,6,6,4]; hc_sex=1; hc_gallery='ar'; hc_face_number=15; hc_name = 'Oswald'; Oswald=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[8,5,8,5]; hc_sex=1; hc_gallery='ar'; hc_face_number=5; hc_name = 'Ralph'; Ralph=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[9,11]; hc_skills=[5,6,9,9]; hc_sex=2; hc_gallery='ar'; hc_face_number=6; hc_name = 'Sonya'; Sonya=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[10,12]; hc_skills=[4,5,6,9]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=1; hc_name = 'Aviradze'; Aviradze=CreateHuman;
+          hc_class=class_mortar; hc_attr=[11,10]; hc_skills=[8,6,7,4]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=2; hc_name = 'Kowalski'; Kowalski=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[9,10]; hc_skills=[5,9,6,6]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=5; hc_name = 'Evelyn'; Evelyn=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[10,10]; hc_skills=[6,4,9,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=31; hc_name = 'Swansson'; Swansson=CreateHuman;
+          hc_class=class_mechanic; hc_attr=[11,10]; hc_skills=[7,5,9,5]; hc_sex=1; hc_gallery='ar_new'; hc_face_number=13; hc_name = 'Dwayne'; Dwayne=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[9,10]; hc_skills=[4,6,5,9]; hc_sex=1; hc_gallery='us'; hc_face_number=10; hc_name = 'Khattam'; Khattam=CreateHuman;
+          hc_class=class_scientistic; hc_attr=[9,9]; hc_skills=[4,8,8,10]; hc_sex=2; hc_gallery='ar_new'; hc_face_number=34; hc_name = 'Makise'; Makise=CreateHuman;
+          hc_class=class_mortar; hc_attr=[12,12]; hc_skills=[9,4,8,6]; hc_sex=2; hc_gallery='ru'; hc_face_number=24; hc_name = 'Heike'; Heike=CreateHuman;
+
+          playerpeople=[Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Makise] ^ others diff 0;
+
+          temp_list =[[ar_half_tracked,control_apeman,engine_siberite,ar_radar],
+                         [ar_half_tracked,control_apeman,engine_siberite,ar_rocket_launcher],
+                         [ar_half_tracked,control_apeman,engine_siberite,ar_gun],
+
+                         [ar_half_tracked,control_manual,engine_siberite,ar_gun],
+                         [ar_half_tracked,control_manual,engine_siberite,ar_gun],
+                         [ar_half_tracked,control_manual,engine_siberite,ar_rocket_launcher],
+                         [ar_half_tracked,control_manual,engine_siberite,ar_rocket_launcher]];
+
+          PlayerVehicles=[];
+
+          for i in temp_list do
+          begin
+               vc_chassis=i[1]; vc_control=i[2]; vc_engine=i[3]; vc_weapon=i[4];
+               PlayerVehicles=PlayerVehicles^createvehicle;
+          end;
+
+          temp_list=Heike;
+          for i=1 to [5,4,3][difficulty] do
+          begin
+               temp_list=temp_list^playerpeople[rand(1,playerpeople)];
+               playerpeople=playerpeople diff temp_list;
+          end;
+          playerpeople=temp_list;
+
+          for i in playerpeople do
+              if unitfilter(PlayerVehicles,[f_empty])>0 then
+                 placehumaninunit(i,unitfilter(PlayerVehicles,[f_empty])[1])
+              else
+                  placeunitarea(i,entry,false);
+
+          for i in PlayerVehicles do
+              placeunitarea(i,entry,false);
+
+          placeunitarea(Gonzo,entry,false);  
+
+     end
+     else
+
+     begin
+          PlayerVehicles=LoadVariable('Rescue_Vehicles_14',0);
+          drivers=LoadVariable('rescue_drivers_14',0);               //Remembers who drives what vehicle. If driving, a number>0 is saved in a list of people, which be kept in the same order as people list so don't mess with 'playerpeople' below
+
+          uc_side=2;
+          uc_nation=nation_arabian;
+
+          Snake=NewCharacter('Snake');
+
+          Heike=LoadCharacter('Heike_Rescue_14_cont',0,0);
+
+          Gonzo=LoadCharacter('Gonzo_Rescue_14_cont',0,0);
+
+          if TestCharacters('Olaf_Rescue_14_cont') then              //'Rescue' are people comming with Heike to this map. 'Escort' are people from previous one
+             Olaf=LoadCharacter('Olaf_Rescue_14_cont',0,0);
+
+          if TestCharacters('Sonya_Rescue_14_cont') then
+             Sonya=LoadCharacter('Sonya_Rescue_14_cont',0,0);
+
+          if TestCharacters('Oswald_Rescue_14_cont') then
+             Oswald=LoadCharacter('Oswald_Rescue_14_cont',0,0);
+
+          if TestCharacters('Ralph_Rescue_14_cont') then
+             Ralph=LoadCharacter('Ralph_Rescue_14_cont',0,0);
+
+          if TestCharacters('Kowalski_Rescue_14_cont') then
+             Kowalski=LoadCharacter('Kowalski_Rescue_14_cont',0,0);
+
+          if TestCharacters('Aviradze_Rescue_14_cont') then
+             Aviradze=LoadCharacter('Aviradze_Rescue_14_cont',0,0);
+          
+          if TestCharacters('Swansson_Rescue_14_cont') then
+             Swansson=LoadCharacter('Swansson_Rescue_14_cont',0,0);
+
+          if TestCharacters('Dwayne_Rescue_14_cont') then
+             Dwayne=LoadCharacter('Dwayne_Rescue_14_cont',0,0);
+
+          if TestCharacters('Khattam_Rescue_14_cont') then
+             Khattam=LoadCharacter('Khattam_Rescue_14_cont',0,0);
+
+          if TestCharacters('Evelyn_Rescue_14_cont') then
+             Evelyn=LoadCharacter('Evelyn_Rescue_14_cont',0,0);
+
+          if TestCharacters('Makise_Rescue_14_cont') then
+             Makise=LoadCharacter('Makise_Rescue_14_cont',0,0);
+
+          others=LoadCharacter('Others_Rescue_14_cont',0,0);
+
+          apes=LoadCharacter('Apes_Rescue_14_cont',0,0);
+
+          playerpeople=[Heike,Olaf,Sonya,Oswald,Ralph,Kowalski,Aviradze,Swansson,Dwayne,Khattam,Evelyn,Makise] ^ others;
+
+
+          playerpeople_previous_map=[];
+
+          if TestCharacters('Olaf_Escort_14_cont') then
+          begin
+               Olaf=LoadCharacter('Olaf_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Olaf;
+          end;
+
+          if TestCharacters('Sonya_Escort_14_cont') then
+          begin
+               Sonya=LoadCharacter('Sonya_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Sonya;
+          end;
+
+          if TestCharacters('Oswald_Escort_14_cont') then
+          begin
+               Oswald=LoadCharacter('Oswald_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Oswald;
+          end;
+
+          if TestCharacters('Ralph_Escort_14_cont') then
+          begin
+               Ralph=LoadCharacter('Ralph_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Ralph;
+          end;
+
+          if TestCharacters('Kowalski_Escort_14_cont') then
+          begin
+               Kowalski=LoadCharacter('Kowalski_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Kowalski;
+          end;
+
+          if TestCharacters('Aviradze_Escort_14_cont') then
+          begin
+               Aviradze=LoadCharacter('Aviradze_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Aviradze;
+          end;
+
+          if TestCharacters('Swansson_Escort_14_cont') then
+          begin
+               Swansson=LoadCharacter('Swansson_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Swansson;
+          end;
+
+          if TestCharacters('Dwayne_Escort_14_cont') then
+          begin
+               Dwayne=LoadCharacter('Dwayne_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Dwayne;
+          end;
+
+          if TestCharacters('Khattam_Escort_14_cont') then
+          begin
+               Khattam=LoadCharacter('Khattam_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Khattam;
+          end;
+
+          if TestCharacters('Evelyn_Escort_14_cont') then
+          begin
+               Evelyn=LoadCharacter('Evelyn_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Evelyn;
+          end;
+
+          if TestCharacters('Makise_Escort_14_cont') then
+          begin
+               Makise=LoadCharacter('Makise_Escort_14_cont',0,0);
+               playerpeople_previous_map=playerpeople_previous_map^Makise;
+          end;
+
+          escort_others=LoadCharacter('Others_Escort_14_cont',0,0);
+
+          playerpeople_previous_map=playerpeople_previous_map;
+
+          for i=1 to playervehicles do
+          begin
+               uc_side=2;
+               uc_nation=playervehicles[i][1];
+               vc_weapon=playervehicles[i][2];
+               vc_chassis=playervehicles[i][3];
+               vc_control=playervehicles[i][4];
+               vc_engine=playervehicles[i][5];
+               veh=createvehicle;
+
+               placeunitarea(veh,entry,false);
+               if playervehicles[i][4]=control_manual then
+                  for j=1 to drivers do
+                      if drivers[j]=i and playerpeople >= j then
+                         placehumaninunit(playerpeople[j],veh);
+          end;
+
+
+          for i in playerpeople^Gonzo^apes do
+              if not isinunit(i) then
+                 placeunitarea(i,entry,false);
+
+          for i in filterallunits([[f_side,2],[f_type,unit_vehicle]]) do
+              if GetWeapon(i)=ar_control_tower then
+              begin
+                   for j in filterallunits([[f_side,2],[f_type,unit_vehicle]])do
+                       if getcontrol(j)=control_remote and iscontroledby(j)=0 then
+                          LinkVehicleToHuman(j,isdrivenby(i));
+                   break;
+              end;
+
+
+          playerpeople=playerpeople diff 0;
+
+     end;
+
+     //These always appear - if not here then they are added to others in next mission
+     hc_name='Elizabeth Laeken';
+     hc_gallery='ar_new';
+     hc_face_number=39;
+     PrepareSoldier(sex_female,8);
+     hc_attr=[11,11];
+     Elizabeth=Createhuman;
+     setclass(Elizabeth,class_mortar);
+
+     hc_name='Pierre Leclerc';
+     hc_gallery='ar_new';
+     hc_face_number=40;
+     PrepareSoldier(sex_male,8);
+     hc_attr=[11,11];
+     Pierre=Createhuman;
+     setclass(Pierre,class_soldier);
+
+     InitHc;
+end;
+
+
+Function LoadFarmer;
+var i, temp, radar;
+begin
+     Randomize;
+
+     uc_side=8;
+     uc_nation=nation_arabian;
+
+     Farmer = NewCharacter('Farmer');
+
+     vc_chassis=ar_half_tracked;
+     vc_engine=engine_siberite;
+     vc_control=control_manual;
+     vc_weapon=ar_rocket_launcher;
+
+     FarmerVehicle=Createvehicle;                //Farmer rocket - 55,31 dir 3
+     setdir(FarmerVehicle,3);
+     placeunitxy(FarmerVehicle,55,31,false);
+     placehumaninunit(farmer,farmervehicle);
+
+     temp=createvehicle;                         //rocket        - 51,32 dir 0
+     setdir(temp,0);
+     placeunitxy(temp,51,32,false);
+     farmertroops=farmertroops^temp;
+
+     vc_weapon=ar_gun;
+     temp=createvehicle;                         //gun           - 63,34 dir 1
+     setdir(temp,1);
+     placeunitxy(temp,63,34,false);
+     farmertroops=farmertroops^temp;
+
+     temp=createvehicle;                         //empty gun     - 41,17 dir 1
+     setdir(temp,1);
+     placeunitxy(temp,41,17,false);
+     emptyveh=temp;
+      
+     vc_weapon=ar_gatling_gun;
+     temp=createvehicle^createvehicle;           //gatlings      - 37,33 ; 54,38 both dir 3
+     setdir(temp[1],3);
+     setdir(temp[2],3);
+     placeunitxy(temp[1],37,33,false);
+     placeunitxy(temp[2],54,38,false);
+     farmertroops=farmertroops^temp[1]^temp[2];
+
+     vc_weapon=ar_flame_thrower;
+     temp=createvehicle;                         //flamer        - 41,34 dir 3
+     setdir(temp,3);
+     placeunitxy(temp,41,34,false);
+     farmertroops=farmertroops^temp;
+
+     vc_weapon=ar_control_tower;
+     temp=createvehicle;                         //control       - 47,27
+     placeunitxy(temp,47,27,false);
+     farmertroops=farmertroops^temp;
+
+     vc_weapon=ar_selfpropelled_bomb;
+     vc_control=control_remote;
+     if difficulty>=1 then
+     begin
+          temp=createvehicle;                    //bomb (difficulty)    - 33,28 ; 37,27 ; 33,25 dir 3
+          setdir(temp,3);
+          placeunitxy(temp,33,28,false);
+          AmbushBombs=AmbushBombs^temp;
+     end;
+     if difficulty>=2 then
+     begin
+          temp=createvehicle;                         
+          setdir(temp,3);
+          placeunitxy(temp,37,27,false);
+          AmbushBombs=AmbushBombs^temp;
+     end;
+     if difficulty=3 then
+     begin
+          temp=createvehicle;                         
+          setdir(temp,3);
+          placeunitxy(temp,33,25,false);
+          AmbushBombs=AmbushBombs^temp;
+     end;
+
+     temp=createvehicle^createvehicle;           //bombs (farmer)- 44,15 ; 38,13 dir 0
+     setdir(temp[1],0);
+     setdir(temp[2],0);
+     placeunitxy(temp[1],44,15,false);
+     placeunitxy(temp[2],38,13,false);
+     FarmerBombs=temp;
+
+     vc_weapon=ar_radar;
+     temp=createvehicle;                         //radar         - 51,29
+     placeunitxy(temp,51,29,false);
+     radar=temp;
+     farmertroops=farmertroops^temp;
+      
+     for i=1 to 5 do
+     begin                                       //soldiers      - 49,38 ; 43,24
+          preparesoldier(false,[6,8,10][difficulty]);              //mortars       - 49,36 ; 60,38 ; 52,25
+          temp=createhuman;
+          farmertroops=farmertroops^temp;
+          if i>2 then
+             setclass(temp,class_mortar);
+          placeunitxy(temp,[49,43,49,60,52][i],[38,24,36,38,25][i],false);
+     end;
+                                                 
+     for i in unitfilter(farmertroops,[f_control,control_manual])^hexinfo(47,27) do
+     begin
+          preparemechanic(false,[6,8,10][difficulty]);
+          temp=createhuman;
+          placehumaninunit(temp,i);
+          farmertroops=farmertroops^temp;
+     end;
+
+     FarmerRemoteMech=IsDrivenBy(hexinfo(47,27));
+     for i in unitfilter(farmertroops,[f_control,control_remote])^radar do
+         linkvehicletohuman(i,FarmerRemoteMech);
+
+     enable(3);
+end;
+
+Function SetDifficulty;
+begin
+     if difficulty<3 then
+     begin
+          Settech(Tech_weap3,8,state_enabled);
+          Settech(Tech_sib3,8,state_enabled);
+          Settech(Tech_bio3,8,state_enabled);
+          Settech(Tech_opto3,8,state_enabled);
+
+          if difficulty=1 then
+          begin
+               Settech(Tech_weap2,8,state_enabled);
+               Settech(Tech_sib2,8,state_enabled);
+               Settech(Tech_bio2,8,state_enabled);
+               Settech(Tech_opto2,8,state_enabled);
+               Settech(Tech_Tech3,8,state_enabled);
+          end;
+     end;
+end;

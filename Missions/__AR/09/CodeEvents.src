@@ -1,0 +1,1116 @@
+
+//This module contains events linked to code red or code black.
+
+//If the player attacks units in the Russian base or enemies are spotted inside the base (but not by
+//units inside buildings),
+//we go to code black.
+Every 0$1+0$0.8 do
+     var temp_list, i, res, hex, temp_list_2;
+     var player_units_with_mine_in_base, oil_barrels, timed_mines, player_soldiers_pos;
+     begin
+          //Blowing a mine or some oil barrels doesn't count as contact between the sides so
+          //ContactTime is not enough to detect if the player attacks the base. We have to keep
+          //track of mines and oil barrels ourselves.
+
+          player_units_with_mine_in_base = [];  //[id,x,y] - player's units which have placed a remote mine in the Russian base
+          timed_mines = [];  //coordinates of timed mines in the base
+          player_soldiers_pos = [];  //coordinates of the soldiers the player have in the base, [sol_id,x,y]
+          oil_barrels = [[48,4],[50,4],[48,2],[49,2],[50,2]];  //oil barrels at northern depot
+
+          repeat
+          wait(0$1);
+
+          res = false;
+
+          //Check if oil barrels are still there. If not they must have been blown.
+          i = 1;
+          while i <= oil_barrels do
+               begin
+                    if GetResourceAmountXY(oil_barrels[i][1],oil_barrels[i][2]) = 0 then
+                         begin
+                              res = true;
+                              last_known_enemy_hex = oil_barrels[i];
+                              oil_barrels = Delete(oil_barrels,i);
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+
+          //Check if a player soldier has blown his/her remote mine
+          i = 1;
+          while i <= player_units_with_mine_in_base do
+               begin
+                    if not IsLive(player_units_with_mine_in_base[i][1]) or GetClass(player_units_with_mine_in_base[i][1]) <> class_soldier then
+                         begin
+                              player_units_with_mine_in_base = Delete(player_units_with_mine_in_base,i);
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          temp_list = [];
+          for i in FilterAllUnits([[f_side,you],[f_class,class_soldier]]) do
+               begin
+                    hex = MineOfUnit(i);
+                    if hex > 0 then
+                         if InArea(hex[1],hex[2],ru_base_area) then
+                              temp_list = temp_list ^ [[i,hex[1],hex[2]]];
+               end;
+
+          temp_list_2 = player_units_with_mine_in_base diff temp_list;
+          if temp_list_2 > 0 then
+               begin
+                    res = true;
+                    last_known_enemy_hex = [temp_list_2[1][2],temp_list_2[1][3]];
+               end;
+
+          player_units_with_mine_in_base = temp_list;
+
+
+          //Check if a timed mine has blown
+          i = 1;
+          while i <= timed_mines do
+               begin
+                    if MineAtPos(timed_mines[i][1],timed_mines[i][2]) = 0 then
+                         begin
+                              res = true;
+                              last_known_enemy_hex = timed_mines[i];
+                              timed_mines = Delete(timed_mines,i);
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          //Check for new timed mines. Placing a timed mine takes some time so
+          //we can save some CPU by checking the hexes where player soldiers
+          //were before.
+          for i in player_soldiers_pos do
+               if MineAtPos(i[2],i[3]) and not i[1] in player_units_with_mine_in_base then  //make sure it's not a remote mine the soldier has placed
+                    timed_mines = Insert(timed_mines,1,[i[2],i[3]]);
+
+          player_soldiers_pos = [];
+          for i in FilterAllUnits([[f_side,you],[f_class,class_soldier],[f_inarea,ru_base_area]]) do
+               player_soldiers_pos = Insert(player_soldiers_pos,1,[i,GetX(i),GetY(i)]);
+
+
+          //if code_black then
+          //     continue;
+
+
+          //If player units are seen inside the base.
+          //Ignore seen player units in the sneaky area (to avoid player units being seen by Russians inside
+          //buildings - at least counting for the rear of buildings).
+          //Don't count in Heike if she's under cover.
+          if not res then
+               begin
+                    temp_list = FilterAllUnits([[f_side,you],[f_inarea,ru_base_area],[f_not,[f_inarea,sneaky_area]],[f_see,russians],[f_or,[f_type,unit_human],[f_and,[f_type,unit_vehicle],[f_occupied]]]]);
+                    if heike_undercover = 2 then
+                         begin
+                              temp_list = temp_list diff Heike;
+                              temp_list = temp_list diff IsInUnit(Heike);
+                         end;
+
+                    if temp_list > 0 then
+                         res = true;
+               end;
+
+
+          if not res then
+               begin
+                    //If some of the (unseen) player units inside the base shoots at some Russian units,
+                    //they are detected.
+                    //Don't count in Heike if she's undercover - there's an every below taking care of her.
+                    if ContactTime([you,russians]) <= 0$2 then
+                         begin
+                              temp_list = FilterAllUnits([[f_side,you],[f_or,[f_inarea,ru_base_area],[f_inarea,near_vulerable_ru_base_area]],[f_or,[f_type,unit_human],[f_and,[f_type,unit_vehicle],[f_occupied]]]]);
+                              if heike_undercover = 2 then
+                                   begin
+                                        temp_list = temp_list diff Heike;
+                                        temp_list = temp_list diff IsInUnit(Heike);
+                                   end;
+
+                              temp_list_2 = FilterAllUnits([f_side,russians]);
+
+                              for i in temp_list do
+                                   if Attacks(i) in temp_list_2 then
+                                        begin
+                                             res = true;
+                                             break;
+                                        end;
+                         end;
+               end;
+
+
+          if res then
+               begin
+                    if code_black then
+                         code_black_renew = true
+                    else
+                         begin
+                              //Short delay - wait for possible mines to blow
+                              wait(0$1);
+
+                              code_black = true;
+
+                              DialogueOn;
+                              SayRadio(Yefibachev,'D7-Leader-1');
+                              DialogueOff;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//If Heike has gone undercover (Russians haven't seen her before) but she enters the base on foot
+//instead of in a vehicle, she is confronted and ultimately triggers a code black.
+Every 0$1+0$0.8 do
+     var i, k, temp_list_2, temp_list, def_building, un;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [0,1] then
+               continue
+          else
+               if heike_undercover in [3,4] or entrance_guard_dialogue_played then
+                    exit;
+
+          if IsInArea(Heike,ru_base_area) and IsInUnit(Heike) = 0 and See(russians,Heike) then
+               begin
+                    CenterOnUnits(Heike);
+                    DialogueOn;
+
+                    un = 0;  //unit to talk
+
+                    def_building = 0;
+                    for i in ai_armouries[1] ^ ai_bunkers[1] do
+                         if GetDistUnits(Heike,i) <= 10 then
+                              begin
+                                   def_building = i;
+                                   break;
+                              end;
+
+                    if def_building > 0 then
+                         begin
+                              //Pick someone from this defensive building
+                              //Don't pick a Russian "main character" that has it's own personal voice.
+                              temp_list = [];
+                              if GetBType(def_building) = b_breastwork then
+                                   begin
+                                        for k in ai_bunkers[1] do
+                                             temp_list = temp_list ^ UnitsInside(k);
+                                   end
+                              else
+                                   temp_list = UnitsInside(def_building);
+
+                              temp_list = temp_list diff [Stanimir, Barovnin, Yefibachev, Yakov, Natalya, Mikhail, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_eng, poker_sol, poker_mec];
+
+                              if temp_list > 0 then
+                                   un = temp_list[1];
+                         end;
+                    
+                    if un = 0 and IsOk(Yefibachev) then
+                         un = Yefibachev;
+                       
+                    if un = 0 then
+                              begin
+                                   //Pick someone else.
+                                   //Don't pick a Russian "main character" that has it's own personal voice.
+                                   temp_list_2 = [];
+                                   for k in FilterAllUnits([[f_side,russians],[f_type,unit_human],[f_ok]]) do
+                                        if not k in [Stanimir, Barovnin, Yefibachev, Yakov, Natalya, Mikhail, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_eng, poker_sol, poker_mec] then
+                                             temp_list_2 = temp_list_2 ^ k;
+
+                                   //Pick a solder if possible
+                                   temp_list = UnitFilter(temp_list_2,[f_class,class_soldier]);
+                                   if temp_list > 0 then
+                                        un = temp_list[1]
+                                   else
+                                        if temp_list_2 > 0 then
+                                             un = temp_list_2[1]
+                                        else
+                                             begin
+                                                  //Getting desperate. Just anyone!
+                                                  temp_list = FilterAllUnits([[f_side,russians],[f_type,unit_human],[f_ok]]);
+                                                  if temp_list > 0 then
+                                                       un = temp_list[1];
+                                             end;
+                              end;
+                   
+                    if un > 0 then  //we hope this is the case
+                         begin
+                              if un = Yefibachev then
+                                   Say(Yefibachev,'D22-Leader-1')
+                              else
+                                   if GetSex(un) = sex_male then
+                                        Say(un,'D22-SolM-1')
+                                   else
+                                        Say(un,'D22-SolF-1');
+
+                              DWait(0$0.3);
+                              case Query('QOnFootName') of   
+                                   1: Say(Heike,'D22-1-H-1');
+                                   2: Say(Heike,'D22-2-H-1');
+                                   3: Say(Heike,'D22-3-H-1');
+                              end;
+
+                              if un = Yefibachev then
+                                   Say(Yefibachev,'D22-g-Leader-1')
+                              else
+                                   if GetSex(un) = sex_male then
+                                        Say(un,'D22-g-SolM-1')
+                                   else
+                                        Say(un,'D22-g-SolF-1');
+
+                              Say(Heike,'D22-g-H-1');
+
+                              if un = Yefibachev then
+                                   Say(Yefibachev,'D22-g-Leader-2')
+                              else
+                                   if GetSex(un) = sex_male then
+                                        Say(un,'D22-g-SolM-2')
+                                   else
+                                        Say(un,'D22-g-SolF-2');
+
+                              Say(Heike,'D22-g-H-2');
+
+                              if un = Yefibachev then
+                                   Say(Yefibachev,'D22-g-Leader-3')
+                              else
+                                   if GetSex(un) = sex_male then
+                                        Say(un,'D22-g-SolM-3')
+                                   else
+                                        Say(un,'D22-g-SolF-3');
+                         end;
+
+                    DialogueOff;
+
+                    ChangeHeikeUndercoverStatus(4);
+                    if code_black then
+                         code_black_renew = true
+                    else
+                         code_black = true;
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//While the base is in code black every unit has its place (Yefibachev is that kinda person). Mechanics
+//are supposed to stay in the workshop unless driving war vehicles, so if Heike (under cover) isn't inside
+//the workshop during code black she is told to do so. If she doesn't she is arrested and the player loses.
+{
+Every 0$1+0$0.5 do
+     var dialogue_level, dialogue_cooldown;
+     begin
+          dialogue_level = 0;  //determines which dialogue to play
+          dialogue_cooldown = 0$8;  //cooldown on dialogues
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [3,4] or IsDead(Yefibachev) then
+               exit;
+
+          if heike_undercover in [0,1] or not IsOk(Yefibachev) then
+               continue;
+
+          if not code_black or UnitFilter(ai_facts[1],[f_ok]) = 0 then
+               begin
+                    dialogue_level = 0;
+                    dialogue_cooldown = 0$8;
+                    continue;
+               end;
+
+          if HeikeInAnyBuilding or not IsInArea(Heike,ru_base_area) then  //If Heike is inside any building or outside the base, Yefibachev doesn't see her
+               begin
+                    dialogue_level = 0;
+                    dialogue_cooldown = 0$3;
+                    continue;
+               end;
+
+          if dialogue_cooldown > 0$0 then
+               begin
+                    dialogue_cooldown = dialogue_cooldown - 0$1;
+                    continue;
+               end;
+
+          case dialogue_level of
+               0: begin
+                    DialogueOn;
+                    Say(Yefibachev,'D7-Leader-3');
+                    DialogueOff;
+
+                    //Speed 10 allows you to walk about 2 hex distance in 1 second.
+                    //Plus a little extra to make it up for blocking units, player
+                    //being a little slow etc.
+                    dialogue_cooldown = 0$1 * ( GetDistUnits(Heike,ai_facts[1][1]) / 2 ) * 1.2 + 0$5;
+               end;
+               1: begin
+                    DialogueOn;
+                    Say(Yefibachev,'D7-Leader-4');
+
+                    dwait(0$0.5);
+                    YouLost('HeikeCaptive');
+                    DialogueOff;
+
+                    exit;
+               end;
+          end;
+
+          dialogue_level = dialogue_level + 1;
+
+          until false;
+     end;
+Function HeikeInAnyBuilding;
+     var i;
+     begin
+          result = false;
+          for i in player_units_in_russian_buildings do
+               if i[1] = Heike then
+                    begin
+                         result = true;
+                         exit;
+                    end;
+     end;
+}
+
+//If Heike steals a war vehicle (cargo bay is ok) or shoots at anything/anyone inside the base while under cover
+//she triggers a code black and her cover is blown.
+//There's some tolerance on her shooting to make it up for player misclicks.
+Every 0$1+0$0.3 do
+     var did_it;
+     var times_shoot;
+     begin
+          times_shoot = 0;
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover = 0 then
+               continue
+          else if heike_undercover in [1,3,4] then
+               exit;
+
+          did_it = false;
+          if heike_undercover_entered_war_vehicle then
+               did_it = true
+          else
+               if Attacks(Heike) in FilterAllUnits([[f_side,russians],[f_inarea,ru_base_area]]) and ContactTime([you,russians]) <= 0$2 then
+                    begin
+                         times_shoot = times_shoot + 1;
+
+                         if times_shoot >= 3 then
+                              did_it = true;
+                    end
+               else
+                    times_shoot = 0;
+
+          if did_it then
+               begin
+                    if heike_undercover <> 4 then
+                         begin
+                              DialogueOn;
+                              SayRadio(Yefibachev,'D7-Leader-2a');
+                              DialogueOff;
+
+                              ChangeHeikeUndercoverStatus(4);
+                         end;
+
+                    if code_black then
+                         code_black_renew = true
+                    else
+                         code_black = true;
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//We go from code black to code red when there haven't been any enemies inside the base
+//for some time (remember units within Russian buildings).
+Every 0$1+0$0.2 do
+     var timer, wait_time, temp_list, i;
+     begin
+          wait_time = [1$05,1$05,0$40][difficulty];
+          timer = wait_time;
+
+          repeat
+          wait(0$1);
+
+          if not code_black then
+               begin
+                    timer = wait_time;
+                    continue;
+               end;
+
+          if code_black_renew then
+               begin
+                    timer = wait_time;
+                    code_black_renew = false;
+               end;
+
+          temp_list = FilterAllUnits([[f_side,you],[f_inarea,ru_base_area],[f_not,[f_weapon,ru_cargo_bay]]]);  //include player war vehicles in this filter so we make sure to destroy them
+          for i in player_units_in_russian_buildings do
+               temp_list = temp_list ^ i[1];
+
+          if heike_undercover = 2 then
+               begin
+                    temp_list = temp_list diff Heike;
+                    temp_list = temp_list diff IsInUnit(Heike);
+               end;
+
+          if temp_list = 0 and ContactTime([you,russians]) > 0$2 then
+               timer = timer - 0$1;
+
+          if timer <= 0$0 then
+               begin
+                    code_black = false;
+                    timer = wait_time;
+
+                    DialogueOn;
+                    SayRadio(Yefibachev,'D6-Leader-2');
+                    DialogueOff;
+
+                    last_known_enemy_hex = ai_human_pullback_hex[1];
+
+                    //The base can go to code black while in code red so we might already
+                    //be in code red.
+                    if not code_red then
+                         begin
+                              code_red = true;
+                              CreateCodeRedPatrols(difficulty-1);
+                         end;
+               end;
+
+          until false;
+     end;
+
+//The base goes to code red if mercenaries are spotted outside the base. We check this by checking if
+//some Russians in the defensive buildings attack a player unit. Due to the lower shooting range than sight
+//distance this also gives the player an opportunity to look at the base without triggering code red.
+Every 0$1+0$0.8 do
+     var i, temp_list, val, temp_list_2, k;
+     var remembered_contact_time;
+     begin
+          remembered_contact_time = ContactTime([you,russians]);
+
+          repeat
+          wait(0$1);
+
+          if code_red then
+               continue;
+
+          if ContactTime([you,russians]) <= 0$2 then
+               begin
+                    temp_list = [];
+                    for i in FilterAllUnits([[f_side,russians],[f_type,unit_human],[f_ok]]) do
+                         if IsInUnit(i) in ai_bunkers[1] ^ ai_armouries[1] then
+                              temp_list = temp_list ^ i;
+
+                    temp_list_2 = FilterAllUnits([[f_side,you],[f_not,[f_inarea,ru_base_area]]]);
+
+                    for i in temp_list do
+                         if Attacks(i) in temp_list_2 then  //won't attack Heike is she's under cover (but will anyway if she's inside a war vehicle)
+                              begin
+                                   Wait(0$0.5);  //short delay to make it more natural
+
+                                   //Find someone in the defensive buildings to say something, if possible.
+                                   //Don't pick a Russian "main character" that has it's own personal voice.
+                                   temp_list_2 = [];
+                                   for k in temp_list do
+                                        if not k in [Stanimir, Barovnin, Yefibachev, Yakov, Natalya, Mikhail, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_eng, poker_sol, poker_mec] then
+                                             temp_list_2 = temp_list_2 ^ k;
+
+                                   //If this is not the first time contact is made, e.g. if player units flee
+                                   //out from inside the base, don't say anything. Just go to code red.
+                                   if remembered_contact_time > 0$2 then
+                                        begin
+                                             DialogueOn;
+                                   
+                                             if temp_list_2 > 0 then
+                                                  begin
+                                                       k = temp_list_2[1];
+                                                       if GetSex(k) = sex_male then
+                                                            Say(k,'D6-GuardM-1')
+                                                       else Say(k,'D6-GuardF-1');
+                                                  end
+                                             else
+                                                  SayRadio(Yefibachev,'D6-Leader-1');
+
+                                             DialogueOff;
+                                        end;
+
+                                   code_red = true;
+
+                                   //Wait with creating the patrols until there haven't been contact between the player and
+                                   //the computer for some time. Scientists in the base don't heal patrol units so if the player
+                                   //tries to lure out the scientists all units within the player's range should apply for their
+                                   //healing.
+                                   while ContactTime([you,russians]) <= 0$10 do
+                                        wait(0$2);
+
+                                   CreateCodeRedPatrols(difficulty-1);
+
+                                   break;
+                              end;
+               end;
+
+          remembered_contact_time = ContactTime([you,russians]);
+
+          until false;
+     end;
+
+//If Heike tries to sneak in under cover but the Russians have seen her before, they will recall when they
+//see her and then trigger a code red. Her cover is ofc blown.
+Every 0$1+0$0.2 do
+     var temp_list_2, k, temp_list, i;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if heike_undercover in [0,1] then
+               continue
+          else if heike_undercover in [2,4] then
+               exit;
+
+          k = IsInUnit(Heike);
+          if k = 0 then
+               k = Heike;
+
+          if See(russians,k) and GetDistUnitArea(k,ru_base_area) <= 6 then
+               begin
+                    temp_list = [];
+                    for i in FilterAllUnits([[f_side,russians],[f_type,unit_human],[f_ok]]) do
+                         if IsInUnit(i) in ai_bunkers[1] ^ ai_armouries[1] then
+                              temp_list = temp_list ^ i;
+
+                    //Find someone in the defensive buildings to say something, if possible.
+                    //Don't pick a Russian "main character" that has it's own personal voice.
+                    temp_list_2 = [];
+                    for k in temp_list do
+                         if not k in [Stanimir, Barovnin, Yefibachev, Yakov, Natalya, Mikhail, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_eng, poker_sol, poker_mec] then
+                              temp_list_2 = temp_list_2 ^ k;
+
+                    DialogueOn;
+
+                    if temp_list_2 > 0 then
+                         begin
+                              k = temp_list_2[1];
+                              if GetSex(k) = sex_male then
+                                   Say(k,'D6-GuardM-2')
+                              else Say(k,'D6-GuardF-2');
+                         end
+                    else
+                         SayRadio(Yefibachev,'D6-Leader-3');
+
+                    DialogueOff;
+
+                    ChangeHeikeUndercoverStatus(4);
+                    code_red = true;
+                    CreateCodeRedPatrols(difficulty-1);
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+//Function which creates the patrol groups for when the base goes in code red.
+//num - number of patrols. Can other be either 1 or 2.
+//Note the function only ensures there are the specified number of patrols. So if 2 are
+//requested but 1 already exists, only 1 more patrol is created.
+Export Function CreateCodeRedPatrols(num_pat);
+     var i, temp_list, j, num, temp_list_2, num_low, boolean_num, picked, num_pat_list, allowed_num, val;
+     begin
+          //Pick some soldiers and scientists for patrols.
+                              //A patrol should consist of at least 2 soldiers.
+                              //There must always be enough soldiers to defend the base, that is, enough soldiers
+                              //to fill the defensive buildings (2 breastworks, 1 barracks, 1 armoury).
+                              //We want two patrols if possible.
+                              //Never pick Yefibachev or Barovnin.
+                              //Never pick the two soldiers patrolling the base.
+                              //Don't pick any of the entrance guards if the entrance dialogue hasn't been played (and can
+                              //be played).
+                              allowed_num = [];
+                              val = 0;
+                              for i = 1 to patrols do
+                                   if patrols[i] = 0 then
+                                        allowed_num = allowed_num ^ i
+                                   else
+                                        val = val + 1;
+
+                              if num_pat < 1 then
+                                   num_pat = 1
+                              else
+                                   if num_pat > 2 then
+                                        num_pat = 2;
+
+                              if allowed_num = 0 or val >= num_pat then  //If there can be no more patrols or there are already the desired number of patrols
+                                   exit;
+
+                              if num_pat > allowed_num+0 then
+                                   num_pat = allowed_num+0;
+
+                              num_pat_list = [];
+                              for i = 1 to num_pat do
+                                   num_pat_list = num_pat_list ^ allowed_num[i];
+
+                              boolean_num = Rand(1,2);
+                              for i in num_pat_list do
+                                   begin
+                                        num_low = 4;
+
+                                        if not terminate_internal_patrol then
+                                             num_low = num_low + 2;
+
+                                        if ai_soldiers[1] < num_low + 2 then  //we want at least 2 soldiers for a patrol
+                                             break;
+
+                                        //Pick soldiers
+                                        num = [2,3,4][difficulty] + Rand(0,1);
+                                        if num > ai_soldiers[1] - num_low then
+                                             num = ai_soldiers[1] - num_low;
+                                        
+                                        temp_list_2 = [Yefibachev];
+                                        if not entrance_guard_dialogue_played and heike_undercover in [0,2] then
+                                             begin
+                                                  for j in ai_bunkers[1] do
+                                                       temp_list_2 = temp_list_2 ^ UnitsInside(j);
+                                             end;
+
+                                        temp_list = [];
+                                        j = 1;
+                                        while temp_list < num do
+                                             begin
+                                                  if not ai_soldiers[1][j] in temp_list_2 then
+                                                       temp_list = temp_list ^ ai_soldiers[1][j];
+
+                                                  j = j + 1;
+                                             end;
+
+                                        temp_list_2 = ai_soldiers[1] diff temp_list;
+                                        ai_soldiers = Replace(ai_soldiers,1,temp_list_2);
+                                             
+
+                                        //Pick scientists
+                                        //If there aren't enough then don't pick any.
+                                        num = [0,1,2][difficulty] + Rand(0,1);
+                                        if num > ai_scientists[1] - 8 then  //2 scientists for each lab
+                                             num = ai_scientists[1] - 8;
+
+                                        if num > 0 then
+                                             begin
+                                                  j = 1;
+                                                  picked = 0;
+                                                  while picked < num do
+                                                       begin
+                                                            if ai_scientists[1][j] <> Barovnin then
+                                                                 begin
+                                                                      temp_list = temp_list ^ ai_scientists[1][j];
+                                                                      picked = picked + 1;
+                                                                 end;
+
+                                                            j = j + 1;
+                                                       end;
+
+                                                  temp_list_2 = ai_scientists[1] diff temp_list;
+                                                  ai_scientists = Replace(ai_scientists,1,temp_list_2);
+                                             end;
+
+                                        //Don't heal these units any more (if does)
+                                        temp_list_2 = ai_heal_these_humans[1] diff temp_list;
+                                        ai_heal_these_humans = Replace(ai_heal_these_humans,1,temp_list_2);
+
+                                        //Create the patrol
+                                        patrols = Replace(patrols,i,temp_list);
+                                        patrols_path = Replace(patrols_path,i,CreatePatrolPath(i = boolean_num));
+                                   end;
+     end;
+
+//When the code red patrols spot some mercenaries in the woods they say something.
+Every 0$1+0$0.3 do
+     var val, i, temp_list, k, j, temp_list_2, all_rus_pats, player_list;
+     var pat_say_cooldown;
+     begin
+          //We keep track of which patrols have spotted the player recently so we don't spam the
+          //player with dialogues every few seconds.
+          //This mechanicsm is highly dependent on the patrols always having the same index in
+          //variable "patrols".
+          pat_say_cooldown = [];
+          for i = 1 to patrols + 1 do  //we include war vehicles as a patrol
+               pat_say_cooldown = pat_say_cooldown ^ 0$0;
+
+          repeat
+          wait(0$1);
+
+          val = false;
+          for i in patrols do  //there can be patrols even if the base isn't in code red
+               if i > 0 then
+                    begin
+                         val = true;
+                         break;
+                    end;
+
+          if not val then
+               continue;
+
+          //Check if the Russians can see some of the player's units. Not Heike included if
+          //she is under cover and is in a vehicle or is near the Russian base.
+          player_list = FilterAllUnits([[f_side,you],[f_ok],[f_see,russians],[f_or,[f_type,unit_human],[f_and,[f_type,unit_vehicle],[f_occupied]]]]);  //what player units the Russians can see
+          if heike_undercover = 2 {and ( Heike in player_list or IsInUnit(Heike) in player_list )} then
+               begin
+                    //if ( IsInUnit(Heike) > 0 or GetDistUnitArea(Heike,ru_base_area) <= 5 ) and IsPlaced(Heike) then  //Not placed if "inside" a Russian building
+                         begin
+                              player_list = player_list diff Heike;
+                              player_list = player_list diff IsInUnit(Heike);
+                         end;
+                    //else
+                    //     ChangeHeikeUndercoverStatus(4);
+               end;
+
+          if player_list = 0 then
+               continue;
+          
+          //Include the patrolling war vehicles' drivers in the list of patrols
+          all_rus_pats = patrols;
+          temp_list = [];
+          for i in ai_vehicles_attack[1] do  //check for mechanics in vehicles instead of ai_mechanics_attack - some of them could be on the run on foot
+               begin
+                    k = UnitsInside(i);
+                    if k > 0 then
+                         temp_list = temp_list ^ k[1];
+               end;
+          all_rus_pats = all_rus_pats ^ [temp_list];
+
+          for i = 1 to all_rus_pats do
+               begin
+                    //You can't "f_see" a unit inside another unit.
+                    if i < all_rus_pats then
+                         temp_list = all_rus_pats[i]
+                    else
+                         begin
+                              temp_list = [];
+                              for k in all_rus_pats[i] do  //war vehicle drivers
+                                   temp_list = temp_list ^ IsInUnit(k);
+                         end;
+
+                    if UnitFilter(temp_list,[f_see,you]) > 0 then  //what patrols the player can see
+                         begin
+                              //We can't be sure the seen player units are seeing the seen patrol units
+                              //so we check the distance between the seen patrol units and the seen
+                              //player units. On flat ground units can see approximately 13 hexes distance.
+                              val = false;
+                              for j in player_list do
+                                   begin
+                                        for k in all_rus_pats[i] do
+                                             begin
+                                                  if GetDistUnits(j,k) <= 13 then  //works fine for units inside other units
+                                                       begin
+                                                            val = true;
+                                                            break;
+                                                       end;
+                                             end;
+
+                                        if val then
+                                             break;
+                                   end;
+
+                              if not val and pat_say_cooldown[i] > 0$0 then
+                                   pat_say_cooldown = Replace(pat_say_cooldown,i, pat_say_cooldown[i]-0$1);
+
+                              if val and pat_say_cooldown[i] > 0$0 then
+                                   begin
+                                        pat_say_cooldown = Replace(pat_say_cooldown,i,0$30);
+                                        continue;
+                                   end;
+
+                              if val then
+                                   begin
+                                        //Find someone in the patrol to say something, if possible.
+                                        //Don't pick a Russian "main character" that has it's own personal voice.
+                                        temp_list_2 = [];
+                                        for k in all_rus_pats[i] do
+                                             if not k in [Stanimir, Barovnin, Yefibachev, Yakov, Natalya, Mikhail, good_pat, bad_pat, Dmitri, Sergei, Yann, poker_eng, poker_sol, poker_mec] then
+                                                  temp_list_2 = temp_list_2 ^ k;
+
+                                        if temp_list_2 > 0 then
+                                             begin
+                                                  DialogueOn;
+                                                  j = temp_list_2[1];
+
+                                                  //If the base isn't in code red the patrol was a scouting patrol looking
+                                                  //if there were enemies in the area.
+                                                  if not code_red then
+                                                       begin
+                                                            if GetSex(j) = sex_male then
+                                                                 SayRadio(j,'D6-PatM-1')
+                                                            else SayRadio(j,'D6-PatF-1');
+
+                                                            code_red = true;
+
+                                                            //Raise the number of external patrols to maximum
+                                                            CreateCodeRedPatrols(difficulty-1);
+                                                       end
+                                                  else
+                                                       begin
+                                                            val = ['a','b','c'][Rand(1,3)];
+
+                                                            if GetSex(j) = sex_male then
+                                                                 SayRadio(j,'D6-SolM-1' & val)
+                                                            else SayRadio(j,'D6-SolF-1' & val);
+                                                       end;
+
+                                                  DialogueOff;
+                                             end;
+
+                                        pat_say_cooldown = Replace(pat_say_cooldown,i,0$30);
+
+                                        break;  //So multiple units won't talk at the same time
+                                   end;
+                         end
+                    else
+                         if pat_say_cooldown[i] > 0$0 then
+                              pat_say_cooldown = Replace(pat_say_cooldown,i, pat_say_cooldown[i]-0$1);
+               end;
+
+          until false;
+     end;
+
+//We want vehicles to patrol the roads as long as the base is in code red.
+Every 0$1+0$0.4 do
+     var i, temp_list, driver, vehicle, j;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if not code_red then
+               continue;
+
+          //Pick some vehicles to patrol the roads. We want 2 at all times (if possible).
+          //Never pick Mikhail or Natalya. Nor Yakov if he is busy.
+          for i = 1 to 2 - ai_mechanics_attack[1] do
+               begin
+                    temp_list = [Mikhail,Natalya];
+                    if except_Yakov then
+                         temp_list = temp_list ^ Yakov;
+
+                    driver = 0;
+                    for j in ai_mechanics_defend[1] do
+                         if not j in temp_list ^ ai_heal_these_humans[1] then
+                              begin
+                                   driver = j;
+                                   break;
+                              end;
+
+                    if driver = 0 then
+                         break;
+
+                    vehicle = 0;
+
+                    temp_list = [];
+                    for j in ai_vehicle_pullback_hexes[1] do
+                         temp_list = temp_list ^ HexInfo(j[1],j[2]);
+                    temp_list = temp_list diff 0;
+
+                    for j in ai_vehicles_defend[1] do
+                         if not j in ai_refuel_vehicles_list[1] ^ ai_vehicle_being_moved[1] and GetLives(j) = 1000 and j in temp_list then
+                              begin
+                                   vehicle = j;
+                                   break;
+                              end;
+
+                    if vehicle = 0 then
+                         break;
+
+                    //temp_list = ai_mechanics_defend[1] diff driver;
+                    //ai_mechanics_defend = Replace(ai_mechanics_defend,1,temp_list);
+                    RemoveHumanFromVariables(1,driver,false);
+
+                    temp_list = ai_mechanics_attack[1] ^ driver;
+                    ai_mechanics_attack = Replace(ai_mechanics_attack,1,temp_list);
+
+                    //temp_list = ai_vehicles_defend[1] diff vehicle;
+                    //ai_vehicles_defend = Replace(ai_vehicles_defend,1,temp_list);
+                    RemoveVehicleFromVariables(1,vehicle); 
+
+                    temp_list = ai_vehicles_attack[1] ^ vehicle;
+                    ai_vehicles_attack = Replace(ai_vehicles_attack,1,temp_list);
+               end;
+
+          until false;
+     end;
+
+//The base goes out of code red when the patrols are done. If no patrols were formed
+//when the base went to code red, we just wait some time before standing down from
+//code red.
+Every 0$1+0$0.5 do
+     var i, val;
+     var timer, no_patrols, patrols_check;
+     begin
+          no_patrols = false;
+          patrols_check = true;
+          timer = 2$30;
+
+          repeat
+          wait(0$1);
+
+          if not code_red then
+               begin
+                    patrols_check = true;
+                    continue;
+               end;
+
+          if patrols_check then
+               begin
+                    val = false;
+                    for i in patrols do
+                         if i > 0 then
+                              begin
+                                   val = true;
+                                   break;
+                              end;
+
+                    if not val then
+                         no_patrols = true
+                    else
+                         no_patrols = false;
+
+                    patrols_check = false;
+               end;
+
+          if no_patrols then
+               begin
+                    timer = timer - 0$1;
+
+                    if timer <= 0 then
+                         begin
+                              code_red = false;
+                              timer = 2$30;
+                         end;
+               end
+          else
+               begin
+                    val = false;
+                    for i in patrols do
+                         if i > 0 then
+                              begin
+                                   val = true;
+                                   break;
+                              end;
+
+                    if not val then
+                         code_red = false;
+               end;
+
+          until false;
+     end;
+
+//When the player attacks the vehicles driving in and out of the map, Yefibachev sends a reconnaissance patrol
+//to investigate (if the base isn't in code red already).
+Every 0$1+0$0.2 do
+     var i, val;
+     var num_pats;
+     begin
+          num_pats = [0,1,2][difficulty];  //The number of patrols send to investigate
+
+          //Since we send none at lowest difficulty...
+          if difficulty = 1 then
+               exit;
+
+          repeat
+          wait(0$0.5);
+
+          if code_red or code_black then
+               continue;
+
+          val = 0;
+          for i in patrols do
+               if i > 0 then
+                    val = val + 1;
+
+          if val >= num_pats then
+               continue;
+
+          if ContactTime([you,russians_alt]) <= 0$1 then
+               begin
+                    //Check if the contact is made between the player and the vehicles driving back and forth.
+                    //Another option is the intel party.
+                    val = false;
+                    for i in in_out_russian_units do
+                         if GetSide(Attacks(i)) = you then
+                              begin
+                                   val = true;
+                                   break;
+                              end;
+
+                    //If just the Russian units are hurt/damaged the player must have attacked them
+                    //(could have done it with mines - no function can detect that).
+                    if not val then
+                         for i in in_out_russian_units do
+                              if GetLives(i) < 1000 then
+                                   begin
+                                        val = true;
+                                        break;
+                                   end;
+
+                    if val then
+                         begin
+                              //If Heike hasn't gone undercover yet then give it a little break.
+                              if heike_undercover in [0,1] then
+                                   wait(0$30);
+
+                              CreateCodeRedPatrols(num_pats);
+                         end;
+               end;
+
+
+          until false;
+     end;
+
+
+//Function which changes Heike's undercover status.
+//new_status - the new status (integer 0 to 4)
+//Disable exclamations when Heike is under cover so she won't keep saying
+//"Enemy sighted" and the like while in the base.
+Export Function ChangeHeikeUndercoverStatus(new_status);
+     var un;
+     begin
+          heike_undercover = new_status;
+
+          un = IsInUnit(Heike);
+
+          if new_status in [0,1,4] then
+               begin
+                    EnableExclamations;
+
+                    NormalAttack(russians,Heike);
+                    NormalAttack(russians_alt,Heike);
+                    if un > 0 then
+                         begin
+                              NormalAttack(russians,un);
+                              NormalAttack(russians_alt,un);
+                         end;
+               end
+          else
+               begin                      
+                    DisableExclamations;
+
+                    DoNotAttack(russians,Heike);
+                    DoNotAttack(russians_alt,Heike);
+                    if un > 0 then
+                         begin
+                              DoNotAttack(russians,un);
+                              DoNotAttack(russians_alt,un);
+                         end;
+               end;
+     end;

@@ -1,0 +1,1335 @@
+//Monitor players resources
+every 0$1 trigger enable_transport=0 marked 1 do
+var i;
+begin
+     CratesPrepared=0;
+     OilPrepared=0;
+     SiberitePrepared=0;
+
+     for i in filterallunits([[f_side,2],[f_or,[f_weapon,ar_cargo_bay],[f_weapon,ru_cargo_bay]]]) do
+     begin
+          CratesPrepared=CratesPrepared+GetCargo(i,mat_cans);
+          OilPrepared=OilPrepared+GetCargo(i,mat_oil);
+          SiberitePrepared=SiberitePrepared+GetCargo(i,mat_siberit);
+     end;
+
+enable;
+end;
+
+//Innitiating the transport exit
+every 0$1 trigger CratesPrepared>=Crates_min[difficulty] and OilPrepared>=Oil_min[difficulty] and SiberitePrepared>=Sib_min[difficulty] do
+begin
+     Say(Heike,'Tr3_He2');
+     if teleport_status=2 then
+        SetAreaMapShow(exit_teleport,1)
+     else
+         SetAreaMapShow(exit_normal,1);
+
+     enable_transport=1;
+     wait(0$0.2);
+     ChangeMissionObjectives('resourcesgathered');
+
+     wait(0$0.2);
+     query('Transport_msg');
+end;
+
+//Monitor the transport as it gathers in leaving area, and sending it when ready
+every 0$1 trigger enable_transport=1 do
+var i,area,temp,time,un_list,name_list,query_name;
+begin
+     CratesPrepared=0;
+     OilPrepared=0;
+     SiberitePrepared=0;
+     CargosPrepared=[];
+
+     if teleport_status=2 then
+     begin
+          area=exit_teleport;
+          SetAreaMapShow(exit_teleport,1);
+          SetAreaMapShow(exit_normal,0);
+     end
+     else
+     begin
+          area=exit_normal;
+          SetAreaMapShow(exit_normal,1);
+          SetAreaMapShow(exit_teleport,0);
+     end;
+
+
+     EscortPrepared=[];
+     for i in filterunitsinarea(area,[[f_side,2],[f_type,unit_vehicle],[f_control,control_manual]]) ^ filterunitsinarea(area,[[f_side,2],[f_type,unit_human],[f_not,[f_driving]]]) do
+         if EscortPrepared<Escortmin then
+         begin
+              if GetType(i)=unit_human then
+              begin
+                   if not i=heike then
+                      if not (getclass(i)=class_apeman or getclass(i)=class_apeman_soldier or getclass(i)=class_apeman_kamikaze or getclass(i)=class_apeman_engineer) then
+                         EscortPrepared=EscortPrepared^i;
+              end
+              else
+                  if IsDrivenBy(i) and not IsDrivenBy(i)=Heike then
+                     EscortPrepared=EscortPrepared^IsDrivenBy(i);
+         end
+         else
+             break;
+
+     EscortPrepared_vehicles=[];
+     for i in filterunitsinarea(area,[[f_side,2],[f_type,unit_vehicle],[f_or,[f_weapon,ar_rocket_launcher],[f_weapon,ar_gun],[f_weapon,ar_gatling_gun],[f_weapon,ar_flame_thrower],[f_weapon,ru_gun],[f_weapon,ru_gatling_gun],[f_weapon,ru_rocket_launcher]]]) do
+         if EscortPrepared_vehicles<4 then
+         begin
+              if (IsDrivenBy(i) in EscortPrepared) OR (IsControledBy(i) in EscortPrepared) OR GetControl(i)=control_apeman then
+                 EscortPrepared_vehicles= EscortPrepared_vehicles ^ i;
+         end
+         else
+             break;
+
+
+
+     for i in filterunitsinarea(area,[[f_side,2],[f_or,[f_weapon,ar_cargo_bay],[f_weapon,ru_cargo_bay]]]) do
+         if getcontrol(i)=control_apeman or (getcontrol(i)=control_remote and iscontroledby(i) in EscortPrepared) or (getcontrol(i)=control_manual and isdrivenby(i) in EscortPrepared) then
+         begin
+              CratesPrepared=CratesPrepared+GetCargo(i,mat_cans);
+              OilPrepared=OilPrepared+GetCargo(i,mat_oil);
+              SiberitePrepared=SiberitePrepared+GetCargo(i,mat_siberit);
+
+              CargosPrepared=CargosPrepared^i;
+         end;
+
+
+     if CratesPrepared>=Crates_min[difficulty] then CrateTransportReady=1
+     else
+         CrateTransportReady=0;
+     if OilPrepared>=Oil_min[difficulty] then OilTransportReady=1
+     else
+         OilTransportReady=0;
+     if SiberitePrepared>=Sib_min[difficulty] then SibTransportReady=1
+     else
+         SibTransportReady=0;
+     if EscortPrepared=Escortmin and EscortPrepared_vehicles=4 then EscortReady=1
+     else
+         EscortReady=0;
+
+
+     if CratesPrepared>=Crates_max[difficulty] {and OilPrepared>=Oil_max[difficulty]} and SiberitePrepared>=Sib_max[difficulty] then
+        TransportAllReadyToGo=1;
+
+
+     if CrateTransportReady=1 and OilTransportReady=1 and SibTransportReady=1 and EscortReady=1 and MissionEnd=1 then
+        if query1_time+0$10 < tick then
+        begin
+
+             if CratesPrepared>=Crates_max[difficulty] {and OilPrepared>=Oil_max[difficulty]} and SiberitePrepared>=Sib_max[difficulty] then
+                query_name='Transport_query_all'
+             else                                                               
+                 query_name='Transport_query_notall';
+
+
+             case SelectiveQuery(query_name,[1,2]) of
+                  1: begin
+                          enable_transport=2;
+
+                          SetAreaMapShow(exit_normal,0);
+                          SetAreaMapShow(exit_teleport,0);
+
+                          {for i in cargosprepared do
+                              if getcontrol(i)=control_apeman then
+                                 CratesPrepared=CratesPrepared+18           
+                              else CratesPrepared=CratesPrepared+20; }
+
+                          //save variables
+                          SaveVariable([CratesPrepared,OilPrepared,SiberitePrepared],'Resources_gathered_14_cont');
+
+                          un_list = [Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Makise];
+                          name_list = ['Oswald', 'Olaf', 'Sonya', 'Ralph', 'Kowalski', 'Aviradze', 'Swansson', 'Dwayne', 'Khattam', 'Evelyn', 'Makise'];
+                          for i = 1 to un_list do
+                              if un_list[i] in EscortPrepared then
+                                 SaveCharacters(un_list[i],name_list[i] & '_Escort_14_cont');
+
+                          SaveCharacters(EscortPrepared diff (Heike ^ un_list),'Others_Escort_14_cont');
+
+
+                          if teleport_status<2 then
+                          begin
+                               for i in CargosPrepared do
+                                   removeunit(i);
+
+                               for i in EscortPrepared do
+                               begin
+                                    removeunit(i);
+                                    removeunit(isinunit(i));
+                               end;
+
+                               for i in EscortPrepared_vehicles do
+                                   removeunit(i);
+
+                               SaveVariable(Teleport_SaveVariable,'Transport_Teleported_14_cont');
+
+                               PlayerConvoySent=1;
+                               PlayerMinimumPeople=0;
+
+                               enable_transport=2;
+                               CrateTransportReady=0;
+                          end
+                          else
+                          begin
+                               teleport_status=3;
+
+                               for i in (filterallunits([f_control,control_remote]) diff CargosPrepared ^ EscortPrepared_vehicles) do
+                                   if IsControledBy(i) in EscortPrepared then
+                                      comUnlink(i);
+
+                               setside(CargosPrepared^EscortPrepared_vehicles^EscortPrepared,5);
+                               comstop(CargosPrepared^EscortPrepared_vehicles^EscortPrepared);
+                               for i in EscortPrepared_vehicles do
+                               begin
+                                    setside(isdrivenby(i),5);
+                                    comstop(isdrivenby(i));
+                               end;
+                               for i in EscortPrepared do
+                               begin
+                                    setside(isinunit(i),5);
+                                    comstop(isinunit(i));
+                               end;
+
+
+                               enable_transport=2;
+                               CrateTransportReady=0;
+                               SaveVariable(1,'Transport_Teleported_14_cont');
+
+                               PlayerMinimumPeople=0;
+
+                               time=tick;
+
+                               MineTheTeleport=1;
+
+                               repeat
+                                     wait(0$1);
+                                     if CargosPrepared>0 then
+                                        temp=CargosPrepared
+                                     else temp=EscortPrepared_vehicles^EscortPrepared;
+
+                                     for i in unitfilter(temp,[f_placed]) do
+                                         if hastask(i)=0 then
+                                         begin
+                                              settasklist(i,[['a',137,175,0,0,0,0],['a',137,176,0,0,0,0],['a',137,177,0,0,0,0],['q',0,0,10,0,0,0]]);
+                                              break;
+                                         end
+                                         else
+                                             break;
+
+                                     if PlayerConvoySent=0 and tick>time+0$15 then
+                                        PlayerConvoySent=1;
+                               until (filterallunits([[f_side,5],[f_placed]]) diff ruteleprt)=0;
+
+                               teleport_status=0;
+
+                               repeat
+                                     wait(0$1);
+                                     temp=[];
+                                     for i in filterallunits([[f_side,2],[f_or,[f_type,unit_human],[f_type,unit_vehicle]]]) do
+                                         if getdistunitxy(i,137,178)<6 then
+                                            temp=temp^i;
+
+                                     if temp>0 then
+                                        commovexy(temp,142,171);
+                               until temp=[];
+
+                               LaunchMineAtPos(136,176,2);
+                               LaunchMineAtPos(138,177,2);
+                               LaunchMineAtPos(136,179,2);
+                               LaunchMineAtPos(138,180,2);
+                          end;
+
+                     end;
+             end;
+
+             query1_time=tick;
+        end;
+
+
+enable;
+end;
+
+//Placing mines that will destroy the teleport after the whole convoy is sent
+every 0$1 trigger MineTheTeleport=1 do
+var i,sol,veh,vehicles_linked,clas,hex,temp,time;
+begin
+     //find someone in the escort, preferably not in a control tower
+     for i in EscortPrepared do
+         if not GetWeapon(IsInUnit(i))=ar_control_tower or not isinunit(i) then
+         begin
+              sol=i;
+              break
+         end;
+
+     vehicles_linked=[];
+     veh=0;
+
+     if sol=0 then                                                //remember what vehicles are controled, if all escort people are in control towers
+     begin
+          sol=EscortPrepared[1];
+          for i in EscortPrepared_vehicles^CargosPrepared do
+              if IsControledBy(i)=sol then
+                 vehicles_linked=vehicles_linked^i;
+     end;
+
+     clas=getclass(sol);
+
+     if not getclass(sol)=class_soldier then
+        setclass(sol,class_soldier);
+
+     if isinunit(sol) then
+     begin
+          veh=isinunit(sol);
+          comexitvehicle(sol);
+     end;
+
+     hex=[[136,176],[138,177],[136,179],[138,180]];
+
+     wait(0$0.5);
+
+     for i=1 to 4 do                                            //Only a soldier can place a mine, and only one so the placing is being interrupted and a mine is placed by sail
+     begin
+          temp=0;
+          time=0;
+
+          comagressivemove(sol,hex[i][1],hex[i][2]);
+          addcomplaceremotecharge(sol,hex[i][1],hex[i][2],0);  
+
+          repeat
+                wait(1);
+
+                if time=0 and gettasklist(sol)[1][1]='p' and getdistunitxy(sol,hex[i][1],hex[i][2])=0 then
+                   time=tick;
+
+                if time>0 then
+                   temp=[tick-time];
+
+          until temp[1]=55;                               //placing takes about 69 ticks, here interrupted at 55
+
+          placemine(hex[i][1],hex[i][2],2,0);
+     end;
+
+     comstop(sol);
+
+     if veh>0 then                                        //resetting the soldier
+     begin
+          comenterunit(sol,veh);
+
+          repeat
+                wait(0$1);
+          until isinunit(sol);
+
+          setclass(sol,clas);
+          wait(0$1);
+          for i in vehicles_linked do
+              LinkVehicleToHuman(i,sol);
+     end;
+end;
+
+
+//Animation of the teleporting
+on unitteleported(teleporter, teleported_unit) do
+begin
+     if teleporter=ruteleprt and not getside(teleported_unit)=3 then
+     begin
+          if teleported_unit in CargosPrepared then
+             CargosPrepared =CargosPrepared diff teleported_unit;
+          if IsDrivenBy(teleported_unit) in EscortPrepared then
+             EscortPrepared =EscortPrepared diff IsDrivenBy(teleported_unit);
+          if teleported_unit in EscortPrepared_vehicles then
+             EscortPrepared_vehicles  =EscortPrepared_vehicles  diff teleported_unit;
+
+          if not getside(ruteleprt)=3 and Teleport_status > 0 then
+               begin
+                    wait(0$1);
+                    destroyunit(teleported_unit);
+               end;
+
+          if teleportation_test=0 then
+          begin
+               //wait(0$5);
+               Teleportation_test=1;
+          end;
+     end;
+end;
+
+
+//Sending Heike and her team
+Every 0$1 trigger MissionEnd do
+var i,j,temp,temp_list,un_list,name_list,TeamPeople,TeamVehicles;
+var playerhumans,playerapes;
+begin
+     SetAreaMapShow(exit_heike,1);
+
+     TeamVehicles=[];
+     TeamPeople=[];
+
+     playerapes=filterallunits([[f_placed],[f_side,2],[f_type,unit_human],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze]]]);
+     playerhumans=filterallunits([[f_placed],[f_side,2],[f_type,unit_human]]);
+     playerhumans=playerhumans diff playerapes;
+
+
+
+     for i in filterunitsinarea(exit_heike, [ [f_side,2],[f_control,control_manual] ]) do
+         if peopleremainingcount(TeamPeople,playerhumans)>PlayerMinimumPeople then
+            if isdrivenby(i) then
+            begin
+                 //TeamPeople=TeamPeople^isdrivenby(i);
+                 TeamVehicles=TeamVehicles^i;
+            end;
+
+     for i in unitfilter(playerhumans,[f_inarea,exit_heike]) do
+         if peopleremainingcount(TeamPeople,playerhumans)>PlayerMinimumPeople then
+            TeamPeople=TeamPeople^i;
+
+     for i in unitfilter(playerapes,[f_inarea,exit_heike]) do
+         if not i=Gonzo then
+            TeamPeople=TeamPeople^i;
+
+
+     for i in filterunitsinarea(exit_heike,[ [f_side,2], [f_or,[f_control,control_apeman],[f_control,control_remote]] ])  do
+         if GetControl(i)=control_remote then
+         begin
+              if IsControledBy(i) in TeamPeople then
+                 TeamVehicles=TeamVehicles^i;
+         end
+         else
+             TeamVehicles=TeamVehicles^i;
+                                                              
+
+
+     if isinarea(heike,exit_heike) and peopleremainingcount(TeamPeople,playerhumans)=PlayerMinimumPeople then
+        if query3_time+0$10 < tick then
+        begin
+             query3_time=tick;
+
+             case SelectiveQuery('Rescue_query',[1,2]) of
+                  1: begin
+                          Say(Heike,'Tr3_He3');
+
+                          //save variables
+                          temp=[];
+                          for i in TeamVehicles do
+                              temp=temp^[[GetNation(i),GetWeapon(i),GetChassis(i),GetControl(i),GetEngine(i)]];
+
+                          SaveVariable(temp,'Rescue_Vehicles_14');
+                                    
+                          un_list = [Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Makise];
+                          name_list = ['Heike', 'Oswald', 'Olaf', 'Sonya', 'Ralph', 'Kowalski', 'Aviradze', 'Swansson', 'Dwayne', 'Khattam', 'Evelyn', 'Makise'];
+                          for i = 1 to un_list do
+                              if un_list[i] in TeamPeople then
+                                 SaveCharacters(un_list[i],name_list[i] & '_Rescue_14_cont');
+
+                          SaveCharacters(TeamPeople diff (un_list^playerapes),'Others_Rescue_14_cont');
+
+                          temp=[];
+                          for i in TeamPeople do
+                              if i in PlayerApes then
+                                 temp=temp^i;
+
+                          if temp>0 then
+                             SaveCharacters(temp,'Apes_Rescue_14_cont');
+                                                              
+                          if GetLives(Gonzo)>0 then
+                             SaveCharacters(Gonzo,'Gonzo_Rescue_14_cont');
+
+                          //memorising who drives what vehicle
+                          temp=[Heike,Olaf,Sonya,Oswald,Ralph,Kowalski,Aviradze,Swansson,Dwayne,Khattam,Evelyn,Makise] ^ (TeamPeople diff (un_list^playerapes));
+                          temp_list=[];
+
+                          for i=1 to TeamVehicles do
+                              for j=1 to temp do
+                                  if getcontrol(TeamVehicles[i])=control_manual then
+                                     if IsDrivenBy(TeamVehicles[i])=temp[j] then
+                                     begin
+                                          temp=replace(temp,j,i);
+                                          temp_list=temp_list^j;
+                                     end;
+                          for i=1 to temp do
+                              if not i in temp_list then
+                                 temp=replace(temp,i,0);
+
+                          SaveVariable(temp,'Rescue_drivers_14');
+
+
+                          for i in filterallunits([f_control,control_remote]) diff TeamVehicles do
+                              if IsControledBy(i) in TeamPeople then
+                                 comUnlink(i);
+
+                          for i in TeamPeople^TeamVehicles do
+                              removeunit(i);
+
+                          if IsInArea(Gonzo,exit_heike) then
+                             removeunit(Gonzo);
+
+                          HeikeSent=1;
+
+                          exit;
+                     end;
+             end;
+        end;
+
+enable;
+end;
+
+Function peopleremainingcount(rescue,allpeople);
+var i,count;
+begin
+     if allpeople=0 then
+     begin
+          result=0;
+          exit;
+     end;
+
+     count=0;
+
+     if rescue=0 then
+     begin
+          for i in allpeople do
+              count=count+1;
+     end
+     else
+         for i in allpeople do
+             if not i in rescue then
+                count=count+1;
+
+     result=count;
+end;
+
+
+//Control player's manual teleportation
+every 1 trigger entering_teleport_unit and teleport_status>0 do
+var un,i,j,temp,temp_list;
+begin
+     temp_list=[];
+
+     for i in entering_teleport_unit do
+     begin
+        //  if getside(i)=2 then
+          //begin
+         // if hastask(i)>0 then
+        //     if Gettasklist(i)[1][1]='q' then
+        //     begin
+               if getdistunitxy(i,137,177)<5 or getdistunitxy(i,137,179)<5 then
+               begin
+                    setside(i,5);
+                    comstop(i);
+               end;
+
+               if hastask(i)=0 and getside(i)=2 then
+                  temp_list=temp_list ^ i
+               else
+               begin
+                    temp=0;
+                    for j in Gettasklist(i) do
+                        if j[1]='q' then
+                           temp=1;
+                    if temp=0 then
+                       temp_list=temp_list ^ i;
+               end;
+          //end;
+     end;
+
+     entering_teleport_unit=entering_teleport_unit diff temp_list;
+
+     temp_list=unitfilter(entering_teleport_unit,[f_side,5]);
+     if temp_list>0 then
+     begin
+          {if getdistunitxy(entering_teleport_unit[1],137,177)<getdistunitxy(entering_teleport_unit[1],137,179) then
+             temp=[137,177]
+          else
+              temp=[137,179];
+          comagressivemove(entering_teleport_unit[1],temp[1],temp[2]); }
+
+          repeat
+                settasklist({temp_list[1]}nearestunittounit(temp_list,10),[['a',137,175,0,0,0,0],['a',137,176,0,0,0,0],['a',137,177,0,0,0,0],['q',0,0,10,0,0,0]]);
+                wait(0$2);
+          until temp_list{[1]}=0;
+
+
+
+          //Teleportunit(i,137,gety(i),0,true);
+          //wait(0$1);
+          //destroyunit(i);
+     end;
+
+enable;
+end;
+
+
+//Detonating Legion's mines
+Export Function detonate;
+var i;
+begin
+     launchmineatpos(118,72,8);
+     launchmineatpos(118,73,8);
+     launchmineatpos(76,67,8);
+     launchmineatpos(79,67,8);
+     launchmineatpos(100,68,8);
+     launchmineatpos(81,53,8);
+     launchmineatpos(104,65,8);
+
+     if ai_vehicles_defend[1]>0 or ai_crane[1]>0 then
+        for i in ai_vehicles_defend[1]^ai_crane[1] do
+        begin
+             //placemine(getx(i),gety(i),8,0);
+             //launchmineatpos(getx(i),gety(i),8);
+             mineexplosion(getx(i),gety(i),0);
+             setlives(i,0);
+        end;
+
+     minesready=0;
+
+     wait(0$2);
+     if islive(hexinfo(97,66)) and getlives(hexinfo(97,66))>120  then
+     begin
+          mineexplosion(97,66,0);
+          setlives(hexinfo(97,66),100);
+     end;
+
+     if islive(hexinfo(97,66)) and getlives(hexinfo(97,66))<80 then
+        setlives(hexinfo(97,66),100);
+end;
+
+
+//appearance of the convoy 
+every 0$1 trigger tick>27$30 and all_variant=1 do
+var i,list;
+begin
+     Randomize;
+
+     //order of appearance: 2rus,1car,2car,2all, 1rus,3car,4car,1all, 3rus,5car,6car,3all, 4rus,7,car,8car,4all
+     list=[];
+     if rand(1,2)=1 then
+        list=list^ConvoyRussians[2]^ConvoyAlliance[2]
+     else list=list^ConvoyAlliance[2]^ConvoyRussians[2];
+     list=list^ConvoyCargos[1]^ConvoyCargos[2];
+
+     if rand(1,2)=1 then
+        list=list^ConvoyRussians[1]^ConvoyAlliance[1]
+     else list=list^ConvoyAlliance[1]^ConvoyRussians[1];
+     list=list^ConvoyCargos[3]^ConvoyCargos[4];
+
+     if rand(1,2)=1 then
+        list=list^ConvoyRussians[3]^ConvoyAlliance[3]
+     else list=list^ConvoyAlliance[3]^ConvoyRussians[3];
+     list=list^ConvoyCargos[5]^ConvoyCargos[6];
+
+     if rand(1,2)=1 then
+        list=list^ConvoyRussians[4]^ConvoyAlliance[4]
+     else list=list^ConvoyAlliance[4]^ConvoyRussians[4];
+
+     ConvoyAll=list;
+
+     for i in list do
+     begin
+          repeat
+                wait(0$1);
+                placeunitarea(i,convoy_enter,false);
+          until isplaced(i);
+
+          if getweapon(i)=ru_cargo_bay then
+             DoNotAttack(2,i);
+     end;
+
+     Convoy_CargosPlaced=1;
+end;
+
+//Control the convoy
+every 0$1 trigger isplaced(convoyrussians[2]) or isplaced(convoyalliance[2]) do
+var i,temp,temp_list,move,un,un_list,ru_drivers,al_drivers,free_drivers,cargo,time;
+begin
+     time=0$20;
+
+     ru_drivers=[];
+     for i in convoyrussians do
+         ru_drivers=ru_drivers^isdrivenby(i);
+
+     al_drivers=[];
+     for i in convoyalliance do
+         al_drivers=al_drivers^isdrivenby(i);
+
+     free_drivers=[];
+
+     repeat
+           wait(0$0.5);
+
+           for i=1 to ru_drivers do                                             //remove the mechanics
+               if not isdead(convoyrussians[i]) then
+               begin
+                    if not isinunit(ru_drivers[i]) then
+                       if getlives(convoyrussians[i])<450 then
+                          comrepairvehicle(ru_drivers[i],convoyrussians[i])
+                       else comenterunit(ru_drivers[i],convoyrussians[i]);
+               end
+               else
+                   begin
+                        convoyrussians=delete(convoyrussians,i);
+                        free_drivers=free_drivers^ru_drivers[i];
+                        ru_drivers=delete(ru_drivers,i);
+                        break;
+                   end;
+
+
+           temp_list=[];                                               //Remove the dead or taken vehicles from the convoy list
+           for i=1 to convoyrussians do
+               if isdead(convoyrussians[i]) or getlives(ru_drivers[i])<250 or not getside(convoyrussians[i])=3 then
+                  temp_list=temp_list^i;
+           for i in temp_list do
+           begin
+                convoyrussians=delete(convoyrussians,i);
+                ru_drivers=delete(ru_drivers,i);
+           end;
+
+           if convoyrussians=0 then
+           begin
+                comunload(convoycargos);
+                exit;
+           end;
+
+
+           if free_drivers>0 then                                         //Mechanics that lost their vehicles will just move along the cargos
+              for i in free_drivers do
+                  if con_waypoint_counter>5 or convoyrussians=0 then
+                  begin
+                       ai_mechanics_defend=replace(ai_mechanics_defend,2,ai_mechanics_defend[2] ^ i);
+                       free_drivers=free_drivers diff i;
+                  end
+                  else
+                      if getdistunitxy(i,con_way_cargos[con_waypoint_counter][6][1],con_way_cargos[con_waypoint_counter][6][2])>5 then
+                         commovexy(i,con_way_cargos[con_waypoint_counter][6][1],con_way_cargos[con_waypoint_counter][6][2]);
+
+
+           if temp_list>0 then
+              for i in temp_list do
+                  if unitfilter(convoyrussians,[[f_empty],[f_lives,450]])>0 then
+                     comenterunit(i, nearestunittounit(unitfilter(convoyrussians,[[f_empty],[f_lives,450]]),i))     //Drivers on foot should enter nearest ok vehicle or stay idle
+                  else
+                      comenterunit(i, nearestunittounit(unitfilter(convoyrussians,[[f_empty],[f_lives,450]]),i));
+
+           move=1;
+           temp_list=[];
+
+           for i in filterallunits([[f_side,2],[f_ok],[f_not,[f_empty]]]) do                                   //check if they encountered an enemy
+               if see(3,i) and GetDistUnits(nearestunittounit(convoyrussians^convoyalliance,i),i)<18 then
+               begin
+                    if con_waypoint_counter>1 then
+                    begin
+                         move=0;
+                         temp_list=temp_list^i;
+                    end;
+
+                    if not deserting then                                                   //trigger deserting
+                       for i in convoyalliance do
+                           if getside(i)=3 then
+                           begin
+                                deserting=1;
+                                ConvoyAll=ConvoyAll diff i;
+                           end;
+               end;
+
+
+           for i in convoycargos do                                       //Damaged cargos will unload
+               if not isok(i) then
+                  comunload(i);
+
+
+           if move=1 then                                                                //moving along or attacking:
+           begin
+                if con_waypoint_counter<6 then                                           //first part of movement, before approaching base 2
+                begin
+                     {if unitfilter(ConvoyRussians,[f_lives,250])^unitfilter(ru_drivers,[f_lives,250]) = 0 then
+                     begin
+                          for i in convoycargos do
+                              comunload(i);
+                          exit;
+                     end;    }
+
+                     temp=0;
+
+                     un_list=unitfilter(ConvoyAll,[f_not,[f_or,[f_weapon,ru_heavy_gun],[f_weapon,ru_cargo_bay]]]);
+                     for i=1 to un_list do
+                         if getdistunitxy(un_list[i],con_way_vehs[con_waypoint_counter][i][1],con_way_vehs[con_waypoint_counter][i][2])>3 then
+                         begin
+                              if con_waypoint_counter>1 then
+                                 comagressivemove(un_list[i],con_way_vehs[con_waypoint_counter][i][1],con_way_vehs[con_waypoint_counter][i][2])
+                              else commovexy(un_list[i],con_way_vehs[con_waypoint_counter][i][1],con_way_vehs[con_waypoint_counter][i][2]);
+                              temp=1;
+                         end;
+
+                     un_list=unitfilter(ConvoyAll,[f_weapon,ru_heavy_gun]);
+                     for i=1 to un_list do
+                         if getdistunitxy(un_list[i],con_way_heavy[con_waypoint_counter][i][1],con_way_heavy[con_waypoint_counter][i][2])>3 then
+                         begin
+                              if con_waypoint_counter>1 then
+                                 comagressivemove(un_list[i],con_way_heavy[con_waypoint_counter][i][1],con_way_heavy[con_waypoint_counter][i][2])
+                              else commovexy(un_list[i],con_way_heavy[con_waypoint_counter][i][1],con_way_heavy[con_waypoint_counter][i][2]);
+                              temp=1;
+                         end;
+
+                     for i=1 to ConvoyCargos do
+                         if getdistunitxy(ConvoyCargos[i],con_way_cargos[con_waypoint_counter][i][1],con_way_cargos[con_waypoint_counter][i][2])>3 then
+                         begin
+                              if con_waypoint_counter>1 then
+                                 comagressivemove(ConvoyCargos[i],con_way_cargos[con_waypoint_counter][i][1],con_way_cargos[con_waypoint_counter][i][2])
+                              else commovexy(ConvoyCargos[i],con_way_cargos[con_waypoint_counter][i][1],con_way_cargos[con_waypoint_counter][i][2]);
+                              temp=1;
+                         end;
+
+                     if temp=0 then
+                        con_waypoint_counter=con_waypoint_counter+1;
+                end
+                else
+                    begin
+                         temp_list=convoyrussians^convoycargos^unitfilter(convoyalliance,[f_side,3]); //entering  base 2, or leaving the map if the base isn't there
+
+                         for i in temp_list do
+                             if not IsInArea(i,area_base2) and not IsInArea(i,base2_vehicle_defend) then
+                             begin
+                                  commovexy(i,154,54);
+                                  addcommovexy(i,175,75);
+                             end;
+
+                         if 2 in ai_bases then
+                         begin
+                              repeat
+                                    wait(0$0.5);
+                                    for i in temp_list do                                             //cargos leave the resources in the warehouse and move to the back of the base
+                                        if getdistunitxy(i,175,75)<5 then
+                                           if getweapon(i)=ru_cargo_bay then
+                                           begin
+                                                comgive(i,hexinfo(175,88));
+                                                addcommovexy(i,210,122);
+                                                temp_list=temp_list diff i;
+                                           end
+                                           else                                                       //escort becomes part of the base
+                                           begin
+                                                ai_vehicles_defend=replace(ai_vehicles_defend,2,ai_vehicles_defend[2] ^ i);
+                                                ai_mechanics_defend=replace(ai_mechanics_defend,2,ai_mechanics_defend[2] ^ isdrivenby(i));
+                                                ConvoyRussians=ConvoyRussians diff i;
+                                                temp_list=temp_list diff i;
+                                           end;
+                              until temp_list=0;
+                              exit;
+                         end
+                         else
+                             begin
+                                  if time>0 then
+                                  begin
+                                       addcommovexy(temp_list,186,94);
+                                       wait(0$1);
+                                       time=time-0$1;
+                                  end
+                                  else
+                                  begin
+                                       commovexy(temp_list,201,86);
+                                       for i in temp_list do
+                                           if getdistunitxy(i,201,86)<4 then
+                                              removeunit(i);
+                                  end;
+                             end;
+                    end;
+           end
+           else
+           begin                                                                   //attack detected units
+                for i in convoyrussians do
+                begin
+                     un=nearestunittounit(temp_list,i);
+                     if validhex(getx(un),gety(un)) then
+                        comagressivemove(i,getx(un),gety(un));
+                end;
+
+                if con_waypoint_counter>1 then
+                   for i in convoycargos do
+                       if hastask(i) then
+                          comstop(i);
+
+           end;
+
+           temp_list=unitfilter(al_drivers,[f_not,[f_driving]]);    //make sure alliance mechanics of foot run away
+           if temp_list>0 then
+              commovexy(temp_list,48,94);
+
+           cargo=0;
+           for i in convoycargos do
+               if Carry(i) then
+                  cargo=1;
+
+     until 1+1=3;
+end;
+
+//A little fix in case the cargos pick up the resources again
+every 0$1 trigger filterallunits([[f_or,[f_side,3],[f_side,7]],[f_weapon,ru_cargo_bay]]) and convoyrussians=0 do
+var i;
+begin
+     if Convoy_CargosPlaced=0 then
+        commovexy(filterallunits([[f_or,[f_side,3],[f_side,7]],[f_weapon,ru_cargo_bay]]),67,87)
+     else
+         for i in filterallunits([[f_or,[f_side,3],[f_side,7]],[f_weapon,ru_cargo_bay]]) do
+         begin
+              if getside(i)=3 then
+                 setside(i,7);
+
+              commovexy(i,48,94);
+
+              if carry(i) then
+              begin
+                   comunload(i);
+                   addcommovexy(i,48,94);
+              end;
+
+              if getdistunitxy(i,48,94)<5 then
+                 removeunit(i);
+         end;
+enable;
+end;
+
+//control escaping allinace
+every 0$1 trigger deserting>0 and convoyalliance>0 do
+var i,j,temp;
+begin
+     for i in unitfilter(convoyalliance,[[f_placed],[f_ok]]) do
+         for j in all_waypoints do
+             if getdistxy(getx(i)-5,gety(i),48,94) - getdistxy(48,94,j[1],j[2]) > 0 then
+             begin
+                  commovexy(i,j[1],j[2]);
+                  break;
+             end;
+
+     if unitfilter(convoyalliance,[f_side,3])>0 then
+     begin
+          wait(0$5);
+          setside(convoyalliance,7);
+          for i in convoyalliance do
+              setside(isdrivenby(i),7);
+     end;
+
+     for i in filterallunits([[f_placed],[f_ok],[f_side,7]]) do
+         if getdistunitxy(i,48,94)<5 then
+            removeunit(i);
+
+enable;
+end;
+
+//alliance attitude control
+every 1 trigger deserting>0 and convoyalliance>0 do
+var time;
+begin
+     if getattitude(7,2)=att_enemy and all_attitude_counter<15 then
+     begin
+          all_attitude_counter=all_attitude_counter+1;
+          setattitude(7,2,att_neutral,true);
+
+          time=tick;
+          repeat
+                wait(1);
+                setattitude(7,2,att_neutral,true);
+          until tick>time+0$0.3;
+     end;
+enable;
+end;
+
+
+
+
+//Preparing attack on the teleport
+every 0$1 trigger tick>37$30 and GetSide(ruteleprt)=5 and 2 in ai_bases and teleport_status>0 do
+var i,temp_list,weapon,chassis,un;
+begin
+     producing_the_attack=1;
+     //Two groups: 5 vehicles as main strike force and another 3 sneaking the back way
+
+     //first group: same types as other vehicles produced
+     for i=1 to 5 do
+     begin
+          temp_list = [ru_gun,ru_heavy_gun,ru_rocket_launcher,ru_rocket,ru_gatling_gun];
+
+          if difficulty = 2 then
+             temp_list = temp_list ^ ru_heavy_gun;  //Greater chance
+
+          if difficulty = 3 then
+          begin
+               temp_list = Replace(temp_list,1,ru_heavy_gun);
+               temp_list = Delete(temp_list,3);
+          end;
+
+          weapon = temp_list[Rand(1,temp_list+0)];
+
+          if Rand(1,[2,3,4][difficulty]) = 1 and not weapon in [ru_heavy_gun,ru_rocket] then
+             chassis = ru_medium_tracked
+          else
+              chassis = ru_heavy_tracked;
+
+          teleport_attack_list=teleport_attack_list^[[chassis,engine_combustion,control_computer,weapon]];
+     end;
+
+     //The other: 3 manual vehicles that will retreat when damaged, 1 drived by an engineer
+     for i=1 to 3 do
+         teleport_attack_list=teleport_attack_list^[[ru_medium_wheeled,engine_siberite,control_manual,ru_rocket_launcher]];
+
+
+     if difficulty = 3 then
+        un=BestSkillOfClass(unitfilter(ai_mechanics_defend[2] diff ai_crane_driver[2],[f_not,[f_driving]]),skill_mechanical)  //pick the best mechanic for the attack on hard
+     else
+         un=WorstSkillOfClass(unitfilter(ai_mechanics_defend[2] diff ai_crane_driver[2],[f_not,[f_driving]]),skill_mechanical); //pick the worst otherwise
+
+     ai_mechanics_defend=Replace(ai_mechanics_defend,2,ai_mechanics_defend[2] diff un);
+     teleport_attack_people=teleport_attack_people^un;
+
+     if difficulty = 3 then
+        un=BestSkillOfClass(unitfilter(ai_mechanics_defend[2] diff ai_crane_driver[2],[f_not,[f_driving]]),skill_mechanical)  //pick the best mechanic for the attack on hard
+     else
+         un=WorstSkillOfClass(unitfilter(ai_mechanics_defend[2] diff ai_crane_driver[2],[f_not,[f_driving]]),skill_mechanical);  //pick the worst otherwise
+
+     ai_mechanics_defend=Replace(ai_mechanics_defend,2,ai_mechanics_defend[2] diff un);
+     teleport_attack_people=teleport_attack_people^un;
+
+     un=BestSkillOfClass(ai_engineers[2],skill_engineering);
+     ai_engineers=Replace(ai_engineers,2,ai_engineers[2] diff un);
+     teleport_attack_people=teleport_attack_people^un;
+ 
+     un=BestSkillOfClass(ai_scientists[2],skill_scientistic);
+     ai_scientists=Replace(ai_scientists,2,ai_scientists[2] diff un);
+     teleport_attack_people=teleport_attack_people^un;
+                             
+     comcancel(ai_facts[2][1]);
+     wait(0$1);
+
+     for i in teleport_attack_list do
+         addcomconstruct(ai_facts[2][1],i[1],i[2],i[3],i[4]);
+
+     comexitbuilding(teleport_attack_people);
+     comexitvehicle(teleport_attack_people);
+     commovexy(ai_vehicles_defend[2],190,81);
+
+     temp_list=[];
+     repeat
+           wait(0$1);
+           temp_list=filterunitsinarea(area_base2,[[f_side,3],[f_type,unit_vehicle]]) diff ai_vehicles_defend[2]^ai_crane[2];
+
+           un=unitfilter(temp_list,[[f_control,control_manual],[f_not,[f_empty]]]);
+           if un>0 then
+              if getdistunitxy(un[1],200,118)>6 then
+                 commovexy(un[1],200,118)
+              else
+                  comexitvehicle(isdrivenby(un[1]));
+
+           for i in unitfilter(temp_list,[f_control,control_computer]) do
+               if getdistunitxy(i,185,88)>7 then
+                  commovexy(i,185,88);
+
+     until unitfilter(temp_list,[f_empty])=3;
+
+     teleport_attack_list=[[temp_list[1],temp_list[2],temp_list[3],temp_list[4],temp_list[5]],[temp_list[6],temp_list[7],temp_list[8]]];
+     producing_the_attack=0;
+
+     wait(0$0.5);
+     comenterunit(teleport_attack_people[1],teleport_attack_list[2][1]);
+     comenterunit(teleport_attack_people[2],teleport_attack_list[2][2]);
+     comenterunit(teleport_attack_people[3],teleport_attack_list[2][3]);
+     commovexy(teleport_attack_people[4],162,102);
+     addcomhold(teleport_attack_people[4]);
+
+end;
+
+
+function BestSkillOfClass(list,skill);
+var i,temp,un;
+begin
+     if list=0 or not skill in [1,2,3,4] then
+     begin
+          result=0;
+          exit;
+     end;
+
+     for i in list do
+         if GetSkill(i,skill)>temp then
+         begin
+              temp=GetSkill(i,skill);
+              un=i;
+         end;
+
+     if un>0 then
+        result=un
+     else
+         result=0;
+end;
+
+function WorstSkillOfClass(list,skill);
+var i,temp,un;
+begin
+     if list=0 or not skill in [1,2,3,4] then
+     begin
+          result=0;
+          exit;
+     end;
+
+     un = list[1];
+
+     for i in list do
+         if GetSkill(i,skill) < GetSkill(un,skill) then
+            un=i;
+
+     if un>0 then
+        result=un
+     else
+         result=0;
+end;
+
+Function DetermineAttackPath;
+var i,temp,gate,path;
+begin
+     Randomize;
+
+     path=[];
+
+     if base10_people>0 and filterunitsinarea(area_base10,[f_side,2])=0 and rand(1,2)=1 then       //Can the teleport be used?
+        gate=1
+     else gate=0;
+
+     if gate=0 then
+        path=path^[[179,79],[166,63],[148,57],[138,67],[131,77]];
+
+     case rand(1,3) of
+          1: path=path^[[135,86],[148,100],[158,115],[154,127],[145,130],[137,133],[131,140],[128,150]];
+          2: path=path^[[127,81],[119,89],[119,100],[123,111],[128,126],[127,135],[128,150]];
+          3: path=path^[[108,75],[93,72],[79,76],[69,84],[65,95],[66,108],[75,119],[91,134],[106,150]];
+     end;
+
+     result=[[gate],path];
+end;
+
+
+//Controling the attack
+every 0$1 trigger producing_the_attack=1 do
+var i,j,temp,AttackPath,Vehicles,engineer;
+begin
+     repeat
+           wait(0$1);
+     until producing_the_attack=0;                          //wait until all vehicles are made
+
+     AttackPath=DetermineAttackPath;
+
+     if AttackPath[1][1] then                               //go through the teleports if that's the path
+        repeat
+              wait(0$1);
+              for i in teleport_attack_list[1] do
+              begin
+                   if IsInArea(i,area_base2) then
+                      commoveunit(i,ai_teleporter[2]);
+                   if IsInArea(i,area_base10) then
+                      commoveunit(i,Hexinfo(74,141));
+                   if IsInArea(i,area_base1) then
+                      commovexy(i,124,77);
+
+                   if isdead(i) then
+                      teleport_attack_list=replace(teleport_attack_list,1,teleport_attack_list[1] diff i);
+              end;
+        until unitfilter(teleport_attack_list[1],[f_distxy,124,77,20])=teleport_attack_list[1];
+
+
+
+     Vehicles=teleport_attack_list[1];
+     engineer=teleport_attack_people[3];
+
+     repeat
+           wait(0$0.2);
+           if unitfilter(vehicles,[f_alive])=0 then
+              exit;
+
+           temp=filterallunits([[f_side,2],[f_not,[f_empty]]]);                             //check for any vehicles in contact
+           if temp>0 then
+              for i in temp do
+                  if see(3,i) then
+                     if not i in att_detected_units then
+                        att_detected_units=att_detected_units^i;
+
+           if att_detected_units>0 then
+              for i in att_detected_units do                                                //check if the detected units have moved out of range
+                  if getdistunits(i,nearestunittounit(teleport_attack_list[1],i))>11 then
+                     att_detected_units=att_detected_units diff i;
+
+
+           if att_detected_units>0 then
+              comattackunit(teleport_attack_list[1],att_detected_units[1])
+           else
+               if unitfilter(teleport_attack_list[1],[ [f_ok], [f_not,[f_distxy,AttackPath[2][att_count][1],AttackPath[2][att_count][2],8]] ])=0 then
+                  att_count=att_count+1
+               else
+                   commovexy(unitfilter(teleport_attack_list[1],[f_not,[f_distxy,AttackPath[2][att_count][1],AttackPath[2][att_count][2],8]]),AttackPath[2][att_count][1],AttackPath[2][att_count][2]);
+
+           temp=0;
+           for i in att_detected_units do
+               if GetBType(i)=b_armoury or GetBType(i)=b_barracks then
+               begin
+                    for j in filterallunits([[f_side,2],[f_type,unit_human]]) do
+                        if isinunit(j)=i then
+                           temp=temp+1;
+               end
+               else
+                   temp=temp+1;
+
+           if temp>3 or att_count=AttackPath[2] - 2 then
+              att_backstab=1;
+
+     until att_count=AttackPath[2];
+
+
+     repeat
+           wait(0$1);
+
+           if vehicles>0 then
+              if isok(engineer) and isinarea(engineer,area_base5) then
+                 comagressivemove(vehicles,getx(ruteleprt),gety(ruteleprt))
+              else
+                  comattackunit(vehicles,10);
+
+           if unitfilter(vehicles,[f_alive])=0 then
+              exit;
+
+     until isdead(ruteleprt) or getside(ruteleprt)=3;
+
+     repeat
+           wait(0$1);
+           if unitfilter(vehicles,[f_alive])=0 then
+              exit;
+
+           if not isok(ruteleprt) then
+           begin
+                if unitfilter(vehicles,[f_not,[f_distxy,AttackPath[2][att_count][1],AttackPath[2][att_count][2],8]])=0 then
+                   att_count=att_count-1
+                else
+                    commovexy(vehicles,AttackPath[2][att_count][1],AttackPath[2][att_count][2]);
+           end
+           else
+               comenterunit(vehicles,10);
+
+           for i in vehicles do
+               if isinarea(i,area_base2) then
+               begin
+                    ai_vehicles_defend=replace(ai_vehicles_defend,2,ai_vehicles_defend[2] ^ i);
+                    vehicles=vehicles diff i;
+               end;
+
+     until att_count=1 or vehicles=0;
+
+     if vehicles>0 then
+     begin
+          ai_vehicles_defend=Replace(ai_vehicles_defend,2,ai_vehicles_defend[2] ^ vehicles);
+          commovexy(vehicles,188,102);
+     end;
+end;
+  
+
+
+every 0$1 trigger att_backstab do
+var i,path,temp,hex_count,engineer,mechanics,en_veh,mech1_veh,mech2_veh,scientist;
+begin
+     path=[[185,121],[183,127],[190,135],[197,143],[203,150],[205,162],[209,172],[213,183],[211,191],[203,193],[192,194],[183,197],[172,195],[162,190],[153,183],[142,177]];
+     hex_count=1;
+     engineer=teleport_attack_people[3];
+     mechanics=teleport_attack_people[1]^teleport_attack_people[2];            //the stealth attack consists of 3 people: 2 mechanocs and 1 engineer
+     en_veh=teleport_attack_list[2][3];
+     mech1_veh=teleport_attack_list[2][1];
+     mech2_veh=teleport_attack_list[2][2];
+     scientist=teleport_attack_people[4];
+
+     repeat
+           wait(0$0.2);
+
+
+           //Removing returning units from the attack and back to base 2 personnel
+           if isinarea(engineer,area_base2) and (getlives(engineer)<600 or getlives(en_veh)<600 or isdead(en_veh) or isdead(ruteleprt) or getside(ruteleprt)=3) then
+           begin
+                ai_engineers=replace(ai_engineers,2,ai_engineers[2] ^ engineer);
+                if isinunit(engineer)=en_veh then
+                   ai_vehicles_defend=replace(ai_vehicles_defend,2,ai_vehicles_defend[2] ^ en_veh);
+                engineer=0;
+           end;
+
+           for i=1 to mechanics do
+               if isinarea(mechanics[i],area_base2) and (getlives(mechanics[i])<600 or getlives([mech1_veh,mech2_veh][i])<600 or isdead([mech1_veh,mech2_veh][i]) or isdead(ruteleprt) or getside(ruteleprt)=3) then
+               begin
+                    ai_mechanics_defend=replace(ai_mechanics_defend,2,ai_mechanics_defend[2] ^  mechanics[i]);
+                    if isinunit(mechanics[i]) then
+                       ai_vehicles_defend=replace(ai_vehicles_defend,2,ai_vehicles_defend[2] ^ isinunit(mechanics[i]));
+                    mechanics=mechanics diff mechanics[i];
+                    break;
+               end;
+
+           //Removing dead units
+           for i in mechanics do
+               if isdead(i) then
+                  mechanics=mechanics diff i;
+           if isdead(engineer) then
+              engineer=0;
+
+
+           for i in Mechanics^Engineer do
+               if islive(ruteleprt) then                                               //if the teleport isn't destroyed
+               begin
+                  if not isinarea(i,area_base5) then
+                  begin
+                       if getlives(i)<600 or getlives(isinunit(i))<600 or getlives(en_veh)<600 then          //retreat if injured, else move on to the teleport
+                       begin
+                            commovexy(i,180,103);
+                            if scientist>0 then
+                               ai_scientists=replace(ai_scientists,2,ai_scientists[2] ^ scientist);
+                       end
+                       else
+                           if getdistunitxy(isinunit(engineer),path[hex_count][1],path[hex_count][2])<6 then
+                              hex_count=hex_count+1
+                           else
+                               case i of
+                                    teleport_attack_people[1]: commovexy(teleport_attack_people[1],path[hex_count][1],path[hex_count][2]);
+                                    teleport_attack_people[2]: commovexy(teleport_attack_people[2],GetX(Engineer),GetY(Engineer));
+                                    Engineer: commovexy(Engineer,path[hex_count][1],path[hex_count][2]);
+                               end;    
+                  end
+                  else
+                      if not getside(ruteleprt)=3 then                                     //if the teleport is of side 5
+                      begin
+                           if getdistunits(Engineer,10)>4 then
+                              commovexy(Engineer,138,175)
+                           else
+                               if isinunit(Engineer) then                                   //take it over
+                                  comexitvehicle(Engineer)
+                               else
+                                   SetTaskList(Engineer,[['e',137,178,10,0,0,0]]);
+
+                           if engineer=0 then
+                              comattackunit(i,10)
+                           else
+                               if not i=engineer and getdistunitxy(i,138,173)>6 then
+                                  commovexy(i,138,172);
+                      end
+                      else
+                          begin                                                                                   //use the teleport to go back
+                               Teleport_status=0;
+
+                               if scientist in teleport_attack_people then
+                               begin
+                                    settasklist(scientist,[['L',162,102,0,10,0,0]]);                   //scientist back at base 2 places the exit
+                                    wait(0$1);
+                                    ai_scientists=replace(ai_scientists,2,ai_scientists[2] ^ scientist);
+                                    teleport_attack_people=teleport_attack_people diff scientist;
+                               end;
+
+                               comenterunit(Mechanics,10);
+                               if isok(en_veh) then
+                               begin
+                                    comenterunit(Engineer,en_veh);
+                                    addcomenterunit(Engineer,10);
+                               end
+                               else
+                                   comenterunit(Engineer,10);
+                          end;
+               end
+               else
+                   commovexy(Mechanics^Engineer,180,103);
+
+     until Mechanics=0 and Engineer=0;
+
+
+end;

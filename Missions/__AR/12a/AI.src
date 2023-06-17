@@ -1,0 +1,332 @@
+
+//Patrols.
+//The patrol route is expected to be specified when a patrol is created.
+Every 0$1+0$0.9 do
+     var p, i, temp_value, temp_list, temp_unit, temp_list_2, k, attacking_units;
+     var attacking_scientists, attacking_soldiers, x, y, hex;
+     var side, min_dist;
+     begin
+          side = upf;
+          min_dist = 4;  //min distance to waypoint to continue
+
+          repeat
+          wait(0$1);
+
+          //for base in ai_bases do
+          //     begin
+                    for p = 1 to patrols do
+                         begin
+                              temp_list = UnitFilter(patrols[p],[f_alive]);
+                              patrols = Replace(patrols,p,temp_list);
+
+                              if patrols[p] = 0 then
+                                   begin
+                                        patrols_path = Replace(patrols_path,p,[]);
+                                        patrols_path_hex_index = Replace(patrols_path_hex_index,p,1);
+                                        continue;
+                                   end;
+
+
+                              attacking_soldiers = [];
+                              attacking_scientists = [];
+                              for i in patrols[p] do
+                                   if GetClass(i) = class_scientistic then
+                                        attacking_scientists = attacking_scientists ^ i
+                                   else
+                                        attacking_soldiers = attacking_soldiers ^ i;  //May also contain vehicles in this mission...
+
+
+                                        //Control scientists.
+                                        //Scientists just follow the attacking soldiers. The "average position" of the
+                                        //attacking soldiers is calcualted. The scientists should be no further away from
+                                        //that hex than the soldier furthest away.
+                                        //If there are no attacking soldiers then move scientists as they were soldiers.
+                                        if attacking_scientists > 0 then   
+                                             if ( UnitFilter(attacking_soldiers,[f_type,unit_human]) = 0 and UnitFilter(attacking_soldiers,[[f_type,unit_vehicle],[f_ok]]) = 0 ) or patrols_path_hex_index[p] > patrols_path[p] then  //end of the line
+                                                  begin
+                                                       attacking_soldiers = attacking_soldiers ^ attacking_scientists;
+                                                       attacking_scientists = [];
+                                                  end
+                                             else
+                                                  begin
+                                                       temp_list = [];
+                                                       for i in attacking_soldiers do
+                                                            if not ( GetType(i) = unit_vehicle and not IsOk(i) ) then
+                                                                 temp_list = temp_list ^ i;
+
+                                                       x = 0;
+                                                       y = 0;
+                                                       for i in temp_list do
+                                                            begin
+                                                                 x = x + GetX(i);
+                                                                 y = y + GetY(i);
+                                                            end;
+
+                                                       x = x div temp_list;
+                                                       y = y div temp_list;
+
+                                                       temp_value = 0;
+                                                       for i in temp_list do
+                                                            begin
+                                                                 k = GetDistUnitXY(i,x,y);
+
+                                                                 if k > temp_value then
+                                                                      temp_value = k;
+                                                            end;
+
+                                                       for i in attacking_scientists do
+                                                            if GetDistUnitXY(i,x,y) > temp_value then
+                                                                 ComMoveXY(i,x,y);
+                                                  end;
+
+
+                              //Check if all soldiers are within close distance to the hex we are going for now,
+                              //scientists a little further away.
+                              //If yes then go for the next hex. In this way soldiers wait for each other at the
+                              //waypoints in the route.
+                              //Also wait at the waypoint if one or more units are injured (but only if there is
+                              //a scientist present).
+                              if patrols_path_hex_index[p] <= patrols_path[p] then
+                              begin
+                              temp_value = true;
+                              for i in attacking_soldiers do
+                                   if GetDistUnitXY(i,patrols_path[p][patrols_path_hex_index[p]][1],patrols_path[p][patrols_path_hex_index[p]][2]) > min_dist and not ( GetType(i) = unit_vehicle and not IsOk(i) ) then
+                                        begin
+                                             temp_value = false;
+                                             break;
+                                        end;
+
+                              if temp_value then
+                                   for i in attacking_scientists do
+                                        if GetDistUnitXY(i,patrols_path[p][patrols_path_hex_index[p]][1],patrols_path[p][patrols_path_hex_index[p]][2]) > min_dist+5 then
+                                             begin
+                                                  temp_value = false;
+                                                  break;
+                                             end;
+
+                              if temp_value and UnitFilter(attacking_scientists,[f_ok]) > 0 then
+                                   for i in attacking_soldiers ^ attacking_scientists do
+                                        if GetLives(i) < 900 and GetType(i) = unit_human then
+                                             begin
+                                                  temp_value = false;
+                                                  break;
+                                             end;
+
+                              if temp_value then
+                                   begin
+                                        patrols_path_hex_index = Replace(patrols_path_hex_index,p,patrols_path_hex_index[p]+1);
+                                   end;
+                              end;
+
+
+                              //Control the soldiers
+                              for i in attacking_soldiers do
+                                   begin
+                                        temp_value = GetTaskList(i);
+
+                                        //If the unit is shooting at a unit which is Ok and there is a dying human
+                                        //unit within the same distance or closer than the current target then
+                                        //kill off that human unit first.
+                                        if temp_value > 0 then
+                                        if temp_value[1][1] = '^' then  //'^' is auto attack
+                                             begin
+                                                  //The unit is auto attacking because it has met an enemy.
+                                                  temp_unit = Attacks(i);
+                                                  if temp_unit > 0 and IsOk(temp_unit) then
+                                                       begin
+                                                            temp_value = GetDistUnits(i,temp_unit);
+                                                            temp_list = FilterAllUnits([[f_enemy,side],[f_type,unit_human],[f_not,[f_ok]],[f_dist,i,temp_value]]);
+                                                            if temp_list > 0 then
+                                                                 ComAttackUnit(i,temp_list[1]);
+
+                                                            continue;
+                                                       end;
+                                             end;
+
+                                        //Move 'dem units
+                                        if patrols_path_hex_index[p] <= patrols_path[p] then
+                                             begin
+                                                  if GetDistUnitXY(i,patrols_path[p][patrols_path_hex_index[p]][1],patrols_path[p][patrols_path_hex_index[p]][2]) > min_dist then
+                                                       ComAgressiveMove(i,patrols_path[p][patrols_path_hex_index[p]][1],patrols_path[p][patrols_path_hex_index[p]][2]);
+                                             end
+                                        else
+                                             begin
+                                                  //Exit the map
+                                                  case GetX(i) of
+                                                       0..160: hex = [49,96];
+                                                       160..191: hex = [184,148];
+                                                       else hex = [222,148];
+                                                  end;
+
+                                                  ComAgressiveMove(i,hex[1],hex[2]);
+                                                  units_to_dispose_when_enter_area = units_to_dispose_when_enter_area union i;
+                                             end;
+                                   end;
+                         end;
+          //     end;
+
+          until false;
+     end;
+
+   
+//Thread which destroys units. This is done asynchronously to keep update time of everys moving units higher
+//to avoid laggs.
+Every 0$1+0$0.1 do
+     var i, un, temp_list;
+     begin
+          repeat
+          wait(0$0.4);
+
+          for i in units_to_dispose_when_enter_area do
+               if IsInArea(i,enter_area_west) or IsInArea(i,enter_area_south) or IsInArea(i,enter_area_east) then
+                    begin
+                         units_to_dispose_when_enter_area = units_to_dispose_when_enter_area diff i;
+
+                         if GetType(i) = unit_vehicle and GetControl(i) = control_remote then
+                              begin
+                                   un = IsControledBy(i);
+
+                                   if remote_controllers_vehicles >= un then
+                                        begin
+                                             temp_list = remote_controllers_vehicles[un] diff i;
+                                             remote_controllers_vehicles = Replace(remote_controllers_vehicles,un,temp_list);
+                                        end;
+                              end;
+
+                         DestroyUnit(i);
+                    end;
+
+          until false;
+     end; 
+
+
+//The computer's vehicles never seem to run completely out of fuel...
+Every 0$1+0$0.3 do
+     var i;
+     begin
+          repeat
+          wait(0$5);
+
+          for i in FilterAllUnits([[f_side,upf],[f_type,unit_vehicle],[f_engine,engine_combustion]]) do
+               if GetFuel(i) < 10 then
+                    SetFuel(i,10);
+
+          until false;
+     end;
+
+                             
+//Control the remote mechanics.
+Every 0$1+0$0.7 do
+     var contr, i, temp_list, un;
+     begin
+
+          repeat
+          wait(0$1);
+
+          for contr in remote_controllers do
+               begin
+                    //Filter away dead vehicles this controller is controlling.
+                    temp_list = [];
+                    for i in remote_controllers_vehicles[contr] do
+                         begin
+                              if not IsDead(i) then
+                                   temp_list = temp_list ^ i;
+                         end;
+                    remote_controllers_vehicles = Replace(remote_controllers_vehicles,contr,temp_list);
+
+
+                    //If the mechanic isn't inside a controller vehicle then distribute her vehicles to control
+                    //to other mechanics.
+                    if GetWeapon(IsInUnit(contr)) <> ar_control_tower or IsDead(contr) then
+                         begin
+                              for i in remote_controllers do
+                                   begin
+                                        if i = contr then
+                                             continue;
+
+                                        if GetWeapon(IsInUnit(i)) = ar_control_tower then
+                                             begin
+                                                  temp_list = remote_controllers_vehicles[i] ^ remote_controllers_vehicles[contr];
+                                                  remote_controllers_vehicles = Replace(remote_controllers_vehicles,i,temp_list);
+                                                  remote_controllers_vehicles = Replace(remote_controllers_vehicles,contr,[]);
+
+                                                  break;
+                                             end;
+                                   end;
+                         end;
+
+
+                    if IsDead(contr) then
+                         begin
+                              remote_controllers = remote_controllers diff contr;
+                              continue;
+                         end;
+
+
+                    //If the controller isn't inside her control tower then go inside. Repair if necessary.
+                    //If the control tower vehicle is dead then exit the map.
+                    //Connect to remote vehicles if necessary.
+                    if IsDead(remote_controllers_control_tower[contr]) then
+                         begin
+                              ComMoveToArea(contr,enter_area_west);
+                              units_to_dispose_when_enter_area = units_to_dispose_when_enter_area union contr;
+                         end
+                    else
+                         begin
+                              if not IsOk(remote_controllers_control_tower[contr]) then
+                                   ComRepairVehicle(contr,remote_controllers_control_tower[contr])
+                              else
+                                   if IsInUnit(contr) <> remote_controllers_control_tower[contr] then
+                                        begin
+                                             case GetType(IsInUnit(contr)) of
+                                                  unit_vehicle: ComExitVehicle(contr);
+                                                  unit_building: ComExitBuilding(contr);
+                                                  else
+                                                       ComEnterUnit(contr,remote_controllers_control_tower[contr]);
+                                             end;
+                                        end
+                                   else
+                                        begin
+                                             for i in remote_controllers_vehicles[contr] do
+                                                   begin
+                                                        un = IsControledBy(i);
+
+                                                        if un > 0 and un <> contr then
+                                                             ComUnlink(i)
+                                                        else
+                                                             if un = 0 and IsOk(i) then
+                                                                  ComLinkTo(i,contr);
+                                                   end;
+                                        end;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//If patrols patrol past group 3 when they are situated in the north west they should ignore
+//them nnless their exterminators are on their way.
+Every 0$1+0$0.8 do
+     var i;
+     begin
+          if group_3_position = 1 then
+               exit;
+
+          repeat
+          wait(0$0.5);
+
+          if FilterAllUnits([[f_inarea,group_3_vicinity_area],[f_side,upf]]) > 0 then
+               begin
+                    for i in ([Louis,Martin] diff 0) ^ other_deserters_08 ^ group_3_breastwork do
+                         DoNotAttack(upf,i);
+               end
+          else
+               for i in ([Louis,Martin] diff 0) ^ other_deserters_08 ^ group_3_breastwork do
+                    NormalAttack(upf,i);
+
+          until not IsGroup3Active or group_3_exterminators_spawned;
+
+          for i in ([Louis,Martin] diff 0) ^ other_deserters_08 ^ group_3_breastwork do
+               NormalAttack(upf,i);
+     end;

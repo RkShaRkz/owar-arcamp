@@ -1,0 +1,73 @@
+
+Export function EndMission;
+     var val, b, temp_list, name_list, un_list;
+     begin
+          //Medals + save variables
+          //Remotely controlled vehicle constructed and tested
+          if survivors_found = 1 then
+               val = -3
+          else
+               case remote_built_and_tested of
+                    0: val = -2;
+                    1: val = -1;
+                    2: val = 1;
+               end;
+          AddMedal('RemoteControl',val);
+          SaveVariable(val = 1,'Remote_control_tested_06');
+
+          //Siberite stolen
+          if survivors_found = 1 then
+               val = -3
+          else
+               begin
+                    val = 0;
+                    for b in FilterAllUnits([[f_side,you],[f_inarea,start_leave_area],[f_or,[f_weapon,ar_cargo_bay],[f_weapon,ru_cargo_bay],[f_class,class_engineer]]]) do
+                         if GetCargo(b,mat_siberit) > 0 then
+                              begin
+                                   val = 1;
+                                   break;
+                              end;
+
+                    if val = 0 then
+                         if cargo_bay_captured then
+                              val = -1
+                         else val = -2;
+               end;
+
+          AddMedal('SiberiteStolen',val);
+          SaveVariable(val = 1,'Siberite_stolen_06');
+
+          //Base dismantled
+          if survivors_found = 1 then
+               val = -2
+          else
+               if FilterAllUnits([[f_side,you],[f_nation,nation_arabian],[f_type,unit_building]]) = 0 then  //You don't have to dismantle captured Russian buildings
+                    val = 1
+               else val = -1;
+
+          AddMedal('DismantleBase',val);
+          SaveVariable(val = 1,'Base_dismantled_06');
+
+          GiveMedals('Medals');
+
+          SaveVariable(survivors_found = 1,'Retreated_prematurely_06');
+
+
+          //Reward and save people
+          temp_list = FilterAllUnits([[f_side,you],[f_inarea,start_leave_area],[f_type,unit_human]]) diff GetApes(you);
+          RewardPeople(temp_list);
+
+          SaveCharacters(Heike,'Heike_06');
+          SaveCharacters(MarkB,'MarkB_06');
+
+          un_list = [Sonya,Oswald,Ralph,Kowalski,Willard,Evelyn,Gordon,Suze,Olaf,Swansson];
+          name_list = ['Sonya','Oswald','Ralph','Kowalski','Willard','Evelyn','Gordon','Suze','Olaf','Swansson'];
+          for val = 1 to un_list do
+               if un_list[val] in temp_list then
+                    SaveCharacters(un_list[val],name_list[val] & '_06');
+
+          SaveCharacters(temp_list diff ([Heike,MarkB] ^ un_list),'Others_06');
+
+
+          YouWin;
+     end;

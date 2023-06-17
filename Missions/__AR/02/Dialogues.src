@@ -1,0 +1,377 @@
+
+
+//Introduction - depends on if Heike captured a vehicle in the previous mission or not.
+Export Function Intro;
+  VAR rusi, seex, seey;
+  begin
+// center on start... and go!
+    ingameon;
+    CenterNowOnXY(40,55);
+
+    case ScenarZacatek of
+         1:begin
+            rusi := [ Rusak1, Rusak2 ];
+
+            PlaceUnitXY(Heike,28,53,false);
+            player_units = player_units ^ Heike;
+            DoNotAttack(russians,Heike);  //Don't shoot Heike
+
+            ComMoveXY(Heike,39,54);
+            AddComMoveXY(Heike,49,58);
+
+            wait(0$3);
+            Say(Heike,'D1b1H1');
+
+            while GetDistUnitXY(Heike,27,53) < 8 do
+                 wait(0$0.5);
+
+            PlaceUnitXY(Rusak1,27,52,false);
+            PlaceUnitXY(Rusak2,28,54,false);
+
+            ComMoveXY(rusi,49,58);
+
+            wait(0$1.8);
+            SetLives(Heike,240);
+
+            seex = GetX(Heike);
+            seey = GetY(Heike);
+            PlaceSeeing(seex,seey,you,10);  //Normal view distance of human unit
+
+            Wait(0$1.5);
+            DialogueOn;
+            Say(Rusak1,'D1b1Ru1');
+            DialogueOff;
+
+            CenterOnXY(46,57);
+
+            PlaceUnitXY(Ralph,52,63,false);
+            PlaceUnitXY(Oswald,53,62,false);
+            PlaceUnitXY(Lister,55,63,false);
+            PlaceUnitXY(Sonya,55,65,false);
+            player_units = player_units ^ [Ralph,Oswald,Lister,Sonya];
+
+            ComAgressiveMove([Ralph,Oswald,Lister],seex,seey);
+            ComHeal(Sonya,Heike);
+
+            Wait(0$0.5);
+            DialogueOn;
+            Say(Oswald,'D1b1Os1');
+            Say(Ralph,'D1b1Ra1');
+            ForceSay(Heike,'D1b1H2');
+            Say(Ralph,'D1b1Ra2');
+            Say(Sonya,'D1b1So1');
+            DialogueOff;
+            
+            ComAgressiveMove(Rusak1,GetX(Oswald),GetY(Oswald));
+            ComAttackUnit(Rusak2,Oswald);
+
+            repeat
+            wait(0$0.5);
+            until IsDead(Rusak1) and IsDead(Rusak2) and IsOk(Heike);
+
+            NormalAttack(russians,Heike);
+
+            wait(0$2);
+            Say(Oswald,'D1b2Os1');
+            ComHeal(Sonya,Oswald);
+            ComStand(Oswald);
+            Say(Sonya,'D1b2So1');
+            Say(Ralph,'D1b2Ra1');
+          end;
+         2:begin
+            PlaceUnitXY(CarHeike,29,53,false);
+            player_units = player_units ^ Heike;
+
+            ComMoveXY(CarHeike,34,53);
+            AddComMoveXY(CarHeike,38,56);
+            AddComMoveXY(CarHeike,46,58);
+            AddComMoveXY(CarHeike,50,57);
+
+            SetSide([Ralph,Oswald,Sonya,Lister],5);
+            PlaceUnitXY(Ralph,45,65,false);
+            PlaceUnitXY(Oswald,46,65,false);
+            PlaceUnitXY(Lister,48,64,false);
+            PlaceUnitXY(Sonya,48,68,false);
+            player_units = player_units ^ [Ralph,Oswald,Lister,Sonya];
+            ComStand([Ralph,Oswald,Lister,Sonya]);
+
+            Wait(0$1.5);
+            ComTurnUnit([Ralph,Oswald,Lister,Sonya],CarHeike);
+            AddComCrawl([Oswald,Ralph,Lister]);
+            AddComStand(Sonya);
+
+            Wait(0$1.5);
+            ComAttackUnit([Ralph,Oswald,Lister],CarHeike);
+            seex = 46;
+            seey = 65;
+            PlaceSeeing(seex,seey,you,-5);
+
+            Wait(0$0.5);
+            Say(Heike,'D1aH1');
+
+            repeat
+            wait(0$0.5);
+            until GetLives(CarHeike) <= 250;
+
+            DialogueOn;
+            Say(Oswald,'D1aOs1');
+            DialogueOff;
+
+            ComWalk([Oswald,Ralph,Lister]);
+            AddComTurnUnit([Oswald,Ralph,Lister],Heike);
+            AddComStand([Ralph,Oswald,Lister]);
+            ComTurnUnit(Sonya,Heike);
+            AddComStand(Sonya);
+            ComTurnUnit(Heike,Oswald);
+            AddComStand(Heike);
+
+            wait(0$0.5);
+            Say(Heike,'D1aH2');
+            Say(Oswald,'D1aOs2');
+            Say(Heike,'D1aH3');
+            Say(Ralph,'D1aRa1');
+            Say(Sonya,'D1aSo1');
+
+            ComHeal(Sonya,Heike);
+            ComMoveXY(Ralph,43,60);
+            ComMoveXY(Oswald,45,61);
+            ComMoveXY(Lister,47,62);
+            AddComTurnUnit([Ralph,Oswald,Lister],CarHeike);
+            AddComStand([Sonya,Ralph,Oswald,Lister]);
+
+            Wait(0$1);
+            Say(Ralph,'D1aRa2');
+            Say(Sonya,'D1aSo2');
+            Say(Ralph,'D1aRa3');
+          end;
+    end;
+
+    Wait(0$1);
+     SetLives([Sonya,Ralph,Oswald,Heike,Lister],1000);
+     wait(0$0.5);
+     ComStand(Oswald);
+     ComTurnUnit(Heike, Oswald);
+     AddComStand(Heike);
+
+     wait(0$0.5);
+     Say(Heike, 'D2H1');
+
+     ComTurnUnit([Sonya, Ralph, Oswald, Lister], Heike);
+     AddComStand([Sonya, Ralph, Oswald, Lister]);
+
+     wait(0$0.5);
+     Say(Oswald, 'D2Os1');
+     Say(Heike, 'D2H2');
+     Say(Oswald, 'D2Os2');
+     Say(Heike, 'D2H3');
+     Say(Sonya, 'D2So3');
+     Say(Heike, 'D2H4');
+
+     InGameOff;
+
+     ComFree([Sonya, Ralph, Oswald, Heike, Lister]);
+     SetSide([Sonya, Ralph, Oswald, Heike, Lister],you);
+     RemoveSeeing(seex,seey,you);
+
+     SaveForQuickRestart;
+     Wait(0$0.2);
+     ChangeMissionObjectives('M1');
+
+     let_carheike_explode = true;
+  end;
+Every 0$1 trigger ScenarZacatek = 2 do
+     begin
+          if not let_carheike_explode then
+               begin
+                    enable;
+                    if GetLives(CarHeike) < 250 then
+                         SetLives(CarHeike,250);
+               end;
+     end;
+
+
+//If the player attacks the base too early
+every 0$1 trigger FilterAllUnits([[f_side,1],[f_type, unit_building],[f_not,[f_lives,700]]]) > 0 do
+begin
+     Say(Heike, 'D0H');
+     ChangeMissionObjectives('M0');
+end;
+
+//When the player encounters a scientist group in the forest.
+Every 0$3 do
+     var see_list, meet_count;
+     begin
+          meet_count = 1;
+
+          repeat
+          wait(0$1);
+
+          see_list = FilterAllUnits([[f_side,americans],[f_not,[f_inarea,near_am_base]],[f_see,you],[f_type,unit_human]]);
+          if see_list > 0 and ContactTime([americans,you]) < 0$5 then
+               case meet_count of
+                    1: begin
+                         meet_count = meet_count + 1;
+
+                         Wait(0$0.5);
+                         DialogueOn;
+                         Say(see_list[1],'D4Am1');
+                         DialogueOff;
+
+                         repeat
+                         wait(0$1);
+                         until ContactTime([americans,you]) > 0$5;
+                    end;
+                    2:
+                         if Rand(2,3) >= 2 then
+                              begin
+                                   see_list = UnitFilter(see_list,[f_class,class_scientistic]);
+                                   if see_list > 0 then
+                                        begin
+                                             meet_count = meet_count + 1;
+
+                                             Wait(0$0.5);
+                                             DialogueOn;
+                                             Say(see_list[1],'D4Am2');
+                                             DialogueOff;
+                                        end;
+                              end;
+               end;
+
+          until not AmericansInTheFieldAreFine(false,false);
+
+          //Reinforcements arrive early
+          Wait(0$30);
+          if not reinforcements_have_arrived then
+               ArrivalOfReinforcements;
+     end;
+Export Function AmericansInTheFieldAreFine(all_fine,scientists_only);
+     var i, j;
+     begin
+          if all_fine then
+               begin
+                    //Everyone is ok
+                    result = true;
+                    for i in americans_in_the_field do
+                         for j = 1 to i do
+                              begin
+                                   if i[j] = 0 then
+                                        begin
+                                             result = false;
+                                             exit;
+                                        end;
+
+                                   if scientists_only then  //We check scientists only
+                                        break;
+                              end;
+               end
+          else
+               begin
+                    //Just someone is ok
+                    result = false;
+                    for i in americans_in_the_field do
+                         for j = 1 to i do
+                              begin
+                                   if i[j] > 0 then  //= 0 if unit is dead (see event "UnitDestroyed" module "AmericansAI")
+                                        begin
+                                             result = true;
+                                             exit;
+                                        end;
+
+                                   if scientists_only then  //We check scientists only
+                                        break;
+                              end;
+               end;
+     end;
+
+
+//When the player gets a little too close to the American base (before arrival of Aviradze)
+Every 0$1.5 trigger not reinforcements_have_arrived do
+     var say_list;
+     begin
+          if FilterAllUnits([[f_side,you],[f_inarea,near_am_base]]) = 0 then
+               begin
+                    enable;
+                    exit;
+               end;
+
+          say_list = UnitFilter([Oswald,Ralph,Sonya],[f_ok]);
+          if say_list > 0 then
+               case say_list[Rand(1,say_list)] of
+                    Oswald: Say(Oswald,'D3Os1');
+                    Ralph: Say(Ralph,'D3Ra1');
+                    Sonya: Say(Sonya,'D3So1');
+               end;
+     end;
+Every 0$0.5 trigger not reinforcements_have_arrived and not AmericansInTheFieldAreFine(true,true) and ContactTime([you,americans]) < 0$2 do
+     var see_list, say_list;
+     begin
+          see_list = FilterAllUnits([[f_side,americans],[f_see,you],[f_inarea,near_am_base]]);
+          if see_list = 0 then
+               begin
+                    enable;
+                    exit;
+               end;
+
+          repeat
+          wait(0$1);
+          until FilterAllUnits([[f_side,you],[f_see,americans]]) = 0;
+
+          say_list = UnitFilter(see_list,[[f_ok],[f_type,unit_human]]);
+          if say_list = 0 then
+               say_list = UnitFilter(base_outside_soldiers^base_inside_soldiers,[f_ok]);
+
+          if say_list > 0 then
+               begin
+                    DialogueOn;
+                    Say(say_list[1],'D5Am1');
+                    Say(Heike,'D5H1');
+                    DialogueOff;
+               end;
+     end;
+
+
+//Arrival of reinforcements
+Every 10$0 do
+     begin
+          if not reinforcements_have_arrived then
+               ArrivalOfReinforcements;
+     end;
+Function ArrivalOfReinforcements;
+     var i, un_list;
+     begin
+          reinforcements_have_arrived = true;
+
+          //Wait until the player is not under attack (if that is the case)
+          while ContactTime([americans,you]) < 0$10 do
+               Wait(0$1);
+
+          //Place units
+          case difficulty of
+               1: un_list = [ArSo2,ArSo3,ArSo4,ArSo1,ArEn1,ArEn2];
+               2: un_list = [ArSo2,ArSo3,ArSo4,ArSo1,ArEn1,ArEn2];
+               3: un_list = [ArSo2,ArSo3,ArSo4,ArSo1,ArEn1];
+          end;
+          un_list = un_list ^ Aviradze;
+
+          for i in un_list do
+               PlaceUnitArea(i,reinforcements_area,false);
+
+          //Talk
+          DialogueOn;
+          InGameOn;
+          SayRadio(Aviradze,'D6Av1');
+          Say(Heike,'D6H1');
+          SayRadio(Aviradze,'D6Av2');
+          Say(Heike,'D6H2');
+          SayRadio(Aviradze,'D6Av3');
+          DialogueOff;
+          InGameOff;
+
+          CenterOnUnits(Aviradze);
+
+          //Mission objectives
+          Wait(0$1.2);
+          ChangeMissionObjectives('M2');
+
+          player_units = (FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff player_units) ^ player_units;
+     end;

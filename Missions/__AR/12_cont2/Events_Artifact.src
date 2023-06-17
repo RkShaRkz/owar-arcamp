@@ -1,0 +1,210 @@
+
+var art_icon_lab, art_research_lab, art_icon_research, art_research_progress, art_research_difficulty;
+
+Export Function InitArtifactVariables;
+     begin
+          art_icon_lab = [[],-1,-1,0,-1];  //If siberite lab with id 51 has the icon for researching/using artifact 3 then art_icon_lab[3] = 51. Index 1 holds the siberite labs that have any nearby artifact meaning tech_artifact can be researched.
+          art_research_lab = [0,-1,-1,0,-1];  //If lab with id 46 is researching the technology for artifact number 4 then art_research_lab[4] = 46. Index 1 is tech_artifact.
+          art_icon_research = [-1,-1,-1,art_exp_mid,-1];  //The icons used for researching the techs for each artifact.
+          art_research_progress = [-1,-1,-1,0,-1];  //Research progress of techs for each artifact.
+          art_research_difficulty = [-1,-1,-1,400,-1];  //How hard the different artifacts are to research (in Am15a/Ru15a it is [-1,-1,200,500,800]).
+     end;
+
+
+//Enable/disable artifact techs depending on the proximity of the artifacts to
+//a siberite lab.
+//Control research of artifact techs (as for now the player doesn't need to research it - it's researched from day 1).
+//The player can research tech_artifact if there's one or more artifacts close to any siberite lab.
+On ArtifactLoaded(cargo_bay,artifact) do
+     var i, temp_list;
+     begin
+          if GetTech(tech_artifact,you) <> state_researched then
+               begin
+                    //Update labs with a nearby artifact.
+                    art_icon_lab = Replace(art_icon_lab,1,[]);
+
+                    for i = 3 to 5 do
+                         ArtifactUnloaded_ArtiFunc(i);
+
+                    if art_icon_lab[1] = 0 then
+                         begin
+                              ComCancel(art_research_lab[1]);
+                              SetArtifactRes(you,false);
+                         end;
+               end
+          else
+               if art_icon_lab[artifact] > 0 or art_research_lab[artifact] > 0 then
+                    begin
+                         if art_research_progress[artifact] < 100 then
+                              begin
+                                   if art_research_lab[artifact] > 0 then
+                                        ComCancel(art_research_lab[artifact]);
+
+                                   if art_icon_lab[artifact] > 0 then
+                                        SetArtifactUse(you,art_icon_research[artifact],art_no,art_icon_lab[artifact]);
+                              end;
+
+                         art_icon_lab = Replace(art_icon_lab,artifact,0);
+                    end;
+     end;
+
+On ArtifactUnloaded(cargo_bay,artifact) do
+     begin
+          ArtifactUnloaded_ArtiFunc(artifact);
+     end;
+Function ArtifactUnloaded_ArtiFunc(artifact);
+     var sib_labs, i, loc, un, temp_list;
+     begin
+          loc = FindArtifact(artifact);
+          if loc > 0 then
+               begin
+                    sib_labs = [];
+
+                    for i in GetHexesNearHex(loc[1],loc[2],3) do
+                         begin
+                              un = HexInfo(i[1],i[2]);
+                              if un > 0 then
+                                   begin
+                                        if GetSide(un) = you and GetBType(un) in [b_lab_half,b_lab_full] and b_lab_siberium in [GetLabKind(un,1),GetLabKind(un,2)] and not IsConstructed(un) then
+                                             sib_labs = sib_labs ^ un;
+                                   end;
+                         end;
+
+                    if sib_labs > 0 then
+                         begin
+                              if GetTech(tech_artifact,you) <> state_researched then
+                                   begin
+                                        SetArtifactRes(you,true);
+
+                                        temp_list = art_icon_lab[1] union sib_labs;
+                                        art_icon_lab = Replace(art_icon_lab,1,temp_list);
+                                   end
+                              else
+                                   begin
+                                        temp_list = sib_labs diff art_research_lab;  //Don't put research icon on labs researching stuff
+                                        sib_labs = [];
+                                        for i in temp_list do
+                                             if BuildingStatus(i) = bs_idle then
+                                                  sib_labs = sib_labs ^ i;
+
+                                        if art_research_progress[artifact] < 100 then
+                                             begin
+                                                  if sib_labs > 0 then
+                                                       begin
+                                                            SetArtifactUse(you,art_icon_research[artifact],art_instant,sib_labs[1]);
+                                                            art_icon_lab = Replace(art_icon_lab,artifact,sib_labs[1]);
+                                                       end;
+                                             end;
+                                   end;
+                         end;
+               end;
+     end;
+
+On ResearchStarted(tech,lab) do
+     var i;
+     begin
+          if tech = tech_artifact and GetSide(lab) = you then
+               begin
+                    art_research_lab = Replace(art_research_lab,1,lab);
+               end;
+
+          //Remove all icons from researching lab. Researching icons because we don't implement
+          //queueing.
+          for i = 3 to 5 do
+               if art_icon_lab[i] = lab then
+                    begin
+                         SetArtifactUse(you,art_icon_research[i],art_no,art_icon_lab[i]);
+                         art_icon_lab = Replace(art_icon_lab,i,0);
+                    end;
+     end;
+
+On ResearchCancel(tech,lab) do
+     var i;
+     begin
+          if tech = tech_artifact and GetSide(lab) = you then
+               begin
+                    art_research_lab = Replace(art_research_lab,1,0);
+               end;
+
+          if GetSide(lab) = you then
+               begin
+                    wait(3);  //wait for building status to update
+                    for i = 3 to 5 do
+                         ArtifactUnloaded_ArtiFunc(i);
+               end;
+     end;
+
+On ResearchComplete(tech,lab) do
+     var i, temp_list;
+     begin
+          OnResearchComplete_BioDet(tech,lab);
+          OnResearchComplete_SibCon(tech,lab);
+
+          if GetSide(lab) = you then
+               begin
+                    wait(3);  //wait for building status to update
+                    for i = 3 to 5 do
+                         ArtifactUnloaded_ArtiFunc(i);
+               end;
+     end;
+
+On ArtifactUsed(side,art_icon,p1,p2) do
+     var art_num, i, b, success, lab;
+     begin
+          //Artifact research
+          if art_icon in art_icon_research then
+               begin
+                    for art_num = 3 to 5 do
+                         if art_icon = art_icon_research[art_num] then
+                              break;
+
+                    SetSpecResearch(art_icon_lab[art_num],art_research_difficulty[art_num],true);
+                    SetWorkingProgress(art_icon_lab[art_num],art_research_progress[art_num]);
+                    art_research_lab = Replace(art_research_lab,art_num,art_icon_lab[art_num]);
+
+                    //Remove all icons from researching lab. Researching icons because we don't implement
+                    //queueing.
+                    for i = 3 to 5 do
+                         if art_icon_lab[i] = art_research_lab[art_num] then
+                              begin
+                                   SetArtifactUse(you,art_icon_research[i],art_no,art_icon_lab[i]);
+                                   art_icon_lab = Replace(art_icon_lab,i,0);
+                              end;
+               end;
+     end;
+
+On SpecResearchCancel(lab,percentage_done) do
+     var art;
+     begin
+          for art = 3 to art_research_lab do
+               if art_research_lab[art] = lab then
+                    begin
+                         art_research_progress = Replace(art_research_progress,art,percentage_done);
+                         art_research_lab = Replace(art_research_lab,art,0);
+
+                         break;
+                    end;
+
+          wait(3);  //wait for building status to update
+          for art = 3 to 5 do
+               ArtifactUnloaded_ArtiFunc(art);
+     end;
+
+On SpecResearchComplete(lab) do
+     var i, temp_list, art, k;
+     begin
+          for art = 3 to art_research_lab do
+               if art_research_lab[art] = lab then
+                    begin
+                         art_research_progress = Replace(art_research_progress,art,100);
+                         art_research_lab = Replace(art_research_lab,art,0);
+
+                         OnArtifactInvestigated;
+
+                         break;
+                    end;
+
+          wait(3);  //wait for building status to update
+          for art = 3 to 5 do
+               ArtifactUnloaded_ArtiFunc(art);
+     end;

@@ -1,0 +1,573 @@
+
+
+//The final Russian attack. Both vehicles and humans. Everybody attacks until they are slain - no retreat.
+Every 0$1+0$0.2 trigger russians_attack in [1,3] do
+     var i, temp_list, temp_list_2, val, un1, un2, strat, mechanics_as_soldiers, temp_value, temp_unit, group_ready, split;
+     var vehicles, soldiers, mechanics, side, attack_hexes, hex_index, hex_index_gather, all_are_placed, ready_to_attack;
+     var unit_hex_index;
+     begin
+          side = russians;
+
+          //The Russians attack from 3 directions. 3 groups. No scientists.
+          //1 spawn where Gensher's reinforcements arrive and attack from the west.
+          //2 spawn near where the traitors exit (north) and attack from north-west.
+          //3 spawn in upper right corner of the map and attack from the north.
+          vehicles = [[],[],[]];
+          soldiers = [[],[],[]];
+          mechanics = [[],[],[]];
+
+          //The hexes determining the attack route
+          attack_hexes = [ [[102,90],[114,85],[124,79],[145,87],[156,85],[168,82],ai_human_pullback_hex[1]],
+                           [[116,15],[127,16],[129,38],[141,51],[151,61],[162,70],ai_human_pullback_hex[1]],
+                           [[149,18],[163,26],[170,35],[176,45],[177,58],ai_human_pullback_hex[1]]
+                         ];
+
+          hex_index = [1,1,1];  //starts at first hex
+          hex_index_gather = [4,3,1];  //Everybody must be at this hex in their route before the attack starts - synchronization of attacks
+          unit_hex_index = [];  //Index is unit identifier, value is index number
+
+          //Create the units.
+          split = [0,1,2][difficulty];
+          for strat = 1 to 3 do
+               begin
+                    case strat of
+                         1: temp_value = 0;
+                         2: temp_value = 2;
+                         3: temp_value = 3;
+                    end;
+
+
+                    //Soldiers
+                    case russians_attack of
+                         1: begin
+                              case strat of
+                                   1: temp_list_2 = [difficulty-1, difficulty];  //[num_soldiers, num_bazookers]
+                                   2: temp_list_2 = [difficulty-1, difficulty];
+                                   3: temp_list_2 = [difficulty+Rand(0,1), difficulty];
+                              end;
+                         end;
+                         3: begin
+                              case strat of
+                                   1: temp_list_2 = [difficulty, difficulty];
+                                   2: temp_list_2 = [difficulty, difficulty];
+                                   3: temp_list_2 = [difficulty+Rand(0,1), difficulty];
+                              end;
+                         end;
+                    end;
+                    temp_list = CreateUnitsWithClass(temp_list_2[1],class_soldier,false,'',side);
+                    temp_list = temp_list ^ CreateUnitsWithClass(temp_list_2[2],class_bazooker,false,'',side);
+                    soldiers = Replace(soldiers,strat,temp_list);
+
+                    for i in soldiers[strat] do
+                         SetDir(i,temp_value);
+
+
+                    //Vehicles
+                    case russians_attack of
+                         1: begin
+                              case strat of
+                                   1: val = [0,1,2][difficulty];
+                                   2,3: val = 0;
+                              end;
+                         end;
+                         3: begin
+                              case strat of
+                                   1: val = [2,3,4][difficulty];
+                                   2,3: begin
+                                        if split > 0 then
+                                             begin
+                                                  if strat = 3 or Rand(1,2) = 1 or split > 1 then
+                                                       begin
+                                                            val = 1;
+                                                            split = split - 1;
+                                                       end
+                                                  else
+                                                      val = 0;
+                                             end
+                                        else
+                                             val = 0;
+                                   end;
+                              end;
+                         end;
+                    end;
+                    temp_list = [];  //gonna hold the vehicles
+                    temp_list_2 = [];  //gonna hold the drivers
+                    for i = 1 to val do
+                         begin
+                              InitiateRussianVehicleVariables;
+                              uc_side = side;
+                              vc_engine = engine_siberite;
+                              un1 = CreateVehicle;
+                              temp_list = temp_list ^ un1;
+
+                              un2 = CreateUnitsWithClass(1,class_mechanic,false,'',side)[1];
+                              PlaceHumanInUnit(un2,un1);
+                              temp_list_2 = temp_list_2 ^ un2;
+                         end;
+                    vehicles = Replace(vehicles,strat,temp_list);
+                    mechanics = Replace(mechanics,strat,temp_list_2);
+
+                    for i in vehicles[strat] do
+                         SetDir(i,temp_value);
+
+
+                    //Individual unit hex index
+                    for i in soldiers[strat] ^ vehicles[strat] do
+                         unit_hex_index = Replace(unit_hex_index,i,hex_index_gather[strat]+1);
+               end;
+
+          all_are_placed = [false,false,false];  //True when all units have been placed
+          ready_to_attack = [false,false,false];  //Turns true when all units are in position ("hex_index_gather")
+
+
+          repeat
+          wait(0$1);
+
+
+          //If all Russians are dead, the attack is over
+          if (all_are_placed diff true) = 0 then
+               begin
+                    if russians_attack = 3 then
+                         temp_list = russian_prisoners
+                    else
+                         temp_list = [];
+
+                    for strat = 1 to 3 do
+                         begin
+                              temp_list = temp_list ^ soldiers[strat];
+                              temp_list = temp_list ^ mechanics[strat];
+                         end;
+
+                    if UnitFilter(temp_list,[f_ok]) = 0 then
+                         begin
+                              russians_attack = russians_attack + 1;
+                              enable;
+                              exit;
+                         end;
+               end;
+
+
+          //If the player has kept the Russian prisoners of war in the depot they will break free
+          //when the last attack starts.
+          if russians_attack = 3 and russian_prisoners_decision = 2 then
+               if (ready_to_attack diff true) = 0 and ContactTime([you,side]) <= 0$5 then
+                    russian_prisoners_decision = 1;  //"kill them"
+
+
+          //Control the groups
+          for strat = 1 to 3 do
+               begin
+                    //Place the units. Vehicles first so we know there is space for them
+                    if not all_are_placed[strat] then
+                         begin
+                              //Find the units not placed (mechanics are inside vehicles)
+                              temp_list = UnitFilter(vehicles[strat] ^ soldiers[strat],[f_not,[f_placed]]);
+
+                              if temp_list = 0 then
+                                   all_are_placed = Replace(all_are_placed,strat,true)
+                              else
+                                   begin
+                                        case strat of
+                                             1: val = gensher_reinforcements_area;
+                                             2: val = attack_spawn_2;
+                                             3: val = attack_spawn_3;
+                                        end;
+
+                                        for i in temp_list do
+                                             PlaceUnitArea(i,val,false);
+                                   end;
+                         end;
+
+
+                    //Filter away dead units
+                    if (all_are_placed diff true) = 0 then
+                         begin
+                              temp_list = UnitFilter(vehicles[strat],[f_alive]);  //Also takes care of if the player captures one of our vehicles
+                              vehicles = Replace(vehicles,strat,temp_list);
+
+                              temp_list = UnitFilter(soldiers[strat],[f_alive]);
+                              soldiers = Replace(soldiers,strat,temp_list);
+
+                              temp_list = UnitFilter(mechanics[strat],[f_alive]);
+                              mechanics = Replace(mechanics,strat,temp_list);
+                         end;
+
+                    //Our mechanics may capture enemy vehicles so include those.
+                    //If it's a friendly vehicle then move it to this strategy group.
+                    for i in mechanics[strat] do
+                         begin
+                              val = IsInUnit(i);
+                              if val > 0 then
+                                   if GetType(val) = unit_vehicle then
+                                        if not val in vehicles[strat] then
+                                             begin
+                                                  for un1 = 1 to vehicles+0 do
+                                                       begin
+                                                            temp_list = vehicles[un1] diff val;
+                                                            vehicles = Replace(vehicles,un1,temp_list);
+                                                       end;
+
+                                                  temp_list = vehicles[strat] ^ val;
+                                                  vehicles = Replace(vehicles,strat,temp_list);
+
+                                                  unit_hex_index = Replace(unit_hex_index,val, unit_hex_index[i] );  //Adopt hex index from the mechanic
+                                             end;
+                         end;
+
+
+                    //Control mechanics.
+                    //If not inside a vehicle then go inside a nearby empty vehicle (any war vehicle). If none exists
+                    //then repair a nearby burning vehicle. If none exists then act as a soldier.
+                    mechanics_as_soldiers = [];
+                    for i in mechanics[strat] do
+                         begin
+                              if IsInUnit(i) = 0 then
+                                   begin
+                                        temp_list = EmptyWarVehicles(i,10,true);
+                                        if temp_list > 0 then
+                                             begin
+                                                  //Take the nearest
+                                                  un1 = NearestUnitToUnit(temp_list,i);
+                                                  ComEnterUnit(i,un1);
+                                             end
+                                        else
+                                             begin
+                                                  temp_list = EmptyWarVehicles(i,10,false);
+                                                  if temp_list > 0 then
+                                                       begin
+                                                            //Take the nearest
+                                                            un1 = NearestUnitToUnit(temp_list,i);
+                                                            ComRepairVehicle(i,un1);
+                                                       end
+                                                  else
+                                                       mechanics_as_soldiers = mechanics_as_soldiers ^ i;
+                                             end;
+                                   end;
+                         end;
+
+
+                    //Control attacking units.
+                    group_ready = true;
+
+                    for i in vehicles[strat] ^ soldiers[strat] ^ mechanics_as_soldiers do
+                         begin
+                              //Make bazookers shoot time shifting rockets at their targets.
+                              if GetClass(i) = class_bazooker then
+                                   begin
+                                        //Don't bother the bazooker if he/she is about to fire a time shifting rocket.
+                                        temp_list = GetTaskList(i);
+                                        if temp_list > 0 then
+                                             if temp_list[1][1] = '&' then
+                                                  continue;
+
+                                        un1 = Attacks(i);
+                                        if un1 > 0 and ( FindDangerousNonhumanUnits([un1]) > 0 or GetType(un1) = unit_human ) then
+                                             begin
+                                                  temp_list_2 = [GetX(un1),GetY(un1)];
+                                                  temp_value = false;
+
+                                                  for val in time_shift_hexes ^ time_shift_bazookers do  //don't send a rocket where someone else (probably) soon will
+                                                       if GetDistXY(temp_list_2[1],temp_list_2[2],val[1],val[2]) <= time_shift_data[side][2] then
+                                                            begin
+                                                                 temp_value = true;
+                                                                 break;
+                                                            end;
+
+                                                  if not temp_value then  //not inside a time shifted area
+                                                       begin
+                                                            ComTimeShift(i,temp_list_2[1],temp_list_2[2]);
+
+                                                            //The bazooker could die before he/she fires the rocket
+                                                            //so we store the hex temporarily and check if the rocket actually is fired later.
+                                                            time_shift_bazookers = Insert(time_shift_bazookers,1,[temp_list_2[1],temp_list_2[2],i,tick]);
+
+                                                            continue;
+                                                       end;
+                                             end;
+                                   end;
+
+
+                              //If the unit is shooting at a unit which is Ok and there is a dying human
+                              //unit within the same distance or closer than the current target then
+                              //kill off that human unit first.
+                              {temp_value = GetTaskList(i);
+                              if temp_value = 1 then
+                                   if temp_value[1][1] = '^' then  //'^' is auto attack
+                                        begin
+                                             //The unit is auto attacking because it has met an enemy.
+                                             temp_unit = Attacks(i);
+                                             if temp_unit > 0 and IsOk(temp_unit) then
+                                                  begin
+                                                       temp_value = GetDistUnits(i,temp_unit);
+                                                       temp_list = FilterAllUnits([[f_enemy,side],[f_type,unit_human],[f_not,[f_ok]],[f_dist,i,temp_value]]);
+                                                       if temp_list > 0 then
+                                                            ComAttackUnit(i,temp_list[1]);
+
+                                                       group_ready = false;
+
+                                                       continue;
+                                                  end;
+                                        end;}
+
+
+                              //Movement
+                              if (ready_to_attack diff true) > 0 then
+                                   temp_value = false
+                              else
+                                   temp_value = true;
+
+                              //if temp_value then
+                                   begin
+                                        temp_list = FilterAllUnits([[f_enemy,side],[f_type,unit_human],[f_dist,i,14],[f_see,side]]);
+                                        if temp_list > 0 then
+                                             begin
+                                                  temp_value = true;
+                                                  group_ready = false;
+
+                                                  //Finish off dying humans as first priority
+                                                  temp_list_2 = UnitFilter(temp_list,[f_not,[f_lives,250]]);
+                                                  if temp_list_2 > 0 then
+                                                       temp_list = temp_list_2;
+
+                                                  temp_unit = AllNearestUnitToUnit(temp_list,i);
+
+                                                  if GetLives(temp_unit) > 250 then
+                                                       ComAgressiveMove(i,GetX(temp_unit),GetY(temp_unit))
+                                                  else
+                                                       ComAttackUnit(i,temp_unit);
+                                             end
+                                        else
+                                             if temp_value then
+                                             begin
+                                                  temp_list = FindNonhumansNearUnit(side,i,20,true);
+                                                  if temp_list > 0 then
+                                                       begin
+                                                            ComAgressiveMove(i,GetX(temp_list[1]),GetY(temp_list[1]));
+                                                       end
+                                                  else
+                                                       begin
+                                                            temp_list = FindNonhumansNearUnit(side,i,20,false);
+                                                            if temp_list > 0 then
+                                                                 begin
+                                                                      temp_unit = NearestUnitToUnit(temp_list,i);
+                                                                      ComAttackUnit(i,temp_unit);
+                                                                 end
+                                                            else
+                                                                 temp_value = false;
+                                                       end;
+                                             end;
+                                   end;
+
+                              if not temp_value then
+                                   begin
+                                        if (ready_to_attack diff true) > 0 then
+                                             begin
+                                                  //Nicely wait for each other so we stay in a group.
+                                                  if GetDistUnitXY(i,attack_hexes[strat][hex_index[strat]][1],attack_hexes[strat][hex_index[strat]][2]) > 8 then
+                                                       begin
+                                                            ComAgressiveMove(i,attack_hexes[strat][hex_index[strat]][1],attack_hexes[strat][hex_index[strat]][2]);
+                                                            group_ready = false;
+                                                       end;
+                                             end
+                                        else
+                                             begin
+                                                  //Charge!
+                                                  if GetDistUnitXY(i,attack_hexes[strat][unit_hex_index[i]][1],attack_hexes[strat][unit_hex_index[i]][2]) > 8 then
+                                                       ComAgressiveMove(i,attack_hexes[strat][unit_hex_index[i]][1],attack_hexes[strat][unit_hex_index[i]][2])
+                                                  else
+                                                       if unit_hex_index[i] < attack_hexes[strat] then
+                                                            begin
+                                                                 unit_hex_index = Replace(unit_hex_index,i,unit_hex_index[i]+1);
+
+                                                                 //Also increment for driving mechanic
+                                                                 if GetType(i) = unit_vehicle then
+                                                                      begin
+                                                                           val = IsDrivenBy(i);
+                                                                           if val > 0 then
+                                                                                unit_hex_index = Replace(unit_hex_index,val, unit_hex_index[i] );  //Same as vehicle
+                                                                      end;
+                                                            end;
+                                             end;
+                                   end;
+                         end;
+                                        
+                    if group_ready and (ready_to_attack diff true) > 0 then
+                         begin
+                              if hex_index[strat] = hex_index_gather[strat] then
+                                   ready_to_attack = Replace(ready_to_attack,strat,true);
+                              
+                              if hex_index[strat] < hex_index_gather[strat] then
+                                   hex_index = Replace(hex_index,strat, hex_index[strat]+1 );
+                         end;
+
+                    //If group is attacked
+                    if not ready_to_attack[strat] then
+                         if UnitFilter(soldiers[strat] ^ vehicles[strat] ^ mechanics[strat],[f_not,[f_lives,1000]]) > 0 then
+                              ready_to_attack = Replace(ready_to_attack,strat,true);
+               end;
+
+          until false;
+     end;
+Export Function FindNonhumansNearUnit(side,un,dist,only_dangerous);
+     var temp_list;
+     begin
+          temp_list = FilterAllUnits([[f_enemy,side],[f_not,[f_type,unit_human]],[f_dist,un,dist],[f_see,side]]);
+
+          if only_dangerous then
+               result = FindDangerousNonhumanUnits(temp_list)
+          else
+               result = temp_list;
+     end;
+Export Function FindDangerousNonhumanUnits(list);
+     var weapon_list, temp_list, i, btype, b, val;
+     begin
+                    weapon_list = [us_machine_gun,us_light_gun,us_gatling_gun,us_double_gun,us_heavy_gun,us_rocket_launcher,
+                                   us_siberium_rocket,us_laser,us_double_laser,
+                                   ar_multimissile_ballista,ar_light_gun,ar_double_machine_gun,ar_gatling_gun,
+                                   ar_flame_thrower,ar_gun,ar_rocket_launcher,ar_selfpropelled_bomb,
+                                   ru_heavy_machine_gun,ru_gatling_gun,ru_gun,ru_rocket_launcher,ru_heavy_gun,
+                                   ru_rocket,ru_siberium_rocket,ru_time_lapser];
+
+                    list = UnitFilter(list,[f_ok]);
+                    result = [];
+
+                    for i in list do
+                         case GetType(i) of
+                              unit_vehicle: begin
+                                   case GetControl(i) of
+                                        control_manual,control_rider: begin
+                                             if UnitsInside(i) = 0 then
+                                                  continue;
+                                        end;
+                                        control_remote: begin
+                                             if IsControledBy(i) = 0 then
+                                                  continue;
+                                        end;
+                                        control_computer,control_apeman: begin
+                                        end;
+                                   end;
+
+                                   if GetWeapon(i) in weapon_list then
+                                        result = result ^ i;
+                              end;
+                              unit_building: begin
+                                   btype = GetBType(i);
+
+                                   case btype of
+                                        b_turret: begin
+                                        end;
+                                        b_bunker,b_breastwork,b_armoury,b_barracks,b_fort: begin
+                                             if UnitsInside(i) = 0 then
+                                                  continue;
+                                        end;
+                                        else
+                                             continue;
+                                   end;
+
+                                   if btype in [b_bunker,b_turret] then
+                                        if not GetBWeapon(i) in weapon_list then
+                                             continue
+                                        else
+                                             begin
+                                                  b = GetBase(i);
+                                                  val = false;
+
+                                                  if b = 0 then
+                                                       val = true
+                                                  else
+                                                       if GetEnergy(b)[4] = 0 then
+                                                            val = true;
+
+                                                  if val then
+                                                       continue;
+                                             end;
+
+                                   result = result ^ i;
+                              end;
+                         end;
+     end;
+
+//Determine which bazookers have successfully fired their time shifting rocket.
+//We need an extremely short update time on this update to prevent the situation where
+//a bazooker has shot a time shifting rocket but is brought to red life before the
+//update runs (in which case we do not detect the time shifting rocket as fired).
+Every 0$1 trigger russians_attack = 1 do
+     var val, temp_value, temp_list;
+     begin
+          
+          repeat
+          wait(1);
+
+          val = 1;
+          while val <= time_shift_bazookers do
+               begin
+                    if tick = time_shift_bazookers[val][4] then  //If the order was given at exactly this tick then the unit's task list is not yet updated
+                         begin
+                              val = val + 1;
+                              continue;
+                         end;
+
+                    temp_value = false;
+                    temp_list = GetTaskList(time_shift_bazookers[val][3]);
+
+                    if IsOk(time_shift_bazookers[val][3]) then  //Task list is reset upon going to red life
+                         begin
+                              if temp_list = 0 then
+                                   temp_value = true
+                              else
+                                   if not temp_list[1][1] = '&' then
+                                        temp_value = true;
+                         end
+                    else
+                         begin
+                              time_shift_bazookers = Delete(time_shift_bazookers,val);
+                              continue;
+                         end;
+
+                    if temp_value then
+                         begin
+                              time_shift_hexes = Insert(time_shift_hexes,1,[time_shift_bazookers[val][1],time_shift_bazookers[val][2],time_shift_data[russians][1]]);
+                              time_shift_bazookers = Delete(time_shift_bazookers,val);
+
+                              if russians_attack = 1 then
+                                   time_shifting_used_in_first_attack = true;
+
+                              continue;
+                         end;
+
+                    val = val + 1;
+               end;
+
+          until false;
+     end;
+
+//Update time shifted areas (determine when they have faded away).
+Every 0$1+0$0.3 do
+     var val, temp_list_2, time;
+     begin
+
+          repeat
+          wait(0$1);
+          
+          val = 1;
+          while val <= time_shift_hexes do
+               begin
+                    time = time_shift_hexes[val][3] - 0$1;
+
+                    if time <= 0$0 then
+                         begin
+                              time_shift_hexes = Delete(time_shift_hexes,val);
+
+                              continue;
+                         end
+                    else
+                         begin
+                              temp_list_2 = Replace(time_shift_hexes[val],3,time);
+                              time_shift_hexes = Replace(time_shift_hexes,val,temp_list_2);
+                         end;
+
+                    val = val + 1;
+               end;
+
+          until false;
+     end;

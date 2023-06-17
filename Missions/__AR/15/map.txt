@@ -1,0 +1,2385 @@
+MAIN_DEFINITIONS
+  SIZE 110 140
+  TICK 0
+  PLAYER_NUMBER 2
+  FOG_TYPE 0
+  FOGSIDES 1 2 3 4 5 6 7 8
+  MAP_GBI ar15.gbi
+  MUCHY_RECT 0 0 0 0
+  EAGLES 0 50
+  WAVES 0
+  WATER_COLORS 0000 3 0000 3 0000
+END_OF_MAIN_DEFINITIONS
+
+HEXES
+  LINE 0 0 109
+    t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5 t4r7v5f#80 t4r7sif#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4r6f#80 t4r6snf#80 t4r6v6f#80 t4r6v6f#80 t4r7v6f#80 t4r7v6f#80 t4r7v6f#80 t4r7v6f#80 t4r7v6f#80 t4r7v6f#80 t4r7v6f#80 t4r7v6f#80 t4r6v6f#80 t4r6v1sif#80 t4r6sCf#80 t4r7f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4f#80 t4sHf#80 t4v2f#80 t4v2f#80 t4v2 t4v2 t4v2 t4v2 t4v2 t4v2 t4v2 t4v2 t4v2 t4sK t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4
+  LINE 1 1 110
+    t4r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7v5 t2r7sif#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2r6f#80 t2r6snf#80 t2r6v6f#80 t2r7v6f#80 t2r7v6f#80 t2r7v6f#80 t2r7v6f#80 t2r7v6f#80 t2r7v6f#80 t2r7v6f#80 t2r7v6f#80 t2r6v6f#80 t2r6v1sif#80 t2r6sCf#80 t2r6f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2f#80 t2sHf#80 t2v2f#80 t2v2 t2v2sA t2v2sA t2v2sB t2v2sB t2v2 t2v2 t2v2 t2v2 t2sK t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t4
+  LINE 2 1 110
+    t4r7v5 t2r7v5 r7v5 r7sj r7sj r7sj r7sj r7sj r7sj r7se r7se r7v5 r7v5 r7v5 r7v5 r7v5 r7sj r7sjf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6snf#80 r6v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r6v6f#80 r6v1sif#80 r6sCf#80 r7f#80 f#80 f#80 f#80 f#80 f#80 sHf#80 v2f#80 v2sAf#80 v2sY v3so v3sp v3sp v2sB v2 sL sL sL "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 3 2 111
+    t4r7sj t2r7sj r7sj "" "" "" "" "" "" "" r7se r7se r7se r7se r7se r7sj f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6snf#80 r6v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r6v6f#80 r6v1sif#80 r6sCf#80S r7f#80 f#80 f#80 f#80 f#80 f#80 sHf#80 v2f#80 v2sAf#80 v3so v6so v9sR v9sR v3sq sS sL "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 4 2 111
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6snf#80 r6v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r6v6f#80 r6v6f#80 r6v1sif#80 r6sCf#80 r7f#80 f#80 f#80 f#80 f#80 f#80 sHf#80 v2f#80 v2s9f#80 v3snf#80 v9so vCsQ vCsR v6sq sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 5 3 112
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6snf#80 r6v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r6v6f#80 r6v6f#80 r6v1sif#80 r6sCf#80 r6f#80 f#80 f#80 f#80 f#80 f#80 sHf#80 v2f#80 v2s9f#80 v3snf#80 v9sn vF vF v9sq v3sq sS "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 6 3 112
+    t4 t2 "" "" "" "" "" f#80 "" "" "" "" "" f#80 "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6snf#80 r6v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r6v6f#80 r6v6f#80 r6v1sjf#80 r6sCf#80 r6f#80 r6f#80 f#80 f#80 f#80 f#80 f#80 sHf#80 v2f#80 v2s9f#80 v3sn v9sm v9sm v9sr v3sq v2sC sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 7 4 113
+    t4 t2 f#80 "" "" "" f#80 "" "" "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6snf#80 r6v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r6v6f#80 r6srf#80 r6sDf#80 r6f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sHf#80 v2f#80 v2s8f#80 v3sm v3sm v9 v3sr v2sC v2 sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 8 4 113
+    t4 t2 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6snf#80 r6v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r7v6f#80 r6srf#80 r6f#80 r6f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sHf#80 v2f#80 v2f#80 v2s8 v2s8 v3sm v3sr v2sD v2 sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 9 5 114
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6smf#80 r6v6f#80 r6v6f#80 r7v6f#80 r7v6f#80 r7v1sjf#80 r7srf#80 r6f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sHf#80 v2f#80 v2f#80 v2 v2 v2s8 v2sD v2sD v2 sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 10 5 114
+    t4sI t2r6sI r6sI r6sI sJ sJ "" "" "" "" "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6smf#80 r6smf#80 r6v6f#80 r7v6f#80 r7v1sjf#80 sDf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 sIf#80 v2f#80 v2f#80 v2f#80 v2 v2 v1sD v1sD v1sD sL "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 11 6 115
+    t4r6v2sQ t2r6v2sQ r6v2sQ r6v2sR r6v2sB sJ sJ "" "" "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r7f#80 r6smf#80 r6smf#80 r6srf#80 sDf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 v2f#80 v2f#80 v2f#80 v2f#80 v2 v2 v1sD sD sD sD "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 12 6 115
+    t4r6v5sQ t2r6v5sQ r6v5sQ r6v5sR r6v3sR r6v2sR r6v2sB sJ "" "" "" "" "" "" f#80 "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r7f#80 r7f#80 r7f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 v2f#80 v2f#80 v2f#80 v2f#80 v2 v2 v1sC sC "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 13 7 116
+    t4r6v8sA t2r6v8sA r6v8sAf#80 r6v6sR r6v5sR r6v3sR r6v2sR r6sJ sJ "" "" "" "" f#80 "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 sIf#80 v2f#80 v2sAf#80 v2sAf#80 v2sIf#80 v2sJ v2 v1sC sC "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 14 7 116
+    t4v9sI t2r6v9sJ r6v9 r6v9 r6v8sB r6v6sR r6v5sR r6v2sR r6v2sB sJ "" "" "" f#80 f#80 "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 sIf#80 v2f#80 r6v2f#80 r6v2sYf#80 r6v3sQf#80 r6v3sQf#80 r6v4sJ v2sJ v2 v1sC sC "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 15 8 117
+    t4vB t2v9sJ v9sJ r6v9sB r6v9 r6v8sB r6v5sR r6v3sR r6v2sB sJ "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 v2f#80 r6v2f#80 r6v2sQf#80 r6v2sgf#80 r6v6sgf#80 r6v6sh r6v6sZ r6v4sJ v2sR v1sC v1 sC "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 16 8 117
+    t4v8sU t2vB vB vAsB v9sJ r6v9sB r6v8sB r6v6sR r6v3sR r6v2sB r6sJ "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sAf#80 sAf#80 sBf#80 sBf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 sIf#80 r6v2f#80 r6v2sQf#80 r6v2sQf#80 r6v5sgf#80 r6v7sYf#80 r6vB r6vAsC r6v6sZ r6v5sh v2sS v1sC sC "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 17 9 118
+    t4vB t2vB vB vB vAsB v9sBf#80 r6v9 r6v6sR r6v3sR r6v2sB r6sJ "" "" f#80 "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sAf#80 v1sAf#80 v1sAf#80 v1sBf#80 sBf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 v2f#80 r6v2f#80 r6v2sQf#80 r6v5sgf#80 r6v5sgf#80 r6vA r6vAsA r6vAsB r6vA r6vA r6v5si v2sS sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 18 9 118
+    t4vB t2vB vB vB vB vAsB v9sJ r6v9 r6v6sR r6v3sR r6v2sB r6sJ "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sIf#80 sIf#80 v1sAf#80 v2sAf#80 v2sBf#80 v1sBf#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sAf#80 sIf#80 v2sIf#80 r6v2sQf#80 r6v2sQf#80 r6v5sgf#80 r6vAsQ r6vAsR r6vAsI r6vBsB r6vAsB r6vA r6v5si r6v3sK v2sC sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 19 10 119
+    t4vB t2vB vB vB vBf#80 vB v9sJ r6v9 r6v6sR r6v3sS r6v2sB r6sJ "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sAf#80 sAf#80 sIf#80 v2sAf#80 v2sAf#80 v2sIf#80 v3sBf#80 v2sBf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 sAf#80 v1f#80 r6v1sPf#80 r6v4sYf#80 r6v5sgf#80 r6v5sgf#80 r6vAsQ r6vDsA r6vCsJ r6vCsB r6vBsB r6vAsB r6v5si r6v3sK v2sC v2 sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 20 10 119
+    t4vB t2vB vB vBf#80 vB vB vB v9sJ r6v9 r6v5sa r6v3sJ r6v2sJ r6sJ sJ sJ sJf#80 sJf#80 sJf#80 sJf#80 sJf#80 sJf#80 sJf#80 sJf#80 r6f#80 r6sAf#80 v1sAf#80 v1sAf#80 v2sAf#80 v3sAf#80 v3sAf#80 v4f#80 v3sCf#80 v2sCf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sYf#80 r6v4sYf#80 r6v8sYf#80 r6vAsof#80 r6vAso r6vDsQ r6vEsB r6vDsB r6vCsB r6vBsB r6v6sq r6v3sS r6v2sC v2 v2 sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 21 11 120
+    t4vB t2vB vB vB vB vBf#80 vB v9sK v7sK r6v5sK r6v4sB r6v2sJ v2sJ v2sJ v2sJ v2sJf#80 v2sJf#80 v2sJf#80 v2sJf#80 v2sJf#80 v2sJf#80 v2sBf#80 r6sJf#80 r6sAf#80 r6v1sAf#80 v2f#80 v2sAf#80 v3sAf#80 v4sAf#80 v4sBf#80 v3sCf#80 v2sCf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sPf#80 r6v8sXf#80 r6vCsXf#80 r6vG r6vG r6vFsB r6vEsJ r6vDsR r6vCsZ r6vC r6v6sq r6v3sS v2sC v2 sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 22 11 120
+    t4vB t2vB vB vB vBf#80 vBf#80 vBf#80 vB v8sS v6sK r6v5sB v4sJ r6v4sJ v4sJ v4sJ v4sJf#80 v4sJf#80 v4sJf#80 v4sJf#80 v4sJf#80 v4sJf#80 v3sRf#80 r6v2sZf#80 r6v1sJf#80 r6v1sIf#80 r6v2sAf#80 r6v2sAf#80 v3sAf#80 v4sIf#80 v5sBf#80 v4sBf#80 v3sCf#80 v2sCf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsn r6vG r6vG r6vG r6vG r6vG r6vG r6vCsa r6v7si r6v3sa r6v2sC v2 sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 23 12 121
+    t4vB t2vB vB vB vB vB vB vB v8sR v6sJ v6sQ v6sR v6sJ v6sJ v6sJ v6sJf#80 v6sJf#80 v6sJf#80 v6sJf#80 v6sJf#80 v6sJf#80 r6v6f#80 r6v3sRf#80 r6v3sRf#80 r6v3sJf#80 r6v3sAf#80 r6v3sAf#80 v4sIf#80 v6f#80 v5sBf#80 v4sBf#80 v3sCf#80 v2sCf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vA r6vAsn r6vGsI r6vGsI r6vGsJ r6vG r6vG r6vG r6vCsa r6v6sq r6v3sS sS sL "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 24 12 121
+    t4vB t2vB vB vB vB vB vB vB vB v8sR v8sQ v9sJ v8sJ v8sJ v8sJ v8sJ v8sJf#80 v8sJf#80 v8sJf#80 v8sJf#80 v8sJf#80 v6sJf#80 r6v6sJf#80 r6v6sJf#80 r6v5sRf#80 r6v4sJf#80 r6v4sIf#80 r6v4sIf#80 v6sAf#80 v6sBf#80 v5sBf#80 v4sBf#80 v3sCf#80 v2sCf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vA r6vAsn r6vGsH r6vI r6vI r6vGsJ r6vGsJ r6vGsJ r6vCsa r6v7si r6v3sa r6sS "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 25 13 122
+    t4vB t2vB vB vB vB vB vB vB vB vB vB vAsB vAsB vAsB vAsBf#80 vAsBf#80 vAsBf#80 vAsBf#80 vAsBf#80 vAsBf#80 v8sRf#80 v8f#80 r6v8f#80 r6v8sAf#80 r6v6sRf#80 r6v6sJf#80 r6v6sJf#80 r6v6sAf#80 r6v7f#80 v6sBf#80 v5sBf#80 v4sCf#80 v3sCf#80 v2sCf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsI r6vAsn r6vGsH r6vI r6vI r6vI r6vI r6vI r6vGsK r6vAsq r6v4sq r6v2sK sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 26 13 122
+    t4vB t2vB vB vB vB vB vB vB vB vBf#80 vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 v8sRf#80 v8sRf#80 v8sAf#80 v9f#80 r6v8sBf#80 r6v8sBf#80 r6v7sBf#80 r6v7sBf#80 r6v7f#80 v6sCf#80 v4sKf#80 v3sCf#80 v2sCf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsH r6vC r6vCsX r6vGsH r6vI r6vI r6vI r6vI r6vGsK r6vAsq r6v6sa r6v2sa r6sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 27 14 123
+    t4vB t2vB vB vB vB vB vB vB vB vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 v9sJf#80 v9sIf#80 v9sJf#80 r6v9sJf#80 r6v8sBf#80 r6v8sIf#80 r6v7sRf#80 r6v6sCf#80 r6v4sKf#80 v3sCf#80 v2sCf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsH r6vCsX r6vGsQ r6vIsA r6vIsB r6vI r6vI r6vGsK r6vAsq r6v6sa r6v6 r6sq "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 28 14 123
+    t4vB t2vB vBf#80 vB vB vB vB vB vB vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 v9sJf#80 v9sIf#80 r6vAsBf#80 r6v7sRf#80 r6v4sZf#80 r6v4f#80 v2sKf#80 v1sCf#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAf#80 r6vAsn r6vGsP r6vJ r6vJ r6vIsB r6vIsB r6vGsK r6vAsq r6vA r6v6sa r6sq r6 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 29 15 124
+    t4vB t2vB vB vB vB vB vB vB vB vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 r6vAsBf#80 r6v8sRf#80 r6v4sZf#80 r6v2sKf#80 v1sCf#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAf#80 r6vA r6vAsn r6vGsP r6vJsA r6vJsB r6vJ r6vGsS r6vAsq r6vA r6vA r6v5si r6si "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 30 15 124
+    t4vB t2vB vB vB vB vB vB vB vB vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 r6v8sRf#80 r6v2sqf#80 v2f#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsof#80 r6vAso r6vGsQ r6vJsI r6vKsB r6vJsC r6vGsS r6vAsq r6vA r6vA r6v5si r6si r6 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 31 16 125
+    t4vB t2vB vB vB vB vB vB vB vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 r6v6sif#80 r6v2saf#80 v1sCf#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsnf#80 r6vGf#80 r6vGsQ r6vJsY r6vLsJ r6vJsK r6vGsS r6vAsq r6vA r6vA r6v5si r6si r6 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 32 16 125
+    t4vB t2vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 r6v6sif#80 r6v1sif#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsnf#80 r6vGsPf#80 r6vJsX r6vN r6vJsa r6vGsS r6vAsq r6vA r6vA r6v5si r6si r6 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 33 17 126
+    t4vB t2vB vBf#80 vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 r6v6sif#80 r6v1sif#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsnf#80 r6vGsPf#80 r6vJsXf#80 r6vN r6vJsa r6vGsS r6vAsq r6vA r6vA r6vA r6v5si r6si "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 34 17 126
+    t4vB t2vB vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 r6v6sif#80 r6v1sif#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsnf#80 r6vGsPf#80 r6vJsW r6vJsb r6vJ r6vGsS r6vAsq r6vA r6v5sj r6v5sj r6si "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 35 18 127
+    t4vB t2vB vB vB vB vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 r6v8sTf#80 r6v6sjf#80 r6v1sif#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s9f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsnf#80 r6vGsPf#80 r6vJf#80 r6vJ r6vGsT r6vGsT r6vAsr r6vA r6v5sj r6sj r6sj "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 36 18 127
+    t4vBf#80 t2vB vB vB vBf#80 vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 r6v8sKf#80 r6v6sKf#80 r6v1sif#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 s8f#80 r6v1f#80 r6v1sXf#80 r6v5sff#80 r6vAsnf#80 r6vGsOf#80 r6vGsT r6vGsT r6vAsr r6vAsr r6v5sj r6v5sj r6sj r6 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 37 19 128
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 r6v8sCf#80 r6v3sif#80 r6sSf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6s8f#80 r6sXf#80 r6v4snf#80 r6vAsnf#80 r6vGf#80 r6vAsrf#80 r6vAsr r6vAsr r6v5sj r6v5sj r6sj r6sj r6 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 38 19 128
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vB vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 r6v4saf#80 r6saf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6f#80 r6sXf#80 r6v4snf#80 r6vAsmf#80 r6vAsrf#80 r6v4srf#80 r6v4sm r6v5sj r6sj r6sj r6 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 39 20 129
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8f#80 r6v5sSf#80 r6v2sSf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6f#80 r6sWf#80 r6v4smf#80 r6v5sef#80 r6v4srf#80 r6sbf#80 r6sef#80 r6sj r6 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 40 20 129
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8f#80 v8f#80 v6sKf#80 r6v3sSf#80 r6v1sKf#80 sCf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6f#80 r6sWf#80 r6sef#80 r6sjf#80 r6sbf#80 r6f#80 r6f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 41 21 130
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8f#80 v8f#80 v7sDf#80 v7sDf#80 v6sCf#80 r6v2saf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6f#80 r6f#80 r6f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 42 21 130
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8f#80 v8f#80 v7sDf#80 v7sDf#80 v6sDf#80 v5sLf#80 v4sLf#80 v2sKf#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 43 22 131
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8f#80 v8f#80 v7sDf#80 v7sDf#80 v6sDf#80 v5sLf#80 v4sLf#80 v4sDf#80 v2sLf#80 v2f#80 sKf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 44 22 131
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8f#80 v8f#80 v7sDf#80 v7sDf#80 v6sDf#80 v5sLf#80 v4sLf#80 v4sDf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 45 23 132
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8sDf#80 v8f#80 v8f#80 v7sDf#80 v7sDf#80 v6sDf#80 v5sLf#80 v4sLf#80 v4sDf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 46 23 132
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vAsDf#80 vAsDf#80 v9sDf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8sDf#80 v8f#80 v8f#80 v8f#80 v7sDf#80 v7sDf#80 v6sDf#80 v5sLf#80 v4sLf#80 v4sDf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 47 24 133
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 v9sLf#80 v9sDf#80 v9sDf#80 v8sDf#80 v8sDf#80 v8sDf#80 v8f#80 v8f#80 v8f#80 v7sDf#80 v7sDf#80 v7sDf#80 v6sDf#80 v5sLf#80 v4sLf#80 v4sDf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 48 24 133
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 vBf#80 v9sLf#80 v9sLf#80 v7sLf#80 v7sLf#80 v7sLf#80 v8f#80 v8f#80 v8f#80 v7sDf#80 v7sDf#80 v7sDf#80 v6sDf#80 v5sLf#80 v5sLf#80 v4sLf#80 v4sDf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 49 25 134
+    t4vBf#80 t2vBf#80 vBf#80 vBf#80 r6vBf#80 r6vBf#80 v9sLf#80 v9sLf#80 v7sLf#80 v7sLf#80 v7f#80 v7f#80 v7s8f#80 v7s8f#80 v7sDf#80 v7sDf#80 v6sDf#80 v5sLf#80 v5sLf#80 v4sLf#80 v4sDf#80 v4sDf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 50 25 134
+    t4vBf#80 t2vBf#80 r6vB r6vBf#80 r6vBf#80 r6v8sTf#80 r6v8sTf#80 r6v6sTf#80 v6sTf#80 v6sDf#80 v6s8f#80 v6s8f#80 v7f#80 v6sDf#80 v6sDf#80 v5sLf#80 v5sLf#80 v4sLf#80 v4sDf#80 v4sDf#80 v2sLf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 51 26 135
+    t4r6vBf#80 t2r6vB r6v8sTf#80 r6v8sTf#80 r6v8sTf#80 r6v6sLf#80 r6v6sLf#80 r6v3sTf#80 r6v3sTf#80 r6v3sOf#80 v3sOf#80 v5sGf#80 v5sLf#80 v4sLf#80 v4sLf#80 v4sDf#80 v4sDf#80 v2sLf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 52 26 135
+    t4r6v8sOf#80 t2r6v8sO r6v8sTf#80 r6v6sLf#80 r6v6sLf#80 r6v6sLf#80 r6v3sTf#80 r6v3sTf#80 r6sTf#80 r6sOf#80 r6sOf#80 r6v3sGf#80 v3sGf#80 v3sGf#80 v4f#80 v2sLf#80 v2sLf#80 v2sLf#80 sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 53 27 136
+    t4r6v6sG t2r6v6sGf#80 r6v6sLf#80 r6v3sTf#80 r6v3sTf#80 r6v3sTf#80 r6sTf#80 r6sTf#80 r6f#80 r6f#80 r6sOf#80 r6sOf#80 sOf#80 v1sOf#80 v2sLf#80 r6sLf#80 sLf#80 sLf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 54 27 136
+    t4r6v3sO t2r6v3sOf#80 r6v3sOf#80 r6v3sTf#80 r6sTf#80 r6sTf#80 r6sTf#80 r6f#80 r6f#80 r6f#80 f#80 r6f#80 r6f#80 r6s8f#80 r6sGf#80 r6sLf#80 r6f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 55 28 137
+    t4r6sOf#80 t2r6sOf#80 r6sOf#80 r6sTf#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6f#80 r6f#80 r6f#80 r6f#80 r6f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 56 28 137
+    t4f#80 t2f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 r6f#80 r6f#80 r6f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 57 29 138
+    t4f#80 t2f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 58 29 138
+    t4 t2 "" f#80 "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 59 30 139
+    t4 t2 "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 60 30 139
+    t4 t2 "" "" "" "" "" "" "" "" "" f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 f#80 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 61 31 140
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sI sI sI sI sI sI sI sI sI sI sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 62 31 140
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sI sI sI sI v2sI v2sI v2sI v2sI v2sI v2sI v2sI v2sI v2sI v2sJ v2sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 63 32 141
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sI v2 v2sI v2sI v2sI v4sI v4sI v4sI v4sI v4sI v4sI v4sI v4sI v4sJ v4 v2sK sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 64 32 141
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sI v2 v2sI v4sI v4sI v4sI v6sI v6sI v6sI v6sI v6sI v6sI v6sI v6sJ v4sJ v2sK sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 65 33 142
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sI v2sI v4sI v6sI v6sI v6sI v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v2sK sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 66 33 142
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4 v4sI v6sI v8 v8 v8 v8 v8 v8 v8 v8 v8 v8f4 v6sJ v4sK v2sK sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 67 34 143
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 68 34 143
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 69 35 144
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" "" "" "" "" "" "" sI sI sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 70 35 144
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sL v6 v4sK v2sK sK "" "" "" "" "" "" "" "" "" sI sI v2sI v2sJ sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 71 36 145
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sG v4sG v6sG v6sG v8 v8 v8 v8 v6sL v6sL v6sL v6sL v4sL v4sL v2sK sK "" "" "" "" "" "" "" "" "" sI v2sI v2sI v4 v2sJ v2 v2 sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 72 36 145
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v2sG v4sG v4sG v6sG v6sG v6sG v6sG v6sL v4sL v4sL v4sL v4sL v2sL v2sL sK "" "" "" "" "" "" "" "" "" sH v2sH v4sI v4sI v4sJ v2sJ v2sJ v2sJ v2sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 73 37 146
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG sG v2sG v2sG v4sG v4sG v4sG v4sG v4sG v4sL v2sL v2sL v2sL v2sL sL sL "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6 v6 v4sJ v4sJ v4sJ v4sJ v2sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 74 37 146
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG sG v2sG v2sG v2sG v2sG v2sG v2sG v2sL sL sL sL sL "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sI v6sI v6sJ v6sJ v6sJ v4sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 75 38 147
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG sG sG sG sG sG sG sL "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v6sJ v4sJ v2sJ v2sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 76 38 147
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v6sJ v4sJ v4sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 77 39 148
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v2sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 78 39 148
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v4sJ v2sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 79 40 149
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v4sJ v2sJ v2sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 80 40 149
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v4sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 81 41 150
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v2sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 82 41 150
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v4sJ v2sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 83 42 151
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v4sJ v2sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 84 42 151
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sG v6sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v4sJ v2sJ v2sJ sJ "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 85 43 152
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sG v4sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v4sJ v2sJ sJ sJ "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 86 43 152
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v2sG v2sG v4sG v6sG v6sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v2sJ v2sJ sJ "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 87 44 153
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" f4 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG sG sG v2sG v4sG v4sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v4sJ v2sJ sJ "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 88 44 153
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v2sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v6sJ v4sJ v2sJ sJ "" "" "" "" "" "" "" "" t2 t4
+  LINE 89 45 154
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG sG sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v2sJ sJ "" "" "" "" "" "" "" "" t2 t4
+  LINE 90 45 154
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v2sJ sJ "" "" "" "" "" "" "" t2 t4
+  LINE 91 46 155
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v2sJ sJ "" "" "" "" "" "" "" t2 t4
+  LINE 92 46 155
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v2sJ sJ "" "" "" "" "" "" t2 t4
+  LINE 93 47 156
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v2sJ sJ "" "" "" "" "" "" t2 t4
+  LINE 94 47 156
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sJ v4sJ v2sJ sJ "" "" "" "" "" t2 t4
+  LINE 95 48 157
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" t2 t4
+  LINE 96 48 157
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v4sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" t2 t4
+  LINE 97 49 158
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" t2 t4
+  LINE 98 49 158
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" t2 t4
+  LINE 99 50 159
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" "" t2 t4
+  LINE 100 50 159
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sH v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v8 v6sK v4sK v2sK sK "" "" "" "" "" "" t2 t4
+  LINE 101 51 160
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sH v6sG v6sG v8 v8 v8 v8 v8 v8 v8 v8 v6sL v6sL v4sK v2sK sK "" "" "" "" "" "" "" t2 t4
+  LINE 102 51 160
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sH v2sH v4sG v4sG v6sG v6sG v8 v8 v8 v8 v8 v6sL v6sL v4sL v4sL v2sK sK "" "" "" "" "" "" "" t2 t4
+  LINE 103 52 161
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG v2sG v2sG v4sG v4sG v6sG v6sG v6sG v6sG v6sG v6sL v4sL v4sL v2sL v2sL sK "" "" "" "" "" "" "" "" t2 t4
+  LINE 104 52 161
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG sG v2sG v2sG v4sG v4sG v4sG v4sG v4sG v4sG v4sL v2sL v2sL sL sL "" "" "" "" "" "" "" "" t2 t4
+  LINE 105 53 162
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG sG v2sG v2sG v2sG v2sG v2sG v2sG v2sG v2sL sL sL "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 106 53 162
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" sG sG sG sG sG sG sG sG sL "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 107 54 163
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 108 54 163
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 109 55 164
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 110 55 164
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 111 56 165
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 112 56 165
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 113 57 166
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 114 57 166
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 115 58 167
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 116 58 167
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 117 59 168
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 118 59 168
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 119 60 169
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 120 60 169
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 121 61 170
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 122 61 170
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 123 62 171
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 124 62 171
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 125 63 172
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 126 63 172
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 127 64 173
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 128 64 173
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 129 65 174
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 130 65 174
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 131 66 175
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 132 66 175
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 133 67 176
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 134 67 176
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 135 68 177
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 136 68 177
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 137 69 178
+    t4 t2 "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" t2 t4
+  LINE 138 69 178
+    t4 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t4
+  LINE 139 70 179
+    t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4 t4
+END_OF_HEXES
+
+EXTERNAL_NODES nodes.bin
+ENVIROMENT
+  SET 1 dummy
+  SET 2 list-akatojerab
+  SET 3 list-jerab-spal
+  SET 4 list-platan
+  SET 5 list-platan-spal
+  SET 6 list-mocal-koreny
+  SET 7 list-vrba
+  SET 8 list-vrba-zluta
+  SET 9 jehl-borovice
+  SET 10 jehl-borov-vysoka
+  SET 11 jehl-borovice-mala
+  SET 12 stone_set_01
+  SET 13 stone_set_02
+  SET 14 stone_set_03
+  SET 15 stone_set_04
+  SET 16 stone_set_05
+  SET 17 stone_set_06
+  SET 18 stone_set_07
+  SET 19 houby
+  SET 20 mrcha
+  SET 21 jehl-smrk-silny
+  SET 22 jehl-smrk-stredni
+  SET 23 jehl-smrk-uzky-spal
+  SET 24 jehl-smrk-stredni
+  SET 25 jehl-smrk-stredni-spal
+  SET 26 jehl-smrk-stredni-suchy
+  SET 27 list-dvoupatr
+  SET 28 list-briza
+  SET 29 list-paskvil
+  SET 30 ker
+  SET 31 jehl-borov-vysoka-spal
+  SET 32 list-akat-vysoky-spal
+  SET 33 plavun
+  SET 34 cykas
+  SET 35 list-kastan
+  SET 36 mech
+  SET 37 jehl-smrk-maly
+  SET 38 ker-husty
+  SET 39 ker-rosti
+  SET 40 list-akat-rosti
+  SET 41 list-briza-vyssi
+  SET 42 list-sahara
+  SET 43 list-akat-maly
+  SET 44 list-dvoupatr-maly
+  SET 45 parez
+  SET 46 polosuche
+  SET 47 list-dub
+  SET 48 list-kastan-vanek
+  SET 49 parezoid
+  SET 50 branka
+  SET 51 leknin
+  SET 52 monolit
+  SET 53 snowman
+  SET 54 snowman_small
+  ON_HEX 69 0
+    sci5
+  ON_HEX 65 3
+    sci2
+  ON_HEX 74 3
+    shi3
+  ON_HEX 60 5
+    sci7
+  ON_HEX 66 6
+    sci2
+  ON_HEX 67 21
+    sci2
+  ON_HEX 57 23
+    sci9
+  ON_HEX 68 23
+    sci7
+  ON_HEX 69 26
+    sciA
+  ON_HEX 46 32
+    sciA
+  ON_HEX 49 34
+    sci1
+  ON_HEX 78 37
+    shi6
+  ON_HEX 86 45
+    shi1
+  ON_HEX 29 47
+    sci6
+  ON_HEX 27 48
+    sci2
+  ON_HEX 130 51
+    shi9
+  ON_HEX 84 69
+    shi8
+  ON_HEX 142 72
+    sei8
+  ON_HEX 47 77
+    shi4
+  ON_HEX 129 77
+    sdi7
+  ON_HEX 44 78
+    shi6
+  ON_HEX 54 79
+    shi4
+  ON_HEX 118 79
+    s2iI
+  ON_HEX 130 79
+    sdi8
+  ON_HEX 146 79
+    sei1
+  ON_HEX 56 80
+    shiA
+  ON_HEX 57 80
+    sdi5
+  ON_HEX 120 80
+    s2i1
+  ON_HEX 132 80
+    sdi5
+  ON_HEX 134 80
+    sdi9
+  ON_HEX 55 81
+    sci3
+  ON_HEX 56 81
+    sci6
+  ON_HEX 50 82
+    sdi9
+  ON_HEX 136 82
+    sdi2
+  ON_HEX 139 82
+    sdi4
+  ON_HEX 148 82
+    sdi7
+  ON_HEX 150 82
+    sdi4
+  ON_HEX 149 83
+    sdi6
+  ON_HEX 48 84
+    sdiA
+  ON_HEX 139 84
+    sdi6
+  ON_HEX 52 85
+    shi2
+  ON_HEX 64 86
+    sci8
+  ON_HEX 151 86
+    sdi6
+  ON_HEX 48 87
+    sdiA
+  ON_HEX 52 87
+    shiA
+  ON_HEX 49 88
+    sdi1
+  ON_HEX 64 88
+    sci4
+  ON_HEX 153 88
+    sdiA
+  ON_HEX 129 89
+    sei8
+  ON_HEX 51 90
+    shi7
+  ON_HEX 137 90
+    sei6
+  ON_HEX 152 91
+    sdi9
+  ON_HEX 51 92
+    sdiA
+  ON_HEX 58 93
+    shi8
+  ON_HEX 138 93
+    sei5
+  ON_HEX 139 93
+    sei7
+  ON_HEX 142 93
+    sei6
+  ON_HEX 55 94
+    shiA
+  ON_HEX 60 94
+    sdi4
+  ON_HEX 134 95
+    sei2
+  ON_HEX 142 96
+    sei7
+  ON_HEX 63 98
+    sdi3
+  ON_HEX 65 98
+    shi2
+  ON_HEX 52 99
+    shi4
+  ON_HEX 65 99
+    sdi8
+  ON_HEX 62 100
+    shi9
+  ON_HEX 64 105
+    shi6
+  ON_HEX 159 105
+    shi6
+  ON_HEX 60 106
+    shi2
+  ON_HEX 154 106
+    sdi4
+  ON_HEX 156 107
+    sdi2
+  ON_HEX 128 108
+    sei8
+  ON_HEX 154 110
+    sdi6
+  ON_HEX 130 111
+    sei6
+  ON_HEX 158 111
+    sei5
+  ON_HEX 148 112
+    sdi7
+  ON_HEX 139 113
+    sdiA
+  ON_HEX 153 113
+    sdi7
+  ON_HEX 156 113
+    sdi3
+  ON_HEX 163 113
+    sii6
+  ON_HEX 143 115
+    sei3
+  ON_HEX 152 115
+    sdi4
+  ON_HEX 136 117
+    ski1
+  ON_HEX 155 118
+    sei8
+  ON_HEX 151 119
+    seiA
+  ON_HEX 162 119
+    sei1
+  ON_HEX 165 119
+    shi4
+  ON_HEX 78 120
+    sZi4
+  ON_HEX 130 120
+    seiA
+  ON_HEX 167 120
+    shi5
+  ON_HEX 153 121
+    shi4
+  ON_HEX 159 121
+    sei3
+  ON_HEX 161 121
+    sdi8
+  ON_HEX 139 122
+    sdi1
+  ON_HEX 147 122
+    sdi1
+  ON_HEX 158 122
+    s2iH
+  ON_HEX 150 123
+    s2i3
+  ON_HEX 157 123
+    shi5
+  ON_HEX 163 123
+    sei5
+  ON_HEX 144 124
+    sei4
+  ON_HEX 147 125
+    sei4
+  ON_HEX 166 125
+    shi3
+  ON_HEX 167 125
+    sei9
+  ON_HEX 152 126
+    sei6
+  ON_HEX 161 126
+    sei7
+  ON_HEX 167 127
+    sdi2
+  ON_HEX 142 128
+    sii6
+  ON_HEX 150 128
+    sei6
+  ON_HEX 166 128
+    sdi2
+  ON_HEX 147 129
+    sdi8
+  ON_HEX 157 129
+    sdi3
+  ON_HEX 171 129
+    shi8
+  ON_HEX 149 130
+    s2iA
+  ON_HEX 161 130
+    seiA
+  ON_HEX 167 130
+    s2i2
+  ON_HEX 169 130
+    shi9
+  ON_HEX 164 131
+    sei4
+  ON_HEX 166 131
+    sdi2
+  ON_HEX 171 131
+    sei8
+  ON_HEX 153 132
+    sei4
+  ON_HEX 169 132
+    sdi5
+  ON_HEX 143 133
+    sei6
+  ON_HEX 146 133
+    sei5
+  ON_HEX 159 133
+    sei7
+  ON_HEX 97 134
+    sci1
+  ON_HEX 139 134
+    sRi4
+  ON_HEX 140 134
+    sdi7
+  ON_HEX 151 134
+    s2iB
+  ON_HEX 157 134
+    s2iI
+  ON_HEX 159 134
+    seiA
+  ON_HEX 162 134
+    seiA
+  ON_HEX 95 135
+    sci5
+  ON_HEX 139 135
+    sdi3
+  ON_HEX 158 135
+    sei3
+  ON_HEX 94 136
+    sci1
+  ON_HEX 156 136
+    shi5
+  ON_HEX 161 136
+    sei2
+  ON_HEX 166 136
+    sei2
+  ON_HEX 96 137
+    sci7
+  ON_HEX 98 137
+    sci6
+  ON_HEX 99 137
+    sci1
+  ON_HEX 152 137
+    seiA
+  ON_HEX 169 137
+    sii9
+END_OF_ENVIROMENT
+
+EXTERNAL_SECTORS sectors.bin
+ATTITUDES
+  PARAMS 8
+  1 0 0 0 0 0 0 0 0
+  0 1 2 2 2 2 2 2 2
+  0 2 1 2 2 1 2 2 2
+  0 2 2 1 2 2 2 2 2
+  0 2 2 2 1 2 2 2 2
+  0 2 1 2 2 1 2 2 2
+  0 2 2 2 2 2 1 2 2
+  0 2 2 2 2 2 2 1 2
+  0 2 2 2 2 2 2 2 1
+  FLAG 8
+  T T T T T T T T T
+END_OF_ATTITUDES
+
+TECHS
+  PARAMS 72 8
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F F T T T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+  F T F T T F T T F T T F T T F T T F T T F T T F T T F
+END_OF_TECHS
+
+RESTRICTS
+  PARAMS 0 40 8
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+  T T T T T T T T T
+END_OF_RESTRICTS
+
+MISSION_OBJECTIVES_FULL 0
+
+SPECS
+  PARAMS 2 8
+    73 92 1
+    F F F F F F F F F
+    22 26 1
+    T F F F F F F T F
+  FLAG 0 0
+END_OF_SPECS
+
+BASES
+  PARAMS T T
+
+  POOL 1
+  POOL 2
+
+  BASE 1
+    POOL_NUM 1
+    SIDE 2
+    UNIT 20
+  BASE 2
+    POOL_NUM 2
+    SIDE 7
+    UNIT 19
+END_OF_BASES
+
+
+
+RANDOMS
+  MICROLOGIC 2 0 1
+  RANDOM_SEED 1 2082102775
+  RANDOM_SEED 2 629267293
+  RANDOM_SEED 3 2082102775
+  RANDOM_SEED 4 1800504137
+  RANDOM_SEED 5 245234292
+  RANDOM_SEED 6 971126857
+  RANDOM_SEED 7 1421672303
+  RANDOM_SEED 8 384220464
+  RANDOM_SEED 9 1502786546
+  RANDOM_SEED 10 -416312783
+  RANDOM_SEED 11 1783942333
+  RANDOM_SEED 12 589952950
+  RANDOM_SEED 13 387189767
+  RANDOM_SEED 14 1590851284
+  RANDOM_SEED 15 585862751
+  RANDOM_SEED 16 1499379931
+  RANDOM_SEED 17 1091522126
+  RANDOM_SEED 18 337986443
+  RANDOM_SEED 19 334118841
+  RANDOM_SEED 20 2050959009
+  RANDOM_SEED 21 -1768945014
+  RANDOM_SEED 22 575990753
+  WIND_TIME -1 -1 0
+  WIND_STRENGTH 36.7606167791381 52.0 53.3803083895691
+  WIND_SCATTER 24.1066377870272
+END_OF_RANDOMS
+
+NEW_UNITS
+  UNIT 3 BUILDING
+    DEFINITION
+      POS 26 9 3
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 6 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 26 9 3 6 F
+      UNITMODE F 26 9
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 0 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 602 162 0
+      FROM_TO_POS 26 9 0 26 9 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 18 BUILDING
+    DEFINITION
+      POS 32 4 2
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 79 LEVEL 1 BASE 2 PARAMS 81 83
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 32 4 2 6 F
+      UNITMODE F 32 4
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 840 72 0
+      FROM_TO_POS 32 4 0 32 4 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        RESEARCH 0
+    END_OF_GAME_STATE
+  UNIT 19 BUILDING
+    DEFINITION
+      POS 21 14 2
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 2 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 21 14 2 6 F
+      UNITMODE F 21 14
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 392 252 0
+      FROM_TO_POS 21 14 0 21 14 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 20 BUILDING
+    DEFINITION
+      POS 102 87 3
+      SIDE 2
+      NATION 2
+      HP 1000
+      BUILDING
+        TYPE 35 LEVEL 10 BASE 1
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 102 87 3 6 F
+      UNITMODE F 102 87
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 0 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1638 1566 0
+      FROM_TO_POS 102 87 0 102 87 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 21 BUILDING
+    DEFINITION
+      POS 92 66 3
+      SIDE 2
+      NATION 2
+      HP 1000
+      BUILDING
+        TYPE 36 LEVEL 10 BASE 1
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 92 66 3 6 F
+      UNITMODE F 92 66
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 0 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1652 1172 0
+      FROM_TO_POS 92 66 0 92 66 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 25 BUILDING
+    DEFINITION
+      POS 10 6 2
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 19 LEVEL 1 BASE 2 PARAMS 22 24
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 10 6 2 6 F
+      UNITMODE F 10 6
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 196 108 0
+      FROM_TO_POS 10 6 0 10 6 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        RESEARCH 0
+    END_OF_GAME_STATE
+  UNIT 29 BUILDING
+    DEFINITION
+      POS 22 36 1
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 69 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 22 36 1 6 F
+      UNITMODE F 22 36
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 24 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 112 626 0
+      FROM_TO_POS 22 36 0 22 36 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 30 BUILDING
+    DEFINITION
+      POS 13 20 1
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 79 LEVEL 1 BASE 2 PARAMS 84 82
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 13 20 1 6 F
+      UNITMODE F 13 20
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 24 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 84 338 0
+      FROM_TO_POS 13 20 0 13 20 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        RESEARCH 0
+    END_OF_GAME_STATE
+  UNIT 36 BUILDING
+    DEFINITION
+      POS 23 6 2
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 16 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 23 6 2 6 F
+      UNITMODE F 23 6
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 560 108 0
+      FROM_TO_POS 23 6 0 23 6 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 37 BUILDING
+    DEFINITION
+      POS 22 9 1
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 12 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 22 9 1 6 F
+      UNITMODE F 22 9
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 24 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 490 162 0
+      FROM_TO_POS 22 9 0 22 9 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 38 BUILDING
+    DEFINITION
+      POS 26 5 3
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 9 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 26 5 3 6 F
+      UNITMODE F 26 5
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 0 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 658 90 0
+      FROM_TO_POS 26 5 0 26 5 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 39 BUILDING
+    DEFINITION
+      POS 29 9 4
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 8 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 29 9 4 6 F
+      UNITMODE F 29 9
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 6 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 686 162 0
+      FROM_TO_POS 29 9 0 29 9 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 40 BUILDING
+    DEFINITION
+      POS 30 13 5
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 7 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 30 13 5 6 F
+      UNITMODE F 30 13
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 12 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 658 234 0
+      FROM_TO_POS 30 13 0 30 13 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 44 BUILDING
+    DEFINITION
+      POS 19 33 2
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 71 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 19 33 2 6 F
+      UNITMODE F 19 33
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 70 572 0
+      FROM_TO_POS 19 33 0 19 33 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 45 BUILDING
+    DEFINITION
+      POS 22 32 3
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 72 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 22 32 3 6 F
+      UNITMODE F 22 32
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 0 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 168 554 0
+      FROM_TO_POS 22 32 0 22 32 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 46 BUILDING
+    DEFINITION
+      POS 22 39 0
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 75 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 22 39 0 6 F
+      UNITMODE F 22 39
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 18 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 70 680 0
+      FROM_TO_POS 22 39 0 22 39 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 50 BUILDING
+    DEFINITION
+      POS 44 35 5
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 67 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 44 35 5 6 F
+      UNITMODE F 44 35
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 12 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 742 608 0
+      FROM_TO_POS 44 35 0 44 35 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 52 BUILDING
+    DEFINITION
+      POS 34 41 5
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 4 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 34 41 5 6 F
+      UNITMODE F 34 41
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 12 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 378 716 0
+      FROM_TO_POS 34 41 0 34 41 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 58 BUILDING
+    DEFINITION
+      POS 39 42 5
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 31 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 39 42 5 6 F
+      UNITMODE F 39 42
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 12 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 504 734 0
+      FROM_TO_POS 39 42 0 39 42 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 6
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 60 BUILDING
+    DEFINITION
+      POS 31 43 0
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 32 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 31 43 0 6 F
+      UNITMODE F 31 43
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 18 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 266 752 0
+      FROM_TO_POS 31 43 0 31 43 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 4
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 64 BUILDING
+    DEFINITION
+      POS 30 39 0
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 90 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 30 39 0 6 F
+      UNITMODE F 30 39
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 18 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 294 680 0
+      FROM_TO_POS 30 39 0 30 39 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 47
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 68 BUILDING
+    DEFINITION
+      POS 43 38 5
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 31 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 43 38 5 6 F
+      UNITMODE F 43 38
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 12 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 672 662 0
+      FROM_TO_POS 43 38 0 43 38 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 9
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 74 BUILDING
+    DEFINITION
+      POS 41 9 5
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 91 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 41 9 5 6 F
+      UNITMODE F 41 9
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 12 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1022 162 0
+      FROM_TO_POS 41 9 0 41 9 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 49
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 75 BUILDING
+    DEFINITION
+      POS 44 16 5
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 91 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 44 16 5 6 F
+      UNITMODE F 44 16
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 12 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1008 288 0
+      FROM_TO_POS 44 16 0 44 16 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 49
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 78 BUILDING
+    DEFINITION
+      POS 44 12 2
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 31 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 44 12 2 6 F
+      UNITMODE F 44 12
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1064 216 0
+      FROM_TO_POS 44 12 0 44 12 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 7
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 80 BUILDING
+    DEFINITION
+      POS 48 18 3
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 31 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 48 18 3 6 F
+      UNITMODE F 48 18
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 0 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1092 324 0
+      FROM_TO_POS 48 18 0 48 18 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 6
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 84 BUILDING
+    DEFINITION
+      POS 48 30 1
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 32 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 48 30 1 6 F
+      UNITMODE F 48 30
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 24 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 924 538 0
+      FROM_TO_POS 48 30 0 48 30 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 7
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 91 BUILDING
+    DEFINITION
+      POS 51 33 2
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 91 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 51 33 2 6 F
+      UNITMODE F 51 33
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 966 594 0
+      FROM_TO_POS 51 33 0 51 33 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 49
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 94 BUILDING
+    DEFINITION
+      POS 22 2 1
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 86 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 28 T 100 1
+      MOVE 22 2 1 6 F
+      UNITMODE F 22 2
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 24 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 588 36 0
+      FROM_TO_POS 22 2 0 22 2 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 95 BUILDING
+    DEFINITION
+      POS 27 2 2
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 86 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 28 T 100 1
+      MOVE 27 2 2 6 F
+      UNITMODE F 27 2
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 728 36 0
+      FROM_TO_POS 27 2 0 27 2 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 97 BUILDING
+    DEFINITION
+      POS 16 28 3
+      SIDE 7
+      NATION 3
+      HP 1000
+      BUILDING
+        TYPE 86 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 28 T 100 1
+      MOVE 16 28 3 6 F
+      UNITMODE F 16 28
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 0 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 56 482 0
+      FROM_TO_POS 16 28 0 16 28 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 99 BUILDING
+    DEFINITION
+      POS 22 26 2
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 28 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 111 1
+      MOVE 22 26 2 6 F
+      UNITMODE F 22 26
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 252 446 0
+      FROM_TO_POS 22 26 0 22 26 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 100 BUILDING
+    DEFINITION
+      POS 16 6 2
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 27 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 28 T 100 1
+      MOVE 16 6 2 6 F
+      UNITMODE F 16 6
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 364 108 0
+      FROM_TO_POS 16 6 0 16 6 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT 103 BUILDING
+    DEFINITION
+      POS 40 2 0
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 32 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 40 2 0 6 F
+      UNITMODE F 40 2
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 18 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1092 24 0
+      FROM_TO_POS 40 2 0 40 2 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 11
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 105 BUILDING
+    DEFINITION
+      POS 42 5 2
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 32 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 42 5 2 6 F
+      UNITMODE F 42 5
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 30 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1106 78 0
+      FROM_TO_POS 42 5 0 42 5 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 7
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 107 BUILDING
+    DEFINITION
+      POS 43 2 5
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 32 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 0 T 1 1
+      MOVE 43 2 5 6 F
+      UNITMODE F 43 2
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 12 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 1176 24 0
+      FROM_TO_POS 43 2 0 43 2 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+        TURRET_WEAPON 6
+        USER_INTERFACE 1 1 1 1
+    END_OF_GAME_STATE
+  UNIT 113 BUILDING
+    DEFINITION
+      POS 6 8 4
+      SIDE 7
+      NATION 1
+      HP 1000
+      BUILDING
+        TYPE 27 LEVEL 1 BASE 2
+    END_OF_DEFINITION
+    GAME_STATE
+      ACTION 28 T 100 1
+      MOVE 6 8 4 6 F
+      UNITMODE F 6 8
+      STATE 4 24
+      WEAPON_LOADING 0 0
+      ATTACK 0 6 F 0
+      PLAN 0 T
+      ANIM_STATES 0 0 0 0
+      MASHA_FLAG 0 DYING 0
+      SELECTION 0 0 0 0
+      DRAW 56 144 0
+      FROM_TO_POS 6 8 0 6 8 0
+      FROM_TO_XY 0 0 0 0
+      LAST_ACTION 0
+      BUILDING
+    END_OF_GAME_STATE
+  UNIT -1 CRATE
+    DEFINITION
+      POS 13 9 2
+      SIDE 0
+      NATION 0
+      HP 200
+      CRATE
+        SIZE 5 -1 CRATE_TYPE 4
+    END_OF_DEFINITION
+    GAME_STATE
+    CRATERS 2 -7 -6
+    END_OF_GAME_STATE
+END_OF_NEW_UNITS
+
+COLDMEAT
+END_OF_COLDMEAT
+
+FOGOBJ
+END_OF_FOGOBJ
+
+MISSILES
+END_OF_MISSILES
+
+EXPLOSIONS
+END_OF_EXPLOSIONS
+
+CRATERS_NEW
+END_OF_CRATERS_NEW
+
+LAPSER_EFECTS
+END_OF_LAPSER_EFECTS
+
+LASER_EFECTS
+END_OF_LASER_EFECTS
+
+USER_INTERFACE
+  VIEW 324 -92 1454 812 1
+  MASHA_FLAG 2 F F
+END_OF_USER_INTERFACE
+
+MC_COMMANDS
+END_OF_MC_COMMANDS
+
+DEBRIEFING
+SIDE 0 10
+  LINES
+SIDE 1 10
+  LINES
+SIDE 2 10
+  LINES
+SIDE 3 10
+  LINES
+SIDE 4 10
+  LINES
+SIDE 5 10
+  LINES
+SIDE 6 10
+  LINES
+SIDE 7 10
+  LINES
+SIDE 8 10
+  LINES
+END_OF_DEBRIEFING
+
+AREAS
+  ACTIVE 1
+  LAST 12
+  AREA 1
+    NAME Start
+    COLOR 0080FF
+    SHORTCUT 1
+    LINES 94 90 25 25
+    +++++++++++++------------
+    ++++++++++++++-----------
+    +++++++++++++++----------
+    ++++++++++++++++---------
+    +++++++++++++++++--------
+    ++++++++++++++++++-------
+    +++++++++++++++++++------
+    ++++++++++++++++++++-----
+    +++++++++++++++++++++----
+    ++++++++++++++++++++++---
+    +++++++++++++++++++++++--
+    ++++++++++++++++++++++++-
+    +++++++++++++++++++++++++
+    -++++++++++++++++++++++++
+    --+++++++++++++++++++++++
+    ---++++++++++++++++++++++
+    ----+++++++++++++++++++++
+    -----++++++++++++++++++++
+    ------+++++++++++++++++++
+    -------++++++++++++++++++
+    --------+++++++++++++++++
+    ---------++++++++++++++++
+    ----------+++++++++++++++
+    -----------++++++++++++++
+    ------------+++++++++++++
+  AREA 2
+    NAME HeikeIncomming
+    COLOR 00FFFF
+    SHORTCUT 1
+    LINES 117 137 16 3
+    ++++++++++++++--
+    +++++++++++++++-
+    ++++++++++++++++
+  AREA 3
+    NAME ExitArea
+    COLOR FF4099
+    SHORTCUT 2
+    LINES 57 113 38 27
+    +++++++++++++++++++++++++-------------
+    +++++++++++++++++++++++++-------------
+    -+++++++++++++++++++++++++------------
+    -+++++++++++++++++++++++++------------
+    --+++++++++++++++++++++++++-----------
+    --+++++++++++++++++++++++++-----------
+    ---+++++++++++++++++++++++++----------
+    ---+++++++++++++++++++++++++----------
+    ----+++++++++++++++++++++++++---------
+    ----+++++++++++++++++++++++++---------
+    -----+++++++++++++++++++++++++--------
+    -----+++++++++++++++++++++++++--------
+    ------+++++++++++++++++++++++++-------
+    ------+++++++++++++++++++++++++-------
+    -------+++++++++++++++++++++++++------
+    -------+++++++++++++++++++++++++------
+    --------+++++++++++++++++++++++++-----
+    --------+++++++++++++++++++++++++-----
+    ---------+++++++++++++++++++++++++----
+    ---------+++++++++++++++++++++++++----
+    ----------+++++++++++++++++++++++++---
+    ----------+++++++++++++++++++++++++---
+    -----------+++++++++++++++++++++++++--
+    -----------+++++++++++++++++++++++++--
+    ------------+++++++++++++++++++++++++-
+    ------------+++++++++++++++++++++++++-
+    -------------+++++++++++++++++++++++++
+  AREA 4
+    NAME AllianceSpawn
+    COLOR 00FF00
+    SHORTCUT 1
+    LINES 20 11 25 25
+    +++++++++++++------------
+    ++++++++++++++-----------
+    +++++++++++++++----------
+    ++++++++++++++++---------
+    +++++++++++++++++--------
+    ++++++++++++++++++-------
+    +++++++++++++++++++------
+    ++++++++++++++++++++-----
+    +++++++++++++++++++++----
+    ++++++++++++++++++++++---
+    +++++++++++++++++++++++--
+    ++++++++++++++++++++++++-
+    +++++++++++++++++++++++++
+    -++++++++++++++++++++++++
+    --+++++++++++++++++++++++
+    ---++++++++++++++++++++++
+    ----+++++++++++++++++++++
+    -----++++++++++++++++++++
+    ------+++++++++++++++++++
+    -------++++++++++++++++++
+    --------+++++++++++++++++
+    ---------++++++++++++++++
+    ----------+++++++++++++++
+    -----------++++++++++++++
+    ------------+++++++++++++
+  AREA 5
+    NAME cranerepair
+    COLOR DFFF58
+    SHORTCUT 2
+    LINES 27 9 22 35
+    -----------+----------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ------------+---------
+    ----------------------
+    -----------------+----
+    ----------------------
+    ---------------------+
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------+-----
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    -----------------+----
+    ----------------------
+    ----------------------
+    ----------------+-----
+    ---+------+-----------
+    ----------------------
+    -------+--------------
+    ------------+---------
+    +---+-----------------
+  AREA 6
+    NAME engrepair
+    COLOR FFFF00
+    SHORTCUT 3
+    LINES 27 5 22 41
+    ----------+-----------
+    ----------------------
+    ----------------------
+    ----------------------
+    -----------+--+-------
+    ----------------------
+    ----------------------
+    -----------------+----
+    ----------------------
+    ------------+---------
+    ----------------------
+    -----------------+----
+    ----------------------
+    ---------------------+
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------+-----
+    ----------------------
+    ----------------------
+    ----------------------
+    ----------------------
+    -----------------+----
+    ----------------------
+    ---------------------+
+    ----------------+-----
+    ---+------+--------+--
+    ----------------------
+    -------+--------------
+    ------------+---------
+    +---+-----------------
+    -----------+----------
+    -------+--------------
+  AREA 7
+    NAME RusAttack
+    COLOR 0000FF
+    SHORTCUT 1
+    LINES 74 0 29 4
+    +++++++++++++++++++++++++++++
+    -++++++++++++++++++++++++++++
+    --+++++++++++++++++++++++++++
+    ---++++++++++++++++++++++++++
+  AREA 8
+    NAME revealintro
+    COLOR FF5958
+    SHORTCUT 1
+    LINES 47 56 133 84
+    ---------------------------------------+++++++++++++---------------------------------------------------------------------------------
+    -----------------------------++++++++++++++++++++++++++------------------------------------------------------------------------------
+    -------------------------+++++++++++++++++++++++++++++++++---------------------------------------------------------------------------
+    ------------------------+++++++++++++++++++++++++++++++++++++------------------------------------------------------------------------
+    -----------------------++++++++++++++++++++++++++++++++++++++++----------------------------------------------------------------------
+    ----------------------+++++++++++++++++++++++++++++++++++++++++++--------------------------------------------------------------------
+    ----------------------+++++++++++++++++++++++++++++++++++++++++++++------------------------------------------------------------------
+    ---------------------++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------------------------------------------
+    ---------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------------------------
+    --------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------------------------------
+    --------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------------------------
+    --------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------------------
+    --------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------------------------------
+    -------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------------------------
+    ------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------------------
+    -----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------------
+    ----------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------------------------
+    ----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------------------
+    ---------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------------------
+    -------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------
+    ------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------------------
+    ------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------------
+    -----------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------
+    ----------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------
+    ---------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------------
+    --------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------
+    -------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------
+    ------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------
+    ------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------
+    -----+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------
+    ----++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------
+    ---++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------
+    ---++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------
+    --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------
+    -+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------
+    -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------
+    -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------
+    -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------
+    --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------
+    --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------
+    ---++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------
+    ---++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------
+    ----++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------
+    ----++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------
+    -----++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------
+    -----++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------
+    ------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------
+    ------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------
+    -------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------
+    -------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------
+    --------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------
+    --------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------
+    ---------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------
+    ---------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------
+    ----------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------
+    ----------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------
+    -----------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------
+    -----------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------
+    ------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------
+    ------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------
+    -------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------
+    -------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------
+    --------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------
+    --------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------
+    ---------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------
+    ---------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------
+    ----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+    ----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+    -----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------
+    -----------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------
+    ------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+    ------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+    -------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+    -------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+    --------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+    --------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+    ---------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+    ---------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+    ----------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+    ----------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+    -----------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  AREA 9
+    NAME revealalliance
+    COLOR B2FF58
+    SHORTCUT 2
+    LINES 25 8 28 44
+    -------------+--------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ------------------+---------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------+-----
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    ----------------------------
+    -------------------------++-
+    -----------------------+++++
+    ----------------------++++++
+    ---------------------+++++++
+    --------------------++++++++
+    -------------------+++++++++
+    ----------------+-++++++++++
+    -----------------+++++++++++
+    -------------------++++++++-
+    --------------------+++++++-
+    ---------------------++++++-
+    ---------++++----------++---
+    -------++++++++++-----------
+    ------+++++++++++++---------
+    ----+++++++++++++++++-------
+    --++++++++++++++++++++------
+    ++++++++++++++++++++++------
+    -+++++++++++++++++++++------
+    --+++++++++++++++++---------
+    --+++++++++++++++-----------
+    --+++++++++++++-------------
+  AREA 10
+    NAME ApeArea
+    COLOR FF8C58
+    SHORTCUT 1
+    LINES 149 119 21 19
+    -------++------------
+    -------+++-----------
+    --------++++++-------
+    ----------+-+++------
+    -------------++------
+    ---------------------
+    ---------------------
+    ---------------------
+    ++----------------++-
+    -++--------------++++
+    --+------------------
+    ---------------------
+    ---------------------
+    ---------------------
+    ---------++++--------
+    ----------+++--------
+    -----------++--------
+    ------------+--------
+    ------------+--------
+  AREA 11
+    NAME AnimalArea
+    COLOR 99FF58
+    SHORTCUT 1
+    LINES 46 21 117 119
+    -------------------------------+++++---------------------------------------------------------------------------------
+    ------------------------------+++++++++------------------------------------------------------------------------------
+    ------------------------------+++++++++++----------------------------------------------------------------------------
+    ------------------------------+++++++++++++--------------------------------------------------------------------------
+    ------------------------------+++++++++++++++------------------------------------------------------------------------
+    -----------------------------+++++++++++++++++------++++++++---------------------------------------------------------
+    -----------------------------+++++++++++++++++++--+++++++++++++------------------------------------------------------
+    -----------------------------++++++++++++++++++++++++++++++++++++----------------------------------------------------
+    -----------------------------++++++++++++++++++++++++++++++++++++++--------------------------------------------------
+    -----------------------------++++++++++++++++++++++++++++++++++++++++++++--------------------------------------------
+    ------------------------------+++++++++++++++++++++++++++++++++++++++++++++------------------------------------------
+    ------------------------------++++++++++++++++++++++++++++++++++++++++++++++---+-------------------------------------
+    ------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------------
+    ------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------------
+    ------------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------
+    ------------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------
+    ------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------
+    ------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------
+    ------------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------------
+    -------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------------
+    -------------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------------
+    -------------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------------
+    -------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------
+    -------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------------
+    -------------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------
+    ------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------
+    ------------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------
+    -----------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------
+    ---------------------------+++++++++++---++++++++++++++++++++++++++++++++++++++++++++++++----------------------------
+    --------------------------++++++++++++------+++++++++++++++++++++++++++++++++++++++++++++----------------------------
+    -------------------------++++++++++++--------+++++++++++++++++++++++++++++++++++++++++++++---------------------------
+    ------------------------+++++++++++++---------++++++++++++++++++++++++++++++++++++++++++++---------------------------
+    ------------------------++++++++++++------------++++++++++++++++++++++++++++++++++++++++++---------------------------
+    ------------------------+++++++++++--------------++++++++++++++++++++++++++++++++++++++++++--------------------------
+    ------------------------++++++++++-----------------++++++++++++++++++++++++++++++++++++++++--------------------------
+    ------------------------+++++++++-------------------++++++++++++++++++++++++++++++++++++++++-------------------------
+    ------------------------++++++++---------------------+++++++++++++++++++++++++++++++++++++++-------------------------
+    -------------------------++++--------------------------++++++++++++++++++++++++++++++++++++++------------------------
+    ---------------------------------------------------------++++++++++++++++++++++++++++++++++++------------------------
+    ----------------------------------------------------------++++++++++++++++++++++++++++++++++++-----------------------
+    ------------------------------------------------------------++++++++++++++++++++++++++++++++++-----------------------
+    --------------------------------------------------------------+++++++++++++++++++++++++++++++++----------------------
+    ----------------------------------------------------------------+++++++++++++++++++++++++++++++----------------------
+    ------------------------------------------------------------------++++++++++++++++++++++++++++++---------------------
+    --------------------------------------------------------------------++++++++++++++++++++++++++++---------------------
+    ----------------++++++------------------------------------------------+++++++++++++++++++++++++++--------------------
+    -----------++++++++++++++----------------------------------------------++++++++++++++++++++++++++--------------------
+    --------++++++++++++++++++-----------------------------------------------++++++++++++++++++++++++--------------------
+    -----++++++++++++++++++++++----------------------------------------------++++++++++++++++++++++++--------------------
+    --+++++++++++++++++++++++++----------------------------------------------++++++++++++++++++++++++--------------------
+    ++++++++++++++++++++++++++++---------------------------------------------+++++++++++++++++++++++---------------------
+    +++++++++++++++++++++++++++++--------------------------------------------++++++++++++++++++++++++--------------------
+    -++++++++++++++++++++++++++++---------------------------------------------++++++++++++++++++++++++-------------------
+    --++++++++++++++++++++++++++++--------------------------------------------+++++++++++++++++++++++++------------------
+    --+++++++++++++++++++++++++++++--------------------------------------------+++++++++++++++++++++++++-----------------
+    ---++++++++++++++++++++++++++++--------------------------------------------++++++++++++++++++++++++++----------------
+    ----++++++++++++++++++++++++++++--------------------------------------------+++++++++++++++++++++++++----------------
+    -----+++++++++++++++++++++++++++--------------------------------------------++++++++++++++++++++++++++---------------
+    ------+++++++++++++++++++++++++++--------------------------------------------++++++++++++++++++++++++++--------------
+    ------++++++++++++++++++++++++++++--------------------------------------------+++++++++++++++++++++++++--------------
+    -------+++++++++++++++++++++++++++--------------------------------------------++++++++++++++++++++++++++-------------
+    ---++++++++++++++++++++++++++++++++--------------------------------------------+++++++++++++++++++++++++-------------
+    --+++++++++++++++++++++++++++++++++---------------------------------------------+++++++++++++++++++++++++------------
+    ---+++++++++++++++++++++++++++++++++----------------------------------------------++++++++++++++++++++++++-----------
+    ---+++++++++++++++++++++++++++++++++-----------------------------------------------+++++++++++++++++++++++-----------
+    ---+++++++++++++++++++++++++++++++++-------------------------------------------------++++++++++++++++++++++----------
+    ----+++++++++++++++++++++++++++++++++--------------------------------------------------++++++++++++++++++++----------
+    ----+++++++++++++++++++++++++++++++++---------------------------------------------------++++++++++++++++++++---------
+    ----+++++++++++++++++++++++++++++++++---------------------------------------------------+++++++++++++++++++++--------
+    -----+++++++++++++++++++++++++++++++++--------------------------------------------------+++++++++++++++++++++--------
+    -----+++++++++++++++++++++++++++++++++--------------------------------------------------++++++++++++++++++++++-------
+    -----+++++++++++++++++++++++++++++++++--------------------------------------------------++++++++++++++++++++++-------
+    ------++++++++++++++++++++++++++++++++--------------------------------------------------+++++++++++++++++++++++------
+    ------++++++++++++++++++++++++++++++++---------------------------------------------------++++++++++++++++++++++------
+    -------+++++++++++++++++++++++++++++++---------------------------------------------------+++++++++++++++++++++++-----
+    -------+++++++++++++++++++++++++++++++---------------------------------------------------+++++++++++++++++++++++-----
+    -------+++++++++++++++++++++++++++++++----------------------------------------------------+++++++++++++++++++++------
+    --------+++++++++++++++++++++++++++++-----------------------------------------------------++++++++++++++++++++++-----
+    --------++++++++++++++++++++++++++++------------------------------------------------------+++++++++++++++++++++++----
+    ---------++++++++++++++++++++++++++--------------------------------------------------------++++++++++++++++++++++----
+    ---------+++++++++++++++++-----------------------------------------------------------------+++++++++++++++++++++++---
+    ----------++++++++++++++++-----------------------------------------------------------------+++++++++++++++++++++++---
+    ----------++++++++++++++++------------------------------------------------------------------+++++++++++++++++++++++--
+    -----------+++++++++++++++------------------------------------------------------------------+++++++++++++++++++++++--
+    ------------+++++++++++++--------------------------------------------------------------------+++++++++++++++++++++++-
+    ---------------------------------------------------------------------------------------------+++++++++++++++++++++++-
+    ----------------------------------------------------------------------------------------------+++++++++++++++++++++++
+    ----------------------------------------------------------------------------------------------+++++++++++++++++++++++
+    -----------------------------------------------------------------------------------------------++++++++++++++++++++++
+    -----------------------------------------------------------------------------------------------++++++++++++++++++++++
+    ------------------------------------------------------------------------------------------------+++++++++++++++++++++
+    -------------------------------------------------------------------------------------------------++++++++++++++++++++
+    --------------------------------------------------------------------------------------------------++++++++++---------
+    --------------------------------------------------------------------------------------------------++++---------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------------------------------
+    -------------------------------------------------+++++---------------------------------------------------------------
+    ----------------------------------------------+-++++++++-------------------------------------------------------------
+    -----------------------------------------------++++++++++------------------------------------------------------------
+    ------------------------------------------------++++++++++-----------------------------------------------------------
+    -------------------------------------------------++++++++++----------------------------------------------------------
+    --------------------------------------------------++++++++++---------------------------------------------------------
+    ---------------------------------------------------++++++++++--------------------------------------------------------
+    ----------------------------------------------------++++++++++-------------------------------------------------------
+    -----------------------------------------------------+++++++++-------------------------------------------------------
+    -------------------------------------------------------+++++++-------------------------------------------------------
+  AREA 12
+    NAME AllArtifact
+    COLOR 0060FF
+    SHORTCUT 1
+    LINES 13 9 1 1
+    +
+END_OF_AREAS
+

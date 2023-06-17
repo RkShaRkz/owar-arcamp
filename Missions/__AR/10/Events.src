@@ -1,0 +1,2440 @@
+
+
+//When/if the player destroys the Russian depot, make sure the number of ressources are
+//as they should be. Unfortunately SetResourceType doesn't work when invoked in event UnitDestroyed
+//so we have to use UnitGoesToRed instead. This works even if the depot is brought directly from yellow life
+//to destrouction e.g. by a mine.
+on UnitGoesToRed(un) do
+     begin
+          if GetSide(un) = russians then
+               begin
+                    if un = ai_depot[1] then
+                         begin
+                              ResetRussianDepot;
+                              check_escape = true;
+                         end;
+               end;
+     end;
+Function ResetRussianDepot;
+     var base;
+     begin
+          base = GetBase(ai_depot[1]);
+          SetResourceType(base,mat_cans, [130,80,20][difficulty] + Rand(0,2)*10);
+          SetResourceType(base,mat_oil,Rand(400,750));
+          SetResourceType(base,mat_siberit,0);
+     end;
+
+
+//The scout on the hilltop spots some of the player's units
+Every 0$1+0$0.2 do
+     var x, y, temp_list;
+     begin
+          x = GetX(scout);
+          y = GetY(scout);
+
+          repeat
+          wait(0$0.5);
+
+          if traitors_answer > 0 or scout_pullback or traitors_pullback then
+               exit;
+
+          temp_list = FilterAllUnits([[f_side,you],[f_see,you_alt],[f_distxy,x,y,22]]);
+          if temp_list > 0 then
+               begin
+                    PlaceSeeing(x,y,you,-3);  //so the player can see the scout
+                    CenterOnXY(x,y);
+
+                    ComTurnUnit(scout,temp_list[1]);
+                    wait(5);  //wait for turn
+
+                    DialogueOn;
+
+                    Say(scout,'D2-ScoutM-1');
+                    Say(Heike,'D2-H-1');
+                    Say(scout,'D2-ScoutM-2');
+                    Say(Heike,'D2-H-2');
+                    Say(scout,'D2-ScoutM-3');
+                    Say(Heike,'D2-H-3');
+                    Say(scout,'D2-ScoutM-4');
+
+                    DialogueOff;
+
+                    RemoveSeeing(x,y,you);
+                    ComTurnXY(scout,ShiftX(x,4,1),ShiftY(y,4,1));
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+
+//If the player defeats the Russians without any help, the traitors automatically pull back.
+//If the player attacks the traitors before the river dialogue (that is: The player attacks the scout)
+//they pull back and ofc refuse to offer help.
+Every 0$1+0$0.3 do
+     begin
+          repeat
+          wait(0$1);
+
+          if traitors_answer > 0 then
+               exit;
+
+          if russians_surrender or ContactTime([you,you_alt]) <= 0$2 then
+               begin
+                    traitors_pullback = true;
+                    scout_pullback = true;
+               end;
+
+          until false;
+     end;
+
+
+//The traitors at the river
+Every 0$1+0$0.1 do
+     var i, near_traitor, near_player_un, player_units, temp_list, x, y, temp_value, dist;
+     begin
+
+          repeat
+          wait(0$0.5);
+
+          if traitors_pullback then
+               exit;
+
+          if UnitFilter(traitors_humans,[f_see,you]) > 0 then
+               begin
+                    x = GetX(traitors_leader);
+                    y = GetY(traitors_leader);
+
+                    PlaceSeeing(x,y,you,-7);  //so the player can see all traitors
+                    ComStop(traitors_vehicles);  //If traitors were pulling back when the player met them the vehicles must stop pulling back
+
+
+                    InGameOn;
+
+                    //The player's units move closer to the traitors but keep their distance
+                    player_units = FilterAllUnits([f_side,you]);
+                    DeselectUnits(player_units);
+
+                    temp_list = [];
+                    for i in player_units do
+                         temp_list = temp_list ^ GetDistUnitXY(i,x,y);
+                    near_player_un = WorstFromListByList(player_units,temp_list);  //nearest player unit to the traitors
+
+                    player_units = UnitFilter(player_units,[f_dist,near_player_un,15]);
+
+                    CenterOnXY( (x+GetX(near_player_un)) / 2 , (y+GetY(near_player_un)) / 2 );
+
+                    near_traitor = traitors_humans[1];  //nearest traitor to the nearest player unit
+                    dist = GetDistUnits(near_traitor,near_player_un);
+                    for i in traitors_humans do
+                         begin
+                              temp_value = GetDistUnits(i,near_player_un);
+                              if temp_value < dist then
+                                   begin
+                                        dist = temp_value;
+                                        near_traitor = i;
+                                   end;
+                         end;
+
+                    temp_value = AI_GetTurnDirection(GetX(near_traitor),GetY(near_traitor),GetX(near_player_un),GetY(near_player_un));
+
+                    ComMoveXY(player_units,ShiftX(GetX(near_traitor),temp_value,3),ShiftY(GetY(near_traitor),temp_value,3));
+                    AddComTurnXY(player_units,x,y);
+
+                    ComTurnUnit(traitors_humans,near_player_un);
+
+                    if player_units > 1 then  //Heike is not alone
+                         temp_value = 'a'
+                    else
+                         temp_value = 'b';
+
+                    if not traitors_leader_is_substitute then
+                         begin
+                              Say(traitors_leader,'D3-Go-1' & temp_value);
+                              Say(Heike,'D3-H-1a');
+                              Say(traitors_leader,'D3-Go-2');
+                         end
+                    else
+                         begin
+                              Say(traitors_leader,'D3-TLeader-1' & temp_value);
+                              Say(Heike,'D3-H-1b');
+                              Say(traitors_leader,'D3-TLeader-2');
+                         end;
+
+                    if not oswald_is_substitute then
+                         Say(Oswald,'D3-Os-1')
+                    else
+                         Say(Oswald,'D3-Os_sub-1');
+
+                    if not traitors_leader_is_substitute then
+                         Say(traitors_leader,'D3-Go-3')
+                    else
+                         Say(traitors_leader,'D3-TLeader-3');
+
+                    Say(Heike,'D3-H-2');
+
+                    if Oswald in player_units then
+                         begin
+                              if not oswald_is_substitute then
+                                   Say(Oswald,'D3-Os-2')
+                              else
+                                   Say(Oswald,'D3-Os_sub-2');
+
+                              if not traitors_leader_is_substitute then
+                                   Say(traitors_leader,'D3-Go-4')
+                              else
+                                   Say(traitors_leader,'D3-TLeader-4');
+                         end;
+
+                    if not traitors_leader_is_substitute then
+                         Say(traitors_leader,'D3-Go-5')
+                    else
+                         Say(traitors_leader,'D3-TLeader-5');
+
+                    if Oswald in player_units then
+                         begin
+                              if not oswald_is_substitute then
+                                   Say(Oswald,'D3-Os-3')
+                              else
+                                   Say(Oswald,'D3-Os_sub-3');
+
+                              if not kurt_is_substitute then
+                                   Say(Kurt,'D3-Ku-1')
+                              else
+                                   Say(Kurt,'D3-Ku_sub-1');
+                         end;
+
+                    wait(0$0.3);
+                    traitors_answer = Query('QCooperateTraitors');
+                    case traitors_answer of
+                         1: begin  //Accept
+                              Say(Heike,'D3-1-H-1');
+                         end;
+                         2: begin  //Decline
+                              if not traitors_leader_is_substitute then
+                                   begin
+                                        Say(Heike,'D3-2-H-1a');
+                                        Say(traitors_leader,'D3-2-Go-1');
+                                        Say(traitors_leader,'D3-2-Go-2');
+                                   end
+                              else
+                                   begin
+                                        Say(Heike,'D3-2-H-1b');
+                                        Say(traitors_leader,'D3-2-TLeader-1');
+                                        Say(traitors_leader,'D3-2-TLeader-2');
+                                   end;
+                         end;
+                    end;
+
+                    InGameOff;
+
+                    ComFree(player_units);
+                    ComFree(traitors_humans);
+                    RemoveSeeing(x,y,you);
+
+                    case traitors_answer of
+                         1: begin
+                              for i in traitors_humans ^ traitors_vehicles do
+                                   SetSide(i,you);
+
+                              starting_humans = starting_humans ^ traitors_humans;
+                              traitors_under_player_control = true;
+                         end;
+                         2: begin
+                              traitors_pullback = true;
+                              scout_pullback = true;
+                         end;
+                    end;
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+
+//If too many of the traitors die during the attack on the Russian base then theypull back. If
+//their leader dies then they even attack Heike.
+Every 0$1+0$0.4 trigger traitors_answer = 1 do
+     var i, un, temp_list, str;
+     begin
+          repeat
+          wait(0$1);
+
+          if russians_surrender then
+               exit;
+
+          if not traitors_under_player_control then
+               exit;
+
+          if IsDead(traitors_leader) then
+               begin
+                    DialogueOn;
+
+                    if not traitors_leader_is_substitute then
+                         str = 'a'
+                    else
+                         str = 'b';
+
+                    if IsLive(Willard) then
+                         begin
+                              ForceSay(Willard,'D13-Wi-1' & str);
+                         end
+                    else
+                         begin
+                              temp_list = traitors_humans diff scout;
+                              if temp_list > 0 then  //should always be the case
+                                   begin
+                                        un = temp_list[Rand(1,temp_list+0)];
+
+                                        if GetSex(un) = sex_male then
+                                             ForceSay(un,'D13-SomeM-1' & str)
+                                        else
+                                             ForceSay(un,'D13-SomeF-1' & str);
+                                   end;
+                         end;
+
+                    DialogueOff;
+
+                    scout_pullback = true;
+                    starting_humans = starting_humans diff original_traitors_humans;  //some traitors may have died
+                    activate_traitor_mines = true;
+                    traitors_under_player_control = false;
+
+                    for i in traitors_humans do
+                         begin
+                              SetSide(i,you_alt);
+
+                              un = IsInUnit(i);
+                              if un > 0 and GetType(un) = unit_vehicle then  //A vehicle doesn't change side automatically when the driver does
+                                   SetSide(un,you_alt);
+                         end;
+
+                    SetAttitude(you,you_alt,att_enemy,true);
+
+                    //Keep attacking Heike
+                    repeat
+
+                    if IsDead(Heike) then
+                         continue;
+
+                    temp_list = [GetX(Heike),GetY(Heike)];
+
+                    for i in traitors_humans do
+                         begin
+                              un = IsInUnit(i);
+                              if un = 0 then
+                                   ComAgressiveMove(i,temp_list[1],temp_list[2])
+                              else
+                                   if GetType(un) = unit_vehicle and FindDangerousNonhumanUnits([un]) > 0 then
+                                        ComAgressiveMove(un,temp_list[1],temp_list[2])
+                                   else
+                                        ComExitBuilding(un);
+                         end;
+
+                    wait(0$1);
+
+                    until traitors_humans = 0;
+
+                    exit;
+               end
+          else
+               if UnitFilter(original_traitors_humans,[f_ok]) <= (original_traitors_humans+0) div 2 + 1 and UnitFilter(original_traitors_humans,[f_alive]) < original_traitors_humans+0 then
+                    begin
+                         DialogueOn;
+
+                         if not traitors_leader_is_substitute then
+                              ForceSay(traitors_leader,'D13-Go-1')
+                         else
+                              ForceSay(traitors_leader,'D13-TLeader-1');
+
+                         DialogueOff;
+
+                         traitors_pullback = true;
+                         scout_pullback = true;
+                         starting_humans = starting_humans diff original_traitors_humans;  //some traitors may have died
+                         activate_traitor_mines = true;
+                         traitors_under_player_control = false;
+
+                         for i in traitors_humans do
+                              begin
+                                   SetSide(i,you_alt);
+
+                                   un = IsInUnit(i);
+                                   if un > 0 and GetType(un) = unit_vehicle then  //A vehicle doesn't change side automatically when the driver does
+                                        SetSide(un,you_alt);
+                         end;
+
+                         SetAttitude(you,you_alt,att_neutral,true);
+
+                         exit;
+                    end;
+
+          until false;
+     end;
+
+
+//The traitors pull back to the north
+Every 0$1 do
+     var i, temp_list, temp_list_2, temp_value, mechanics_list, temp_unit;
+     var vehicles_drivers;
+     begin
+          vehicles_drivers = [];  //Index is vehicle id, value is driver id
+
+          repeat
+          wait(0$0.7);
+
+          if traitors_humans = 0 then
+               exit;
+
+          if not traitors_pullback then
+               continue;
+
+          //Occupy and move the vehicles. Mechanics have first priority when occupying.
+          temp_list = traitors_humans;
+
+          for i = 1 to vehicles_drivers do
+               begin
+                    if IsOk(i) then
+                         begin
+                              temp_list = temp_list diff vehicles_drivers[i];
+                         end;
+               end;
+
+          mechanics_list = UnitFilter(temp_list,[f_class,class_mechanic]);
+
+          for i in UnitFilter(traitors_vehicles,[f_ok]) do
+               begin
+                    if temp_list = 0 then
+                         break;                                   
+
+                    temp_value = false;
+                    if vehicles_drivers < i then
+                         temp_value = true
+                    else
+                         if not vehicles_drivers[i] in traitors_humans then
+                              temp_value = true;
+
+                    if temp_value then
+                         begin
+                              if mechanics_list > 0 then
+                                   vehicles_drivers = Replace(vehicles_drivers,i, AllNearestUnitToUnit(mechanics_list,i) )
+                              else
+                                   vehicles_drivers = Replace(vehicles_drivers,i, AllNearestUnitToUnit(temp_list,i) );
+
+                              temp_list = temp_list diff vehicles_drivers[i];
+                              mechanics_list = mechanics_list diff vehicles_drivers[i];
+                         end;
+
+                    if vehicles_drivers[i] > 0 then
+                         begin
+                              temp_unit = IsInUnit(vehicles_drivers[i]);
+
+                              if temp_unit <> i then
+                                   case GetType(temp_unit) of
+                                        unit_vehicle: ComExitVehicle(vehicles_drivers[i]);
+                                        unit_building: ComExitBuilding(vehicles_drivers[i]);
+                                        else
+                                             begin
+                                                  ComEnterUnit(vehicles_drivers[i],i);
+
+                                                  //Get player humans out of the vehicle if any inside and the entering traitor is near
+                                                  if GetDistUnits(vehicles_drivers[i],i) <= 4 then
+                                                       begin
+                                                            temp_list_2 = UnitsInside(i);
+                                                            if temp_list_2 > 0 then
+                                                                 if temp_list_2[1] <> vehicles_drivers[i] then
+                                                                      ComExitVehicle(temp_list_2[1]);
+                                                       end;
+                                             end;
+                                   end
+                              else
+                                   TraitorPullback(i);  //Don't move the vehicles unless we know a traitor is behind the wheel. A player unit could be inside
+                         end;
+               end;
+
+          //Move (human) units to the exit area.
+          //Remove units when they reach the exit area.
+          for i in temp_list ^ traitors_vehicles do
+               if not IsInArea(i,traitors_pullback_area) then
+                    begin
+                         if GetType(i) = unit_human then
+                              begin
+                                   case GetType(IsInUnit(i)) of
+                                        unit_vehicle: ComExitVehicle(i);
+                                        unit_building: ComExitBuilding(i);
+                                        else
+                                             TraitorPullback(i);
+                                   end;
+                              end;
+                    end
+               else
+                    begin
+                         if GetType(i) = unit_vehicle then
+                              begin
+                                   traitors_vehicles = traitors_vehicles diff i;
+                                   temp_list_2 = UnitsInside(i);
+                                   RemoveUnit(i);
+
+                                   if temp_list_2 > 0 then
+                                        i = temp_list_2[1]
+                                   else
+                                        i = 0;
+                              end;
+
+                         traitors_humans = traitors_humans diff i;
+                         RemoveUnit(i);
+                    end;
+
+          until false;
+     end;
+Function TraitorPullback(un);
+     begin
+          if IsInArea(un,escape_area_3) then
+               ComMoveXY(un,147,16)
+          else
+               ComMoveToArea(un,traitors_pullback_area);
+     end;
+
+//The scout pulls back.
+Every 0$1+0$0.1 do
+     begin
+
+          repeat
+          wait(0$1);
+
+          if not IsPlaced(scout) then  //also true if the scout is dead
+               exit;
+
+          if not scout_pullback then
+               continue;
+
+          if GetDistUnitXY(scout,31,2) > 3 then
+               ComMoveXY(scout,31,2)
+          else
+               RemoveUnit(scout);
+
+          until false;
+     end;
+
+
+//After the player has spoken with the traitors, Gensher calls after some time.
+//This dialogue should always play before Gensher warns of the Russian attack (if he does so).
+//Will not play if the player hasn't met the traitors at the river.
+Every 0$1+0$0.4 do
+     var i, un;
+     var cutoff_time;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if russians_surrender then
+               exit;
+
+          until traitors_answer > 0;
+
+          i = Rand(2$0,3$0);
+          cutoff_time = 0$0;
+
+          repeat
+          wait(0$1);
+
+          if russians_surrender then
+               exit;
+
+          i = i - 0$1;
+          cutoff_time = cutoff_time + 0$1;
+
+          until i <= 0$0 or gossudarov_escape_status >= 1;
+
+          while ContactTime([you,russians]) <= 0$10 and gossudarov_escape_status < 1 do
+               begin
+                    wait(0$2);
+
+                    if russians_surrender then
+                         exit;
+
+                    cutoff_time = cutoff_time + 0$2;
+               end;
+
+          if russians_surrender then
+               exit;
+
+          DialogueOn;
+
+          SayRadio(Gensher,'D4-Ge-1');
+          Say(Dwayne,'D4-Dw-1');
+          Say(Heike,'D4-H-1');
+          SayRadio(Gensher,'D4-Ge-2');
+          Say(Dwayne,'D4-Dw-2');
+          SayRadio(Gensher,'D4-Ge-3');
+
+          dwait(0$0.3);
+          gensher_answer = Query('QGensherTraitors');
+          case gensher_answer of
+               1: begin  //Tell about the traitors
+                    if traitors_under_player_control then
+                         begin
+                              Say(Heike,'D4-1a-H-1');
+                              SayRadio(Gensher,'D4-1a-Ge-1');
+                         end
+                    else
+                         if AnyTraitorAlive then
+                              begin
+                                   Say(Heike,'D4-1b-H-1');
+                                   SayRadio(Gensher,'D4-1b-Ge-1');
+                                   Say(Heike,'D4-1b-H-2');
+                                   SayRadio(Gensher,'D4-1b-Ge-2');
+                              end
+                         else
+                              begin
+                                   Say(Heike,'D4-1c-H-1');
+                                   SayRadio(Gensher,'D4-1c-Ge-1');
+                              end;
+               end;
+               2: begin  //Don't
+                    Say(Heike,'D4-2-H-1');
+                    SayRadio(Gensher,'D4-2-Ge-1');
+               end;
+          end;
+
+          dwait(0$0.3);
+          case Query('QGensherReinforcements') of
+               1: begin  //Ask for reinforcements
+                    Say(Heike,'D4-x1-H-1');
+
+                    case gensher_answer of
+                         1: begin
+                              if AnyTraitorAlive then
+                                   SayRadio(Gensher,'D4-x1a-Ge-1')
+                              else
+                                   SayRadio(Gensher,'D4-x1c-Ge-1');
+
+                              Say(Heike,'D4-x1a-H-1');
+
+                              gensher_reinforcements = true;
+
+                              //Prolong the time the player has to conquer the base
+                              //to make it worth waiting for the reinforcements on
+                              //hardest difficulty.
+                              max_player_attack_time = max_player_attack_time + cutoff_time;
+                         end;
+                         2: begin
+                              SayRadio(Gensher,'D4-x1b-Ge-1');
+                         end;
+                    end;
+               end;
+               2: begin  //Don't
+                    Say(Heike,'D4-x2-H-1');
+               end;
+          end;
+
+          DialogueOff;
+
+          if gensher_answer = 2 then
+               exit;
+
+          case traitors_answer of
+               1: begin
+                    wait(Rand(1$0,1$30));
+
+                    if not traitors_under_player_control then
+                         exit;
+
+                    DialogueOn;
+
+                    SayRadio(scout,'D4-1a-ScoutM-1');
+
+                    if not traitors_leader_is_substitute then
+                         Say(traitors_leader,'D4-1a-Go-1')
+                    else
+                         Say(traitors_leader,'D4-1a-TLeader-1');
+
+                    DialogueOff;
+
+                    traitors_pullback = true;
+                    scout_pullback = true;
+                    starting_humans = starting_humans diff original_traitors_humans;  //some traitors may have died
+                    activate_traitor_mines = true;
+                    traitors_under_player_control = false;
+
+                    for i in traitors_humans do
+                         begin
+                              SetSide(i,you_alt);
+
+                              un = IsInUnit(i);
+                              if un > 0 and GetType(un) = unit_vehicle then  //A vehicle doesn't change side automatically when the driver does
+                                   SetSide(un,you_alt);
+                         end;
+
+                    SetAttitude(you,you_alt,att_neutral,true);
+               end;
+               2: begin
+                    wait(Rand(3$0,4$0));
+
+                    DialogueOn;
+
+                    if not traitors_leader_is_substitute then
+                         SayRadio(traitors_leader,'D4-1b-Go-1')
+                    else
+                         SayRadio(traitors_leader,'D4-1b-TLeader-1');
+
+                    DialogueOff;
+               end;
+          end;
+     end;
+//Returns true if just one traitor (exclusing the scout) is alive. A traitor is alive
+//even if he/she has pulled back so he/she is not present on the map.
+Function AnyTraitorAlive;
+     var i;
+     begin
+          for i in original_traitors_humans do
+               if GetLives(i) > 0 then
+                    begin
+                         result = true;
+                         exit;
+                    end;
+
+          result = false;
+     end;
+
+
+//The traitors active their mines on the western side of the river.
+Every 0$1+0$0.3 do
+     var temp_list, i, un, temp_list_2;
+     var mine_dialogue, mine_dialogue_speaker, mine_dialogue_hex;
+     begin
+          mine_dialogue = 0;
+
+          repeat
+          wait(0$1);
+          until activate_traitor_mines;
+
+          repeat
+          wait(0$0.5);
+
+          if mine_dialogue = 1 then
+               begin
+                    mine_dialogue = 2;
+
+                    CenterOnXY(mine_dialogue_hex[1],mine_dialogue_hex[2]);
+                    DialogueOn;
+
+                    if mine_dialogue_speaker > 0 then
+                         case mine_dialogue_speaker of
+                              Heike: ForceSay(Heike,'D11-H-1');
+                              Oswald: begin
+                                   if not oswald_is_substitute then
+                                        ForceSay(Oswald,'D11-Os-1')
+                                   else
+                                        ForceSay(Oswald,'D11-Os_sub-1');
+                              end;
+                              Dwayne: ForceSay(Dwayne,'D11-Dw-1');
+                              Kurt: begin
+                                   if not kurt_is_substitute then
+                                        ForceSay(Kurt,'D11-Ku-1')
+                                   else
+                                        ForceSay(Kurt,'D11-Ku_sub-1');
+                              end;
+                              else
+                                   if GetSex(mine_dialogue_speaker) = sex_male then
+                                        ForceSay(mine_dialogue_speaker,'D11-SomeM-1')
+                                   else
+                                        ForceSay(mine_dialogue_speaker,'D11-SomeF-1');
+                         end;
+
+                    if not traitors_leader_is_substitute then
+                         ForceSay(Heike,'D11-H-1a')
+                    else
+                         ForceSay(Heike,'D11-H-1b');
+
+                    DialogueOff;
+               end;
+
+          temp_list = FilterAllUnits([f_side,you]);
+          i = 1;
+          while i <= mines_hexes do
+               begin
+                    un = HexInfo(mines_hexes[i][1],mines_hexes[i][2]);
+                    if un in temp_list then
+                         begin
+                              LaunchMineAtPos(mines_hexes[i][1],mines_hexes[i][2],you_alt);
+
+                              if mine_dialogue = 0 then
+                                   begin
+                                        mine_dialogue = 1;
+                                        mine_dialogue_hex = mines_hexes[i];
+
+                                        if GetType(un) = unit_human then
+                                             begin
+                                                  if not GetClass(un) in [class_apeman,class_apeman_engineer,class_apeman_soldier,class_apeman_kamikaze] then
+                                                       mine_dialogue_speaker = un
+                                                  else
+                                                       mine_dialogue_speaker = 0;
+                                             end
+                                        else  //must be vehicle
+                                             case GetControl(un) of
+                                                  control_manual: begin
+                                                       temp_list_2 = UnitsInside(un);
+
+                                                       if temp_list_2 > 0 then
+                                                            mine_dialogue_speaker = temp_list_2[1]
+                                                       else
+                                                            mine_dialogue_speaker = 0;
+                                                  end;
+                                                  control_remote: begin
+                                                       mine_dialogue_speaker = IsControledBy(un);
+                                                  end;
+                                                  control_apeman: begin
+                                                       mine_dialogue_speaker = 0;
+                                                  end;
+                                             end;
+                                   end;
+
+                              mines_hexes = Delete(mines_hexes,i);
+
+                              continue;
+                         end;
+
+                    i = i + 1;
+               end;
+
+          until mines_hexes = 0;
+     end;
+
+
+//Gensher's reinforcements arrive. They are stronger than the traitors to compensate for the lost time
+//if the player chooses this option.
+//If the player killed the traitors then the reinforcements are even stronger.
+Every 0$1+0$0.9 do
+     var humans_list, vehicles_list, num, i, val, bonus;
+     begin
+
+          repeat
+          wait(0$1);
+          until gensher_reinforcements;
+
+          wait(Rand(2$0,2$30));
+
+          if AnyTraitorAlive then
+               bonus = 0
+          else
+               bonus = 1;
+
+          humans_list = [];
+          vehicles_list = [];
+          original_genshers_reinforcements = [];
+
+          InitUc;
+          InitHc;
+          InitVc;
+
+          uc_nation = nation_arabian;
+          uc_side = you;
+
+          //Vehicles
+          vc_control = control_manual;
+          vc_engine = engine_combustion;
+          vc_chassis = ar_half_tracked;
+
+          num = 0;  //Number of vehicles with gatling/machine guns
+
+          for i = 1 to [5,4,3][difficulty] + bonus do
+               begin
+                    uc_direction = Rand(0,5);
+
+                    if i = 1 then
+                         vc_weapon = ar_rocket_launcher
+                    else
+                         if num = 1 or Rand(1,2) <= 1 then
+                              begin
+                                   if Rand(1,2) = 1 then
+                                        vc_weapon = ar_gun
+                                   else
+                                        vc_weapon = ar_rocket_launcher;
+                              end
+                         else
+                              begin
+                                   num = num + 1;
+                                   if difficulty > 1 and Rand(1,5-difficulty) = 1 then
+                                        vc_weapon = ar_double_machine_gun
+                                   else
+                                        vc_weapon = ar_gatling_gun;
+                              end;
+
+                    vehicles_list = vehicles_list ^ CreateVehicle;
+               end;
+
+          //Scientists
+          for i = 1 to 2 + bonus do
+               begin
+                    PrepareScientist(false,6);
+                    num = CreateHuman;
+                    humans_list = humans_list ^ num;
+                    original_genshers_reinforcements = original_genshers_reinforcements ^ num;
+               end;
+
+          //Mechanics
+          val = vehicles_list - [1,2,3][difficulty] + bonus;
+          for i = 1 to vehicles_list+0 do
+               begin
+                    if i < val then
+                         PrepareMechanic(false,6)
+                    else
+                         PrepareSoldier(false,6);
+
+                    num = CreateHuman;
+                    PlaceHumanInUnit(num,vehicles_list[i]);
+                    original_genshers_reinforcements = original_genshers_reinforcements ^ num;
+               end;
+
+          //Soldiers
+          for i = 1 to [2,1,0][difficulty] + Rand(0,1) + bonus do
+               begin
+                    PrepareSoldier(false,6);
+                    num = CreateHuman;
+                    humans_list = humans_list ^ num;
+                    original_genshers_reinforcements = original_genshers_reinforcements ^ num;
+               end;
+
+          starting_humans = starting_humans ^ original_genshers_reinforcements;
+
+          //Place the reinforcements
+          for i in vehicles_list ^ humans_list do  //vehicles first so we are sure there are space for them to be placed
+               PlaceUnitArea(i,gensher_reinforcements_area,false);
+
+          //Pick someone to speak
+          num = humans_list[1];
+          DialogueOn;
+
+          if GetSex(num) = sex_male then
+               SayRadio(num,'D5-SomeM-1')
+          else
+               SayRadio(num,'D5-SomeF-1');
+
+          DialogueOff;
+     end;
+
+
+//Gossudarov tries to run away with the artifact if the situation seems hopeless.
+Every 0$1+0$0.4 do
+     var i, temp_list, x, y, temp_list_2, temp_list_3, un, under_attack;
+     var bunkers_west, bunkers_north, escape_route, hex_index, cargo_bay_pos, driver_front, driver_rear, escape_area, last_seen_tick;
+     var timer;
+     begin
+          bunkers_west = FilterAllUnits([[f_side,russians],[f_btype,b_bunker],[f_inarea,escape_area_1]]);
+          bunkers_north = FilterAllUnits([[f_side,russians],[f_btype,b_bunker],[f_inarea,escape_area_3]]);
+          timer = 0;
+
+          escape_route = [];  //Dictates which way Gossudarov will try and escape
+          hex_index = 1;  //Which hex in the escape route Gossudarov has reached
+          cargo_bay_pos = [];  //Holds the hex of the escape cargo bay
+          driver_front = 0;  //Identifier of the mechanic driving the front escort vehicle.
+          driver_rear = 0;  //Identifier of the mechanic driving the rear escort vehicle.
+          escape_area = 0;  //The area to escape to
+
+          last_seen_tick = 0;  //When the escort was seen last time by the player
+
+
+          repeat
+          wait(0$0.7);
+          until BaseUnderAttack(1,-1);
+
+
+          temp_list = ai_scientists[1] diff Gossudarov;
+          ai_scientists = Replace(ai_scientists,1,temp_list);
+
+          //The player could have captured the escort vehicles.
+          if IsLive(escort_veh_front) and GetSide(escort_veh_front) = russians and ai_mechanics_defend[1] > 0 then
+               begin
+                    driver_front = ai_mechanics_defend[1][1];
+                    temp_list = Delete(ai_mechanics_defend[1],1);
+                    ai_mechanics_defend = Replace(ai_mechanics_defend,1,temp_list);
+               end;
+
+          if IsLive(escort_veh_rear) and GetSide(escort_veh_rear) = russians and ai_mechanics_defend[1] > 0 then
+               begin
+                    driver_rear = ai_mechanics_defend[1][1];
+                    temp_list = Delete(ai_mechanics_defend[1],1);
+                    ai_mechanics_defend = Replace(ai_mechanics_defend,1,temp_list);
+               end;
+
+
+          repeat
+          wait(0$0.7);
+
+          timer = timer + 1;
+
+          if gossudarov_escape_status <> 3 and IsDead(Gossudarov) then
+               begin
+                    gossudarov_escape_status = 2;
+
+                    exit;
+               end;
+              
+          if russians_surrender then
+               exit;
+
+
+          //Check if the escort is under attack
+          under_attack = false;
+          temp_list = UnitFilter([Gossudarov,driver_front,driver_rear,escape_cargo_bay,escort_veh_front,escort_veh_rear],[f_alive]);
+          for i in FilterAllUnits([f_enemy,russians]) do
+               if Attacks(i) in temp_list then
+                    begin
+                         under_attack = true;
+                         break;
+                    end;
+
+
+          //Determine if Gossudarov decides to escape.
+          if gossudarov_escape_status = 0 then
+               begin
+                    if UnitFilter(bunkers_west,[f_ok]) < bunkers_west or ( UnitFilter(bunkers_north,[f_ok]) < bunkers_north and GetLives(rubunk4) < 950 ) then
+                         gossudarov_escape_status = 1
+                    else
+                         if check_escape then
+                              gossudarov_escape_status = 1
+                         else
+                              if timer * 0$0.7 >= 0$50 then
+                                   begin
+                                        timer = 0;
+
+                                        if Rand(1,2) = 1 then
+                                             if BaseUnderAttack(1,-1) and UnitFilter(ai_all_buildings[1],[f_ok])+2 < ai_buildings_locations[1] then
+                                                  gossudarov_escape_status = 1;
+                                   end;
+               end;
+
+
+          //Enter the escort vehicles. Repair if necessary. Also repair Gossudarov's cargo bay (Gossudarov
+          //is class_scientistic) if necessary.
+          //The player could have captured the escort vehicles.
+          //If the driver's escort vehicle is dead then just follow on foot.
+          //Gossudarov is scientist but we do not expect him to heal the drivers.
+          if GetSide(escort_veh_front) <> russians then
+               escort_veh_front = 0;
+
+          if GetSide(escort_veh_rear) <> russians then
+               escort_veh_rear = 0;
+
+          if not IsOk(driver_front) then
+               driver_front = 0;
+
+          if not IsOk(driver_rear) then
+               driver_rear = 0;
+
+          temp_list = [];
+          temp_list_2 = [];
+          if IsOk(driver_front) then
+               begin
+                    temp_list = temp_list ^ escort_veh_front;
+                    temp_list_2 = temp_list_2 ^ driver_front;
+               end;
+          if IsOk(driver_rear) then
+               begin
+                    temp_list = temp_list ^ escort_veh_rear;
+                    temp_list_2 = temp_list_2 ^ driver_rear;
+               end;
+
+          for i = 1 to temp_list do
+               begin
+                    if not IsOk(escape_cargo_bay) and not IsDead(escape_cargo_bay) and ( not under_attack or not IsLive(temp_list_2[i]) ) then
+                         begin
+                              case GetType(IsInUnit(temp_list_2[i])) of
+                                   unit_vehicle: ComExitVehicle(temp_list_2[i]);
+                                   unit_building: ComExitBuilding(temp_list_2[i]);
+                                   else
+                                        ComRepairVehicle(temp_list_2[i],escape_cargo_bay);
+                              end;
+                         end
+                    else
+                         begin
+                              if not IsLive(temp_list[i]) then
+                                   continue;
+
+                              un = IsInUnit(temp_list_2[i]);
+                              if un <> temp_list[i] then
+                                   begin
+                                        case GetType(un) of
+                                             unit_vehicle: ComExitVehicle(temp_list_2[i]);
+                                             unit_building: ComExitBuilding(temp_list_2[i]);
+                                             else
+                                                  begin
+                                                       if not IsOk(temp_list[i]) and not IsDead(temp_list[i]) then
+                                                            ComRepairVehicle(temp_list_2[i],temp_list[i])
+                                                       else
+                                                            ComEnterUnit(temp_list_2[i],temp_list[i]);
+                                                  end;
+                                        end;
+                                   end;
+                         end;
+               end;
+
+
+          //Get into the cargo bay. If it's burning then just stay near it.
+          //If it's destroyed then stay near the artifact (Gossudarov won't leave it!).
+          if gossudarov_escape_status <> 3 then
+               begin
+                    if IsOk(escape_cargo_bay) then
+                         begin
+                              cargo_bay_pos = [GetX(escape_cargo_bay),GetY(escape_cargo_bay)];
+
+                              i = IsInUnit(Gossudarov);
+                              if i <> escape_cargo_bay then
+                                   begin
+                                        case GetType(i) of
+                                             unit_vehicle: ComExitVehicle(Gossudarov);
+                                             unit_building: ComExitBuilding(Gossudarov);
+                                             else
+                                                  ComEnterUnit(Gossudarov,escape_cargo_bay);
+                                        end;
+
+                                        continue;
+                                   end;
+                         end
+                    else
+                         begin
+                              if not IsLive(escape_cargo_bay) or UnitFilter([driver_front,driver_rear],[f_alive]) = 0 then
+                                   gossudarov_escape_status = 2;
+
+                              if cargo_bay_pos > 0 then  //should be the case
+                                   if GetDistUnitXY(Gossudarov,cargo_bay_pos[1],cargo_bay_pos[2]) > 4 then
+                                        ComMoveXY(Gossudarov,cargo_bay_pos[1],cargo_bay_pos[2]);
+
+                              continue;
+                         end;
+               end;
+
+
+          //Load the artifact.
+          if GetCargoType(escape_cargo_bay) <> mat_artifact and gossudarov_escape_status <> 3 then
+               begin
+                    temp_list = GetListOfCratesInArea(crate_gather_area);
+                    x = 0;
+                    y = 0;
+
+                    i = 1;
+                    while i < temp_list do
+                         begin
+                              if GetResourceTypeXY(temp_list[i],temp_list[i+1]) = mat_artefact then
+                                   begin
+                                        x = temp_list[i];
+                                        y = temp_list[i+1];
+                                        break;
+                                   end;
+
+                              i = i + 2;
+                         end;
+
+                    if x > 0 and y > 0 then  //should be the case
+                         ComGet(escape_cargo_bay,x,y);
+
+                    continue;
+               end;
+
+
+          if gossudarov_escape_status = 0 then
+               continue;
+
+
+          //Determine if the player can see the escort
+          if UnitFilter([Gossudarov,driver_front,driver_rear,escape_cargo_bay,escort_veh_front,escort_veh_rear],[f_see,you]) > 0 then
+               last_seen_tick = tick;
+
+
+          //Determine escape route
+          if escape_route = 0 then
+               begin
+                    temp_list = FilterAllUnits([[f_side,you],[f_ok],[f_inarea,escape_area_1]]);
+                    temp_list_2 = FilterAllUnits([[f_side,you],[f_ok],[f_inarea,escape_area_2]]);
+                    temp_list_3 = FilterAllUnits([[f_side,you],[f_ok],[f_inarea,escape_area_3]]);
+                    
+                    if temp_list = 0 and temp_list_2 = 0 then
+                         i = 1
+                    else
+                         if temp_list_3 = 0 then
+                              i = 3
+                         else  //Take the route with the fewest enemies
+                              case WorstFromListByList([temp_list,temp_list_2,temp_list_3],[temp_list+0,temp_list_2+0,temp_list_3+0]) of
+                                   temp_list: i = 1;
+                                   temp_list_2: i = 2;
+                                   temp_list_3: i = 3;
+                              end;
+
+                    case i of
+                         1: escape_route = [[165,83],[153,88],[138,85],[121,81],[111,89]];
+                         2: escape_route = [[172,74],[161,70],[140,51],[129,38],[122,26],[124,15],[111,13]];
+                         3: escape_route = [[175,69],[177,54],[168,32],[151,19],[134,12],[124,15],[111,13]];
+                    end;
+
+                    case i of
+                         1: escape_area = gensher_reinforcements_area;
+                         2,3: escape_area = attack_spawn_2;
+                    end;
+               end;
+
+
+          //Make the escape
+          temp_list = [];
+
+          if IsOk(driver_front) then
+               if IsLive(escort_veh_front) then
+                    temp_list = temp_list ^ escort_veh_front
+               else
+                    temp_list = temp_list ^ driver_front;
+
+          if IsOk(escape_cargo_bay) then
+               temp_list = temp_list ^ escape_cargo_bay;
+
+          if IsOk(driver_rear) then
+               if IsLive(escort_veh_rear) then
+                    temp_list = temp_list ^ escort_veh_rear
+               else
+                    temp_list = temp_list ^ driver_rear;
+
+          for i = 1 to temp_list do
+               begin
+                    if hex_index > escape_route then
+                         begin
+                              if not IsInArea(temp_list[i], escape_area) then
+                                   ComMoveToArea(temp_list[i], escape_area)
+                              else
+                                   begin
+                                        temp_list_2 = UnitsInside(temp_list[i]);
+                                        if temp_list_2 > 0 then
+                                             DestroyUnit(temp_list_2[1]);
+
+                                        DestroyUnit(temp_list[i]);
+
+                                        if temp_list[i] = escape_cargo_bay then
+                                             begin
+                                                  //When the cargo bay carrying an artifact is destroyed the artifact
+                                                  //is dropped on the ground.
+                                                  temp_list_2 = FindArtifact(4);
+                                                  ChangeResourceAmountXY(temp_list_2[1],temp_list_2[2],0);
+
+                                                  if tick - last_seen_tick <= 0$7 then
+                                                       begin
+                                                            ExclusiveOn;
+                                                            wait(0$1);
+                                                            YouLost('ArtifactGone');
+                                                            ExclusiveOff;
+                                                       end
+                                                  else
+                                                       gossudarov_escape_status = 3;
+                                             end;
+                                   end;
+                         end
+                    else
+                         if i = 1 then
+                              begin
+                                   if GetDistUnitXY(temp_list[i], escape_route[hex_index][1], escape_route[hex_index][2]) > 5 then
+                                        ComMoveXY(temp_list[i], escape_route[hex_index][1], escape_route[hex_index][2])
+                                   else
+                                        begin
+                                             un = true;
+                                             if temp_list > 1 then
+                                                  if GetDistUnits(temp_list[1],temp_list[2]) > 5 then  //wait for the others
+                                                       un = false;
+
+                                             if un then
+                                                  hex_index = hex_index + 1;
+                                        end;
+                              end
+                         else
+                              begin
+                                   //Follow the one in front of you
+                                   un = AI_InvertDirection(GetDir(temp_list[i-1]));
+                                   ComMoveXY(temp_list[i], ShiftX(GetX(temp_list[i-1]),un,3), ShiftY(GetY(temp_list[i-1]),un,3));
+                              end;
+               end;
+
+          until UnitFilter([Gossudarov,driver_front,driver_rear,escape_cargo_bay,escort_veh_front,escort_veh_rear],[f_alive]) = 0;
+     end;
+
+
+//The Russians surrender if Gossudarov's escape fails.
+//If Gossudarov is dead the base only "surrenders" if everyone is dead.
+//Countdown to final battle.
+Every 0$1+0$0.8 do
+     var val, dialogue_traitors, temp_list;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if IsDead(Gossudarov) or gossudarov_escape_status = 3 then
+               begin
+                    if FilterAllUnits([[f_side,russians],[f_type,unit_human],[f_ok]]) = 0 then
+                         begin
+                              russians_surrender = true;
+                              russian_prisoners = [];
+                         end;
+               end
+          else
+               if gossudarov_escape_status = 2 then
+                    begin
+                         russians_surrender = true;
+                         russian_prisoners = ListWithoutApemen(FilterAllUnits([[f_side,russians],[f_type,unit_human]])) diff Gossudarov;
+                    end;
+
+          until russians_surrender;
+
+
+          DialogueOn;
+
+          if gossudarov_escape_status = 3 then
+               begin
+                    //The artifact is gone
+                    Say(Heike,'D12-H-1');
+
+                    temp_list = UnitFilter([Dwayne,Oswald],[f_ok]);
+                    if temp_list > 0 then
+                         case temp_list[Rand(1,temp_list)] of
+                              Oswald: begin
+                                  if oswald_is_substitute then
+                                       Say(Oswald,'D12-Os_sub-1')
+                                  else
+                                       Say(Oswald,'D12-Os-1');
+                              end;
+                              Dwayne: Say(Dwayne,'D12-Dw-1');
+                         end;
+
+                    if IsOk(Kurt) then
+                         begin
+                              if kurt_is_substitute then
+                                   Say(Kurt,'D12-Ku_sub-1')
+                              else
+                                   Say(Kurt,'D12-Ku-1');
+                         end
+                    else
+                         Say(Heike,'D12-H-2a');
+
+                    Say(Heike,'D12-H-3');
+
+                    dwait(0$0.5);
+                    YouLost('ArtifactGone');
+               end;
+
+          if IsLive(Gossudarov) then
+               begin
+                    ForceSay(Gossudarov,'D6-a-Gos-1');
+                    Say(Oswald,'D6-a-Os-1');
+               end
+          else
+               ForceSay(Heike,'D6-a-H-1');
+
+          ForceSay(Heike,'D6-x-H-1');
+
+          dialogue_traitors := traitors_under_player_control and gensher_answer <> 1;
+          if dialogue_traitors then
+               begin
+                    SayRadio(scout,'D6-xa-ScoutM-1');
+                    ForceSay(Heike,'D6-xx-H-1');
+                    SayRadio(scout,'D6-xa-ScoutM-2');
+                    Say(Oswald,'D6-xx-Os-1');
+                    ForceSay(Heike,'D6-xx-H-2');
+                    SayRadio(scout,'D6-xa-ScoutM-3');
+
+                    scout_pullback = true;
+               end
+          else
+               begin
+                    SayRadio(Gensher,'D6-xb-Ge-1');
+                    ForceSay(Heike,'D6-xx-H-1');
+                    SayRadio(Gensher,'D6-xb-Ge-2');
+                    Say(Oswald,'D6-xx-Os-1');
+                    ForceSay(Heike,'D6-xx-H-2');
+                    SayRadio(Gensher,'D6-xb-Ge-3');
+               end;
+
+          Say(Oswald,'D6-xx-Os-2');
+
+          if IsLive(Gossudarov) then
+               Say(Heike,'D6-xx-H-3');
+
+          //If there are prisoners of war
+          if russian_prisoners > 0 then
+               begin
+                    if IsOk(Kurt) then
+                         begin
+                              if not kurt_is_substitute then
+                                   Say(Kurt,'D7-Ku-1')
+                              else
+                                   Say(Kurt,'D7-Ku_sub-1');
+                         end
+                    else
+                         if IsOk(Dwayne) then
+                              Say(Dwayne,'D7-Dw-1');
+
+                    dwait(0$0.3);
+                    russian_prisoners_decision = Query('QPrisonersFirst');
+                    case russian_prisoners_decision of
+                         1: begin
+                              ForceSay(Heike,'D7-1-H-1');
+                         end;
+                         2: begin
+                              if IsLive(Gossudarov) then
+                                   ForceSay(Heike,'D7-2a-H-1')
+                              else
+                                   ForceSay(Heike,'D7-2b-H-1');
+                         end;
+                         3: begin
+                              ForceSay(Heike,'D7-3-H-1');
+                         end;
+                    end;
+
+                    handle_russian_prisoners_now  = true;
+               end
+          else
+               russian_prisoners_decision = -1;
+
+          dwait(0$0.2);
+          ChangeMissionObjectives('M2');
+
+          DialogueOff;
+          
+
+          //Disable the AI
+          ai_bases = [];
+
+          //The player conquers the base.
+          //Russian apemen simply become the player's apemen.
+          for val in FilterAllUnits([[f_side,russians],[f_type,unit_building],[f_inarea,ru_base_area]]) ^
+            FilterAllUnits([[f_side,russians],[f_or,[f_class,class_apeman],[f_class,class_apeman_engineer],[f_class,class_apeman_soldier],[f_class,class_apeman_kamikaze]]]) do
+               SetSide(val,you);
+
+          ResetRussianDepot;
+
+          engineer_simulation = true;
+
+
+          //Wait for le grande attack. Also determine if the player has earned the "quick action" medal.
+          //If the player took too long to defeat the base then the attack will come earlier.
+          if tick - start_tick <= max_player_attack_time then
+               begin
+                     quick_action = true;
+                     val = 0$0;
+               end
+          else
+               begin
+                    quick_action = false;
+                    val = ( (tick - start_tick) - max_player_attack_time ) div 2;
+               end;
+
+          val = [31$0,26$0,22$0][difficulty] - val;
+          if val < [28$0,23$0,19$0][difficulty] then
+               val = [28$0,23$0,19$0][difficulty];  //minimum
+
+          wait(val div 3);
+
+          //First small attack
+          russians_attack = 1;
+          repeat
+          wait(0$1);
+          until russians_attack = 2;
+
+          wait(val - val div 3);
+
+          //The big attack
+          DialogueOn;
+
+          if dialogue_traitors then
+               begin
+                    SayRadio(scout,'D6-xa-ScoutM-4');
+                    Say(Heike,'D6-xa-H-1');
+               end
+          else
+               begin
+                    SayRadio(Gensher,'D6-xb-Ge-4');
+               end;
+
+          DialogueOff;
+
+
+          //Little wait - then attackers arrive
+          wait(1$0);
+          russians_attack = 3;
+     end;
+Function ListWithoutApemen(list);
+     begin
+          result = UnitFilter(list,[[f_not,[f_class,class_apeman]],[f_not,[f_class,class_apeman_engineer]],[f_not,[f_class,class_apeman_soldier]],[f_not,[f_class,class_apeman_kamikaze]]]);
+     end;
+
+
+//If the player has destroyed the Russian depot (or it is burning) by the time the player takes over the base
+//we have to give the player a chance to get an engineer. We make a small area near the depot (or where it was).
+//The first human player unit which enters the area is turned into an engineer.
+Every 0$1+0$0.8 trigger engineer_simulation do
+     var temp_list, i;
+     begin
+          if IsOk(ai_depot[1]) then
+               exit;
+
+          Query('QEngineerChange');
+          SetAreaMapShow(engineer_change_area,2);
+
+          repeat
+          wait(0$0.5);
+
+          temp_list = ListWithoutApemen(FilterAllUnits([[f_side,you],[f_inarea,engineer_change_area],[f_ok]]));
+          for i in temp_list do
+               if i in starting_humans then  //to avoid making this happen to a Russian prisoner
+                    begin
+                         SetClass(i,class_engineer);
+                         SetAreaMapShow(engineer_change_area,0);
+
+                         exit;
+                    end;
+
+          until false;
+     end;
+
+
+//Control the russian prisoners of war
+Every 0$1+0$0.3 do
+     var i, units_list, temp_list, temp_unit, temp_value, temp_list_2, k, humans_needing_healing, scis_present, time;
+     var temp_list_3, temp_list_4;
+     var vehicles_drivers, everyone_was_in_depot, attack_cooldown, detect_attack_cooldown;
+     begin
+          vehicles_drivers = [];  //Index is vehicle id, value is driver id
+          everyone_was_in_depot = false;  //Used to determine if the player should be queried what to do with the prisoners
+          attack_cooldown = 0$12;  //It takes 10 seconds before UnitShoot resets (add a little extra because of "handle_russian_prisoners_now").
+          detect_attack_cooldown = 0$5;  //To avoid the prisoners revolting immediately after being taken prisoners because of a stray rocket or similar.
+
+          repeat
+
+          if russian_prisoners_decision = 2 then
+               time = 0$0.1  //Need fast update here to prevent the player from using the prisoners
+          else
+               time = 0$0.8;
+
+          i = 0;
+          repeat
+          wait(1);
+          i = i + 1;
+          until i >= time or handle_russian_prisoners_now;
+
+          handle_russian_prisoners_now = false;
+
+          case russian_prisoners_decision of
+               -1: exit;  //There were no Russian prisoners when the base was captured
+               0: continue;
+          end;
+
+          if russian_prisoners = 0 then
+               exit;
+
+
+          //If the player shoots at the prisoners while they are held in the depot they rebel.
+          //ContactTime does not detect attacking with bombs. Instead we ask if any of the prisoners have been shot at
+          //by a player unit. UnitShoot detects bombs and attack ground (but not damage from e.g. exploding vehicles), and resets every 10 seconds.
+          if attack_cooldown > 0$0 then
+               attack_cooldown = attack_cooldown - time;
+
+          temp_value = false;
+          if attack_cooldown <= 0$0 then
+               begin
+                    temp_list = FilterAllUnits([f_side,you]);
+
+                    for i in russian_prisoners do
+                         if UnitShoot(i) in temp_list then
+                              begin
+                                   temp_value = true;
+                                   break;
+                              end;
+               end;
+
+          if detect_attack_cooldown > 0$0 then
+               detect_attack_cooldown = detect_attack_cooldown - time;
+
+          if detect_attack_cooldown <= 0$0 and russian_prisoners_decision = 2 and ( ContactTime([you,russians_alt]) <= 0$2 or temp_value ) then
+               begin
+                    russian_prisoners_decision = 1;
+
+                    DialogueOn;
+                    if GetSex(russian_prisoners[1]) = sex_male then
+                         Say(russian_prisoners[1],'D7-21-RuM-1')
+                    else
+                         Say(russian_prisoners[1],'D7-21-RuF-1');
+                    DialogueOff;
+               end;
+
+
+          //If there are scientists among the prisoners (including Gossudarov) then
+          //heal the other prisoners to some limit.
+          //Find the scientists who can heal among the prisoners.
+          humans_needing_healing = [];
+          scis_present = [];
+          disable_gossudarov_single_control = false;
+          
+
+          case russian_prisoners_decision of
+               1: begin  //Kill them
+                    //The Russians attack everything around them.
+                    //If they can they will steal empty vehicles.
+                    for i in UnitFilter(russian_prisoners,[f_not,[f_side,russians]]) do
+                         SetSide(i,russians);
+
+                    //Manage drivers for stolen vehicles
+                    for i in vehicle_captured_events do
+                         if vehicles_drivers >= i[1] then
+                              if vehicles_drivers[i[1]] > 0 then
+                                   begin
+                                        vehicles_drivers = Replace(vehicles_drivers,i[2],vehicles_drivers[i[1]]);
+                                        vehicles_drivers = Replace(vehicles_drivers,i[1],0);
+                                   end;
+
+                    vehicle_captured_events = [];
+
+                    units_list = russian_prisoners;
+
+                    for i = 1 to vehicles_drivers+0 do
+                         begin
+                              if vehicles_drivers[i] > 0 then
+                                   if not IsOk(i) or not IsOk(vehicles_drivers[i]) then
+                                        vehicles_drivers = Replace(vehicles_drivers,i,0);
+
+                              if vehicles_drivers[i] = 0 then
+                                   continue;
+
+                              units_list = units_list diff vehicles_drivers[i];
+
+                              temp_list = UnitsInside(i);
+                              if temp_list = 0 then
+                                   begin
+                                        temp_unit = IsInUnit(vehicles_drivers[i]);
+
+                                        if temp_unit = 0 then
+                                             ComEnterUnit(vehicles_drivers[i],i)
+                                        else
+                                             if temp_unit <> i then
+                                                  begin
+                                                       case GetType(temp_unit) of
+                                                            unit_building: ComExitBuilding(vehicles_drivers[i]);
+                                                            unit_vehicle: begin
+                                                                 //Inside another vehicle. Probably not going to happen but
+                                                                 //if it does then make the driver the driver for this vehicle instead
+                                                                 vehicles_drivers = Replace(vehicles_drivers,temp_unit,vehicles_drivers[i]);
+                                                                 vehicles_drivers = Replace(vehicles_drivers,i,0);
+                                                            end;
+                                                       end;
+                                                  end;
+                                   end
+                              else
+                                   if temp_list[1] = vehicles_drivers[i] then
+                                        units_list = units_list ^ i
+                                   else  //a player unit is inside the vehicle
+                                        vehicles_drivers = Replace(vehicles_drivers,i,0);
+                         end;
+
+                    //Control the prisoners
+                    for i in units_list do
+                         begin
+                              if GetType(i) = unit_human then
+                                   begin
+                                        if GetType(IsInUnit(i)) = unit_building then
+                                             begin
+                                                  ComExitBuilding(i);
+                                                  continue;
+                                             end;
+
+
+                                        //If there is an empty vehicle nearby then steal it (only war vehicles, though)
+                                        temp_list = EmptyWarVehicles(i,10,true);
+
+                                        if temp_list > 0 then
+                                             for k = 1 to vehicles_drivers do
+                                                  if vehicles_drivers[k] > 0 then
+                                                       begin
+                                                            temp_list = temp_list diff k;
+                                                            if temp_list = 0 then
+                                                                 break;
+                                                       end;
+
+                                        if temp_list > 0 then
+                                             begin
+                                                  temp_list_2 = [];
+                                                  for k in temp_list do
+                                                       temp_list_2 = temp_list_2 ^ GetDistUnits(k,i);
+
+                                                  temp_unit = WorstFromListByList(temp_list,temp_list_2);  //The nearest vehicle
+                                                  vehicles_drivers = Replace(vehicles_drivers,temp_unit,i);
+
+                                                  continue;
+                                             end;
+                                   end;
+
+
+                              //If the unit is near the base then start shooting at humans if possible - else vehicles and buildings.
+                              //Shoot at nearest non-human unit (not so important with human units since we just agressive move).
+                              if not IsInArea(i,ru_base_area) then
+                                   begin
+                                        ComAgressiveMove(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                                   end
+                              else
+                                   begin
+                                        temp_list = FilterAllUnits([[f_enemy,russians],[f_type,unit_human],[f_dist,i,14],[f_see,russians]]);
+                                        if temp_list > 0 then
+                                             begin
+                                                  //Finish off dying humans as first priority
+                                                  temp_list_2 = UnitFilter(temp_list,[f_not,[f_lives,250]]);
+                                                  if temp_list_2 > 0 then
+                                                       temp_list = temp_list_2;
+
+                                                  temp_unit = AllNearestUnitToUnit(temp_list,i);
+
+                                                  if GetLives(temp_unit) > 250 then
+                                                       ComAgressiveMove(i,GetX(temp_unit),GetY(temp_unit))
+                                                  else
+                                                       ComAttackUnit(i,temp_unit);
+                                             end
+                                        else
+                                             begin
+                                                  temp_list = FindNonhumansNearUnit(russians,i,20,true);
+                                                  if temp_list > 0 then
+                                                       begin
+                                                            ComAgressiveMove(i,GetX(temp_list[1]),GetY(temp_list[1]));
+                                                       end
+                                                  else
+                                                       begin
+                                                            temp_list = FindNonhumansNearUnit(russians,i,20,false);
+                                                            if temp_list > 0 then
+                                                                 begin
+                                                                      temp_unit = NearestUnitToUnit(temp_list,i);
+                                                                      ComAttackUnit(i,temp_unit);
+                                                                 end
+                                                            else
+                                                                 if GetDistUnitXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) > 5 then
+                                                                      ComAgressiveMove(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                                                       end;
+                                             end;
+                                   end;
+                         end;
+               end;
+               2: begin  //Keep in depot
+                    //Check for wounded prisoners.
+                    temp_list = FindPrisonersNeedingHealing(999);
+                    humans_needing_healing = temp_list[1];
+                    scis_present = temp_list[2];
+
+                    //Find the prisoners needing to enter the depot. Change side if necessary.
+                    temp_list = [];
+                    for i in russian_prisoners do
+                         if not GetBType(IsInUnit(i)) in [b_depot,b_warehouse] then
+                              begin
+                                   temp_list = temp_list ^ i;
+
+                                   if GetSide(i) <> russians_alt then
+                                        SetSide(i,russians_alt);
+                              end;
+
+                    if humans_needing_healing > 0 then
+                         temp_list = temp_list diff (humans_needing_healing ^ scis_present);
+
+                    i = SendToDepot(temp_list);
+
+                    //Check if the player has made a prisoner go outside the depot
+                    temp_list = russian_prisoners + UnitFilter([Gossudarov],[f_alive]);
+                    if ( i = temp_list+0 and temp_list <= 5 ) or i = 5 then
+                         everyone_was_in_depot = true
+                    else
+                         if everyone_was_in_depot then
+                              if ( i < temp_list and temp_list <= 5 ) or ( i < 5 and temp_list > 5 ) then
+                                   begin
+                                        everyone_was_in_depot = false;
+
+                                        russian_prisoners_decision = Query('QPrisonersSecond');
+
+                                        DialogueOn;
+
+                                        case russian_prisoners_decision of
+                                             1: begin
+                                                  Say(Heike,'D7-21-H-1');
+
+                                                  if GetSex(russian_prisoners[1]) = sex_male then
+                                                       Say(russian_prisoners[1],'D7-21-RuM-1')
+                                                  else
+                                                       Say(russian_prisoners[1],'D7-21-RuF-1');
+                                             end;
+                                             2: Say(Heike,'D7-22-H-1');
+                                             3: begin
+                                                  Say(Heike,'D7-23-H-1');
+
+                                                  if GetSex(russian_prisoners[1]) = sex_male then
+                                                       Say(russian_prisoners[1],'D7-23-RuM-1')
+                                                  else
+                                                       Say(russian_prisoners[1],'D7-23-RuF-1');
+
+                                                  Say(Heike,'D7-23-H-2');
+                                             end;
+                                        end;
+
+                                        DialogueOff;
+
+                                        if russian_prisoners_decision <> 2 then
+                                             continue;
+                                   end;
+               end;
+               3: begin  //Let them go
+                    //Check for wounded prisoners. We are leaving the base as fast as we can
+                    //because we have been set free.
+                    temp_list = FindPrisonersNeedingHealing(250);
+                    humans_needing_healing = temp_list[1];
+                    scis_present = temp_list[2];
+                    
+                    for i in russian_prisoners do
+                         begin
+                              if GetSide(i) <> russians_alt then
+                                   SetSide(i,russians_alt);
+
+                              if humans_needing_healing > 0 then
+                                   if i in humans_needing_healing ^ scis_present then
+                                        continue;
+
+                              case GetType(IsInUnit(i)) of
+                                   unit_building: begin
+                                        ComExitBuilding(i);
+                                        continue;
+                                   end;
+                                   unit_vehicle: begin
+                                        ComExitVehicle(i);
+                                        continue;
+                                   end;
+                              end;
+
+                              if not IsInArea(i,prisoners_exit_area) then
+                                   ComMoveToArea(i,prisoners_exit_area)
+                              else
+                                   begin
+                                        russian_prisoners = russian_prisoners diff i;
+                                        russian_prisoners_escaped = russian_prisoners_escaped ^ i;
+                                        RemoveUnit(i);
+                                   end;
+                         end;
+               end;
+          end;
+
+
+          //Heal folks if necessary.
+          //Gossudarov does not heal released Russian prisoners outside the base.
+          if humans_needing_healing > 0 then
+               begin
+                    if Gossudarov in humans_needing_healing ^ scis_present then
+                         disable_gossudarov_single_control = true;
+
+                    temp_list = [];
+                    for i in humans_needing_healing diff scis_present do
+                         case GetType(IsInUnit(i)) of
+                              unit_vehicle: ComExitVehicle(i);
+                              unit_building: ComExitBuilding(i);
+                              else
+                                   begin
+                                        temp_list = temp_list ^ i;
+                                        
+                                        case russian_prisoners_decision of
+                                             2: begin
+                                                  if GetDistUnitXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) > 4 then
+                                                       ComMoveXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                                             end;
+                                             3: begin
+                                                  ComStop(i);
+                                             end;
+                                        end;
+                                   end;
+                         end;
+
+                    temp_list_2 = [];
+                    for i in scis_present do
+                         case GetType(IsInUnit(i)) of
+                              unit_vehicle: ComExitVehicle(i);
+                              unit_building: ComExitBuilding(i);
+                              else
+                                   temp_list_2 = temp_list_2 ^ i;
+                         end;
+
+                    if temp_list > 0 and temp_list_2 > 0 then
+                         begin
+                              //Find the red units to be healed. They have first priority.
+                              temp_list_3 = [];
+                              for i in temp_list do
+                                   if GetLives(i) <= 250 then
+                                        begin
+                                             temp_list_3 = temp_list_3 ^ i;
+                                             temp_list = temp_list diff i;
+                                        end;
+                              
+                              //Don't make scientist heal himself/herself.
+                              for i in temp_list_2 do
+                                   begin
+                                        temp_list_4 = [];  //The units this scientist is allowed to heal
+                                        if i = Gossudarov then
+                                             begin
+                                                  temp_list_4 = UnitFilter(temp_list_3 diff i,[f_inarea,ru_base_area]);
+
+                                                  if temp_list_4 = 0 then
+                                                       temp_list_4 = UnitFilter(temp_list diff i,[f_inarea,ru_base_area]);
+                                             end
+                                        else
+                                             begin
+                                                  temp_list_4 = temp_list_3 diff i;
+
+                                                  if temp_list_4 = 0 then
+                                                       temp_list_4 = temp_list diff i;
+                                             end;
+
+                                        if temp_list_4 > 0 then
+                                             temp_unit = NearestUnitToUnit(temp_list_4,i)  
+                                        else
+                                             continue;
+
+                                        ComHeal(i,temp_unit);
+                                   end;
+                         end;
+               end;
+
+          until false;
+     end;
+Function SendToDepot(unit_list);
+     var temp_list_2, temp_unit, i, task_list, val, inun, count_inside, hex_list;
+     begin
+          //Find a depot to enter
+          temp_list_2 = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]],[f_ok],[f_not,[f_constructed]]]);
+          if temp_list_2 > 0 then
+               temp_unit = temp_list_2[1]
+          else
+               temp_unit = 0;
+
+          //Enter the depot. If no depot were found then just go to the center of the base.
+          //Max 5 people in the depot (has to be space for the player to change profession of a unit). The rest to
+          //the center of the base.
+          if temp_unit > 0 then
+               begin
+                    hex_list = [ ShiftX(GetX(temp_unit),GetDir(temp_unit),3) , ShiftY(GetY(temp_unit),GetDir(temp_unit),3) ];
+
+                    temp_list_2 = UnitFilter(UnitsInside(temp_unit),[f_nation,nation_russian]);
+                    count_inside = temp_list_2+0;
+               end
+          else
+               count_inside = 0;
+
+          result = count_inside;
+
+          for i = 6 to count_inside do
+               ComExitBuilding(temp_list_2[i]);
+
+          for i in unit_list do
+               begin
+                    inun = IsInUnit(i);
+                    case GetType(inun) of
+                         unit_vehicle: ComExitVehicle(i);
+                         unit_building: begin
+                              if inun <> temp_unit then
+                                   ComExitBuilding(i);
+                         end;
+                         else
+                              if temp_unit > 0 and count_inside < 5 then
+                                   begin
+                                        count_inside = count_inside + 1;
+
+                                        if GetDistUnitXY(i,hex_list[1],hex_list[2]) <= 1 then
+                                             begin
+                                                  SetSide(i,you);
+                                                  ComEnterUnit(i,temp_unit);
+                                             end
+                                        else
+                                             begin
+                                                  //If the unit is already moving as it should then don't tell it to do it again.
+                                                  //Prevents "lagg".
+                                                  task_list = GetTaskList(i);
+                                                  val = false;
+
+                                                  if task_list = 0 then
+                                                       val = true
+                                                  else
+                                                       if not task_list[1][1] = 'M' or task_list[1][2] <> hex_list[1] or task_list[1][3] <> hex_list[2] then
+                                                            val = true;
+
+                                                  if val then
+                                                       ComMoveXY(i,hex_list[1],hex_list[2]);
+                                             end;
+                                   end
+                              else
+                                   if GetDistUnitXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]) > 4 then
+                                        ComMoveXY(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2]);
+                    end;
+               end;
+     end;
+Export Function EmptyWarVehicles(un,within_dist,ok_vehicle);
+     var k;
+     begin
+          result = FilterAllUnits([[f_type,unit_vehicle],[f_empty],[f_control,control_manual],[f_dist,un,within_dist]]);
+
+          if ok_vehicle then
+               result = UnitFilter(result,[f_ok]);
+
+          k = 1;
+          while k <= result do
+               begin
+                    if GetWeapon(result[k]) in [ar_cargo_bay,ar_control_tower,ar_radar,ru_cargo_bay,ru_crane,ru_bulldozer] then
+                         begin
+                              result = Delete(result,k);
+                              continue;
+                         end;
+
+                    k = k + 1;
+               end;
+     end;
+Function FindPrisonersNeedingHealing(hp_limit);
+     var i, scis_present, humans_needing_healing;
+     begin
+          scis_present = UnitFilter(russian_prisoners ^ Gossudarov,[[f_ok],[f_class,class_scientistic]]);
+          humans_needing_healing = [];
+
+          if scis_present > 0 then
+               begin
+                    for i in russian_prisoners ^ Gossudarov do
+                         if GetLives(i) <= hp_limit then
+                              humans_needing_healing = humans_needing_healing ^ i;
+
+                    //Don't go on if the only humans needing healing is the only healer.
+                    if humans_needing_healing+0 = 1 and scis_present+0 = 1 then
+                         if humans_needing_healing[1] = scis_present[1] then
+                              humans_needing_healing = [];
+
+                    //Gossudarov does not heal released Russian prisoners outside the base.
+                    if Gossudarov in scis_present and UnitFilter(humans_needing_healing diff Gossudarov,[f_inarea,ru_base_area]) = 0 then
+                         scis_present = scis_present diff Gossudarov;
+               end;
+
+          result = [humans_needing_healing, scis_present];
+     end;
+
+
+//Control Gossudarov. He is just to stay inside the depot.
+Every 0$1+1 do
+     var inside;
+     begin
+
+          repeat
+          wait(0$0.1);
+
+          if IsDead(Gossudarov) then
+               exit;
+
+          if not russians_surrender then
+               continue;
+
+          if not GetBType(IsInUnit(Gossudarov)) in [b_depot,b_warehouse] then
+               begin
+                    inside = false;
+
+                    if GetSide(Gossudarov) <> russians_alt then
+                         SetSide(Gossudarov,russians_alt);
+               end
+          else
+               inside = true;
+
+          if not disable_gossudarov_single_control and not inside then
+               SendToDepot([Gossudarov]);
+
+          until false;
+     end;
+
+
+//After the Russian base surrenders the Russians regularly send a cargo bay to
+//steal the artifact. If they succeed the player loses.
+Every 0$1+0$0.6 do
+     var temp_list, i;
+     var artifact_hex, cargo_bay, has_artifact_cargo, instant_spawn;
+     begin
+          cargo_bay = 0;
+          instant_spawn = false;
+
+          repeat
+          wait(0$0.7);
+
+          if not russians_surrender then
+               continue;
+
+          if IsDead(cargo_bay) then
+               begin
+                    cargo_bay = 0;
+                    has_artifact_cargo = false;
+
+                    //Spawn delay. Shorter if the artifact is outside the base.
+                    if not instant_spawn then
+                         begin
+                              i = 0$0;
+                              repeat
+                              wait(0$1);
+
+                              i = i + 0$1;
+
+                              if GetResourceArea(all_but_crate_gather_area,mat_artifact) > 0 then
+                                   begin
+                                        if i >= [2$0,1$0,0$30][difficulty] then
+                                             break;
+                                   end
+                              else
+                                   if i >= [5$0,3$0,2$30][difficulty] then
+                                        break;
+                    
+                              until false;
+                         end;
+
+                    instant_spawn = false;
+               end
+          else
+               has_artifact_cargo := GetCargoType(cargo_bay) = mat_artifact;
+
+
+          artifact_hex = [];
+          if not has_artifact_cargo then
+               begin
+                    temp_list = GetListOfCratesInArea(all_but_crate_gather_area) ^ GetListOfCratesInArea(crate_gather_area);
+
+                    i = 1;
+                    while i < temp_list do
+                         begin
+                              if GetResourceTypeXY(temp_list[i],temp_list[i+1]) = mat_artifact then
+                                   begin
+                                        artifact_hex = [temp_list[i],temp_list[i+1]];
+                                        break;
+                                   end;
+
+                              i = i + 2;
+                         end;
+               end;
+               
+
+          if artifact_hex = 0 and not has_artifact_cargo then
+               begin
+                    if cargo_bay > 0 then
+                         begin
+                              if not IsInArea(cargo_bay,gensher_reinforcements_area) then
+                                   ComMoveToArea(cargo_bay,gensher_reinforcements_area)
+                              else
+                                   begin
+                                        DestroyUnit(cargo_bay);  //IsDead returns true if unit has been destroyed like this
+                                        instant_spawn = true;
+                                   end;
+                         end
+                    else
+                         instant_spawn = true;
+               end
+          else
+               begin
+                    if cargo_bay = 0 then
+                         begin
+                              InitUc;
+                              InitVc;
+
+                              uc_side = russians;
+                              uc_nation = nation_russian;
+                              vc_chassis = ru_medium_tracked;
+                              vc_control = control_computer;
+                              vc_engine = engine_siberite;
+                              vc_weapon = ru_cargo_bay;
+
+                              cargo_bay = CreateVehicle;
+                              SetDir(cargo_bay,0);
+                              PlaceUnitArea(cargo_bay,gensher_reinforcements_area,false);
+                         end;
+
+                    if has_artifact_cargo then
+                         begin
+                              if not IsInArea(cargo_bay,gensher_reinforcements_area) then
+                                   ComMoveToArea(cargo_bay,gensher_reinforcements_area)
+                              else
+                                   begin
+                                        //The artifact also disappears when you RemoveUnit the cargo bay
+                                        //(but it is left behind if you DestroyUnit it).
+                                        RemoveUnit(cargo_bay);
+
+                                        ExclusiveOn;
+                                        wait(0$2);
+                                        YouLost('ArtifactRusRecap');
+                                        ExclusiveOff;
+                                   end;
+                         end
+                    else
+                         ComGet(cargo_bay,artifact_hex[1],artifact_hex[2]);
+               end;
+
+          until false;
+     end;
+
+
+//When the player sees the artifact
+Every 0$1+0$0.2 do
+     var x, y, temp_list, i;
+     begin
+
+          repeat
+          wait(0$0.5);
+
+          temp_list = GetListOfCratesInArea(crate_gather_area) ^ GetListOfCratesInArea(all_but_crate_gather_area);
+          x = 0;
+          y = 0;
+
+          i = 1;
+          while i < temp_list do
+               begin
+                    if GetResourceTypeXY(temp_list[i],temp_list[i+1]) = mat_artefact then
+                         begin
+                              x = temp_list[i];
+                              y = temp_list[i+1];
+                              break;
+                         end;
+
+                    i = i + 2;
+               end;
+
+          if x > 0 and y > 0 then
+               begin
+                    if SeeXY(you,x,y) then
+                         begin
+                              CenterOnXY(x,y);
+
+                              DialogueOn;
+
+                              Say(Heike,'D9-H-1');
+
+                              if IsOk(Dwayne) then
+                                   Say(Dwayne,'D9-Dw-1')
+                              else
+                                   Say(Heike,'D9-H-2a');
+
+                              Say(Heike,'D9-H-2b');
+
+                              dwait(0$0.2);
+                              ChangeMissionObjectives('MAddCargoBay');
+
+                              DialogueOff;
+
+                              artifact_cargo_bay_status = 1;
+
+                              exit;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//Every taking care of the cargo bay objective.
+Every 0$1+0$0.1 do
+     var temp_list;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if artifact_cargo_bay_status = 0 then
+               continue;
+
+          temp_list = FilterAllUnits([[f_side,you],[f_or,[f_weapon,ar_cargo_bay],[f_weapon,ru_cargo_bay]]]);
+
+          if temp_list > 0 then
+               begin
+                    if artifact_cargo_bay_status = 1 then 
+                         begin
+                              ChangeMissionObjectives('MOutCargoBay');
+                              artifact_cargo_bay_status = 2;
+                         end;
+               end
+          else
+               begin
+                    if artifact_cargo_bay_status = 2 then
+                         begin
+                              ChangeMissionObjectives('MRefreshCargoBay');
+                              artifact_cargo_bay_status = 1;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//After the first Russian attack the Russian time shifting missiles are discussed
+//and gives a secondary objective. Does not happen if Kurt is dead or the Russians
+//didn't use time shifting rockets in the first attack at all.
+Every 0$1+0$0.2 trigger russians_attack = 2 do
+     begin
+          wait(0$5);
+
+          if IsDead(Kurt) or not time_shifting_used_in_first_attack then
+               exit;
+
+          //Wait until all time shifted areas are gone.
+          while time_shift_hexes > 0 do
+               wait(0$2);
+
+          DialogueOn;
+
+          if IsLive(Oswald) then
+               if not oswald_is_substitute then
+                    ForceSay(Oswald,'D10-Os-1')
+               else
+                    ForceSay(Oswald,'D10-Os_sub-1');
+
+          if IsLive(Dwayne) then
+               begin
+                    ForceSay(Dwayne,'D10-Dw-1');
+                    ForceSay(Heike,'D10-H-1a');
+               end
+          else
+               ForceSay(Heike,'D10-H-1b');
+
+          if not kurt_is_substitute then
+               ForceSay(Kurt,'D10-Ku-1')
+          else
+               ForceSay(Kurt,'D10-Ku_sub-1');
+
+          ForceSay(Heike,'D10-H-2');
+
+          if not kurt_is_substitute then
+               ForceSay(Kurt,'D10-Ku-2')
+          else
+               ForceSay(Kurt,'D10-Ku_sub-2');
+
+          ForceSay(Heike,'D10-H-3');
+
+          if not kurt_is_substitute then
+               ForceSay(Kurt,'D10-Ku-3')
+          else
+               ForceSay(Kurt,'D10-Ku_sub-3');
+
+          ForceSay(Heike,'D10-H-4');
+
+          if not kurt_is_substitute then
+               ForceSay(Kurt,'D10-Ku-4')
+          else
+               ForceSay(Kurt,'D10-Ku_sub-4');
+
+          DialogueOff;
+
+          investigate_time_shifting = 1;
+
+          wait(0$0.3);
+          ChangeMissionObjectives('MAddTimeShift');
+
+          wait(0$0.2);
+          Query('QTimeShiftInvestigateInfo');
+     end;
+//Every controlling the time shifting investigation
+Every 0$1+0$0.2 trigger investigate_time_shifting = 1 do
+     var temp_list, i, vehicles_list, temp_list_2, k, dist, temp_value;
+     var data_status;
+     begin
+          data_status = 1;  //Reach some value to finish the objective
+
+          repeat
+          wait([28,38,48][difficulty]);
+
+          //We can't be sure we pick the same two vehicles every time so remove all displayed numbers
+          //as a start.
+          for i in FilterAllUnits([[f_side,you],[f_control,control_remote],[f_weapon,ar_radar]]) do
+               SetUnitDisplayNumber(i,0);  
+
+
+          if data_status = 15 then
+               begin
+                    investigate_time_shifting = 2;
+                    ChangeMissionObjectives('MOutTimeShift');
+
+                    exit;
+               end;
+
+
+          //Find two (or more) remote vehicles with radar which have the same controller.
+          temp_list = FilterAllUnits([[f_side,you],[f_control,control_remote],[f_weapon,ar_radar],[f_ok],[f_linked]]);
+          temp_list_2 = [];
+          for i in temp_list do
+               temp_list_2 = temp_list_2 ^ IsControledBy(i);
+
+          temp_list = SortListByListDesc(temp_list,temp_list_2);
+          temp_list_2 = SortListByListDesc(temp_list_2,temp_list_2);
+
+          vehicles_list = [];
+          i = 1;
+          while i < temp_list do
+               begin
+                    if temp_list_2[i] = 0 then
+                         break;
+
+                    if temp_list_2[i] = temp_list_2[i+1] then  //same controller
+                         begin
+                              vehicles_list = [temp_list[i],temp_list[i+1]];
+
+                              for k = i+2 to temp_list_2 do
+                                   if temp_list_2[i] = temp_list_2[k] then
+                                        vehicles_list = vehicles_list ^ temp_list[k]
+                                   else
+                                        break;
+
+                              break;
+                         end;
+
+                    i = i + 1;
+               end;
+          
+          if vehicles_list = 0 then
+               continue;
+
+
+          //Pick the two vehicles which are closest to each other.
+          if vehicles_list > 2 then
+               begin
+                    dist = GetDistUnits(vehicles_list[1],vehicles_list[2]);
+                    temp_list = [vehicles_list[1],vehicles_list[2]];
+
+                    for i = 1 to vehicles_list-1 do
+                         for k = i+1 to vehicles_list do
+                              begin
+                                   temp_value = GetDistUnits(vehicles_list[i],vehicles_list[k]);
+
+                                   if temp_value < dist then
+                                        begin
+                                             dist = temp_value;
+                                             temp_list = [vehicles_list[i],vehicles_list[k]];
+                                        end;
+                              end;
+
+                    vehicles_list = temp_list;
+               end;
+
+
+          //If the vehicles aren't close enough to each other.
+          if GetDistUnits(vehicles_list[1],vehicles_list[2]) > [15,12,9][difficulty] then
+               continue;
+
+
+          //Update the data_status.
+          temp_list = [UnitInTimeShiftedArea(vehicles_list[1]),UnitInTimeShiftedArea(vehicles_list[2])];
+          if ( temp_list[1] and not temp_list[2] ) or ( not temp_list[1] and temp_list[2] ) then
+               data_status = data_status + 1;
+
+
+          //Make the display here, after update of the data_status so the last number
+          //is shown before we exit this every.
+          for i in vehicles_list do
+               SetUnitDisplayNumber(i,data_status);
+
+          until false;
+     end;
+Function UnitInTimeShiftedArea(un);
+     var i;
+     begin
+          result = false;
+          for i in time_shift_hexes do
+               if GetDistUnitXY(un,i[1],i[2]) <= time_shift_data[russians][2] then
+                    begin
+                         result = true;
+                         exit;
+                    end;
+     end;

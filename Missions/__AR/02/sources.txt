@@ -1,0 +1,7 @@
+SOURCE_CODES
+  ENABLED Main
+  ENABLED AmericansAI
+  ENABLED Dialogues
+  ENABLED AmericanUnits
+  ENABLED SailEvents
+END_OF_SOURCE_CODES

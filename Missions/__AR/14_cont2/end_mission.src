@@ -1,0 +1,316 @@
+
+every 0$1 trigger EndingCutscene = 0 marked 2 do
+var temp, i;
+begin
+
+     for i in FarmerTroops do
+     begin
+          if GetType(i) = unit_vehicle and (IsDrivenBy(i) or IsControledBy(i) or GetControl(i) = control_apeman) then
+             if IsOk(i) then
+                temp = 1;
+
+          if GetType(i) = unit_human and not GetClass(i) = class_mechanic then
+             if GetLives(i) > 0 then
+                temp = 1;
+     end;
+
+
+     if temp = 0 and IsDead(Farmer) then
+        EndingCutscene = 1;
+
+enable;
+end;
+
+//Ending cutscene
+every 0$1 trigger EndingCutscene do
+var LegionFinal,soldiers,mechanics,i,temp;
+begin
+     Randomize;
+     mechanics=unitfilter(UPFPeople,[f_class,class_mechanic]);
+     soldiers=unitfilter(UPFPeople,[f_class,class_soldier]);
+     setattr(Gensher,attr_stamina,300);
+     temp=UPFVehicles[4]^UPFVehicles[5];
+     UPFVehicles=UPFVehicles diff temp;
+     setlives(temp,250);
+
+     removeunit(Gensher);
+     placeunitxy(Gensher,62,89,false);
+     comhold(Gensher);
+
+     InGameOn;
+     Exclusiveoff;
+
+     Say(Heike,'Rs_He5');
+     centeronunits(Gensher);
+     Say(Gensher,'Rs_Ge3');
+     wait(0$1);
+
+     for i in filterallunits([f_side,8]) do
+         if Gety(i)<50 then
+            removeunit(i);
+
+     commovexy(filterallunits([[f_side,2],[f_type,unit_vehicle]]),47,8);
+     addcommovexy(filterallunits([[f_side,2],[f_type,unit_vehicle]]),36,7);
+     addcommovexy(filterallunits([[f_side,2],[f_type,unit_vehicle]]),33,17);
+     commovexy(filterallunits([[f_side,2],[f_type,unit_human]]),34,27);
+     addcomhold(filterallunits([[f_side,2],[f_type,unit_human]]));
+
+     for i in filterallunits([[f_side,2],[f_type,unit_human]]) do
+         if getlives(i)<400 then
+            setlives(i,400);
+
+     temp=[Snake,Pierre,Elizabeth] diff 0;
+     if temp>0 then
+        for i in temp do
+            if IsPlaced(i) then
+            begin
+                 removeunit(i);
+                 placeunitxyr(i,33,26,3,false);
+            end;
+     commovexy(Snake,38,31);
+     addcomhold(Snake);
+
+     temp=isinunit(Heike);
+     comexitvehicle(Heike);
+     removeunit(Heike);
+     removeunit(temp);
+     Placeunitxy(Heike,42,32,false);
+     comhold(Heike);
+
+     temp=filterallunits([[f_side,2],[f_or,[f_control,control_manual],[f_control,control_remote]]]);
+     for i in temp do
+         if (GetControl(i)=control_manual and IsDrivenBy(i)=0) or (GetControl(i)=control_remote and IsControledBy(i)=0) then
+            removeunit(i);
+
+     Say(Heike,'Rs_He6');
+     wait(0$2);
+
+     ComFree(UPFRear);
+     AddComMoveXY(UPFRear, 53, 87);
+
+     LegionFinal=Legion;
+     setlives(unitfilter(Legion,[f_weapon,ar_rocket_launcher]),200);
+
+     repeat
+           wait(0$1);
+
+           for i in LegionFinal do
+               if isdead(i) or isdying(i) then
+                  LegionFinal=LegionFinal diff i;
+
+           for i in FilterAllUnits([[f_side,5],[f_type,unit_vehicle]]) do
+               if GetLives(i) < 200 and GetLives(i) > 30 then
+                  SetLives(i, Rand(10,30));
+
+     until LegionFinal=0;
+
+     Say(Gensher,'Rs_Ge4');
+
+     comwalk(Soldiers);
+     addcomplaceremotecharge(Soldiers[1],50,81,0);
+     addcomplaceremotecharge(Soldiers[2],55,82,0);
+     addcomplaceremotecharge(Soldiers[3],60,82,0);
+     addcommovexy(soldiers,40,40);
+
+     commovexy(unitfilter(UPFPeople,[f_or,[f_class,class_mortar],[f_class,class_scientistic]]),40,40);
+     wait(0$2);
+
+     comexitvehicle(mechanics[1]^mechanics[3]);
+     addcommovexy(mechanics[1]^mechanics[3],40,40);
+     wait(0$0.5);
+     commovexy(mechanics[1]^mechanics[3],40,40);
+     wait(0$2);
+
+     comagressivemove(mechanics[2],46,74);
+
+     wait(0$2);
+
+     addcomexitvehicle(mechanics[2]);
+     addcommovexy(mechanics,40,40);
+
+
+     complaceremotecharge(Gensher,50,73,0);
+     addcomturnxy(Gensher,59,93);
+
+     uc_side=8;
+     vc_chassis=ar_half_tracked;
+     vc_engine=engine_siberite;
+     vc_control=control_remote;
+     vc_weapon=ar_gun;
+
+     LegionFinal=createvehicle^createvehicle;
+     vc_weapon=ar_rocket_launcher;
+     LegionFinal=LegionFinal^createvehicle;
+
+     for i=1 to LegionFinal do
+     begin
+          placeunitxy(LegionFinal[i],[56,71,84][i],106,false);
+          linkvehicletohuman(LegionFinal[i],LegionRemoteMech[1]);
+     end;
+
+     ExclusiveOn;
+
+     setlives(UPFVEhicles ^ UPFRear,1000);
+     repeat
+           wait(0$0.1);
+           comattackunit(LegionFinal, Nearestunittounit(UPFVehicles ^ UPFRear,isinunit(LegionRemoteMech[1])));
+
+           for i in UPFVehicles ^ UPFRear do
+               if getlives(i)<1000 then
+                  setlives(i,0);
+
+           for i in mechanics do
+               if not isinunit(i) then
+                  commovexy(i,40,40)
+               else comexitvehicle(i);
+     until unitfilter(UPFVehicles ^ UPFRear,[f_ok])=0;
+
+
+     addcommovexy(LegionFinal[1],50,81);
+     addcommovexy(LegionFinal[2],55,82);
+     addcommovexy(LegionFinal[3],60,82);
+
+     centeronxy(51,75);
+
+     repeat
+           wait(0$0.2);
+           if getdistunitxy(LegionFinal[1],50,81)<3 then
+           begin
+                LaunchMineAtPos(50,81,5);
+                setlives(LegionFinal[1],0);
+           end;
+           if getdistunitxy(LegionFinal[2],55,82)<3 then
+           begin
+                LaunchMineAtPos(55,82,5);
+                setlives(LegionFinal[2],0);
+           end;
+           if getdistunitxy(LegionFinal[3],60,82)<3 then
+           begin
+                LaunchMineAtPos(60,82,5);
+                setlives(LegionFinal[3],0);
+           end;
+     until unitfilter(LegionFinal,[f_ok])=0;
+
+     centeronxy(48,70);
+
+     vc_weapon=ar_selfpropelled_bomb;
+     LegionFinal=createvehicle;
+     placeunitarea(LegionFinal,areabomb,false);
+     linkvehicletohuman(LegionFinal,LegionRemoteMech[1]);
+     commovexy(LegionFinal,50,73);
+     addcomattackunit(LegionFinal,Gensher);
+
+     wait(0$1.5);
+
+     commovexy(Gensher,42,64);
+     addcommovexy(Gensher,42,34);
+
+     comturnunit(Heike^Snake,Gensher);
+
+     repeat
+           wait(0$0.5);
+           if getdistunitxy(LegionFinal,50,73)<3 then
+           begin
+                LaunchMineAtPos(50,73,5);
+                setlives(LegionFinal,0);
+                LegionFinal=[]
+           end;
+
+           setlives(Legion,0);
+     until LegionFinal=0;
+
+     wait(0$3);
+     setattr(Gensher,attr_stamina,10);
+
+     repeat
+           wait(0$3);
+           centeronunits(Gensher);
+     until getdistunitxy(Gensher,42,34)<5;
+
+
+     Say(Heike,'Rs_He7');
+     Say(Gensher,'Rs_Ge5');
+     comturnxy(Gensher,49,34);
+     Say(Gensher,'Rs_Ge6');
+     Say(Heike,'Rs_He8');
+     Say(Heike,'Rs_He9');
+     comturnunit(Gensher,Heike);
+     Say(Gensher,'Rs_Ge7');
+     Say(Heike,'Rs_He10');
+     Say(Gensher,'Rs_Ge8');
+     
+     if IsPlaced(Snake) then
+        Say(Snake,'Rs_Sn3')
+     else
+         Say(Gensher,'Rs_Ge9');
+
+     removeunit(Gensher);
+     placeunitxy(Gensher,42,34,false);
+
+     Saving;
+end;
+
+
+
+
+
+Function Saving;
+var i,destruction,resources,teleport,people,un_list,name_list;
+begin
+
+     if testing then
+        Destruction=1
+     else
+         Destruction=LoadVariable('Destruction_14_cont',0);
+
+     AddMedal('Destruction',Destruction);
+
+     Resources=LoadVariable('Resources_gathered_14_cont',[0,0,0]);
+
+     if testing then
+        AddMedal('Resources',1)
+     else
+         if Resources[1]>=[1000,1250,1500][difficulty] {and Resources[2]>=[700,850,1000][difficulty]} and Resources[3]>=[350,400,500][difficulty] then
+            AddMedal('Resources',1)
+         else
+             AddMedal('Resources',-1);
+
+     if testing then
+        Teleport=1
+     else
+         Teleport=LoadVariable('Transport_Teleported_14_cont',0);
+
+     AddMedal('Teleport',Teleport);
+
+     GiveMedals('medals');
+
+     People=(PlayerPeople^playerpeople_previous_map^escort_others^Gensher^Gonzo) diff 0;
+
+     if LoadVariable('Transport_Teleported_14_cont',0)=1 or testing then
+        People = People ^ Snake ^ Pierre ^ Elizabeth
+     else
+         begin
+              People = People ^ Snake;
+              escort_others = escort_others ^ Pierre ^ Elizabeth;   //these two always go into others set
+         end;
+
+     RewardPeople(People);
+
+     People = People diff escort_others;
+
+     un_list = [Heike, Oswald, Olaf, Sonya, Ralph, Kowalski, Aviradze, Swansson, Dwayne, Khattam, Evelyn, Gonzo, Makise, Snake, Gensher];
+     name_list = ['Heike', 'Oswald', 'Olaf', 'Sonya', 'Ralph', 'Kowalski', 'Aviradze', 'Swansson', 'Dwayne', 'Khattam', 'Evelyn', 'Gonzo', 'Makise', 'Snake', 'Gensher'];
+     for i = 1 to un_list do
+         if un_list[i] in People then
+            SaveCharacters(un_list[i],name_list[i] & '_14_cont2');
+
+     SaveCharacters(People diff un_list,'Others_14_cont2');
+
+     SaveCharacters(UPFPeople,'UPF_14_cont2');
+
+     SaveCharacters(escort_others, 'convoy_others_14_cont2');
+
+     YouWin;        
+end;
+
+

@@ -1,0 +1,378 @@
+Export testing;
+
+Export Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis;
+Export Khattam, upf_deserter, other_heike_folks, Farmer, other_farmer_folks, farmer_driver;
+Export farmer_vehicle, heike_list, other_louis_folks;
+Export Sebel;
+
+Export need_engineer, num_extra_people;
+
+
+Starting
+begin
+     ResetFog;
+     RandomizeAll;
+     
+     testing = false;  //Just testing or playing for real?
+
+     LoadPeople;
+
+     Action;
+end;
+
+Function LoadPeople;
+     var i, un;
+     begin
+          uc_side = 8;
+          uc_nation = nation_arabian;
+
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_12a');
+
+                    if TestCharacters('Olaf_12a') then
+                         Olaf = CreateCharacter('Olaf_12a')
+                    else
+                         Olaf = 0;
+
+                    if TestCharacters('Sonya_12a') then
+                         Sonya = CreateCharacter('Sonya_12a')
+                    else
+                         Sonya = 0;
+
+                    if TestCharacters('Oswald_12a') then
+                         Oswald = CreateCharacter('Oswald_12a')
+                    else
+                         Oswald = 0;
+
+                    if TestCharacters('Ralph_12a') then
+                         Ralph = CreateCharacter('Ralph_12a')
+                    else
+                         Ralph = 0;
+
+                    if TestCharacters('Kowalski_12a') then
+                         Kowalski = CreateCharacter('Kowalski_12a')
+                    else
+                         Kowalski = 0;
+
+                    if TestCharacters('Suze_12a') then
+                         Suze = CreateCharacter('Suze_12a')
+                    else
+                         Suze = 0;
+
+                    if TestCharacters('MarkB_12a') then
+                         MarkB = CreateCharacter('MarkB_12a')
+                    else
+                         MarkB = 0;
+
+                    if TestCharacters('Kurt_12a') then
+                         Kurt = CreateCharacter('Kurt_12a')
+                    else
+                         Kurt = 0;
+
+                    if TestCharacters('Martin_12a') then
+                         Martin = CreateCharacter('Martin_12a')
+                    else
+                         Martin = 0;
+
+                    if TestCharacters('Louis_12a') then
+                         Louis = CreateCharacter('Louis_12a')
+                    else
+                         Louis = 0;
+
+                    if TestCharacters('Khattam_12a') then
+                         Khattam = CreateCharacter('Khattam_12a')
+                    else
+                         Khattam = 0;
+
+                    if TestCharacters('upf_deserter_12a') then
+                         upf_deserter = CreateCharacter('upf_deserter_12a')
+                    else
+                         upf_deserter = 0;
+
+                    other_heike_folks = CreateCharacterSet('Others_12a') diff 0;
+
+                    other_louis_folks = CreateCharacterSet('Other_Louis_people_12a') diff 0;
+               end
+          else
+               begin
+                    InitHc;
+
+                    PrepareSoldier(sex_female,8);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+
+                    PrepareMechanic(sex_male,8);
+                    hc_name = 'Olaf';
+                    Olaf = CreateHuman;
+
+                    PrepareScientist(sex_female,8);
+                    hc_name = 'Sonya';
+                    Sonya = CreateHuman;
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Oswald';
+                    Oswald = CreateHuman;
+                     
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Ralph';
+                    Ralph = CreateHuman;
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Kowalski';
+                    Kowalski = CreateHuman;     
+
+                    PrepareSoldier(sex_female,8);
+                    hc_name = 'Suze';
+                    Suze = CreateHuman;
+
+                    PrepareScientist(sex_male,8);
+                    hc_name = 'Mark';
+                    MarkB = CreateHuman;       
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Kurt';
+                    Kurt = CreateHuman;
+
+                    PrepareMechanic(sex_male,8);
+                    hc_name = 'Martin';
+                    Martin = CreateHuman;
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Louis';
+                    Louis = CreateHuman;
+                    SetClass(Louis,class_mortar);
+
+                    PrepareScientist(sex_male,8);
+                    hc_name = 'Khattam';
+                    Khattam = CreateHuman;
+
+                    PrepareSoldier(sex_male,8);
+                    hc_name = 'Bergkamp';
+                    upf_deserter = CreateHuman;    
+
+                    other_heike_folks = [];
+                    InitHc;
+                    for i = 1 to 1 do
+                         begin
+                              PrepareHuman(false,[class_soldier,class_mechanic,class_scientistic][Rand(1,3)],7);
+                              other_heike_folks = other_heike_folks ^ CreateHuman;
+                         end; 
+
+                    other_louis_folks = [];
+                    InitHc;
+                    for i = 1 to 2 do
+                         begin
+                              PrepareHuman(false,[class_soldier,class_mechanic,class_scientistic][Rand(1,3)],7);
+                              other_louis_folks = other_louis_folks ^ CreateHuman;
+                         end;  
+               end;
+
+
+          //Depending on which and how many people the player saved in last mission
+          //Farmer gives the player some reinforcements.
+          //At best the player has 16 humans (including Heike).
+          //Even if the player saves all he/she may only have 14 if he/she accepted Khattam in mission
+          //11 and rejected the UPF traitor in mission 12a.
+          heike_list = ([Heike, Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam, upf_deserter] ^ other_heike_folks ^ other_louis_folks) diff 0;
+          need_engineer := UnitFilter(heike_list,[f_class,class_engineer]) = 0;
+
+          num_extra_people = (14 - heike_list) div 2;
+
+          if num_extra_people < 0 then
+               num_extra_people = 0;
+
+          if num_extra_people = 0 and need_engineer then
+               num_extra_people = 1;
+
+
+          //Farmer and Co.
+          Farmer = NewCharacter('Farmer');
+          SetLastMission(Farmer,16);  //For correct xp bonus later on
+
+          other_farmer_folks = [];
+          InitHc;
+          for i = 1 to num_extra_people + 6 - need_engineer do
+               begin
+                    PrepareHuman(false,[class_soldier,class_engineer,class_mechanic,class_scientistic][Rand(1,4)],Rand(5,6));
+                    un = CreateHuman;
+                    other_farmer_folks = other_farmer_folks ^ un;
+
+                    if GetClass(un) = class_engineer and GetSkill(un,skill_engineering) > [8,7,6][difficulty] then
+                         SetSkill(un,skill_engineering,[8,7,6][difficulty]);
+               end;
+
+          if need_engineer then
+               begin
+                    PrepareEngineer(false,5);
+                    un = CreateHuman;
+                    other_farmer_folks = other_farmer_folks ^ un;
+
+                    if GetSkill(un,skill_engineering) > [8,7,6][difficulty] then
+                         SetSkill(un,skill_engineering,[8,7,6][difficulty]);
+               end;
+
+          PrepareScientist(sex_female,5);
+          //hc_name = 'Sebel';  //from CharName.wri
+          //hc_gallery = 'ar_new';
+          //hc_face_number = 33;
+          Sebel = CreateHuman;
+          other_farmer_folks = other_farmer_folks ^ Sebel;
+
+          InitHc;
+          PrepareMechanic(false,5);
+          farmer_driver = CreateHuman;
+
+          InitVc;
+          vc_chassis = ar_half_tracked;
+          vc_engine = engine_siberite;
+          vc_control = control_manual;
+          vc_weapon = [ar_gatling_gun, ar_gun, ar_rocket_launcher, ar_multimissile_ballista, ar_double_machine_gun, ar_flame_thrower][Rand(1,6)];
+          farmer_vehicle = CreateVehicle;
+          PlaceHumanInUnit(farmer_driver,farmer_vehicle);
+     end;
+
+Function Action;
+     var i, temp_list, un_list, name_list, un;
+     begin
+          RevealFogArea(8,gray_fog_area);
+
+          InGameOn;
+          
+          CenterNowOnXY(14,14);  //Just somewhere black
+
+          for i in heike_list do
+               PlaceUnitXYR(i,121,29,5,false);
+
+          SetDir(farmer_vehicle,0);
+          PlaceUnitXY(farmer_vehicle,85,31,false);
+
+          for i in other_farmer_folks ^ Farmer do
+               PlaceUnitXYR(i,85,36,5,false);
+
+          
+          ComMoveXY(heike_list,91,36);
+          AddComTurnUnit(heike_list,Farmer);
+
+          //Wait for movement. Then center on units.
+          wait(0$1);
+          CenterNowOnUnits(heike_list);
+
+          repeat
+          wait(0$3);
+          CenterOnUnits(heike_list);
+          until UnitFilter(heike_list,[f_distxy,91,36,1]) > 0;
+
+          CenterOnXY(88,36);
+
+          ComTurnUnit(Farmer ^ other_farmer_folks,Heike);
+          Say(Farmer,'D1-Fa-1');
+
+          if Oswald > 0 then
+               Say(Oswald,'D1-Os-1');
+
+          if upf_deserter > 0 then
+               begin
+                    {if GetSex(other_farmer_folks[1]) = sex_male then
+                         Say(other_farmer_folks[1],'D1-SomeM-1')
+                    else
+                         Say(other_farmer_folks[1],'D1-SomeF-1');}
+                    Say(Sebel,'D1-SomeF-1');
+
+                    Say(upf_deserter,'D1-Ha-1');
+                    Say(Heike,'D1-H-1');
+                    Say(Farmer,'D1-Fa-2');
+               end;
+
+          Say(Heike,'D1-H-2');
+          Say(Farmer,'D1-Fa-3');
+          Say(Farmer,'D1-Fa-4');
+          Say(Heike,'D1-H-3');
+          Say(Farmer,'D1-Fa-5');
+
+          if num_extra_people > 0 then
+               begin
+                    Say(Farmer,'D1-Fa-6');
+
+                    wait(0$0.2);
+                    if need_engineer then
+                         temp_list = [class_soldier,class_scientistic,class_mechanic,[class_engineer,1]]
+                    else
+                         temp_list = [class_soldier,class_scientistic,class_mechanic,class_engineer];
+
+                    temp_list = CharacterSelection('',1,num_extra_people,[sel_hired,sel_not_changeable] ^ heike_list ^ [sel_not_hired,Farmer,farmer_driver] ^ [sel_changeable] ^ other_farmer_folks,temp_list);
+
+                    heike_list = heike_list ^ temp_list;
+                    other_heike_folks = other_heike_folks ^ temp_list;
+                    other_farmer_folks = other_farmer_folks diff temp_list;
+
+                    wait(0$0.2);
+               end;
+
+          Say(Farmer,'D1-Fa-7');
+
+          //Farmer departs
+          wait(0$0.5);
+          ComFree(heike_list diff Heike);
+          ComMoveXY(other_farmer_folks ^ Farmer ^ farmer_vehicle,97,84);
+
+          //Wait for them to disappear
+          repeat
+          wait(0$1);
+          until UnitFilter(other_farmer_folks ^ Farmer,[f_distxy,93,72,5]) > 0;
+
+          if Oswald > 0 and Ralph > 0 then
+               begin
+                    if Rand(1,2) = 1 then
+                         Say(Oswald,'D1-Os-2')
+                    else
+                         Say(Ralph,'D1-Ra-1');
+               end
+          else
+               if Oswald > 0 then
+                    Say(Oswald,'D1-Os-2')
+               else
+                    if Ralph > 0 then
+                         Say(Ralph,'D1-Ra-1')
+                    else
+                         if Suze > 0 then
+                              Say(Suze,'D1-Su-1')
+                         else
+                              if other_heike_folks > 0 then
+                                   begin
+                                        if GetSex(other_heike_folks[1]) = sex_male then
+                                             Say(other_heike_folks[1],'D1-SomeM2-1')
+                                        else
+                                             Say(other_heike_folks[1],'D1-SomeF2-1');
+                                   end;
+
+          if Oswald > 0 or Ralph > 0 or Suze > 0 or other_heike_folks > 0 then  //if something was said before
+               Say(Heike,'D1-H-4');
+
+          wait(0$0.5);
+
+          ComMoveXY(heike_list,85,45);
+          AddComMoveXY(heike_list,64,45);
+
+          wait(0$12);
+
+          InGameOff;
+          
+
+          //Save units and change map
+          SaveCharacters(Heike,'Heike_13a');
+
+          un_list = [Olaf, Sonya, Oswald, Ralph, Kowalski, Suze, MarkB, Kurt, Martin, Louis, Khattam, Farmer];
+          name_list = ['Olaf', 'Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Suze', 'MarkB', 'Kurt', 'Martin', 'Louis', 'Khattam', 'Farmer'];
+          for un = 1 to un_list do
+               SaveCharacters(un_list[un],name_list[un] & '_13a');
+
+          if upf_deserter > 0 then
+               SaveCharacters(upf_deserter,'upf_deserter_13a');
+
+          SaveCharacters(other_louis_folks,'Other_Louis_people_13a');
+
+          SaveCharacters(other_heike_folks,'Others_13a');
+
+          ChangeMap('%_cont','%_cont');
+     end;

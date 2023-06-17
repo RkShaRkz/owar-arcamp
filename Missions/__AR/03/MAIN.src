@@ -1,0 +1,347 @@
+Export ape_status, Aviradze, Messenger;
+Export FarmerVehicle;
+
+Starting
+RocknRoll;
+
+Function RocknRoll;
+     var Heike, Ralph, Oswald, Sonya, Lister;
+     var testing;
+     begin
+          ResetFog;
+          RandomizeAll;
+
+          //false for normal, true for testing.
+          testing = false;
+
+          ComHold(the_ape);
+
+          //Create people
+          uc_side = 2;
+          uc_direction = 1;
+          uc_nation = nation_arabian;
+
+          if not testing then
+               begin
+                    Heike = CreateCharacter('Heike_02');
+                    SetClass(Heike,class_soldier);
+                    SetDir(Heike,uc_direction);
+
+                    Aviradze = CreateCharacter('Aviradze_02');
+                    SetClass(Aviradze,class_scientistic);
+                    SetDir(Aviradze,uc_direction);
+               end
+          else
+               begin
+                    hc_name = 'Heike';
+                    hc_sex = sex_female;
+                    hc_class = class_soldier;
+                    Heike = createhuman;
+
+                    hc_sex = sex_male;
+                    hc_name = 'Aviradze';
+                    hc_class = class_scientistic;
+                    hc_skills = [0,0,0,3];
+                    aviradze = createhuman;
+               end;
+
+          if not testing then
+               begin
+                    if TestCharacters('Ralph_02') then
+                         begin
+                              Ralph = CreateCharacter('Ralph_02');
+                              SetClass(Ralph,class_soldier);
+                              SetDir(Ralph,uc_direction);
+                         end
+                    else Ralph = 0;
+               end
+          else
+               begin
+                    hc_name = 'Ralph';
+                    hc_class = class_soldier;
+                    Ralph = CreateHuman;
+               end;
+            
+          if not testing then
+               begin
+                    if TestCharacters('Oswald_02') then
+                         begin
+                              Oswald = CreateCharacter('Oswald_02');
+                              SetClass(Oswald,class_soldier);
+                              SetDir(Oswald,uc_direction);
+                         end
+                    else Oswald = 0;
+               end
+          else
+               begin
+                    hc_name = 'Oswald';
+                    Oswald = createhuman;
+               end;
+          
+          if not testing then
+               begin
+                    if TestCharacters('Sonya_02') then
+                         begin
+                              Sonya = CreateCharacter('Sonya_02');
+                              SetClass(Sonya,class_scientistic);
+                              SetDir(Sonya,uc_direction);
+                         end
+                    else Sonya = 0;
+               end
+          else
+               begin
+                    hc_name = 'Sonya';
+                    hc_sex = sex_female;
+                    hc_class = class_scientistic;
+                    Sonya = createhuman;
+               end;
+
+          if not testing then
+               begin
+                    if TestCharacters('Lister_02') then
+                         begin
+                              Lister = CreateCharacter('Lister_02');
+                              SetClass(Lister,class_soldier);
+                              SetDir(Lister,uc_direction);
+                         end
+                    else Lister = 0;
+               end
+          else
+               begin
+                    hc_name = 'Lister';
+                    hc_sex = sex_male;
+                    hc_class = class_soldier;
+                    Lister = createhuman;
+               end;
+         {
+          uc_direction = 5;
+          PrepareSoldier(sex_male,3);
+          if testing then
+               hc_name = 'Messenger';
+          Messenger = CreateHuman;
+          }
+
+          Messenger = NewCharacter('Farmer');
+
+          //Place people
+          //PlaceHumanInUnit(Messenger,mes_veh);
+          PlaceUnitXY(Aviradze,39,71,false);
+          PlaceUnitXY(Heike,38,72,false);
+          PlaceUnitXY(Ralph,39,74,false);
+          PlaceUnitXY(Oswald,37,70,false);
+          PlaceUnitXY(Sonya,37,68,false);
+          PlaceUnitXY(Lister,36,66,false);
+
+          disable(1);
+          ape_status = 0;
+          ComStand(all_units diff the_ape);
+
+          InGameOn;
+          DialogueOn;
+          CenterNowOnXY(40,79);
+          Dwait(0$1.1);
+
+          RandomizeAll;
+          
+          Say(Aviradze,'D1Av1');
+          DialogueOff;
+
+          repeat
+               ComMoveXY(Aviradze,45,71);
+               wait(0$0.5);
+          until GetDistUnitXY(Aviradze,45,71) <= 2;
+
+          ape_status = 1; //start taming
+
+          if Oswald > 0 then
+               begin
+                    Say(Oswald,'D1Os1');
+                    Say(Heike,'D1H1');
+                    Say(Oswald,'D1Os2');
+                    ape_status = 2;  //Apeman goes closer to Aviradze
+                    Say(Heike,'D1H2');
+               end
+          else
+               begin
+                    wait(0$5);
+                    ape_status = 2;  //Apeman goes closer to Aviradze
+               end;
+
+          repeat
+          wait(0$0.5);
+          until GetDistUnits(Aviradze,the_ape) <= 2;
+
+          //Messenger (Farmer) spawns
+          //PlaceUnitXY(Messenger,53,78,false);
+
+          // Farmer's vehicle
+          uc_direction = 5;
+          uc_nation = 2;
+
+          vc_chassis = ar_light_trike;
+          vc_control = control_manual;
+          vc_engine = engine_solar;
+          vc_weapon = 24;
+
+          FarmerVehicle = CreateVehicle;
+          PlaceUnitXY(FarmerVehicle, 52, 77, false);
+          PlaceHumanInUnit(Messenger, FarmerVehicle);
+
+          ComMoveXY(FarmerVehicle,45,72);
+
+          ape_status = 3;  //Apeman flees
+          SetAttr(the_ape,attr_speed,15);  //Run, run!
+          ComMoveXY(the_ape,62,51);
+
+          repeat
+          wait(0$0.2);
+          until GetDistUnits(Aviradze,the_ape) >= 5;
+
+          Say(Aviradze,'D1Av2');
+
+          ComStop(FarmerVehicle);
+          wait(0$1);
+          ComExitVehicle(Messenger);
+          AddComMoveXY(Messenger, 43, 72);
+          wait(0$0.2);
+          {ComMoveXY(Messenger, 40, 70);
+
+          repeat
+          wait(0$01);
+          until GetDistUnitXY(Messenger, 40, 70) <= 1;
+
+          AddComTurnXY(Messenger, 39, 70);
+          }
+          Say(Messenger,'D1Me1');
+
+          Wait(0$0.2);
+          ComTurnUnit(all_units diff [Messenger,the_ape],Messenger);
+
+          Wait(0$0.2);
+
+          ComTurnUnit(Messenger, Aviradze);
+
+          Say(Aviradze,'D1Av3');
+
+          ComTurnUnit(Messenger, Heike);
+
+          Say(Heike,'D1H3');
+
+          ComMoveXY(Messenger, 42, 72);
+          Say(Messenger,'D1Me2');
+
+          while GetDistUnitXY(Messenger, 42, 72) > 1 do
+          begin
+               wait(0$1);
+
+               if IsInUnit(Messenger) then
+                  ComExitVehicle(Messenger)
+               else
+                   ComMoveXY(Messenger, 42, 72);
+          end;
+
+          ComTurnUnit(Messenger, Heike);
+          
+          Say(Messenger,'D1Me3');
+          Say(Aviradze,'D1Av4');
+
+          ComTurnUnit(Messenger,Aviradze);
+
+          Wait(0$0.3);
+          Say(Messenger,'D1Me4');
+          Say(Aviradze,'D1Av5');
+          Say(Heike,'D1H4');
+          
+          ComTurnUnit(Messenger,Heike);
+
+          Wait(0$0.3);
+          Say(Messenger,'D1Me5');
+
+          ComEnterUnit(Messenger, FarmerVehicle);
+          ComMoveXY(FarmerVehicle,45,79);
+          wait(0$2);
+          enable(1);
+
+          wait(0$3);
+          ChangeMapFunc;
+     end;
+
+//Aviradze trying to tame apeman
+Every 0$1 trigger ape_status = 1 do
+     var hex, temp_value;
+     begin
+          temp_value = 0;
+          repeat
+               if ape_status < 3 then
+                    begin
+                         ComTameXY(Aviradze,45,71);
+                         wait(0$1);
+                         ComStand(Aviradze);
+                    end;
+
+               case ape_status of
+                    1: begin  //Initial taming
+                         temp_value = temp_value + 1;
+                         if temp_value > 2 then
+                              temp_value = 1;
+
+                         case temp_value of
+                              1: begin
+                                   ComHold(the_ape);
+                                   if Rand(1,2) = 1 then
+                                        ComTurnUnit(the_ape,Aviradze);
+                              end;
+                              2: begin
+                                   hex = RandHexArea(ape_area,false);
+                                   ComMoveXY(the_ape,hex[1],hex[2]);
+                              end;
+                         end;
+                    end;
+                    2: begin  //Taming almost a success - apeman gets closer
+                         temp_value = GetDistUnits(the_ape,Aviradze);
+                         if temp_value >= 2 then
+                              begin
+                                   if temp_value > 4 then
+                                        temp_value = 4;
+
+                                   ComMoveXY(the_ape, ShiftX(GetX(Aviradze),1,temp_value-1) , ShiftY(GetY(Aviradze),1,temp_value-1) );
+                                   AddComStand(the_ape);
+                              end;
+                    end;
+                    3: exit;  //Failure - apeman flees.
+               end;
+
+               Wait(0$2);
+
+          until ape_status = 3;
+     end;
+
+//Remove units as they leave the map and change map when all have left.
+Every 0$0.5 Marked 1 do
+     var i;
+     begin
+          for i in FilterAllUnits([f_inarea,exit_area]) do
+               RemoveUnit(i);
+
+          ComMoveXY(all_units diff the_ape,45,79);
+
+          if (all_units diff the_ape) = 0 then  //only ape left on map
+               ChangeMapFunc;
+
+          enable;
+     end;
+
+Function ChangeMapFunc;
+     begin
+          //Save the messenger soldier for making him appear in the next map.
+          SaveCharacters(Messenger,'Messenger_03');
+
+          wait(0$0.2);
+          ChangeMap('%_cont','%_cont');
+     end;                                                
+
+//If the player skips all dialogues then change map.
+On DialogueSkipped(val) do
+     begin
+          ChangeMapFunc;
+     end;

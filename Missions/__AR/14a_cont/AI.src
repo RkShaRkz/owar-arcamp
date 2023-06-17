@@ -1,0 +1,603 @@
+
+On UnitDestroyed(un) do
+     var side, temp_list, group;
+     var btype;
+     begin
+          if un = Heike then
+               begin
+                    ExclusiveOn;
+                    Wait(0$1);
+                    YouLost('HeikeDead');
+                    ExclusiveOff;
+               end;
+
+
+          side = GetSide(un);
+
+          if side = you then
+               exit;
+
+
+          //Update computer variables
+          case GetType(un) of
+               unit_human: begin
+                    for group in ai_groups do
+                         RemoveHumanFromVariables(group,un);
+               end;
+               unit_vehicle:
+                    for group in ai_groups do
+                         RemoveVehicleFromVariables(group,un);
+               unit_building: begin
+               end;
+          end;
+     end;
+Function RemoveVehicleFromVariables(group,vehicle);
+     var temp_list, i;
+     begin
+          if vehicle in ai_vehicles[group] then
+               begin
+                    temp_list = ai_vehicles[group] diff vehicle;
+                    ai_vehicles = Replace(ai_vehicles,group,temp_list);
+               end;
+
+          for i = 1 to ai_mechanic_vehicle_map+0 do
+               if ai_mechanic_vehicle_map[i] = vehicle then
+                    begin
+                         ai_mechanic_vehicle_map = Replace(ai_mechanic_vehicle_map,i,0);
+                         break;
+                    end;
+     end;
+Function RemoveHumanFromVariables(group,human);
+     var temp_list;
+     begin
+          if human in ai_soldiers[group] then
+               begin
+                    temp_list = ai_soldiers[group] diff human;
+                    ai_soldiers = Replace(ai_soldiers,group,temp_list);
+               end;
+
+          if human in ai_mechanics[group] then
+               begin
+                    temp_list = ai_mechanics[group] diff human;
+                    ai_mechanics = Replace(ai_mechanics,group,temp_list);
+               end;
+
+          if human in ai_scientists[group] then
+               begin
+                    temp_list = ai_scientists[group] diff human;
+                    ai_scientists = Replace(ai_scientists,group,temp_list);
+               end;
+     end;
+
+
+//Control Russian soldiers and vehicles. If they spot the player they follow the spotted unit. If nothing is happening
+//then go back to your homespot.
+Every 0$1+0$0.7 do
+     var group, i, temp_list, attacking, k, un, time, val;
+     var spot_hex_list, unit_stand_hex, unit_stand_time;
+     begin
+          spot_hex_list = [];  //Index is unit id, value is hex
+          unit_stand_hex = []; //Index is unit id, value is hex
+          unit_stand_time = []; //Index is unit id, value is time
+
+          repeat
+          wait(0$1);
+
+          if ContactTime([you,russians]) <= 0$10 then
+               attacking = true
+          else
+               begin
+                    attacking = false;
+                    spot_hex_list = [];
+               end;
+
+          for group in ai_groups do
+               begin
+                    for i in ai_soldiers[group] ^ ai_vehicles[group] do
+                         begin
+                              //Don't bother the bazooker if he/she is about to fire a time shifting or space shifting rocket.
+                              temp_list = GetTaskList(i);
+                              if temp_list > 0 then
+                                   if temp_list[1][1] = '&' or temp_list[1][1] = '%' then
+                                        continue;
+
+                              k = false;
+                              if attacking then
+                                   begin
+                                        un = Attacks(i);
+                                        if un > 0 then
+                                             spot_hex_list = Replace(spot_hex_list,i,[GetX(un),GetY(un)]);
+
+                                        if spot_hex_list >= i then
+                                             if spot_hex_list[i] > 0 then
+                                                  k = true;
+                                   end;
+
+                              //If the unit has stood still for some time we presume it isn't hunting anyone.
+                              //Then go home.
+                              if k then
+                                   begin
+                                        val = false;
+                                        if unit_stand_hex < i then
+                                             val = true
+                                        else
+                                             if unit_stand_hex[i] = 0 then
+                                                  val = true;
+
+                                        if val then
+                                             begin
+                                                  unit_stand_hex = Replace(unit_stand_hex,i,[GetX(i),GetY(i)]);
+                                                  unit_stand_time = Replace(unit_stand_time,i,0$0);
+                                             end
+                                        else
+                                             begin
+                                                  temp_list = unit_stand_hex[i];
+                                                  time = unit_stand_time[i];
+
+                                                  if GetDistUnitXY(i,temp_list[1],temp_list[2]) <= 2 then
+                                                       time = time + 0$1
+                                                  else
+                                                       begin
+                                                            time = 0$0;
+                                                            unit_stand_hex = Replace(unit_stand_hex,i,[GetX(i),GetY(i)]);
+                                                       end;
+
+                                                  if time >= 0$5 then
+                                                       begin
+                                                            k = false;
+                                                            spot_hex_list = Replace(spot_hex_list,i,[]);
+                                                            time = 0$0;
+                                                       end;
+
+                                                  unit_stand_time = Replace(unit_stand_time,i,time);
+                                             end;
+                                   end;
+
+                              if k then
+                                   begin
+                                        ComAgressiveMove(i,spot_hex_list[i][1],spot_hex_list[i][2]);
+                                   end
+                              else
+                                   begin
+                                        //Go home
+                                        temp_list = ai_homespot[i];
+                                        if GetDistUnitXY(i,temp_list[1],temp_list[2]) >= 3 then
+                                             ComAgressiveMove(i,temp_list[1],temp_list[2]); 
+                                   end;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//Heal injured humans. Only close to starting positions.
+Every 0$1+0$0.8 do
+     var group, i, area, temp_list;
+     begin
+
+
+          repeat
+          wait(0$1);
+
+          for group in ai_groups do
+               begin
+                    case group of
+                         1: area = plateau_west;
+                         2: area = plateau_east;
+                    end;
+
+                    for i in ai_scientists[group] do
+                         begin
+                              temp_list = FilterAllUnits([[f_side,russians],[f_type,unit_human],[f_inarea,area],[f_not,[f_driving]],[f_not,[f_lives,1000]]]) diff i;  //Can't heal yourself
+
+                              //Heal the closest one
+                              if temp_list > 0 then
+                                   begin
+                                        ComHeal(i,NearestUnitToUnit(temp_list,i))
+                                   end
+                              else
+                                   begin
+                                        //Go home
+                                        temp_list = ai_homespot[i];
+                                        if GetDistUnitXY(i,temp_list[1],temp_list[2]) >= 3 then
+                                             ComMoveXY(i,temp_list[1],temp_list[2]);
+                                   end;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//Control mechanics. Stay in vehicles and repair if necessary.
+Every 0$1+0$0.9 do
+     var group, i, attacking, veh, area;
+     begin
+
+
+          repeat
+          wait(0$1);
+
+          if ContactTime([you,russians]) <= 0$10 then
+               attacking = true
+          else
+               attacking = false;
+
+          for group in ai_groups do
+               begin
+                    case group of
+                         1: area = plateau_west;
+                         2: area = plateau_east;
+                    end;
+
+
+                    //If a mechanic loses his/her vehicle then transfer him/her to the soldier list.
+                    for i = 1 to ai_mechanic_vehicle_map do
+                         if i in ai_mechanics[group] and ai_mechanic_vehicle_map[i] = 0 then
+                              begin
+                                   ai_mechanics = Replace(ai_mechanics,group, ai_mechanics[group] diff i);
+                                   ai_soldiers = Replace(ai_soldiers,group, ai_soldiers[group] ^ i);
+                              end;
+
+
+                    for i in ai_mechanics[group] do
+                         begin
+                              if ai_mechanic_vehicle_map < i then
+                                   continue;  //Should never happen
+
+                              veh = ai_mechanic_vehicle_map[i];
+
+                              if ( GetLives(veh) < 1000 and not attacking and IsInArea(veh,area) ) or not IsOk(veh) then
+                                   begin
+                                        case GetType(IsInUnit(i)) of
+                                             unit_vehicle: ComExitVehicle(i);
+                                             unit_building: ComExitBuilding(i);
+                                             else
+                                                  ComRepairVehicle(i,veh);
+                                        end;
+                                   end
+                              else
+                                   begin
+                                        if IsInUnit(i) <> veh then
+                                             begin
+                                                  case GetType(IsInUnit(i)) of
+                                                       unit_vehicle: ComExitVehicle(i);
+                                                       unit_building: ComExitBuilding(i);
+                                                       else
+                                                            ComEnterUnit(i,veh);
+                                                  end;
+                                             end;
+                                   end;
+                         end;
+               end;      
+
+          until false;
+     end;
+
+
+//Make bazookers shoot time shifting rockets at their targets.
+Every 0$1+0$0.1 do
+     var side, group, i, temp_list, un1, temp_list_2, temp_value, val;
+     begin
+          side = russians;
+
+          repeat
+          wait(0$1);
+        
+          for group in ai_groups do
+               begin
+                    for i in ai_soldiers[group] do
+                              if GetClass(i) = class_bazooker then
+                                   begin
+                                        //Don't bother the bazooker if he/she is about to fire a time shifting or space shifting rocket.
+                                        temp_list = GetTaskList(i);
+                                        if temp_list > 0 then
+                                             if temp_list[1][1] = '&' or temp_list[1][1] = '%' then
+                                                  continue;
+
+                                        un1 = Attacks(i);
+                                        if un1 > 0 and ( DangerousUnits([un1]) > 0 or GetType(un1) = unit_human ) then  //Red humans on stim drugs still move
+                                             begin
+                                                  temp_list_2 = [GetX(un1),GetY(un1)];
+                                                  temp_value = false;
+
+                                                  for val in ai_time_shift_hexes[group] ^ ai_time_shift_hexes_underway[group] do  //don't send a rocket where someone else (probably) soon will
+                                                       if GetDistXY(temp_list_2[1],temp_list_2[2],val[1],val[2]) <= ai_time_shift_data[side][2] then
+                                                            begin
+                                                                 temp_value = true;
+                                                                 break;
+                                                            end;
+
+                                                  if not temp_value then  //not inside a time shifted area
+                                                       begin
+                                                            ComTimeShift(i,temp_list_2[1],temp_list_2[2]);
+
+                                                            //The bazooker could die before he/she fires the rocket
+                                                            //so we store the hex temporarily and check if the rocket actually is fired later.
+                                                            temp_list = Insert(ai_time_shift_hexes_underway[group],1,[temp_list_2[1],temp_list_2[2],i,tick]);
+                                                            ai_time_shift_hexes_underway = Replace(ai_time_shift_hexes_underway,group,temp_list);
+                                                       end;
+                                             end;
+                                   end;
+               end;
+
+          until false;
+     end;
+Function DangerousUnits(list);
+     var weapon_list, i, btype, b, val;
+     begin
+          weapon_list = [us_machine_gun,us_light_gun,us_gatling_gun,us_double_gun,us_heavy_gun,us_rocket_launcher,
+                                   us_siberium_rocket,us_laser,us_double_laser,
+                                   ar_multimissile_ballista,ar_light_gun,ar_double_machine_gun,ar_gatling_gun,
+                                   ar_flame_thrower,ar_gun,ar_rocket_launcher,ar_selfpropelled_bomb,
+                                   ru_heavy_machine_gun,ru_gatling_gun,ru_gun,ru_rocket_launcher,ru_heavy_gun,
+                                   ru_rocket,ru_siberium_rocket,ru_time_lapser];
+
+                    result = [];
+
+                    for i in list do
+                         case GetType(i) of
+                              unit_human: begin
+                                   if GetTech(tech_stimdrugs,GetSide(i)) <> state_researched and not IsOk(i) then
+                                        continue;
+
+                                   result = result ^ i;
+                              end;
+                              unit_vehicle: begin
+                                   if not IsOk(i) then
+                                        continue;
+
+                                   case GetControl(i) of
+                                        control_manual,control_rider: begin
+                                             if UnitsInside(i) = 0 then
+                                                  continue;
+                                        end;
+                                        control_remote: begin
+                                             if IsControledBy(i) = 0 then
+                                                  continue;
+                                        end;
+                                        control_computer,control_apeman: begin
+                                        end;
+                                   end;
+
+                                   if GetWeapon(i) in weapon_list then
+                                        result = result ^ i;
+                              end;
+                              unit_building: begin
+                                   if not IsOk(i) then
+                                        continue;
+
+                                   btype = GetBType(i);
+
+                                   case btype of
+                                        b_turret: begin
+                                        end;
+                                        b_bunker,b_breastwork,b_armoury,b_barracks,b_fort: begin
+                                             if UnitsInside(i) = 0 then
+                                                  continue;
+                                        end;
+                                        else
+                                             continue;
+                                   end;
+
+                                   if btype in [b_bunker,b_turret] then
+                                        if not GetBWeapon(i) in weapon_list then
+                                             continue
+                                        else
+                                             begin
+                                                  b = GetBase(i);
+                                                  val = false;
+
+                                                  if b = 0 then
+                                                       val = true
+                                                  else
+                                                       if GetEnergy(b)[4] = 0 then
+                                                            val = true;
+
+                                                  if val then
+                                                       continue;
+                                             end;
+
+                                   result = result ^ i;
+                              end;
+                         end;
+     end;
+
+//Determine which bazookers have successfully fired their time shifting rocket.
+//We need an extremely short update time on this update to prevent the situation where
+//a bazooker has shot a time shifting rocket but is brought to red life before the
+//update runs (in which case we do not detect the time shifting rocket as fired).
+Every 0$1+0$0.4 do
+     var group, side, val, temp_value, temp_list;
+     begin
+          side = russians;
+
+          repeat
+          wait(1);
+      
+          for group in ai_groups do
+               begin
+                    val = 1;
+                    while val <= ai_time_shift_hexes_underway[group] do
+                         begin
+                              if tick = ai_time_shift_hexes_underway[group][val][4] then  //If the order was given at exactly this tick then the unit's task list is not yet updated
+                                   begin
+                                        val = val + 1;
+                                        continue;
+                                   end;
+
+                              temp_value = false;
+                              temp_list = GetTaskList(ai_time_shift_hexes_underway[group][val][3]);
+
+                              if IsOk(ai_time_shift_hexes_underway[group][val][3]) then  //Task list is reset upon going to red life
+                                   begin
+                                        if temp_list = 0 then
+                                             temp_value = true
+                                        else
+                                             if not temp_list[1][1] = '&' then
+                                                  temp_value = true;
+                                   end
+                              else
+                                   begin
+                                        temp_list = Delete(ai_time_shift_hexes_underway[group],val);
+                                        ai_time_shift_hexes_underway = Replace(ai_time_shift_hexes_underway,group,temp_list);
+
+                                        continue;
+                                   end;
+
+                              if temp_value then
+                                   begin
+                                        temp_list = Insert(ai_time_shift_hexes[group],1,[ai_time_shift_hexes_underway[group][val][1],ai_time_shift_hexes_underway[group][val][2],ai_time_shift_data[side][1]]);
+                                        ai_time_shift_hexes = Replace(ai_time_shift_hexes,group,temp_list);
+
+                                        temp_list = Delete(ai_time_shift_hexes_underway[group],val);
+                                        ai_time_shift_hexes_underway = Replace(ai_time_shift_hexes_underway,group,temp_list);
+
+                                        continue;
+                                   end;
+
+                              val = val + 1;
+                         end;
+               end;
+
+          until false;
+     end;
+
+//Update time shifted areas (determine when they have faded away).
+Every 0$1+0$0.3 do
+     var group, side, val, temp_list, time;
+     begin
+          side = russians;
+
+          repeat
+          wait(0$1);
+        
+          for group in ai_groups do
+               begin
+                    val = 1;
+                    while val <= ai_time_shift_hexes[group] do
+                         begin
+                              time = ai_time_shift_hexes[group][val][3]-0$1;
+
+                              if time <= 0$0 then
+                                   begin
+                                        temp_list = Delete(ai_time_shift_hexes[group],val);
+                                        ai_time_shift_hexes = Replace(ai_time_shift_hexes,group,temp_list);
+
+                                        continue;
+                                   end
+                              else
+                                   begin
+                                        temp_list = Replace(ai_time_shift_hexes[group][val],3,time);
+                                        temp_list = Replace(ai_time_shift_hexes[group],val,temp_list);
+                                        ai_time_shift_hexes = Replace(ai_time_shift_hexes,group,temp_list);
+                                   end;
+
+                              val = val + 1;
+                         end;
+               end;
+
+          until false;
+     end;
+
+
+//Control Russian assault units.
+//Attack Heike with all you've got!
+Every 0$1+0$0.6 do
+     var i, hex, attackers, veh, k;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if IsLive(Heike) then
+               hex = [GetX(Heike),GetY(Heike)]
+          else
+               hex = [];
+
+          //Update variables (remove dead units)
+          for i in assault_ai_vehicles do
+               if not IsLive(i) then
+                    begin
+                         assault_ai_vehicles = assault_ai_vehicles diff i;
+
+                         for k = 1 to assault_ai_mechanic_vehicle_map do
+                              if assault_ai_mechanic_vehicle_map[k] = i then
+                                   begin
+                                        assault_ai_mechanic_vehicle_map = Replace(assault_ai_mechanic_vehicle_map,k,0);
+                                        break;
+                                   end;
+                    end;
+
+          for i in assault_ai_mechanics do
+               if not IsLive(i) then
+                    assault_ai_mechanics = assault_ai_mechanics diff i;
+
+
+          if assault_ai_mechanics = 0 then
+               continue;
+
+
+          attackers = assault_ai_vehicles;
+
+          for i in assault_ai_mechanics do
+               begin
+                    if assault_ai_mechanic_vehicle_map < i then  //Should never happen
+                         begin
+                              attackers = attackers ^ i;
+                              continue;
+                         end;
+
+                    veh = assault_ai_mechanic_vehicle_map[i];
+
+                    if veh = 0 then
+                         begin
+                              attackers = attackers ^ i;
+                              continue;
+                         end;
+
+                    if not IsOk(veh) then
+                         begin
+                              case GetType(IsInUnit(i)) of
+                                   unit_vehicle: ComExitVehicle(i);
+                                   unit_building: ComExitBuilding(i);
+                                   else
+                                        ComRepairVehicle(i,veh);
+                              end;
+                         end
+                    else
+                         begin
+                              if IsInUnit(i) <> veh then
+                                   begin
+                                        case GetType(IsInUnit(i)) of
+                                             unit_vehicle: ComExitVehicle(i);
+                                             unit_building: ComExitBuilding(i);
+                                             else
+                                                  ComEnterUnit(i,veh);
+                                        end;
+                                   end;
+                         end;
+               end;
+
+          for i in attackers do
+               begin
+                    //Attack Heike.
+                    if hex > 0 then
+                         ComAgressiveMove(i,hex[1],hex[2]);
+               end;
+
+          until false;
+     end;
+
+
+//The computer's vehicles never seem to run completely out of fuel...
+Every 0$5 do
+     var un_list, i;
+     begin
+          for i in FilterAllUnits([[f_side,russians],[f_type,unit_vehicle]]) do
+               if GetFuel(i) < 10 and GetEngine(i) = engine_combustion then
+                    SetFuel(i,10);
+
+          enable;
+     end;

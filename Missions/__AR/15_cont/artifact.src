@@ -1,0 +1,633 @@
+
+Export Function ArtifactUse(cargo);
+var i, temp, temp_list, siblist;
+begin
+     temp_list = [ATech_SibPlant, ATech_Beh, ATech_TimeLapse, ATech_Laser, ATech_SuperStim, ATech_SPBomb];
+
+     if ArtUse_TimeLapse_time > 0 then
+        temp_list = [ATech_SibPlant, ATech_Beh, 0, ATech_Laser, ATech_SuperStim, ATech_SPBomb];
+
+     temp = 7;
+
+     for i = 1 to temp_list do
+         if temp_list[i] > 0 then
+            temp = temp ^ i;
+
+
+     if temp > 1 then
+        case SelectiveQuery('artifact_use', temp) of
+             1: begin
+                     ArtUse_SibPlant = 1;
+                     SetTaskList(cargo, []);
+
+                     DeselectUnits(cargo);
+                     if IsDrivenBy(cargo) > 0 then
+                        DeselectUnits(IsDrivenBy(cargo));
+                end;
+
+             2: begin
+                     ArtUse_Beh = 1;
+                     SetTaskList(cargo, []);
+
+                     DeselectUnits(cargo);
+                     if IsDrivenBy(cargo) > 0 then
+                        DeselectUnits(IsDrivenBy(cargo));
+                end;
+
+             3: begin
+                     ArtUse_TimeLapse = 1;
+                     SetTaskList(cargo, []);
+
+                     DeselectUnits(cargo);
+                     if IsDrivenBy(cargo) > 0 then
+                        DeselectUnits(IsDrivenBy(cargo));
+                end;
+
+             4: begin
+                     ArtUse_Laser = 1;
+                     SetTaskList(cargo, []);
+
+                     DeselectUnits(cargo);
+                     if IsDrivenBy(cargo) > 0 then
+                        DeselectUnits(IsDrivenBy(cargo));
+                end;
+
+             5: begin
+                     ArtUse_SuperStim = 1;
+                     SetTaskList(cargo, []);
+
+                     DeselectUnits(cargo);
+                     if IsDrivenBy(cargo) > 0 then
+                        DeselectUnits(IsDrivenBy(cargo));
+                end;
+
+             6: begin
+                     ArtUse_SPBomb = 1;
+                     SetTaskList(cargo, []);
+
+                     DeselectUnits(cargo);
+                     if IsDrivenBy(cargo) > 0 then
+                        DeselectUnits(IsDrivenBy(cargo));
+                end;
+
+             7: SetTaskList(cargo, []);
+        end;
+
+
+     SibList = GetCargo(cargo, mat_siberit);
+
+     for i in FilterAllUnits([[f_side,2],[f_or,[f_weapon,ar_cargo_bay],[f_weapon,us_cargo_bay],[f_weapon,ru_cargo_bay]]]) diff cargo do
+         if GetDistUnits(i, cargo) < 13 then
+            SibList = SibList + GetCargo(i, mat_siberit);
+
+
+     temp_list = [ArtUse_SibPlant, ArtUse_Beh, ArtUse_TimeLapse, ArtUse_Laser, ArtUse_SuperStim, ArtUse_SPBomb];
+
+     for i = 1 to temp_list do
+         if temp_list[i] = 1 then
+         begin
+              temp = i;
+              break;
+         end;
+
+     if SibList < [30, 100, 70, 40, 30, 40, 0][temp] then
+     begin
+          query('artifact_use_no');
+          ArtUse_SibPlant = 0;
+          ArtUse_Beh = 0;
+          ArtUse_TimeLapse = 0;
+          ArtUse_Laser = 0;
+          ArtUse_SuperStim = 0;
+          ArtUse_SPBomb = 0;
+          ArtUse_TimeLapse = 0;
+     end;
+
+end;
+
+
+every 0$0.1 trigger 1 in  [ArtUse_SibPlant, ArtUse_Beh, ArtUse_TimeLapse, ArtUse_Laser, ArtUse_SuperStim, ArtUse_SPBomb] do
+var i, j, k, temp, temp2, temp_list, st, cargos, SibList, price, used, target;
+begin
+     if not FirstUseInfo and not ArtUse_TimeLapse then
+     begin
+          Query('artifact_use_initial');
+          FirstUseInfo = 1;
+     end;
+
+
+     //Get the list of cargos and available Siberite
+     cargos = FilterAllUnits([[f_side,2],[f_or,[f_weapon,ar_cargo_bay],[f_weapon,ru_cargo_bay],[f_weapon,us_cargo_bay]]]);
+
+     for i in cargos do
+         if GetCargo(i, mat_artifact) then
+            temp = i;
+
+     SibList = [GetCargo(temp, mat_siberit)];
+     temp_list = [];
+
+     for i in cargos diff temp do
+         if GetDistUnits(i, temp) < 13 then
+         begin
+              temp_list = temp_list ^ i;
+              SibList = SibList ^ [GetCargo(i, mat_siberit)];
+         end;
+
+     cargos = temp ^ temp_list;
+     
+
+     //Check if there's enough
+     temp = [ArtUse_SibPlant, ArtUse_Beh, ArtUse_TimeLapse, ArtUse_Laser, ArtUse_SuperStim, ArtUse_SPBomb];
+
+     for i = 1 to temp do
+         if temp[i] = 1 then
+         begin
+              price = [30, 100, 70, 40, 30, 40][i];
+
+              case i of
+                   1: target = FilterAllUnits([[f_btype,b_siberite_power],[f_not,[f_constructed]]]);
+                   2: target = FilterAllUnits([f_weapon,59]);
+                   4: target = FilterAllUnits([f_or,[f_weapon, us_double_laser],[f_bweapon, us_double_laser]]);
+                   5: target = FilterAllUnits([[f_side,2],[f_or,[f_class,class_soldier],[f_class,class_mortar],[f_class,class_desert_warior]]]);
+                   6: target = FilterAllUnits([f_weapon, ar_selfpropelled_bomb]);
+              end;
+
+              break;
+         end;
+
+
+     temp = 0;
+
+     for i in SibList do
+         temp = temp + i[1];
+
+     if temp < price then
+     begin
+          ArtUse_SibPlant = 0;
+          ArtUse_Beh = 0;
+          ArtUse_TimeLapse = 0;
+          ArtUse_Laser = 0;
+          ArtUse_SuperStim = 0;
+          ArtUse_SPBomb = 0;
+     end;
+
+
+     used = 0;
+
+     //Select the target unit
+     //Sib Plant
+     if ArtUse_SibPlant = 1 then
+        for i in FilterAllUnits([[f_btype,b_siberite_power],[f_not,[f_constructed]]]) do
+            if IsSelected(i) then
+            begin
+                 temp = 0;
+
+                 for j in ArtUse_SibPlant_contaminated do
+                     if j[1] = i then
+                        temp = 1;
+
+                 if temp = 0 then
+                 begin
+                      ArtUse_SibPlant_contaminated = ArtUse_SibPlant_contaminated ^ [[i, tick, 0]];
+                      used = used + 1;
+                      ArtUse_SibPlant = 0;
+
+                      for j in i ^ FilterAllUnits([[f_type,unit_building],[f_dist,i,10]]) do
+                      begin
+                           ai_units_irradiated = ai_units_irradiated ^ j;
+                           ai_units_irradiated_time = ai_units_irradiated_time ^ 6000;
+                      end;
+                 end;
+
+                 break;
+            end;
+
+
+     //Behemoth damage
+     if ArtUse_Beh = 1 then
+        for i in FilterAllUnits([f_weapon,59]) do
+            if IsSelected(i) then
+            begin
+
+                 if not i in ArtUse_Beh_damaged then
+                 begin
+                      ArtUse_Beh_damaged = ArtUse_Beh_damaged ^ i;
+                      ArtUse_Beh_count = ArtUse_Beh_count ^ [[0, tick, GetX(i), GetY(i)]];
+
+                      used = used + 1;
+                      ArtUse_Beh = 0;
+
+                      temp = [GetX(i), GetY(i)];
+                      MineExplosion(temp[1], temp[2], 0);
+                      ArtContamination(temp[1], temp[2], 30);
+
+                      ComStop(i);
+
+                      temp = GetLives(i) - 500;
+                      if temp < 0 then
+                         SetLives(i, 0)
+                      else
+                          SetLives(i, temp);
+
+                      for j in i ^ FilterAllUnits([[f_type,unit_building],[f_dist,i,20]]) do
+                      begin
+                           ai_units_irradiated = ai_units_irradiated ^ j;
+                           ai_units_irradiated_time = ai_units_irradiated_time ^ 1$46;
+                      end;
+                 end;
+
+                 break;
+
+            end;
+
+
+
+
+     //Time Lapse
+     if ArtUse_TimeLapse = 1 then
+     begin
+          ArtUse_TimeLapse_time = [1$15,1$0,0$45][difficulty];
+          used = used + 1;
+          ArtUse_TimeLapse = 0;
+     end;
+
+     //Double Laser
+     if ArtUse_Laser = 1 then
+        for i in FilterAllUnits([f_or,[f_weapon, us_double_laser],[f_bweapon, us_double_laser]]) do
+            if IsSelected(i) then
+            begin
+                 temp = 0;
+
+                 for j in ArtUse_Laser_Hacked do
+                     if j[1] = i then
+                        temp = 1;
+
+                 if temp = 0 then
+                 begin
+                      ArtUse_Laser_Hacked = ArtUse_Laser_Hacked ^ [[i, tick]];
+                      used = used + 1;
+                 end;
+            end;
+
+     //Super Stims
+     if ArtUse_SuperStim = 1 then
+        for i in FilterAllUnits([[f_side,2],[f_or,[f_class,class_soldier],[f_class,class_mortar],[f_class,class_desert_warior]]]) diff Heike ^ Omar do
+            if IsSelected(i) and not IsInUnit(i) then
+            begin
+                 temp = 0;
+
+                 for j in ArtUse_SuperStim_units do
+                     if j[1] = i then
+                     temp = 1;
+
+                 if temp = 0 then
+                 begin
+                      ArtUse_SuperStim_units = ArtUse_SuperStim_units ^ [[i,1000]];
+
+                      temp_list = [GetX(i),GetY(i),GetDir(i)];
+                      RemoveUnit(i);
+
+                      SetAttr(i, attr_speed, GetAttr(i,attr_speed) + 6);
+                      SetAttr(i, attr_stamina, GetAttr(i,attr_stamina) + 20);
+
+                      SetDir(i,temp_list[3]);
+                      PlaceUnitXY(i,temp_list[1],temp_list[2],false);
+
+                      used = used + 1;
+                 end;
+            end;
+
+     //Self Propelled Bomb
+     if ArtUse_SPBomb = 1 then
+        for i in FilterAllUnits([f_weapon, ar_selfpropelled_bomb]) do
+            if IsSelected(i) and not i in ArtUse_SPBomb_veh then
+            begin
+                 {ArtUse_SPBomb_XY = ArtUse_SPBomb_XY ^ [[GetX(i),GetY(i),tick]];
+
+                 temp = [[Getx(i), GetY(i)],[Getx(i),GetY(i)-1],[Getx(i)-1,GetY(i)-1],[Getx(i)-1,GetY(i)],[Getx(i),GetY(i)+1],[Getx(i)+1,GetY(i)+1],[Getx(i)+1,GetY(i)]];
+
+                 for j in temp do
+                 begin
+                      CreateDepositXY(j[1], j[2], mat_siberit);
+                      Contaminate(2, j[1], j[2]);
+                 end;
+                 }
+
+                 ArtUse_SPBomb_veh = ArtUse_SPBomb_veh ^ i;
+                 SetLives(i,0);
+
+                 for j = 1 to 6 do
+                 begin
+                      MineExplosion(GetX(i),GetY(i),1);
+
+                      if j > 3 then
+                         ArtContamination(GetX(i),GetY(i),5.83);   //10 seconds
+                 end;
+
+                 used = used + 1;
+
+
+                 for j in FilterAllUnits([[f_type,unit_building],[f_dist,i,20]]) do
+                 begin
+                      ai_units_irradiated = ai_units_irradiated ^ j;
+                      ai_units_irradiated_time = ai_units_irradiated_time ^ 400;
+                 end;
+
+
+                 for j in FilterAllUnits([f_dist,i,5]) do          //Special contamination
+                 begin
+                      temp = [];
+
+                      case GetType(j) of
+                           unit_human: temp = j;
+                           unit_vehicle: temp = IsDrivenBy(j);
+                           unit_building: temp = UnitsInside(j);
+                      end;
+
+                      if ArtUse_SPBomb_HumansContaminated > 0 then
+                         for k in ArtUse_SPBomb_HumansContaminated do
+                             if k[1] in temp then
+                                temp = temp diff k[1];
+
+                      if temp > 0 then
+                         for k in temp do
+                         begin
+                              ArtUse_SPBomb_HumansContaminated = ArtUse_SPBomb_HumansContaminated ^ [[k, 600]];
+
+                              DHighRadList = DHighRadList ^ k;
+                         end;
+                 end;
+
+            end;
+
+
+     //Take away used amount of siberite
+     price = price * used;
+
+     if price > 0 then
+        for i in cargos do
+        begin
+             temp = GetCargo(i, mat_siberit);
+
+             if temp >= price then
+             begin
+                  AddCargo(i, mat_siberit, - price);
+                  break;
+             end
+             else
+                 begin
+                      AddCargo(i, mat_siberit, - temp);
+                      price = price - temp;
+                 end;
+        end;
+
+
+     //Canceling
+     temp = 0;
+
+     for i in FilterAllUnits([]) diff target do
+         if IsSelected(i) then
+            temp = 1;
+
+     if temp = 1 then
+     begin
+          ArtUse_SibPlant = 0;
+          ArtUse_Beh = 0;
+          ArtUse_Laser = 0;
+          ArtUse_SuperStim = 0;
+          ArtUse_SPBomb = 0;
+          ArtUse_TimeLapse = 0;
+     end;
+
+enable;
+end;
+
+//////////////Sib Plant///////////////////////////////////////
+every 0$1 trigger ArtUse_SibPlant_contaminated > 0 do
+var i, j, temp, temp_list, time, hexes;
+begin
+     for i = 1 to ArtUse_SibPlant_contaminated do
+     begin
+
+          temp = ArtUse_SibPlant_contaminated[i][1];
+          time = ArtUse_SibPlant_contaminated[i][2];
+          hexes = [[Getx(temp), GetY(temp)]{,[Getx(temp),GetY(temp)-1],[Getx(temp)-1,GetY(temp)-1],[Getx(temp)-1,GetY(temp)],[Getx(temp),GetY(temp)+1],[Getx(temp)+1,GetY(temp)+1],[Getx(temp)+1,GetY(temp)]} ];
+
+          if ArtUse_SibPlant_contaminated[i][3] = 0 then
+          begin
+               for j in hexes do
+               begin
+                    CreateDepositXY(j[1], j[2], mat_siberit);
+                    contaminate(2, j[1], j[2]);
+               end;
+
+               temp_list = [temp, time, 1];
+
+               ArtUse_SibPlant_contaminated = Replace(ArtUse_SibPlant_contaminated, i, temp_list);
+          end;
+
+
+          if tick > time + 6100 then
+          begin
+               for j in hexes do
+                   RemoveDepositXY(j[1], j[2]);
+
+               SetLives(temp, 0);
+               ArtUse_SibPlant_contaminated = Delete(ArtUse_SibPlant_contaminated, i);
+               break;
+          end
+          else
+              begin
+                   j = tick - time;
+                   j = 6100 - j;
+                   j = j / 6100;
+
+                   if j > 0 and GetLives(temp) > 250 then
+                      SetLives(temp, 1000 * j);
+              end;
+     end;
+
+enable;
+end;
+
+//////////////Behemoth sabotage///////////////////////////////////////
+every 0$1 trigger ArtUse_Beh_count > 0 do
+var i, temp;
+begin
+     for i = 1 to ArtUse_Beh_count do
+         if tick >= ArtUse_Beh_count[i][2] + 0$53 then
+            if ArtUse_Beh_count[i][1] = 0 then
+            begin
+                 ArtContamination(ArtUse_Beh_count[i][3], ArtUse_Beh_count[i][4], 30);
+
+                 temp = ArtUse_Beh_count[i];
+                 temp = Replace(temp, 1, 1);
+                 temp = Replace(temp, 2, tick + 0$53);
+
+                 ArtUse_Beh_count = Replace(ArtUse_Beh_count, i, temp);
+            end
+               else
+                   begin
+                        ArtUse_Beh_count = Delete(ArtUse_Beh_count, i);
+                        break;
+                   end;
+
+enable;
+end;
+
+//////////////Double Laser///////////////////////////////////////
+every 0$1 trigger ArtUse_Laser_Hacked > 0 do
+var i, j, temp, temp_list, time, hex;
+begin
+     for i = 1 to ArtUse_Laser_Hacked do
+     begin
+
+          temp = ArtUse_Laser_Hacked[i][1];
+          time = ArtUse_Laser_Hacked[i][2];
+
+          if IsDead(temp) then
+          begin
+               ArtUse_Laser_Hacked = Delete(ArtUse_Laser_Hacked, i);
+               break;
+          end;
+
+          if not GetSide(temp) = 4 then
+          begin
+               //hex = [GetX(temp), GetY(temp)];
+               //RemoveUnit(temp);
+        
+               SetSide(temp, 4);
+
+               //PlaceUnitXY(temp, hex[1], hex[2], false);
+
+               DoNotAttack(1,temp);
+
+               for i in FilterAllUnits([f_or,[f_side,1],[f_side,7]]) do
+                   DoNotAttack(4,i);
+          end;
+
+
+
+          if tick > time + [1$30,1$10,0$50][difficulty] then
+          begin
+               SetSide(temp, 1);
+               DoNotAttack(4,temp);
+               ArtUse_Laser_Hacked = Delete(ArtUse_Laser_Hacked, i);
+               break;
+          end;
+     end;
+
+enable;
+end;
+
+//////////////Super Stims///////////////////////////////////////
+every 0$1 trigger ArtUse_SuperStim_units > 0 do
+var i, temp, un, lvs;
+begin
+     for i = 1 to ArtUse_SuperStim_units do
+     begin
+          un = ArtUse_SuperStim_units[i][1];
+          lvs = ArtUse_SuperStim_units[i][2] -5;    //should last 200 seconds
+
+          temp = [un, lvs];
+
+          ArtUse_SuperStim_units = Replace(ArtUse_SuperStim_units, i, temp);
+
+          if lvs < 0 then
+             lvs = 0;
+
+          if GetLives(un) > lvs then
+             SetLives(un, lvs);
+     end;
+
+enable;
+end;
+
+//////////////Self Propelled Bomb///////////////////////////////////////
+{every 0$1 trigger ArtUse_SPBomb_XY > 0 do
+var i, j, hexes, X, Y;
+begin
+     for i = 1 to ArtUse_SPBomb_XY do
+         if tick >= ArtUse_SPBomb_XY[i][3] + 0$10 then
+         begin
+              X = ArtUse_SPBomb_XY[i][1];
+              Y = ArtUse_SPBomb_XY[i][2];
+              hexes = [[X, Y],[X, Y-1],[X-1, Y-1],[X-1, Y],[X, Y+1],[X+1, Y+1],[X+1, Y]];
+
+              for j in hexes do
+                  RemoveDepositXY(j[1], j[2]);
+
+              ArtUse_SPBomb_XY = Delete(ArtUse_SPBomb_XY, i);
+              break;
+         end;
+
+enable;
+end; }
+
+every 0$1 trigger ArtUse_SPBomb_HumansContaminated > 0 do
+var i, temp, un, lvs;
+begin
+     for i = 1 to ArtUse_SPBomb_HumansContaminated do
+         if IsDead(ArtUse_SPBomb_HumansContaminated[i][1]) then
+            ArtUse_SPBomb_HumansContaminated = Replace(ArtUse_SPBomb_HumansContaminated, i, 0);
+
+     ArtUse_SPBomb_HumansContaminated = ArtUse_SPBomb_HumansContaminated diff 0;
+
+     for i = 1 to ArtUse_SPBomb_HumansContaminated do
+     begin
+          un = ArtUse_SPBomb_HumansContaminated[i][1];
+          lvs = ArtUse_SPBomb_HumansContaminated[i][2] -15;
+
+          temp = [un, lvs];
+
+          ArtUse_SPBomb_HumansContaminated = Replace(ArtUse_SPBomb_HumansContaminated, i, temp);
+
+          if lvs < 0 then
+             lvs = 0;
+
+          if GetLives(un) > lvs then
+             SetLives(un, lvs);
+     end;
+
+enable;
+end;
+
+///////////////Time Lapse/////////////////////////////////
+every 0$1 trigger ArtUse_TimeLapse_time > 0 do
+var i, temp;
+begin
+     SetTech(31, 2, state_researched);
+
+     if ArtUse_TimeLapse_time = 0$1 then
+        SetTech(31,2,state_enabled);
+
+     ArtUse_TimeLapse_time = ArtUse_TimeLapse_time - 0$1;
+
+enable;
+end;
+
+
+
+
+
+every 0$1 trigger ai_units_irradiated > 0 do
+var i, temp;
+begin
+     temp = [];
+
+     for i in ai_units_irradiated_time do
+         temp = temp ^ i - 0$1;
+
+     ai_units_irradiated_time = temp;
+
+     for i = 1 to ai_units_irradiated_time do
+         if ai_units_irradiated_time[i] <= 0 then
+         begin
+              ai_units_irradiated = Delete(ai_units_irradiated, i);
+              ai_units_irradiated_time = Delete(ai_units_irradiated_time, i);
+              break;
+         end;
+
+
+enable;
+end;
+

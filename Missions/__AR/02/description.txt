@@ -1,0 +1,8 @@
+MISSION
+  MAP map.txt
+  TEXTS texts.txt
+  SOURCES sources.txt
+  CAMPAIGN 2 2
+  AUTOR OWS
+  DISABLED_INPUT_OUTPUT CharsAr02 CharsAr02out
+END_OF_MISSION
