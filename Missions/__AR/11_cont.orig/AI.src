@@ -21,7 +21,7 @@ Every 0$10 do
 
           enable;
      end;
-                   
+
 
 //Russians receive a crane from another base if they don't have one.
 {Every 0$10+0$0.6 do
@@ -2445,8 +2445,7 @@ Export Function PlayerAtEasternBorder;
 
 
 //"Ordinary" Russian attackers.
-//Every 0$1+0$0.3 do
-Every 0$2+0$0.6 do
+Every 0$1+0$0.3 do
      var i, temp_list, human_list, num_sol, num_baz, num_sci, temp_list_2, temp_list_3, k;
      var base, side, attack_strat_history, first_time_attack_gensher;
      begin

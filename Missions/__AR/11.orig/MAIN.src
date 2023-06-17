@@ -256,7 +256,7 @@ Function Action;
 
           //Pick units
 //          num = [11,10,9][difficulty];
-          num = [14,13,12,11,10,9][difficulty];
+          num = [14,13,12][difficulty];
           if LoadVariable('Abdul_doubt_07',false) then
                num = num - 1;
           if LoadVariable('Heike_surrendered_08',false) then

@@ -1,0 +1,42 @@
+
+//Crate spawning whole map.
+//Greater chance in the beginning of the game of crates to land where the player can easily fetch them.
+Every 0$1 + 0$0.4 do
+     begin
+
+          repeat
+          wait( Rand(1$10,2$40) );
+
+          CreateCratesAnywhere(Rand(3,5),true);
+
+          //Chance of extra crates with little delay
+          if Rand(1,4) = 1 then
+               begin
+                    wait( Rand(0$5,0$20) );
+                    CreateCratesAnywhere(Rand(2,4),true);
+               end;
+
+          until false;
+     end;
+
+//Crate spawning where player can easily get them.
+//Greater chance in the beginning of the game.
+Every 0$1+0$0.5 do
+     var count, time;
+     begin
+          count = 0;
+
+          repeat
+          if game_phase < 3 then
+               time = [1$0,1$15,1$30][difficulty] + ( 0$45 * count/(count+6) )
+          else
+               time = [1$40,1$55,2$10][difficulty];
+
+          wait(Rand(time,time+0$30));
+          
+          CreateCratesArea(Rand(3,5),player_crate_area,true);
+
+          count = count + 1;
+
+          until false;
+     end;

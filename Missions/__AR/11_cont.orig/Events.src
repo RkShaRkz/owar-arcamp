@@ -1105,8 +1105,6 @@ Every 0$1 do
 Every 0$1+0$0.8 trigger game_phase = 2 do
      var i, val, temp_list, k;
      var un_list, scis_list, hex_list, hex, exit_hex, rand_hexes;
-     var attacking_units, american_base_hex;
-
      begin
           ai_bases = ai_bases diff 2;  //Disable AI for Gensher's base
 
@@ -1116,26 +1114,7 @@ Every 0$1+0$0.8 trigger game_phase = 2 do
           exit_hex = [173,110];
           rand_hexes = [];  //Index is id, value is hex
 
-          // SHARK: well, lets stir some shit up and attack the US base a little
-          american_base_hex = [113,36];
-          attacking_units = [];
-          //get all vehicles, order to aggressive move to hex
-          attacking_units = FilterAllUnits( [ [f_placed], [f_side, you_alt], [f_type, unit_vehicle] ] );
-          //get all mortars, tell them to do the same
-          attacking_units = attacking_units ^ gensher_mortars;
-          //betray them without a symetrical enemy status
-          SetAttitude(you_alt,americans,att_enemy,false);
-          //actually tell them to attack there
-          ComAgressiveMove(attacking_units, american_base_hex[1], american_base_hex[2]);
-
-          // The rest should just pick up and start leaving
-
           un_list = original_gensher_people ^ Gensher;
-          // SHARK: pull the new troops as well
-          un_list = un_list ^ gensher_bunker_apes;
-          //un_list = un_list ^ gensher_mortars;
-
-          // resume with old code
           scis_list = UnitFilter(un_list,[f_class,class_scientistic]);
 
           //Get people out of buildings/vehicles
