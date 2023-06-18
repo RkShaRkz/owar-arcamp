@@ -141,6 +141,10 @@ On ResearchComplete(tech,lab) do
                               SetAreaMapShow(camera_area_3,1);
                               SetAreaMapShow(camera_area_4,1);
                               SetAreaMapShow(camera_area_5,1);
+                              // SHARK - new camera areas
+                              SetAreaMapShow(camera_area_6,1);
+                              SetAreaMapShow(camera_area_7,1);
+                              SetAreaMapShow(camera_area_8,1);
                          end;
                end;
      end;
@@ -167,7 +171,10 @@ Export Function CheckCamerasOnCommand(comm);
                                              if InArea(x,y,camera_area_2) or
                                                 InArea(x,y,camera_area_3) or
                                                 InArea(x,y,camera_area_4) or
-                                                InArea(x,y,camera_area_5) then
+                                                InArea(x,y,camera_area_5) or//then
+                                                InArea(x,y,camera_area_6) or
+                                                InArea(x,y,camera_area_7) or
+                                                InArea(x,y,camera_area_8) then
                                                      begin
                                                           camera_engineers = camera_engineers union i;
 
@@ -226,7 +233,7 @@ Every 0$1+0$0.4 do
      var i, k, temp_list, x, y, task_list;
      var need_area_list;
      begin
-          need_area_list = [2,3,4,5];  //areas needed to place cameras in
+          need_area_list = [2,3,4,5,6,7,8];  //areas needed to place cameras in; SHARK added 6,7,8
 
           repeat
           wait(0$0.1);
@@ -274,6 +281,24 @@ Every 0$1+0$0.4 do
                                         HiddenCamera(x,y,you);
                                         need_area_list = need_area_list diff 5;
                                         SetAreaMapShow(camera_area_5,0);
+                                   end  // NEW STUFF
+                              else if InArea(x,y,camera_area_6) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 6;
+                                        SetAreaMapShow(camera_area_6,0);
+                                   end
+                              else if InArea(x,y,camera_area_7) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 7;
+                                        SetAreaMapShow(camera_area_7,0);
+                                   end
+                              else if InArea(x,y,camera_area_8) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 8;
+                                        SetAreaMapShow(camera_area_8,0);
                                    end;
 
                               if need_area_list = 0 then
