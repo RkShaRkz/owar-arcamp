@@ -1,4 +1,4 @@
-Export testing;
+Export testing, logsenabled;
 
 Export you, russians, nature, you_alt, americans, scout_side, americans_alt;
 
@@ -32,6 +32,7 @@ begin
      ResetFog;
 
      testing = false;  //Testing mission or real campaign?
+     logsenabled = false; //print debug stuff
 
      ai_bases = [1,2,3];  //1 = American base, 2 = Gensher's base, 3 = Russian base
      ai_soldiers = [[],[],[]];  //Soldiers for computer sides

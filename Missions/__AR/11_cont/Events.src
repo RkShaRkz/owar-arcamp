@@ -1106,6 +1106,7 @@ Every 0$1+0$0.8 trigger game_phase = 2 do
      var i, val, temp_list, k;
      var un_list, scis_list, hex_list, hex, exit_hex, rand_hexes;
      var attacking_units, american_base_hex;
+     var hex_status;
 
      begin
           ai_bases = ai_bases diff 2;  //Disable AI for Gensher's base
@@ -1194,6 +1195,12 @@ Every 0$1+0$0.8 trigger game_phase = 2 do
                               begin
                                    if GetDistUnitXY(i,rand_hexes[i][1],rand_hexes[i][2]) > 5 then
                                         begin
+                                             // TODO check this hex, this looks like the culprit
+                                             if logsenabled then
+                                                begin
+                                                     hex_status = HexInfo(rand_hexes[i][1], rand_hexes[i][2]);
+                                                     display_strings = ['Hex at ', rand_hexes[i], ' has status ', hex_status];
+                                                end;
                                              ComMoveXY(i,rand_hexes[i][1],rand_hexes[i][2]);
                                              val = false;
                                         end;
