@@ -565,6 +565,13 @@ Function PrepareArabians;
           PlaceHumanInUnit(temp_unit,ar_dep);
           ai_engineers = Replace(ai_engineers,2,[temp_unit]);
 
+          //Mechanics - shark added this
+          original_gensher_people = original_gensher_people ^ mech1;
+          original_gensher_people = original_gensher_people ^ mech2;
+
+          // Healer - shark added this
+          original_gensher_people = original_gensher_people ^ healer;
+
           //Apemen
           InitHc;
           uc_nation = nation_nature;
