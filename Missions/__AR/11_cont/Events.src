@@ -1494,7 +1494,8 @@ Every 0$1+0$0.9 trigger game_phase = 3 do
                               //can't build American buildings.
                               PrepareNewCharacter('Khatam');
                               uc_side = you;
-                              uc_nation = nation_arabian;
+                              //uc_nation = nation_arabian; //khattam nationality
+                              uc_nation = nation_american;  //SHARK: actually, keep him american
 
                               old_man = Khattam;
                               Khattam = CreateHuman;
