@@ -141,6 +141,10 @@ On ResearchComplete(tech,lab) do
                               SetAreaMapShow(camera_area_3,1);
                               SetAreaMapShow(camera_area_4,1);
                               SetAreaMapShow(camera_area_5,1);
+                              // SHARK - new camera areas
+                              SetAreaMapShow(camera_area_6,1);
+                              SetAreaMapShow(camera_area_7,1);
+                              SetAreaMapShow(camera_area_8,1);
                          end;
                end;
      end;
@@ -167,7 +171,10 @@ Export Function CheckCamerasOnCommand(comm);
                                              if InArea(x,y,camera_area_2) or
                                                 InArea(x,y,camera_area_3) or
                                                 InArea(x,y,camera_area_4) or
-                                                InArea(x,y,camera_area_5) then
+                                                InArea(x,y,camera_area_5) or//then
+                                                InArea(x,y,camera_area_6) or
+                                                InArea(x,y,camera_area_7) or
+                                                InArea(x,y,camera_area_8) then
                                                      begin
                                                           camera_engineers = camera_engineers union i;
 
@@ -226,7 +233,7 @@ Every 0$1+0$0.4 do
      var i, k, temp_list, x, y, task_list;
      var need_area_list;
      begin
-          need_area_list = [2,3,4,5];  //areas needed to place cameras in
+          need_area_list = [2,3,4,5,6,7,8];  //areas needed to place cameras in; SHARK added 6,7,8
 
           repeat
           wait(0$0.1);
@@ -274,6 +281,24 @@ Every 0$1+0$0.4 do
                                         HiddenCamera(x,y,you);
                                         need_area_list = need_area_list diff 5;
                                         SetAreaMapShow(camera_area_5,0);
+                                   end  // NEW STUFF
+                              else if InArea(x,y,camera_area_6) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 6;
+                                        SetAreaMapShow(camera_area_6,0);
+                                   end
+                              else if InArea(x,y,camera_area_7) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 7;
+                                        SetAreaMapShow(camera_area_7,0);
+                                   end
+                              else if InArea(x,y,camera_area_8) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 8;
+                                        SetAreaMapShow(camera_area_8,0);
                                    end;
 
                               if need_area_list = 0 then
@@ -1105,6 +1130,9 @@ Every 0$1 do
 Every 0$1+0$0.8 trigger game_phase = 2 do
      var i, val, temp_list, k;
      var un_list, scis_list, hex_list, hex, exit_hex, rand_hexes;
+     var attacking_units, american_base_hex;
+     var hex_status;
+
      begin
           ai_bases = ai_bases diff 2;  //Disable AI for Gensher's base
 
@@ -1114,7 +1142,26 @@ Every 0$1+0$0.8 trigger game_phase = 2 do
           exit_hex = [173,110];
           rand_hexes = [];  //Index is id, value is hex
 
+          // SHARK: well, lets stir some shit up and attack the US base a little
+          american_base_hex = [113,36];
+          attacking_units = [];
+          //get all vehicles, order to aggressive move to hex
+          attacking_units = FilterAllUnits( [ [f_placed], [f_side, you_alt], [f_type, unit_vehicle] ] );
+          //get all mortars, tell them to do the same
+          attacking_units = attacking_units ^ gensher_mortars;
+          //betray them without a symetrical enemy status
+          SetAttitude(you_alt,americans,att_enemy,false);
+          //actually tell them to attack there
+          ComAgressiveMove(attacking_units, american_base_hex[1], american_base_hex[2]);
+
+          // The rest should just pick up and start leaving
+
           un_list = original_gensher_people ^ Gensher;
+          // SHARK: pull the new troops as well
+          un_list = un_list ^ gensher_bunker_apes;
+          //un_list = un_list ^ gensher_mortars;
+
+          // resume with old code
           scis_list = UnitFilter(un_list,[f_class,class_scientistic]);
 
           //Get people out of buildings/vehicles
@@ -1173,6 +1220,12 @@ Every 0$1+0$0.8 trigger game_phase = 2 do
                               begin
                                    if GetDistUnitXY(i,rand_hexes[i][1],rand_hexes[i][2]) > 5 then
                                         begin
+                                             // TODO check this hex, this looks like the culprit
+                                             if logsenabled then
+                                                begin
+                                                     hex_status = HexInfo(rand_hexes[i][1], rand_hexes[i][2]);
+                                                     display_strings = ['Hex at ', rand_hexes[i], ' has status ', hex_status];
+                                                end;
                                              ComMoveXY(i,rand_hexes[i][1],rand_hexes[i][2]);
                                              val = false;
                                         end;
@@ -1466,7 +1519,8 @@ Every 0$1+0$0.9 trigger game_phase = 3 do
                               //can't build American buildings.
                               PrepareNewCharacter('Khatam');
                               uc_side = you;
-                              uc_nation = nation_arabian;
+                              //uc_nation = nation_arabian; //khattam nationality
+                              uc_nation = nation_american;  //SHARK: actually, keep him american
 
                               old_man = Khattam;
                               Khattam = CreateHuman;

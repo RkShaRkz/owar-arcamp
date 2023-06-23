@@ -1,0 +1,1578 @@
+
+//Gensher's lab researches something all the time but cancel if the base is under attack (takes too much power).
+{
+Every 0$1+0$0.1 do
+     begin
+
+          repeat
+          wait(0$1);
+
+          if ai_labs[2] = 0 then
+               continue;
+
+          if BaseUnderAttack(2,-1) then
+               begin
+                    ComCancel(ai_labs[2][1]);
+                    continue;
+               end;
+
+          if IsOk(ai_labs[2][1]) and IsIdle(ai_labs[2][1]) then
+               begin
+                    SetSpecResearch(ai_labs[2][1],Rand(900,1100),true);
+                    SetWorkingProgress(ai_labs[2][1],gensher_spec_research_progress);
+               end;
+
+          until false;
+     end;
+On SpecResearchCancel(lab, percentage_done) do
+     begin
+          if lab in ai_labs[2] then
+               gensher_spec_research_progress = percentage_done;
+     end;
+On SpecResearchComplete(lab) do
+     begin
+          if lab in ai_labs[2] then
+               gensher_spec_research_progress = 0;
+     end;
+}
+
+
+Export Function GetApes(side);
+     begin
+          result = FilterAllUnits([[f_side,side],[f_or,[f_class,class_apeman],[f_class,class_apeman_soldier],[f_class,class_apeman_engineer],[f_class,class_apeman_kamikaze]]]);
+     end;
+
+
+//----------------- PHASE INDEPENDENT EVENTS -----------------//
+
+
+//When the player researches a technology Gensher automatically gets it too.
+//When hidden caemra tech is researched the player is tasked to place cameras in the
+//camera areas.
+On ResearchComplete(tech,lab) do
+     var temp_list, temp_unit, i, un_list;
+     begin
+          if GetSide(lab) = you then
+               begin
+                    SetTech(tech,you_alt,state_researched);
+
+                    if tech = tech_HidCam then
+                         begin
+                              un_list = [Sonya,MarkB,Aviradze] diff 0;
+
+                              temp_list = [];
+                              for i in un_list do
+                                   if IsInUnit(i) = lab then
+                                        temp_list = temp_list ^ i;
+
+                              if temp_list = 0 then
+                                   begin
+                                        temp_list = UnitsInside(lab) diff (GetApes(you) ^ [Heike, Sonya, Oswald, Ralph, Kowalski, Evelyn, Suze, Olaf, Kurt, Dwayne, MarkB, Aviradze, Swansson]);
+                                   end;
+
+                              if temp_list = 0 then
+                                   begin
+                                        temp_list = UnitFilter(un_list,[f_class,class_scientistic]);
+                                   end;
+
+                              if temp_list = 0 then
+                                   begin
+                                        temp_list = FilterAllUnits([[f_side,you],[f_class,class_scientistic]]) diff [Heike, Sonya, Oswald, Ralph, Kowalski, Evelyn, Suze, Olaf, Kurt, Dwayne, MarkB, Aviradze, Swansson];
+                                   end;
+
+                              if temp_list = 0 then
+                                   begin
+                                        temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff (GetApes(you) ^ [Heike, Sonya, Oswald, Ralph, Kowalski, Evelyn, Suze, Olaf, Kurt, Dwayne, MarkB, Aviradze, Swansson]);
+                                   end;
+
+                              if temp_list > 0 then
+                                   begin
+                                        DialogueOn;
+
+                                        temp_unit = temp_list[Rand(1,temp_list)];
+                                        case temp_unit of
+                                             Sonya: Say(temp_unit,'D7-So-1');
+                                             MarkB: begin
+                                                  Say(temp_unit,'D7-Ma-1');
+                                                  Say(Heike,'D7-H-1');
+                                                  Say(temp_unit,'D7-Ma-2');
+                                             end;
+                                             Aviradze: begin
+                                                  Say(temp_unit,'D7-Av-1');
+                                                  Say(Heike,'D7-H-1');
+                                                  Say(temp_unit,'D7-Av-2');
+                                             end;
+                                             else
+                                                  if GetSex(temp_unit) = sex_male then
+                                                       begin
+                                                            Say(temp_unit,'D7-SciM-1');
+                                                            Say(Heike,'D7-H-1');
+                                                            Say(temp_unit,'D7-SciM-2');
+                                                       end
+                                                  else
+                                                       begin
+                                                            Say(temp_unit,'D7-SciF-1');
+                                                            Say(Heike,'D7-H-1');
+                                                            Say(temp_unit,'D7-SciF-2');
+                                                       end;
+                                        end;
+
+                                        Say(Heike,'D7-H-2');
+
+                                        case temp_unit of
+                                             Sonya: Say(temp_unit,'D7-So-2');
+                                             MarkB: Say(temp_unit,'D7-Ma-3');
+                                             Aviradze: Say(temp_unit,'D7-Av-3');
+                                             else
+                                                  if GetSex(temp_unit) = sex_male then
+                                                       Say(temp_unit,'D7-SciM-3')
+                                                  else
+                                                       Say(temp_unit,'D7-SciF-3');
+                                        end;
+
+                                        DialogueOff;
+                                   end;
+
+                              Wait(0$0.2);
+                              ChangeMissionObjectives('MAddCameras');
+
+                              wait(0$0.2);
+                              SetAreaMapShow(camera_area_2,1);
+                              SetAreaMapShow(camera_area_3,1);
+                              SetAreaMapShow(camera_area_4,1);
+                              SetAreaMapShow(camera_area_5,1);
+                         end;
+               end;
+     end;
+
+//Check if the player has placed hidden cameras in all marked areas.
+//On Command(comm) do
+Export Function CheckCamerasOnCommand(comm);
+     var i, task_list, x, y, k, temp_list;
+     begin
+          if cameras_placed then
+               exit;
+
+          case comm of
+               103: begin //Place hidden camera
+                    for i in FilterAllUnits([[f_side,you],[f_class,class_engineer]]) do
+                         if IsSelected(i) then
+                              begin
+                                   task_list = GetTaskList(i);  //['g',x,y,0,0,0,0] is "place hidden camera"
+                                   if task_list > 0 then  //should be the case
+                                        begin
+                                             x = task_list[task_list+0][2];
+                                             y = task_list[task_list+0][3];
+
+                                             if InArea(x,y,camera_area_2) or
+                                                InArea(x,y,camera_area_3) or
+                                                InArea(x,y,camera_area_4) or
+                                                InArea(x,y,camera_area_5) then
+                                                     begin
+                                                          camera_engineers = camera_engineers union i;
+
+                                                          {if camera_engineers_task_map < i then
+                                                               camera_engineers_task_map = Replace(camera_engineers_task_map,i,[]);
+
+                                                          temp_list = camera_engineers_task_map[i] ^ [task_list[task_list+0]];
+                                                          camera_engineers_task_map = Replace(camera_engineers_task_map,i,temp_list);}
+                                                     end;
+                                        end;
+                              end;
+               end;
+               {else begin
+                    //Player could have given engineer new orders before camera was placed
+                    for i in camera_engineers do
+                         begin
+                              //If the unit's task list contains more then one task this command must have queued the new task
+                              //in which case the "place camera" command is still in effect.
+                              if GetTaskList(i) <= 1 then
+                                   begin
+                                        camera_engineers_task_map = Replace(camera_engineers_task_map,i,[]);
+                                        camera_engineers = camera_engineers diff i;
+                                   end;
+                         end;
+               end;}
+          end;
+     end;
+{Function TaskListContainsTask(un,inc_task);
+     var comp_task, k, match;
+     begin
+          result = false;
+
+          //A task always has 7 indexes.
+          if inc_task+0 <> 7 then
+               exit;
+
+          for comp_task in GetTaskList(un) do
+               begin
+                    match = true;
+
+                    for k = 1 to comp_task+0 do
+                         if not comp_task[k] = inc_task[k] then  //Don't use '<>'. Doesn't work with strings.
+                              begin
+                                   match = false;
+                                   break;
+                              end;
+
+                    if match then
+                         begin
+                              result = true;
+                              exit;
+                         end;
+               end;
+     end; }
+Every 0$1+0$0.4 do
+     var i, k, temp_list, x, y, task_list;
+     var need_area_list;
+     begin
+          need_area_list = [2,3,4,5];  //areas needed to place cameras in
+
+          repeat
+          wait(0$0.1);
+
+          //Remove engineers not having a task
+          temp_list = [];
+          for i in camera_engineers do
+               if HasTask(i) then
+                    temp_list = temp_list ^ i;
+
+           camera_engineers = temp_list;
+
+          //Check if engineer with a task to place a camera is near a tree.
+          for i in camera_engineers do
+               begin
+                    task_list = GetTaskList(i);
+                    if task_list[1][1] = 'g' then  //['g',x,y,0,0,0,0] is "place hidden camera"
+                         begin
+                              x = task_list[1][2];
+                              y = task_list[1][3];
+
+                              if GetDistUnitXY(i,x,y) > 2 then
+                                   continue;
+
+                              if InArea(x,y,camera_area_2) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 2;
+                                        SetAreaMapShow(camera_area_2,0);
+                                   end
+                              else if InArea(x,y,camera_area_3) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 3;
+                                        SetAreaMapShow(camera_area_3,0);
+                                   end
+                              else if InArea(x,y,camera_area_4) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 4;
+                                        SetAreaMapShow(camera_area_4,0);
+                                   end
+                              else if InArea(x,y,camera_area_5) then
+                                   begin
+                                        HiddenCamera(x,y,you);
+                                        need_area_list = need_area_list diff 5;
+                                        SetAreaMapShow(camera_area_5,0);
+                                   end;
+
+                              if need_area_list = 0 then
+                                   begin
+                                        ChangeMissionObjectives('MOutCameras');
+                                        cameras_placed = true;
+
+                                        exit;
+                                   end;
+                         end;
+
+                    {temp_list = camera_engineers_task_map[i];
+                    k = 1;
+                    while k <= temp_list do
+                         begin
+                              if not TaskListContainsTask(i, temp_list[k]) then  //Must have placed the camera then
+                                   begin
+                                        x = temp_list[k][2];
+                                        y = temp_list[k][3];
+
+                                        if InArea(x,y,camera_area_2) then
+                                             begin
+                                                  need_area_list = need_area_list diff 2;
+                                                  SetAreaMapShow(camera_area_2,0);
+                                             end
+                                        else if InArea(x,y,camera_area_3) then
+                                             begin
+                                                  need_area_list = need_area_list diff 3;
+                                                  SetAreaMapShow(camera_area_3,0);
+                                             end
+                                        else if InArea(x,y,camera_area_4) then
+                                             begin
+                                                  need_area_list = need_area_list diff 4;
+                                                  SetAreaMapShow(camera_area_4,0);
+                                             end
+                                        else if InArea(x,y,camera_area_5) then
+                                             begin
+                                                  need_area_list = need_area_list diff 5;
+                                                  SetAreaMapShow(camera_area_5,0);
+                                             end;
+
+                                        if need_area_list = 0 then
+                                             begin
+                                                  ChangeMissionObjectives('MOutCameras');
+                                                  cameras_placed = true;
+
+                                                  exit;
+                                             end;
+
+                                        temp_list = Delete(temp_list,k);
+                                        continue;
+                                   end;
+
+                              k = k + 1;
+                         end;
+
+                    camera_engineers_task_map = Replace(camera_engineers_task_map,i,temp_list);
+
+                    if camera_engineers_task_map[i] = 0 then
+                         camera_engineers = camera_engineers diff i;}
+               end;
+
+          until false;
+     end;
+
+//First time the player sees a Russian vehicle spontaneously teleport
+On SpontaneousTeleported(un) do
+     begin
+          if first_teleport then
+               if See(you,un) then
+                    begin
+                         CenterNowOnUnits(un);
+                         first_teleport = false;
+                         wait(0$1.8);  //wait for teleport to happen
+
+                         DialogueOn;
+
+                         ForceSay(Heike,'D6-H-1');
+
+                         if IsLive(Ralph) then
+                              ForceSay(Ralph,'D6-Ra-1')
+                         else
+                              if IsLive(Oswald) then
+                                   begin
+                                        if oswald_is_substitute then
+                                             ForceSay(Oswald,'D6-Os_alt-1')
+                                        else
+                                             ForceSay(Oswald,'D6-Os-1');
+                                   end;
+
+                         DialogueOff;
+                    end;
+     end;
+
+//If the player attacks Gensher there's gonna be trouble.
+Every 0$1.6 do
+     begin
+          repeat
+          wait(0$0.5);
+
+          if game_phase = 3 then
+               exit;
+
+          if ContactTime([you,you_alt]) <= 0$1 or ai_contact_time[you][you_alt] <= 0$1 then
+               begin
+                    DialogueOn;
+                    Say(Gensher,'D11-Ge-1');
+
+                    dwait(0$0.5);
+                    YouLost('AttackedGensher');
+
+                    DialogueOff;
+
+                    exit;
+               end;
+
+          until false;
+     end;
+
+
+//----------------- PHASE 1 EVENTS -----------------//
+
+
+//The Americans spot the player
+Every 0$1+0$0.2 do
+     var temp_list, i;
+     begin
+
+          repeat
+          wait(0$1);
+
+          if game_phase > 1 then
+               exit;
+
+          if ContactTime([you,americans]) <= 0$2 or ai_contact_time[americans][you] <= 0$2 then
+               begin
+                    temp_list = [];
+                    for i in FilterAllUnits([f_side,americans]) do
+                         if GetSide(Attacks(i)) = you then
+                              begin
+                                   temp_list = i;
+                                   break;
+                              end;
+
+                    if temp_list = 0 then
+                         for i in FilterAllUnits([f_side,you]) do
+                              if GetSide(Attacks(i)) = americans then
+                                   begin
+                                        temp_list = i;
+                                        break;
+                                   end;
+
+                    if temp_list > 0 then
+                         CenterOnUnits(temp_list);
+
+                    DialogueOn;
+
+                    temp_list = FilterAllUnits([[f_side,americans],[f_class,class_soldier]]) diff [Simms,Cornell,Khattam];
+
+                    if temp_list = 0 then
+                         temp_list = FilterAllUnits([[f_side,americans],[f_type,unit_human]]) diff (GetApes(americans) ^ [Simms,Cornell,Khattam]);
+
+                    if temp_list > 0 then
+                         if GetSex(temp_list[1]) = sex_male then
+                              SayRadio(temp_list[1],'D4-SomeM-1')
+                         else
+                              SayRadio(temp_list[1],'D4-SomeF-1');
+
+                    SayRadio(Simms,'D4-Sim-1');
+
+                    dwait(0$0.5);
+                    YouLost('PlayerSeen');
+
+                    DialogueOff;
+               end;
+
+          until false;
+     end;
+
+//After a short while Joan leaves the American base in a vehicle.
+Every 0$1+0$0.9 do
+     var vehicle;
+     begin
+          InitUc;
+          InitVc;
+          uc_side = americans;
+          uc_nation = nation_american;
+          vc_chassis = us_medium_wheeled;
+          vc_control = control_manual;
+          vc_engine = engine_siberite;
+          vc_weapon = us_machine_gun;
+
+          vehicle = CreateVehicle;
+          PlaceHumanInUnit(Joan,vehicle);
+
+          wait(Rand(0$20,0$30));
+          while not PlaceUnitXYR(vehicle,98,30,2,false) do
+               wait(0$2);
+
+          while IsPlaced(Joan) do
+               begin
+                    wait(0$1);
+
+                    if GetDistUnitXY(Joan,56,3) > 1 then
+                         ComMoveXY(Joan,56,3)
+                    else
+                         begin
+                              DestroyUnit(Joan);
+                              DestroyUnit(vehicle);
+                         end;
+               end;
+     end;
+
+//Shortly after the game commences an automatic Russian cargo bay is seen by the player.
+//This makes Heike send out a scout to investigate.
+Every 0$1+0$0.1 do
+     var i, temp_unit, temp_list, temp_list_2;
+     var cargo_bay, special_player_units, scout, crate_hex;
+     begin
+          special_player_units = [Heike, Sonya, Oswald, Ralph, Kowalski, Evelyn, Suze, Olaf, Kurt, Dwayne, MarkB, Aviradze, Swansson];
+
+          InitUc;
+          InitVc;                
+          uc_side = russians;
+          uc_nation = nation_russian;
+          vc_chassis = ru_medium_tracked;
+          vc_engine = engine_siberite;
+          vc_control = control_computer;
+          vc_weapon = ru_cargo_bay;
+
+          cargo_bay = CreateVehicle;
+          SetCargo(cargo_bay,mat_cans,Rand(2,5)*10);
+          SetDir(cargo_bay,0);
+          PlaceUnitXY(cargo_bay,103,116,false);
+
+          //We create some crates near the cargo bay, which it doesn't pick up at first, to make it
+          //look more realistic
+          crate_hex = RandHexXYR(122,93,4,false);
+          CreateCratesXY(Rand(3,5),crate_hex[1],crate_hex[2],false);
+
+          ComMoveXY(cargo_bay,122,93);
+          AddComStand(cargo_bay);
+
+          //Wait until the player sees the cargo bay or some fixed time has passed
+          i = Rand(1$30,2$0);
+          repeat
+          wait(0$0.5);
+          i = i - 0$0.5;
+
+          until i <= 0$0 or See(you,cargo_bay);
+
+          while not See(you,cargo_bay) do
+               begin
+                    wait(0$0.5);
+
+                    //Move towards the player unit closest to you
+                    temp_unit = NearestUnitToUnit(FilterAllUnits([f_side,you]),cargo_bay);
+                    ComMoveXY(cargo_bay,GetX(temp_unit),GetY(temp_unit));
+               end;
+
+
+          CenterOnUnits(cargo_bay);
+          DialogueOn;
+
+          if IsOk(Oswald) then
+               begin
+                    if oswald_is_substitute then
+                         Say(Oswald,'D2-Os_alt-1')
+                    else
+                         Say(Oswald,'D2-Os-1');
+               end
+          else
+               if IsOk(Olaf) then
+                    Say(Olaf,'D2-Olaf-1')
+               else
+                    begin
+                         temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff (GetApes(you) ^ special_player_units);
+                         if temp_list > 0 then
+                              temp_unit = temp_list[1]
+                         else
+                              begin
+                                   temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff (GetApes(you) ^ Heike);
+                                   if temp_list > 0 then
+                                        temp_unit = temp_list[1]
+                                   else
+                                        temp_unit = 0;  //should never happen
+                              end;
+
+                         if GetSex(temp_unit) = sex_male then
+                              Say(temp_unit,'D2-SomeM-1')
+                         else
+                              Say(temp_unit,'D2-SomeF-1');
+                    end;
+
+          Say(Heike,'D2-H-1');
+
+          if IsOk(Kowalski) then
+               begin
+                    Say(Kowalski,'D2-Ko-a-1');
+                    Say(Heike,'D2-H-a-2');
+               end
+          else
+               begin
+                    Say(Heike,'D2-H-b-2');
+               end;
+
+          //Choose scout
+          dwait(0$0.2);
+          temp_list_2 = FilterAllUnits([f_side,you]) diff (GetApes(you) ^ Heike);
+          if UnitFilter(temp_list_2,[f_class,class_soldier]) = 0 then
+               temp_list = [sel_change_class]
+          else
+               temp_list = [sel_dont_change_class];
+
+          temp_list = CharacterSelection('',1,1,[sel_dont_change_class,sel_not_hired,sel_not_changeable,Heike,sel_changeable] ^ temp_list ^ temp_list_2,[[class_soldier,1]]);
+          temp_unit = temp_list[1];
+          scout = temp_unit;
+
+          dwait(0$0.2);
+          case temp_unit of
+               Sonya: Say(temp_unit,'D2-So-1');
+               Oswald: begin
+                   if oswald_is_substitute then
+                        Say(temp_unit,'D2-Os_alt-2')
+                   else
+                        Say(temp_unit,'D2-Os-2');
+               end;
+               Ralph: Say(temp_unit,'D2-Ra-1');
+               Kowalski:Say(temp_unit,'D2-Ko-1');
+               Evelyn: Say(temp_unit,'D2-Ev-1');
+               Suze: Say(temp_unit,'D2-Su-1');
+               Olaf: Say(temp_unit,'D2-Olaf-2');
+               Kurt: begin
+                    if kurt_is_substitute then
+                         Say(temp_unit,'D2-Ku_alt-1')
+                    else
+                         Say(temp_unit,'D2-Ku-1');
+               end;
+               Dwayne: Say(temp_unit,'D2-Dw-1');
+               MarkB: Say(temp_unit,'D2-Ma-1');
+               Aviradze: begin
+                    Say(temp_unit,'D2-Av-1');
+                    Say(Heike,'D2-H-3');
+               end;
+               Swansson: Say(temp_unit,'D2-Sw-1');
+               else
+                    begin
+                         if GetSex(temp_unit) = sex_male then
+                              Say(temp_unit,'D2-SomeM-2')
+                         else
+                              Say(temp_unit,'D2-SomeF-2');
+                    end;
+          end;
+
+          DialogueOff;
+
+
+          //Move the cargo bay away and control the scout
+          SetSide(scout,scout_side);
+
+          repeat
+          wait(0$0.7);
+
+          if IsPlaced(scout) then
+               case GetType(IsInUnit(scout)) of
+                    unit_building: ComExitBuilding(scout);
+                    unit_vehicle: ComExitVehicle(scout);
+                    else
+                         begin
+                              if GetDistUnitXY(scout,143,117) > 1 then
+                                   ComMoveXY(scout,143,117)
+                              else
+                                   RemoveUnit(scout);
+                         end;
+               end;
+
+          if IsPlaced(cargo_bay) then
+               if GetResourceAmountXY(crate_hex[1],crate_hex[2]) > 0 then
+                    ComGet(cargo_bay,crate_hex[1],crate_hex[2])
+               else
+                    if not IsInArea(cargo_bay,ru_enter_area) then
+                         ComMoveToArea(cargo_bay,ru_enter_area)
+                    else
+                         DestroyUnit(cargo_bay);
+
+          until not IsPlaced(scout) and not IsPlaced(cargo_bay);
+
+
+          //Wait for the scout to return
+          wait(Rand(5$0,6$0));
+
+          SetDir(scout,5);
+          i = 1;
+
+          while not IsPlaced(scout) do
+          begin
+               PlaceUnitXYR(scout,143,117,i,false);
+               i = i + 1;
+               wait(0$2);
+          end;
+
+          while not See(you,scout) do
+               begin
+                    wait(0$1);
+
+                    //Move towards the player unit closest to you
+                    temp_unit = NearestUnitToUnit(FilterAllUnits([f_side,you]),scout);
+                    ComMoveXY(scout,GetX(temp_unit),GetY(temp_unit));
+               end;
+
+
+          CenterOnUnits(scout);
+          SetSide(scout,you);
+          ComStop(scout);
+
+          DialogueOn;
+
+          Say(Heike,'D3-H-1');
+
+          temp_unit = scout;
+          case temp_unit of
+               Sonya: Say(temp_unit,'D3-So-1');
+               Oswald: begin
+                   if oswald_is_substitute then
+                        Say(temp_unit,'D3-Os_alt-1')
+                   else
+                        Say(temp_unit,'D3-Os-1');
+               end;
+               Ralph: begin
+                    Say(temp_unit,'D3-Ra-1');
+
+                    if IsOk(Sonya) then
+                         Say(Sonya,'D3-So-2a')
+                    else
+                         Say(Heike,'D3-H-2a');
+
+                    Say(Ralph,'D3-Ra-2');
+               end;
+               Kowalski:Say(temp_unit,'D3-Ko-1');
+               Evelyn: Say(temp_unit,'D3-Ev-1');
+               Suze: Say(temp_unit,'D3-Su-1');
+               Olaf: Say(temp_unit,'D3-Olaf-1');
+               Kurt: begin
+                    if kurt_is_substitute then
+                         Say(temp_unit,'D3-Ku_alt-1')
+                    else
+                         Say(temp_unit,'D3-Ku-1');
+               end;
+               Dwayne: Say(temp_unit,'D3-Dw-1');
+               MarkB: Say(temp_unit,'D3-Ma-1');
+               Aviradze: begin
+                    Say(temp_unit,'D3-Av-1');
+                    Say(Heike,'D3-H-2b');
+                    Say(temp_unit,'D3-Av-2');
+               end;
+               Swansson: Say(temp_unit,'D3-Sw-1');
+               else
+                    begin
+                         if GetSex(temp_unit) = sex_male then
+                              Say(temp_unit,'D3-SomeM-1')
+                         else
+                              Say(temp_unit,'D3-SomeF-1');
+                    end;
+          end;
+
+          if SeeGreyArea(you,Ru_base) then  //player has discovered the Russian base in the meantime
+               begin
+                    Say(Heike,'D3-H-a-2');
+               end
+          else
+               begin
+                    Say(Heike,'D3-H-b-2');
+               end;
+
+          case temp_unit of
+               Sonya: Say(temp_unit,'D3-So-2');
+               Oswald: begin
+                   if oswald_is_substitute then
+                        Say(temp_unit,'D3-Os_alt-2')
+                   else
+                        Say(temp_unit,'D3-Os-2');
+               end;
+               Ralph: Say(temp_unit,'D3-Ra-3');
+               Kowalski:Say(temp_unit,'D3-Ko-2');
+               Evelyn: Say(temp_unit,'D3-Ev-2');
+               Suze: Say(temp_unit,'D3-Su-2');
+               Olaf: Say(temp_unit,'D3-Olaf-2');
+               Kurt: begin
+                    if kurt_is_substitute then
+                         Say(temp_unit,'D3-Ku_alt-2')
+                    else
+                         Say(temp_unit,'D3-Ku-2');
+               end;
+               Dwayne: Say(temp_unit,'D3-Dw-2');
+               MarkB: Say(temp_unit,'D3-Ma-2');
+               Aviradze: Say(temp_unit,'D3-Av-3');
+               Swansson: Say(temp_unit,'D3-Sw-2');
+               else
+                    begin
+                         if GetSex(temp_unit) = sex_male then
+                              Say(temp_unit,'D3-SomeM-2')
+                         else
+                              Say(temp_unit,'D3-SomeF-2');
+                    end;
+          end;
+
+          Say(Heike,'D3-H-3');
+
+          temp_list = UnitFilter([Sonya,Ralph,Kowalski,Suze,Olaf,Dwayne],[f_ok]);
+          if temp_list > 0 then
+               begin
+                    temp_unit = temp_list[Rand(1,temp_list)];
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D3-So-3');
+                         Ralph: Say(temp_unit,'D3-Ra-4');
+                         Kowalski: Say(temp_unit,'D3-Ko-3');
+                         Suze: Say(temp_unit,'D3-Su-3');
+                         Olaf: Say(temp_unit,'D3-Olaf-3');
+                         Dwayne: Say(temp_unit,'D3-Dw-3');
+                    end;
+
+                    if temp_unit in [Sonya,Olaf] then
+                         Say(Heike,'D3-H-a-4')
+                    else
+                         Say(Heike,'D3-H-b-4');
+               end
+          else
+               begin
+                    Say(Heike,'D3-H-c-4');
+               end;
+
+          Say(Heike,'D3-H-5');
+
+          if yashin_alive then
+               begin
+                    case temp_unit of
+                         Sonya: Say(temp_unit,'D3-So-a-4');
+                         Oswald: begin
+                              if oswald_is_substitute then
+                                   Say(temp_unit,'D3-Os_alt-a-3')
+                              else
+                                   Say(temp_unit,'D3-Os-a-3');
+                         end;
+                         Ralph: Say(temp_unit,'D3-Ra-a-5');
+                         Kowalski: Say(temp_unit,'D3-Ko-a-4');
+                         Evelyn: Say(temp_unit,'D3-Ev-a-3');
+                         Suze: Say(temp_unit,'D3-Su-a-4');
+                         Olaf: Say(temp_unit,'D3-Olaf-a-4');
+                         Kurt: begin
+                              if kurt_is_substitute then
+                                   Say(temp_unit,'D3-Ku_alt-a-3')
+                              else
+                                   Say(temp_unit,'D3-Ku-a-3');
+                         end;
+                         Dwayne: Say(temp_unit,'D3-Dw-a-4');
+                         MarkB: Say(temp_unit,'D3-Ma-a-3');
+                         Aviradze: Say(temp_unit,'D3-Av-a-4');
+                         Swansson: Say(temp_unit,'D3-Sw-a-3');
+                         else
+                              begin
+                                   if GetSex(temp_unit) = sex_male then
+                                        Say(temp_unit,'D3-SomeM-a-3')
+                                   else
+                                        Say(temp_unit,'D3-SomeF-a-3');
+                               end;
+                    end;
+
+                    Say(Heike,'D3-H-a-6');
+               end;
+
+          DialogueOff;
+
+          wait(0$0.2);
+          ChangeMissionObjectives('M2');
+
+          scout_event_over = true;
+          russians_allowed_to_attack_gensher_time = russians_allowed_to_attack_gensher_time + tick;
+     end;
+
+//Keep track of how much damage the Russians cause to Gensher.
+//- Making a human need healing (1 point)
+//- Bringing a human to red life (1 point)
+//- Killing a human (3 points) (happens in event "UnitDestroyed")
+//- Bringing a building to yellow life (1 point)
+//- Making a building burn (1 point)
+//- Destroying a building (2 points) (happens in event "UnitDestroyed")
+Every 0$1+0$0.6 do
+     var i;
+     var ignore_yellow_list, ignore_red_list;
+     begin
+          ignore_yellow_list = [];  //Units to ignore. To secure fairness. E.g. during an attack a building could be brought to yellow life, just repaired to green and then brought to yellow again.
+          ignore_red_list = [];
+
+          repeat
+          wait(0$1);
+
+          if game_phase > 1 then
+               exit;
+
+          if ContactTime([you_alt,russians]) >= 0$8 then
+               begin
+                    ignore_yellow_list = [];
+                    ignore_red_list = [];
+
+                    continue;
+               end;
+
+          for i in FilterAllUnits([[f_side,you_alt],[f_type,unit_human]]) do
+               if GetLives(i) <= 250 then
+                    begin
+                         if not i in ignore_red_list then
+                              begin
+                                   russian_interference_points = russian_interference_points + 1;
+                                   ignore_red_list = ignore_red_list ^ i;
+                              end;
+                    end
+               else
+                    if i in ai_heal_these_humans[2] then
+                         begin
+                              if not i in ignore_yellow_list then
+                                   begin
+                                        russian_interference_points = russian_interference_points + 1;
+                                        ignore_yellow_list = ignore_yellow_list ^ i;
+                                   end;
+                         end;
+
+
+          for i in FilterAllUnits([[f_side,you_alt],[f_type,unit_building]]) do
+               case GetLives(i) of
+                    1..250: begin
+                         if not i in ignore_red_list then
+                              begin
+                                   russian_interference_points = russian_interference_points + 1;
+                                   ignore_red_list = ignore_red_list ^ i;
+                              end;
+                    end;
+                    1..500: begin
+                         if not i in ignore_yellow_list then
+                              begin
+                                   russian_interference_points = russian_interference_points + 1;
+                                   ignore_yellow_list = ignore_yellow_list ^ i;
+                              end;
+                    end;
+               end;
+
+          until false;
+     end;
+
+//Cornell appears outside the player's base. Having escaped Russian captivity he's wounded.
+//If he finds his way to the American base the player is screwed.
+//Countdown to game phase 2. Start phase 2 early if the Russians are defeated.
+Every 0$1+0$0.3 do
+     var temp_list, hex, time, i;
+     var hex_list_before, hex_list_after;
+     begin
+          time = Rand(20$0,23$0);
+          repeat
+          wait(0$1);
+          time = time - 0$1;
+          until time <= 0$0 or not 3 in ai_bases;
+
+          if difficulty <= 2 and 3 in ai_bases then
+               wait(4$0);
+
+          if difficulty = 1 and 3 in ai_bases then
+               wait(4$0);
+
+
+          //Don't spawn Cornell if the Russian are attacking the player (the Russians would just kill Cornell).
+          while ( ai_vehicles_attack[3] > 0 or ai_attacking_scientists[3] > 0 or ai_attacking_soldiers[3] > 0 ) and russian_attack_strategy <> 1 and 3 in ai_bases do
+               wait(0$2);
+
+
+          //Where Cornell walks depends on where the player has
+          //built his/her base.
+          if PlayerAtEasternBorder then
+               begin
+                    hex_list_before = [[148,99],[153,99]];  //Hexes to follow before player has seen him
+                    hex = [145,58];
+
+                    hex_list_after = [[140,104],[126,91],[123,71],[118,59]]; //Hexes to follow after player has seen him
+               end
+          else
+               begin
+                    hex_list_before = [[134,107],[121,99]];
+                    hex = [99,108];
+
+                    hex_list_after = [[122,80]];
+                    case difficulty of
+                         1: hex_list_after = hex_list_after ^ [[143,77],[143,52],[134,42],[115,39]];
+                         2: hex_list_after = hex_list_after ^ [[143,77],[134,70],[124,66],[118,59]];
+                         3: hex_list_after = hex_list_after ^ [[123,71],[118,59]];
+                    end;
+               end;
+
+          temp_list = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]);
+          if temp_list > 0 then
+               hex_list_before = hex_list_before ^ [[GetX(temp_list[1]),GetY(temp_list[1])]]
+          else
+               hex_list_before = hex_list_before ^ [hex];  //probably won't ever happen
+
+          SetDir(Cornell,5);
+          SetLives(Cornell,[400,450,500][difficulty]);
+          while not PlaceUnitXYR(Cornell,146,117,1,false) do
+               wait(0$2);
+
+          hex = 1;
+          time = 1$0;
+          repeat
+          wait(0$0.5);
+
+          if GetDistUnitXY(Cornell,hex_list_before[hex][1],hex_list_before[hex][2]) > 2 then
+               ComMoveXY(Cornell,hex_list_before[hex][1],hex_list_before[hex][2])
+          else
+               if hex < hex_list_before then
+                    hex = hex + 1
+               else
+                    begin
+                         time = time - 0$0.5;
+
+                         if time <= 0$0 then
+                              KillUnit(Cornell);  //So the mission can progress
+                    end;
+
+          until ( See(you,Cornell) and FilterAllUnits([[f_side,you],[f_see,americans_alt]]) > 0 ) or IsDead(Cornell);
+
+          if See(you,Cornell) and FilterAllUnits([[f_side,you],[f_see,americans_alt]]) > 0 then
+               begin
+                    CenterOnUnits(Cornell);
+                    DialogueOn;
+
+                    ForceSay(Cornell,'D5-Cor-1');
+                    ForceSay(Heike,'D5-H-1');
+
+                    DialogueOff;
+
+                    hex = 1;
+                    repeat
+                    if GetDistUnitXY(Cornell,hex_list_after[hex][1],hex_list_after[hex][2]) > 3 then
+                         ComMoveXY(Cornell,hex_list_after[hex][1],hex_list_after[hex][2])
+                    else
+                         if hex < hex_list_after then
+                              hex = hex + 1;
+
+                    wait(0$0.5);
+
+                    until IsDead(Cornell) or ( See(americans,Cornell) and FilterAllUnits([[f_side,americans],[f_see,americans_alt]]) > 0 );
+
+                    if See(americans,Cornell) and FilterAllUnits([[f_side,americans],[f_see,americans_alt]]) > 0 then
+                         begin
+                              DialogueOn;
+
+                              SayRadio(Simms,'D4-Sim-2');
+
+                              dwait(0$0.5);
+                              YouLost('PlayerSeen');
+
+                              DialogueOff;
+                         end;
+               end;
+
+
+          //Countdown to phase 2
+          time = Rand(22$0,24$0);
+          repeat
+          wait(0$1);
+          time = time - 0$1;
+          until time <= 0$0 or not 3 in ai_bases;
+
+          DialogueOn;
+          SayRadio(Gensher,'D8-Ge-1');
+          DialogueOff;
+
+          wait(0$0.2);
+          time = 8$0;
+          russians_allowed_to_attack_gensher_time = tick + time + 1$0;  //Russians should not attack Gensher
+
+          repeat
+          display_strings = ['#Ar11-GensherCountdown',time];
+          time = time - 0$1;
+
+          wait(0$1);
+          until time <= 0$0;
+
+          display_strings = [];
+          game_phase = 2;
+          ChangeMissionObjectives('M3');
+
+          //The player may attack the Americans
+          for i in FilterAllUnits([f_side,americans]) do
+               NormalAttack(you,i);
+     end;
+
+//If the player gets near Gensher's base.
+Every 0$1 do
+     var i;
+     begin
+          repeat
+          wait(0$1);
+
+          if game_phase > 1 then
+               exit;
+
+          for i in FilterAllUnits([[f_side,you],[f_or,[f_type,unit_human],[f_type,unit_vehicle]]]) do
+               if GetDistUnitArea(i,Gensher_base) <= 9 then
+                    begin
+                         CenterOnUnits(i);
+                         DialogueOn;
+
+                         Say(Gensher,'D12-Ge-1');
+                         ForceSay(Heike,'D12-H-1');
+
+                         DialogueOff;
+
+                         exit;
+                    end;
+
+          until false;
+     end;
+
+
+//----------------- PHASE 2 EVENTS -----------------//
+
+
+//Move Gensher and his men.
+//Try to stick together. If someone is badly wounded (red life) go back
+//and heal him/her (but only if all others are not too wounded).
+//Phase 2 ends when all Gensher's people and Gensher himself are gone.
+Every 0$1+0$0.8 trigger game_phase = 2 do
+     var i, val, temp_list, k;
+     var un_list, scis_list, hex_list, hex, exit_hex, rand_hexes;
+     begin
+          ai_bases = ai_bases diff 2;  //Disable AI for Gensher's base
+
+          hex = 1;
+          hex_list = [[75,23],[76,36],[78,43],[79,51],[81,61],[84,71],[90,81],[97,88],[105,93],[113,95],[119,92],
+                      [122,87],[123,79],[132,82],[141,88],[160,104],[168,109]];  //waypoints
+          exit_hex = [173,110];
+          rand_hexes = [];  //Index is id, value is hex
+
+          un_list = original_gensher_people ^ Gensher;
+          scis_list = UnitFilter(un_list,[f_class,class_scientistic]);
+
+          //Get people out of buildings/vehicles
+          repeat
+          wait(0$1);
+
+          val = true;
+          for i in un_list do
+               case GetType(IsInUnit(i)) of
+                    unit_vehicle: begin
+                         ComExitVehicle(i);
+                         val = false;
+                    end;
+                    unit_building: begin
+                         ComExitBuilding(i);
+                         val = false;
+                    end;
+               end;
+
+          until val;
+
+          //Move it.
+          //Moving a  human to a hex where another human already stands makes the first
+          //unit stop 3-4 hexes away creating a staggering effect - annoying. To avoid this
+          //we randomize a hex within near vicinity of the waypoint for each unit every time
+          //we change waypoint.
+          //First time all just has the waypoint hex, though.
+          for i in un_list do
+               rand_hexes = Replace(rand_hexes,i,hex_list[hex]);
+
+          repeat
+          wait(0$0.3);
+
+          un_list = UnitFilter(un_list,[f_alive]);
+          scis_list = UnitFilter(scis_list,[f_alive]);
+
+          temp_list = [];
+          for i in un_list do
+               if GetLives(i) <= 250 then
+                    temp_list = temp_list ^ i;
+
+          if temp_list > 0 and scis_list > 0 and UnitFilter(un_list,[f_lives,501]) > (original_gensher_people+1) div 2 then
+               begin
+                    for i in scis_list do
+                         ComHeal(i,temp_list[1]);
+
+                    for i in un_list diff scis_list do
+                         if GetDistUnits(i,temp_list[1]) > 4 then
+                              ComMoveXY(i,GetX(temp_list[1]),GetY(temp_list[1]));
+               end
+          else
+               begin
+                    val = true;
+                    for i in un_list do
+                         if hex <= hex_list then
+                              begin
+                                   if GetDistUnitXY(i,rand_hexes[i][1],rand_hexes[i][2]) > 5 then
+                                        begin
+                                             ComMoveXY(i,rand_hexes[i][1],rand_hexes[i][2]);
+                                             val = false;
+                                        end;
+                              end
+                         else
+                              if GetDistUnitXY(i,exit_hex[1],exit_hex[2]) > 2 then
+                                   ComMoveXY(i,exit_hex[1],exit_hex[2])
+                              else
+                                   begin
+                                        if i <> Gensher then
+                                             saved_gensher_people = saved_gensher_people ^ i;
+
+                                        un_list = un_list diff i;
+                                        scis_list = scis_list diff i;
+                                        RemoveUnit(i);
+                                   end;
+
+                    if val then
+                         begin
+                              hex = hex + 1;
+
+                              if hex <= hex_list then
+                                   begin
+                                        temp_list = [];
+                                        for i in un_list do
+                                             begin
+                                                  k = 0;
+                                                  repeat
+                                                  val = RandHexXYR(hex_list[hex][1],hex_list[hex][2],2,false);
+                                                  k = k + 1;
+
+                                                  if ( not val in temp_list and HexInfo(val[1],val[2]) >= 0 ) or k >= 10 then
+                                                       begin
+                                                            temp_list = temp_list ^ [val];
+                                                            rand_hexes = Replace(rand_hexes,i,val);
+
+                                                            break;
+                                                       end;
+
+                                                  until false;
+                                             end;
+                                   end;
+                         end;
+               end;
+
+          until un_list = 0;
+
+          //Phase 2 is over.
+          wait(0$0.2);
+          ChangeMissionObjectives('M4');
+          game_phase = 3;
+     end;
+
+//Shortly after the betrayal the Americans realize what's going on.
+Every 0$1+0$0.9 trigger game_phase = 2 do
+     begin
+          wait([0$18,0$15,0$12][difficulty]);
+
+          DialogueOn;
+          SayRadio(Simms,'D8-Simm-1_v2');
+          SayRadio(Powell,'D8-Po-1');
+          DialogueOff;
+
+          SetAttitude(americans,you_alt,att_enemy,true);
+     end;
+
+//The Americans send out snipers to take out the betrayers.
+//Their posts depend on where the player has built his/her base.
+Every 0$1+0$0.6 trigger GetAttitude(americans,you_alt) = att_enemy do
+     var i, val;
+     var sniper_group_1, sniper_group_2, hex_list_1, hex_list_2, unit_hex, rand_hexes, k;
+     begin
+          sniper_group_1 = CreateUnitsWithClass(difficulty,class_sniper,americans);  //Northern
+          sniper_group_2 = CreateUnitsWithClass(difficulty,class_sniper,americans);  //Southern
+
+          for i in sniper_group_1 ^ sniper_group_2 do
+               PlaceUnitXYR(i,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2],7,false);
+
+          unit_hex = [];  //Index is unit id, value is hex integer
+          for i in sniper_group_1 ^ sniper_group_2 do
+               unit_hex = Replace(unit_hex,i,1);
+
+          if FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]],[f_inarea,player_base_1]]) > 0 then
+               begin
+                    hex_list_1 = [[116,59],[115,67],[114,77]];
+                    hex_list_2 = [[116,59],[124,77],[123,86],[135,96],[128,87]];
+               end
+          else
+               begin
+                    hex_list_1 = [[116,59],[117,66],[116,72]];
+                    hex_list_2 = [[116,59],[134,69],[150,82],[157,98]];
+               end;
+
+          rand_hexes = [];
+          for i in sniper_group_1 do
+               rand_hexes = Replace(rand_hexes,i,hex_list_1[1]);
+          for i in sniper_group_2 do
+               rand_hexes = Replace(rand_hexes,i,hex_list_2[1]);
+
+
+          repeat
+          wait(0$1);
+
+          sniper_group_1 = UnitFilter(sniper_group_1,[f_ok]);
+          sniper_group_2 = UnitFilter(sniper_group_2,[f_ok]);
+
+          if sniper_group_1 = 0 and sniper_group_2 = 0 then
+               exit;
+
+          for i in sniper_group_1 do
+               begin
+                    if GetDistUnitXY(i,rand_hexes[i][1],rand_hexes[i][2]) > 2 then
+                         begin
+                              if unit_hex[i] = hex_list_1+0 then
+                                   ComAgressiveMove(i,rand_hexes[i][1],rand_hexes[i][2])
+                              else
+                                   ComMoveXY(i,rand_hexes[i][1],rand_hexes[i][2]);
+
+                              if unit_hex[i] = hex_list_1+0 then  //Going for last hex
+                                   AddComHold(i);
+                         end
+                    else
+                         if unit_hex[i] < hex_list_1 then
+                              begin
+                                   unit_hex = Replace(unit_hex,i,unit_hex[i]+1);
+                                  
+                                   k = 0;
+                                   repeat
+                                   val = RandHexXYR(hex_list_1[unit_hex[i]][1],hex_list_1[unit_hex[i]][2],1,false);
+                                   k = k + 1;
+                                   until HexInfo(val[1],val[2]) >= 0 or k >= 10;
+
+                                   rand_hexes = Replace(rand_hexes,i,val);
+                              end;
+               end;
+
+          for i in sniper_group_2 do
+               begin
+                    if GetDistUnitXY(i,rand_hexes[i][1],rand_hexes[i][2]) > 2 then
+                         begin
+                              if unit_hex[i] = hex_list_2+0 then
+                                   ComAgressiveMove(i,rand_hexes[i][1],rand_hexes[i][2])
+                              else
+                                   ComMoveXY(i,rand_hexes[i][1],rand_hexes[i][2]);
+
+                              if unit_hex[i] = hex_list_2+0 then  //Going for last hex
+                                   AddComHold(i);
+                         end
+                    else
+                         if unit_hex[i] < hex_list_2 then
+                              begin
+                                   unit_hex = Replace(unit_hex,i,unit_hex[i]+1);
+
+                                   k = 0;
+                                   repeat
+                                   val = RandHexXYR(hex_list_2[unit_hex[i]][1],hex_list_2[unit_hex[i]][2],1,false);
+                                   k = k + 1;
+                                   until HexInfo(val[1],val[2]) >= 0 or k >= 10;
+
+                                   rand_hexes = Replace(rand_hexes,i,val);
+                              end;
+               end;
+
+          until false;
+     end;
+
+
+//----------------- PHASE 3 EVENTS -----------------//
+
+
+//An American scientist appears. Wants to join the player.
+Every 0$1+0$0.9 trigger game_phase = 3 do
+     var old_man, x, y, temp_list, dist;
+     var hex, hex_list_before, hex_list_after;
+     begin
+          //Don't spawn Khattam if the Russian are attacking the player (the Russians would just kill him).
+          while ( ai_vehicles_attack[3] > 0 or ai_attacking_scientists[3] > 0 or ai_attacking_soldiers[3] > 0 ) and russian_attack_strategy <> 1 do
+               wait(0$2);
+
+
+          if PlayerAtEasternBorder then
+               begin
+                    hex_list_before = [[127,42],[139,45]];
+                    hex_list_after = [[139,45],[138,39]];
+               end
+          else
+               begin
+                    hex_list_before = [[119,55],[124,73],[121,86]];
+                    hex_list_after = [[121,99],[141,118]];
+               end;
+
+          temp_list = FilterAllUnits([[f_side,you],[f_or,[f_btype,b_depot],[f_btype,b_warehouse]]]);
+          if temp_list > 0 then
+               hex = [GetX(temp_list[1]),GetY(temp_list[1])]
+          else
+               if PlayerAtEasternBorder then
+                    hex = [144,65]
+               else
+                    hex = [99,110];
+
+          hex_list_before = hex_list_before ^ [hex];
+
+          //Try to place Khattam in one of the American labs if possible. Else just inside the American base.
+          SetDir(Khattam,5);
+          temp_list = FilterAllUnits([[f_side,americans],[f_or,[f_btype,b_lab],[f_btype,b_lab_half],[f_btype,b_lab_full]],[f_ok]]);
+          if temp_list > 0 then
+               begin
+                    while not PlaceHumanInUnit(Khattam,temp_list[1]) do
+                         begin
+                              if not IsOk(temp_list[1]) or UnitsInside(temp_list[1])+0 = 6 then
+                                   begin
+                                        while not PlaceUnitXYR(Khattam,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2],4,false) do
+                                             wait(0$2);
+
+                                        break;
+                                   end;
+
+                              wait(0$2);
+                         end;
+               end
+          else
+               begin
+                    while not PlaceUnitXYR(Khattam,ai_human_pullback_hex[1][1],ai_human_pullback_hex[1][2],4,false) do
+                         wait(0$2);
+               end;
+
+          SetAttitude(you,americans_alt,att_neutral,true);
+
+
+          hex = 1;
+          repeat
+          wait(0$1);
+
+          if GetDistUnitXY(Khattam,hex_list_before[hex][1],hex_list_before[hex][2]) > 3 then
+               ComMoveXY(Khattam,hex_list_before[hex][1],hex_list_before[hex][2])
+          else
+               if hex < hex_list_before then
+                    hex = hex + 1;
+
+          until {(} See(you,Khattam) {and FilterAllUnits([[f_side,you],[f_see,americans_alt]]) > 0 )} or IsDead(Khattam);
+
+
+          if See(you,Khattam) then
+               begin
+                    CenterOnUnits(Khattam);
+                    DialogueOn;
+
+                    ForceSay(Khattam,'D9-Kh-1');
+
+                    if IsOk(Oswald) then
+                         begin
+                              if oswald_is_substitute then
+                                   Say(Oswald,'D9-Os_sub-1')
+                              else
+                                   Say(Oswald,'D9-Os-1');
+                         end
+                    else
+                         ForceSay(Heike,'D9-H-1');
+
+                    ForceSay(Khattam,'D9-Kh-2');
+                    ForceSay(Heike,'D9-H-2');
+                    ForceSay(Khattam,'D9-Kh-3');
+
+                    dwait(0$0.2);
+                    khattam_choice = Query('QKhattamJoin');
+                    case khattam_choice of
+                         1: begin  //Accept him
+                              ForceSay(Heike,'D9-H-1-1');
+                              ForceSay(Khattam,'D9-Kh-1-1');
+
+                              DialogueOff;
+
+                              SetAttitude(you,americans_alt,att_friend,true);
+
+                              //Move Khattam out of enemy range before turning him to the player's side.
+                              while FilterAllUnits([[f_side,americans],[f_ok],[f_dist,Khattam,17]]) > 0 do
+                                   begin
+                                        dist = GetDistUnitXY(Khattam,hex_list_before[hex][1],hex_list_before[hex][2]);
+                                        if not ( dist <= 3 or ( hex = hex_list_before+0 and dist <= 7 ) ) then
+                                             ComMoveXY(Khattam,hex_list_before[hex][1],hex_list_before[hex][2])
+                                        else
+                                             if hex < hex_list_before then
+                                                  hex = hex + 1
+                                             else
+                                                  break;
+
+                                       wait(0$1);
+                                   end;
+
+                              //Change his nation to nation_arabian so the player
+                              //can't build American buildings.
+                              PrepareNewCharacter('Khatam');
+                              uc_side = you;
+                              uc_nation = nation_arabian;
+
+                              old_man = Khattam;
+                              Khattam = CreateHuman;
+
+                              hc_importance = 0;  //InitHc does not reset this one and it persists over missions
+
+                              CopySkills(old_man,Khattam);
+                              x = GetX(old_man);
+                              y = GetY(old_man);
+                              SetDir(Khattam,GetDir(old_man));
+                              SetLives(Khattam,GetLives(old_man));
+
+                              RemoveUnit(old_man);
+                              PlaceUnitXY(Khattam,x,y,false);
+                         end;
+                         2: begin  //Reject him
+                              ForceSay(Heike,'D9-H-2-1');
+                              ForceSay(Khattam,'D9-Kh-2-1');
+
+                              DialogueOff;
+                         end;
+                    end;
+                    
+                    ComStop(Khattam);
+
+                    if khattam_choice = 2 then
+                         begin
+                              //Move Khattam back to where he came from and remove him from the map.
+                              hex = 1;
+                              repeat
+                              if GetDistUnitXY(Khattam,hex_list_after[hex][1],hex_list_after[hex][2]) > 3 then
+                                   ComMoveXY(Khattam,hex_list_after[hex][1],hex_list_after[hex][2])
+                              else
+                                   if hex < hex_list_after then
+                                        hex = hex + 1
+                                   else
+                                        RemoveUnit(Khattam);
+
+                              wait(0$1);
+
+                              until not IsPlaced(Khattam);
+                         end;
+               end;
+     end;
+
+//When the American base is sufficiently damaged its leader tries to speak reason
+//with Heike.
+Every 0$1+0$0.8 trigger game_phase = 3 do
+     var init_buildings, init_humans, temp_list, temp_unit;
+     begin
+          init_buildings = GetAmBuildings;
+          init_humans = GetAmHumans;
+
+          repeat
+          wait(0$5);
+          until init_buildings >= GetAmBuildings * 2 or init_humans >= GetAmHumans * 2;
+
+          DialogueOn;
+
+          SayRadio(Simms,'D10-Simm-1');
+          ForceSay(Heike,'D10-H-1');
+          SayRadio(Simms,'D10-Simm-2');
+          ForceSay(Heike,'D10-H-2');
+          SayRadio(Simms,'D10-Simm-3');
+          ForceSay(Heike,'D10-H-3');
+          SayRadio(Simms,'D10-Simm-4');
+
+          temp_list = UnitFilter([Kowalski,Suze,Kurt,Dwayne],[f_alive]);
+
+          if temp_list = 0 then
+               temp_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff (GetApes(you) ^ [Heike, Sonya, Oswald, Ralph, Kowalski, Evelyn, Suze, Olaf, Kurt, Dwayne, MarkB, Aviradze, Swansson]);
+
+          if temp_list > 0 then
+               begin
+                    temp_unit = temp_list[Rand(1,temp_list)];
+                    case temp_unit of
+                         Kowalski: ForceSay(temp_unit,'D10-Ko-1');
+                         Suze: ForceSay(temp_unit,'D10-Su-1');
+                         Kurt: begin
+                              if kurt_is_substitute then
+                                   ForceSay(temp_unit,'D10-Ku-1')
+                              else
+                                   ForceSay(temp_unit,'D10-Ku-1');
+                         end;
+                         Dwayne: ForceSay(temp_unit,'D10-Dw-1');
+                         else
+                              if GetSex(temp_unit) = sex_male then
+                                   ForceSay(temp_unit,'D10-SomeM-1')
+                              else
+                                   ForceSay(temp_unit,'D10-SomeF-1');
+                    end;
+               end;
+
+          dwait(0$0.9);
+          ForceSay(Heike,'D10-H-4');
+
+          dwait(0$0.2);
+          EndMission;
+
+          DialogueOff;
+     end;
+Function GetAmBuildings;
+     begin
+          result = FilterAllUnits([[f_side,americans],[f_type,unit_building]]) diff [b_ext_computer,b_ext_gun,b_ext_laser,b_ext_noncombat,b_ext_radar,b_ext_radio,b_ext_rocket,b_ext_siberium,b_ext_stitch,b_ext_track];
+     end;
+Function GetAmHumans;
+     begin
+          result = FilterAllUnits([[f_side,americans],[f_type,unit_human]]);
+     end;

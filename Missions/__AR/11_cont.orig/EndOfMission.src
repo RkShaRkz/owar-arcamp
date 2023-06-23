@@ -1,0 +1,130 @@
+
+Export Function EndMission;
+     var val, all_list, un_list, name_list;
+     begin
+          //Medals
+          //None of Gensher's people died
+          if original_gensher_people+0 = saved_gensher_people+0 then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('GensherPeople',val);
+
+          if val = 1 then
+             SaveVariable(1, 'AllGensherPeopleSaved_11_cont')
+          else
+              SaveVariable(0, 'AllGensherPeopleSaved_11_cont');
+
+          //Hidden camera tech
+          if cameras_placed then
+               val = 1
+          else
+               if Researched(you,tech_HidCam) then
+                    val = -1
+               else
+                    val = -2;
+
+          AddMedal('HiddenCamera',val);
+
+          //Russian interferrence
+          if russian_interference_points <= [11,8,5][difficulty] then
+               val = 1
+          else
+               val = -1;
+
+          AddMedal('RussianInterference',val);
+
+          GiveMedals('Medals');
+
+
+          //Reward and save people.
+          //Mind that the first mission of the pro-Legion branch is 16 so if we just save characters without
+          //modifying their LastMission attribute they will get a considerable XP boost when loaded in Ar12a.
+          //Setting LastMission to 16 even for characters loaded into Ar12 has no side effect.
+          all_list = FilterAllUnits([[f_side,you],[f_type,unit_human]]) diff GetApes(you);
+          if IsLive(Gonzo) then
+               all_list = all_list ^ Gonzo;
+
+          RewardPeople(all_list);
+
+          SetLastMission(all_list, 16);
+
+          SaveCharacters(Heike,'Heike_11_cont');
+          SaveCharacters(Gensher,'Gensher_11_cont');
+                     
+          SaveVariable(oswald_is_substitute,'Oswald_is_substitute_11_generic');
+          SaveVariable(kurt_is_substitute,'Kurt_is_substitute_11_generic');
+
+          un_list = [Sonya, Oswald, Ralph, Kowalski, Evelyn, Suze, Olaf, Kurt, Dwayne, MarkB, Aviradze, Swansson, Gonzo];
+          name_list = ['Sonya', 'Oswald', 'Ralph', 'Kowalski', 'Evelyn', 'Suze', 'Olaf', 'Kurt', 'Dwayne', 'MarkB', 'Aviradze', 'Swansson', 'Gonzo'];
+          for val = 1 to un_list do
+               if un_list[val] in all_list then
+                    SaveCharacters(un_list[val],name_list[val] & '_11_cont');
+
+          SaveCharacters(all_list diff (Heike ^ Khattam ^ un_list),'Others_11_cont');
+
+          if GetLives(Khattam) > 0 then
+               SaveCharacters(Khattam,'Khattam_11_cont');
+
+          SaveVariable(khattam_choice = 1,'Khattam_accepted_11_cont');
+
+         
+          //Query for choosing to stay with Arabs or join Legion.
+          //Fill map with black fog and display the query.
+          InGameOn;
+
+          for val in all_units do
+               DestroyUnit(val);  //Can't used ChangeSideFog because the player's fog side will also change
+          ResetFog;
+
+          wait(0$0.5);
+          repeat
+          Query('QCutscene1');
+          val = Query('QCutscene2');
+          until val = 3 or val = 2;
+
+          wait(0$0.5);
+          SetNextMission(val-1);
+
+          InGameOff;
+
+          YouWin;
+          
+
+          //Developer's notes.
+          {
+          Even if you tell the campaign to progress directly to mission 16 (that is 12a) from mission 11
+          like this (missions.dat):
+
+          MISSION 11
+            MAP 11
+            NAME "Operation Deep Blue"
+            SUBCAMP 3
+            PREV 10
+            NEXT 16
+          MISSION 16
+            MAP "12a"
+            NAME "Between Rock and a Hard Place"
+            SUBCAMP 5
+            PREV 11
+            NEXT 17
+
+          the game still quieries the player to choose between two options. I guess this is hardcoded
+          somehow. But since the player doesn't (read: "can't") answer the query it defaults to the first
+          option which leads to mission 12 (by default apparently). Even though there is no definition for this mission in
+          missions.dat the game automatically searches for a map in a folder called "12" so if that
+          folder doesn't exist the player will get a message like this:
+
+          "Missions\__Ar\12\description.txt is empty or doesn't exist"
+
+          Apparently the NEXTM command overrides this behaviour hence it is used here.
+
+          MISSION 11
+            MAP 11
+            NAME "Operace Deep Blue"
+            SUBCAMP 3
+            PREV 10
+            NEXTM 2 12 16
+          }
+     end;

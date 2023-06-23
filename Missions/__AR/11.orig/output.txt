@@ -1,0 +1,1521 @@
+// export testing ; export Heike , Omar ; starting begin ResetFog ;
+   0: CALL_OW 335
+// RandomizeAll ;
+   4: CALL_OW 11
+// testing = false ;
+   8: LD_ADDR_EXP 1
+  12: PUSH
+  13: LD_INT 0
+  15: ST_TO_ADDR
+// disable ( 1 ) ;
+  16: LD_INT 1
+  18: DISABLE_MARKED
+// PlaceUnits ;
+  19: CALL 28 0 0
+// Action ;
+  23: CALL 517 0 0
+// end ;
+  27: END
+// function PlaceUnits ; var val ; begin
+  28: LD_INT 0
+  30: PPUSH
+  31: PPUSH
+// InitUc ;
+  32: CALL_OW 18
+// InitHc ;
+  36: CALL_OW 19
+// uc_side = 2 ;
+  40: LD_ADDR_OWVAR 20
+  44: PUSH
+  45: LD_INT 2
+  47: ST_TO_ADDR
+// uc_nation = nation_arabian ;
+  48: LD_ADDR_OWVAR 21
+  52: PUSH
+  53: LD_INT 2
+  55: ST_TO_ADDR
+// for val in FilterAllUnits ( [ [ f_side , 2 ] , [ f_type , unit_building ] ] ) do
+  56: LD_ADDR_VAR 0 2
+  60: PUSH
+  61: LD_INT 22
+  63: PUSH
+  64: LD_INT 2
+  66: PUSH
+  67: EMPTY
+  68: LIST
+  69: LIST
+  70: PUSH
+  71: LD_INT 21
+  73: PUSH
+  74: LD_INT 3
+  76: PUSH
+  77: EMPTY
+  78: LIST
+  79: LIST
+  80: PUSH
+  81: EMPTY
+  82: LIST
+  83: LIST
+  84: PPUSH
+  85: CALL_OW 69
+  89: PUSH
+  90: FOR_IN
+  91: IFFALSE 372
+// begin case GetBType ( val ) of b_depot , b_warehouse :
+  93: LD_VAR 0 2
+  97: PPUSH
+  98: CALL_OW 266
+ 102: PUSH
+ 103: LD_INT 0
+ 105: DOUBLE
+ 106: EQUAL
+ 107: IFTRUE 117
+ 109: LD_INT 1
+ 111: DOUBLE
+ 112: EQUAL
+ 113: IFTRUE 117
+ 115: GO 156
+ 117: POP
+// begin PrepareEngineer ( false , 0 ) ;
+ 118: LD_INT 0
+ 120: PPUSH
+ 121: LD_INT 0
+ 123: PPUSH
+ 124: CALL_OW 382
+// PlaceHumanInUnit ( CreateHuman , val ) ;
+ 128: CALL_OW 44
+ 132: PPUSH
+ 133: LD_VAR 0 2
+ 137: PPUSH
+ 138: CALL_OW 52
+// SetBName ( val , kaaba ) ;
+ 142: LD_VAR 0 2
+ 146: PPUSH
+ 147: LD_STRING kaaba
+ 149: PPUSH
+ 150: CALL_OW 500
+// end ; b_workshop , b_factory , b_lab , b_lab_half , b_lab_full , b_armoury , b_barracks , b_breastwork , b_bunker :
+ 154: GO 370
+ 156: LD_INT 2
+ 158: DOUBLE
+ 159: EQUAL
+ 160: IFTRUE 212
+ 162: LD_INT 3
+ 164: DOUBLE
+ 165: EQUAL
+ 166: IFTRUE 212
+ 168: LD_INT 6
+ 170: DOUBLE
+ 171: EQUAL
+ 172: IFTRUE 212
+ 174: LD_INT 7
+ 176: DOUBLE
+ 177: EQUAL
+ 178: IFTRUE 212
+ 180: LD_INT 8
+ 182: DOUBLE
+ 183: EQUAL
+ 184: IFTRUE 212
+ 186: LD_INT 4
+ 188: DOUBLE
+ 189: EQUAL
+ 190: IFTRUE 212
+ 192: LD_INT 5
+ 194: DOUBLE
+ 195: EQUAL
+ 196: IFTRUE 212
+ 198: LD_INT 31
+ 200: DOUBLE
+ 201: EQUAL
+ 202: IFTRUE 212
+ 204: LD_INT 32
+ 206: DOUBLE
+ 207: EQUAL
+ 208: IFTRUE 212
+ 210: GO 369
+ 212: POP
+// begin if val = lab2 then
+ 213: LD_VAR 0 2
+ 217: PUSH
+ 218: LD_INT 5
+ 220: EQUAL
+ 221: IFFALSE 225
+// continue ;
+ 223: GO 90
+// case GetBType ( val ) of b_workshop , b_factory :
+ 225: LD_VAR 0 2
+ 229: PPUSH
+ 230: CALL_OW 266
+ 234: PUSH
+ 235: LD_INT 2
+ 237: DOUBLE
+ 238: EQUAL
+ 239: IFTRUE 249
+ 241: LD_INT 3
+ 243: DOUBLE
+ 244: EQUAL
+ 245: IFTRUE 249
+ 247: GO 277
+ 249: POP
+// begin PrepareMechanic ( false , 0 ) ;
+ 250: LD_INT 0
+ 252: PPUSH
+ 253: LD_INT 0
+ 255: PPUSH
+ 256: CALL_OW 383
+// SetSpecResearch ( val , 100 , false ) ;
+ 260: LD_VAR 0 2
+ 264: PPUSH
+ 265: LD_INT 100
+ 267: PPUSH
+ 268: LD_INT 0
+ 270: PPUSH
+ 271: CALL_OW 486
+// end ; b_lab , b_lab_half , b_lab_full :
+ 275: GO 353
+ 277: LD_INT 6
+ 279: DOUBLE
+ 280: EQUAL
+ 281: IFTRUE 297
+ 283: LD_INT 7
+ 285: DOUBLE
+ 286: EQUAL
+ 287: IFTRUE 297
+ 289: LD_INT 8
+ 291: DOUBLE
+ 292: EQUAL
+ 293: IFTRUE 297
+ 295: GO 325
+ 297: POP
+// begin PrepareScientist ( false , 0 ) ;
+ 298: LD_INT 0
+ 300: PPUSH
+ 301: LD_INT 0
+ 303: PPUSH
+ 304: CALL_OW 384
+// SetSpecResearch ( val , 100 , false ) ;
+ 308: LD_VAR 0 2
+ 312: PPUSH
+ 313: LD_INT 100
+ 315: PPUSH
+ 316: LD_INT 0
+ 318: PPUSH
+ 319: CALL_OW 486
+// end ; b_breastwork , b_bunker :
+ 323: GO 353
+ 325: LD_INT 31
+ 327: DOUBLE
+ 328: EQUAL
+ 329: IFTRUE 339
+ 331: LD_INT 32
+ 333: DOUBLE
+ 334: EQUAL
+ 335: IFTRUE 339
+ 337: GO 352
+ 339: POP
+// begin PrepareSoldier ( false , 0 ) ;
+ 340: LD_INT 0
+ 342: PPUSH
+ 343: LD_INT 0
+ 345: PPUSH
+ 346: CALL_OW 381
+// end ; end ;
+ 350: GO 353
+ 352: POP
+// PlaceHumanInUnit ( CreateHuman , val ) ;
+ 353: CALL_OW 44
+ 357: PPUSH
+ 358: LD_VAR 0 2
+ 362: PPUSH
+ 363: CALL_OW 52
+// end ; end ;
+ 367: GO 370
+ 369: POP
+// end ;
+ 370: GO 90
+ 372: POP
+ 373: POP
+// if testing then
+ 374: LD_EXP 1
+ 378: IFFALSE 410
+// begin preparesoldier ( sex_female , 0 ) ;
+ 380: LD_INT 2
+ 382: PPUSH
+ 383: LD_INT 0
+ 385: PPUSH
+ 386: CALL_OW 381
+// hc_name = Heike ;
+ 390: LD_ADDR_OWVAR 26
+ 394: PUSH
+ 395: LD_STRING Heike
+ 397: ST_TO_ADDR
+// Heike = CreateHuman ;
+ 398: LD_ADDR_EXP 2
+ 402: PUSH
+ 403: CALL_OW 44
+ 407: ST_TO_ADDR
+// end else
+ 408: GO 435
+// begin Heike = CreateCharacter ( Heike_10 ) ;
+ 410: LD_ADDR_EXP 2
+ 414: PUSH
+ 415: LD_STRING Heike_10
+ 417: PPUSH
+ 418: CALL_OW 34
+ 422: ST_TO_ADDR
+// SetClass ( Heike , class_soldier ) ;
+ 423: LD_EXP 2
+ 427: PPUSH
+ 428: LD_INT 1
+ 430: PPUSH
+ 431: CALL_OW 336
+// end ; Omar = NewCharacter ( Omar ) ;
+ 435: LD_ADDR_EXP 3
+ 439: PUSH
+ 440: LD_STRING Omar
+ 442: PPUSH
+ 443: CALL_OW 25
+ 447: ST_TO_ADDR
+// PlaceUnitXY ( Omar , 133 , 59 , false ) ;
+ 448: LD_EXP 3
+ 452: PPUSH
+ 453: LD_INT 133
+ 455: PPUSH
+ 456: LD_INT 59
+ 458: PPUSH
+ 459: LD_INT 0
+ 461: PPUSH
+ 462: CALL_OW 48
+// PlaceUnitXY ( Heike , 135 , 59 , false ) ;
+ 466: LD_EXP 2
+ 470: PPUSH
+ 471: LD_INT 135
+ 473: PPUSH
+ 474: LD_INT 59
+ 476: PPUSH
+ 477: LD_INT 0
+ 479: PPUSH
+ 480: CALL_OW 48
+// ComTurnUnit ( Heike , Omar ) ;
+ 484: LD_EXP 2
+ 488: PPUSH
+ 489: LD_EXP 3
+ 493: PPUSH
+ 494: CALL_OW 119
+// ComTurnUnit ( Omar , Heike ) ;
+ 498: LD_EXP 3
+ 502: PPUSH
+ 503: LD_EXP 2
+ 507: PPUSH
+ 508: CALL_OW 119
+// end ;
+ 512: LD_VAR 0 1
+ 516: RET
+// function Action ; var Sonya , Oswald , Ralph , Kowalski , Evelyn , Suze , Olaf , Kurt , Dwayne , MarkB , Aviradze , Swansson ; var units_list , un , un_list , name_list , temp_list , num , i , sel_list , others_list ; begin
+ 517: LD_INT 0
+ 519: PPUSH
+ 520: PPUSH
+ 521: PPUSH
+ 522: PPUSH
+ 523: PPUSH
+ 524: PPUSH
+ 525: PPUSH
+ 526: PPUSH
+ 527: PPUSH
+ 528: PPUSH
+ 529: PPUSH
+ 530: PPUSH
+ 531: PPUSH
+ 532: PPUSH
+ 533: PPUSH
+ 534: PPUSH
+ 535: PPUSH
+ 536: PPUSH
+ 537: PPUSH
+ 538: PPUSH
+ 539: PPUSH
+ 540: PPUSH
+// InGameOn ;
+ 541: CALL_OW 8
+// ExclusiveOff ;
+ 545: CALL_OW 5
+// wait ( 2 ) ;
+ 549: LD_INT 2
+ 551: PPUSH
+ 552: CALL_OW 67
+// CenterNowOnUnits ( [ arfact00 , Heike ] ) ;
+ 556: LD_INT 4
+ 558: PUSH
+ 559: LD_EXP 2
+ 563: PUSH
+ 564: EMPTY
+ 565: LIST
+ 566: LIST
+ 567: PPUSH
+ 568: CALL_OW 87
+// ClearAllFogForSide ( 2 ) ;
+ 572: LD_INT 2
+ 574: PPUSH
+ 575: CALL_OW 520
+// Say ( Omar , D1-Om-1 ) ;
+ 579: LD_EXP 3
+ 583: PPUSH
+ 584: LD_STRING D1-Om-1
+ 586: PPUSH
+ 587: CALL_OW 88
+// Say ( Heike , D1-H-1 ) ;
+ 591: LD_EXP 2
+ 595: PPUSH
+ 596: LD_STRING D1-H-1
+ 598: PPUSH
+ 599: CALL_OW 88
+// Say ( Omar , D1-Om-2 ) ;
+ 603: LD_EXP 3
+ 607: PPUSH
+ 608: LD_STRING D1-Om-2
+ 610: PPUSH
+ 611: CALL_OW 88
+// if LoadVariable ( Abdul_doubt_07 , false ) then
+ 615: LD_STRING Abdul_doubt_07
+ 617: PPUSH
+ 618: LD_INT 0
+ 620: PPUSH
+ 621: CALL_OW 30
+ 625: IFFALSE 641
+// Say ( Heike , D1-a-H-2 ) else
+ 627: LD_EXP 2
+ 631: PPUSH
+ 632: LD_STRING D1-a-H-2
+ 634: PPUSH
+ 635: CALL_OW 88
+ 639: GO 653
+// Say ( Heike , D1-b-H-2 ) ;
+ 641: LD_EXP 2
+ 645: PPUSH
+ 646: LD_STRING D1-b-H-2
+ 648: PPUSH
+ 649: CALL_OW 88
+// Say ( Omar , D1-Om-3 ) ;
+ 653: LD_EXP 3
+ 657: PPUSH
+ 658: LD_STRING D1-Om-3
+ 660: PPUSH
+ 661: CALL_OW 88
+// Say ( Heike , D1-H-3 ) ;
+ 665: LD_EXP 2
+ 669: PPUSH
+ 670: LD_STRING D1-H-3
+ 672: PPUSH
+ 673: CALL_OW 88
+// enable ( 1 ) ;
+ 677: LD_INT 1
+ 679: ENABLE_MARKED
+// Say ( Omar , D1-Om-4 ) ;
+ 680: LD_EXP 3
+ 684: PPUSH
+ 685: LD_STRING D1-Om-4
+ 687: PPUSH
+ 688: CALL_OW 88
+// Say ( Heike , D1-H-4 ) ;
+ 692: LD_EXP 2
+ 696: PPUSH
+ 697: LD_STRING D1-H-4
+ 699: PPUSH
+ 700: CALL_OW 88
+// Say ( Omar , D1-Om-5 ) ;
+ 704: LD_EXP 3
+ 708: PPUSH
+ 709: LD_STRING D1-Om-5
+ 711: PPUSH
+ 712: CALL_OW 88
+// Say ( Heike , D1-H-5 ) ;
+ 716: LD_EXP 2
+ 720: PPUSH
+ 721: LD_STRING D1-H-5
+ 723: PPUSH
+ 724: CALL_OW 88
+// if TestCharacters ( Gossudarov_10 ) then
+ 728: LD_STRING Gossudarov_10
+ 730: PPUSH
+ 731: CALL_OW 28
+ 735: IFFALSE 749
+// Say ( Heike , D1-c-H-1 ) ;
+ 737: LD_EXP 2
+ 741: PPUSH
+ 742: LD_STRING D1-c-H-1
+ 744: PPUSH
+ 745: CALL_OW 88
+// Say ( Omar , D1-Om-6 ) ;
+ 749: LD_EXP 3
+ 753: PPUSH
+ 754: LD_STRING D1-Om-6
+ 756: PPUSH
+ 757: CALL_OW 88
+// Say ( Heike , D1-H-6 ) ;
+ 761: LD_EXP 2
+ 765: PPUSH
+ 766: LD_STRING D1-H-6
+ 768: PPUSH
+ 769: CALL_OW 88
+// Say ( Omar , D1-Om-7 ) ;
+ 773: LD_EXP 3
+ 777: PPUSH
+ 778: LD_STRING D1-Om-7
+ 780: PPUSH
+ 781: CALL_OW 88
+// Say ( Heike , D1-H-7 ) ;
+ 785: LD_EXP 2
+ 789: PPUSH
+ 790: LD_STRING D1-H-7
+ 792: PPUSH
+ 793: CALL_OW 88
+// Say ( Omar , D1-Om-8 ) ;
+ 797: LD_EXP 3
+ 801: PPUSH
+ 802: LD_STRING D1-Om-8
+ 804: PPUSH
+ 805: CALL_OW 88
+// Say ( Heike , D1-H-8 ) ;
+ 809: LD_EXP 2
+ 813: PPUSH
+ 814: LD_STRING D1-H-8
+ 816: PPUSH
+ 817: CALL_OW 88
+// Say ( Omar , D1-Om-9 ) ;
+ 821: LD_EXP 3
+ 825: PPUSH
+ 826: LD_STRING D1-Om-9
+ 828: PPUSH
+ 829: CALL_OW 88
+// Say ( Heike , D1-H-9 ) ;
+ 833: LD_EXP 2
+ 837: PPUSH
+ 838: LD_STRING D1-H-9
+ 840: PPUSH
+ 841: CALL_OW 88
+// Say ( Omar , D1-Om-10 ) ;
+ 845: LD_EXP 3
+ 849: PPUSH
+ 850: LD_STRING D1-Om-10
+ 852: PPUSH
+ 853: CALL_OW 88
+// Say ( Omar , D1-Om-11 ) ;
+ 857: LD_EXP 3
+ 861: PPUSH
+ 862: LD_STRING D1-Om-11
+ 864: PPUSH
+ 865: CALL_OW 88
+// Say ( Omar , D1-Om-12 ) ;
+ 869: LD_EXP 3
+ 873: PPUSH
+ 874: LD_STRING D1-Om-12
+ 876: PPUSH
+ 877: CALL_OW 88
+// Say ( Omar , D1-Om-13 ) ;
+ 881: LD_EXP 3
+ 885: PPUSH
+ 886: LD_STRING D1-Om-13
+ 888: PPUSH
+ 889: CALL_OW 88
+// Say ( Heike , D1-H-10 ) ;
+ 893: LD_EXP 2
+ 897: PPUSH
+ 898: LD_STRING D1-H-10
+ 900: PPUSH
+ 901: CALL_OW 88
+// wait ( 0 0$0.2 ) ;
+ 905: LD_INT 7
+ 907: PPUSH
+ 908: CALL_OW 67
+// if TestCharacters ( Dwayne_10 ) then
+ 912: LD_STRING Dwayne_10
+ 914: PPUSH
+ 915: CALL_OW 28
+ 919: IFFALSE 936
+// Dwayne = CreateCharacter ( Dwayne_10 ) else
+ 921: LD_ADDR_VAR 0 10
+ 925: PUSH
+ 926: LD_STRING Dwayne_10
+ 928: PPUSH
+ 929: CALL_OW 34
+ 933: ST_TO_ADDR
+ 934: GO 944
+// Dwayne = 0 ;
+ 936: LD_ADDR_VAR 0 10
+ 940: PUSH
+ 941: LD_INT 0
+ 943: ST_TO_ADDR
+// if TestCharacters ( Kurt_10 ) then
+ 944: LD_STRING Kurt_10
+ 946: PPUSH
+ 947: CALL_OW 28
+ 951: IFFALSE 968
+// Kurt = CreateCharacter ( Kurt_10 ) else
+ 953: LD_ADDR_VAR 0 9
+ 957: PUSH
+ 958: LD_STRING Kurt_10
+ 960: PPUSH
+ 961: CALL_OW 34
+ 965: ST_TO_ADDR
+ 966: GO 976
+// Kurt = 0 ;
+ 968: LD_ADDR_VAR 0 9
+ 972: PUSH
+ 973: LD_INT 0
+ 975: ST_TO_ADDR
+// if TestCharacters ( Oswald_10 ) then
+ 976: LD_STRING Oswald_10
+ 978: PPUSH
+ 979: CALL_OW 28
+ 983: IFFALSE 1000
+// Oswald = CreateCharacter ( Oswald_10 ) else
+ 985: LD_ADDR_VAR 0 3
+ 989: PUSH
+ 990: LD_STRING Oswald_10
+ 992: PPUSH
+ 993: CALL_OW 34
+ 997: ST_TO_ADDR
+ 998: GO 1008
+// Oswald = 0 ;
+1000: LD_ADDR_VAR 0 3
+1004: PUSH
+1005: LD_INT 0
+1007: ST_TO_ADDR
+// if TestCharacters ( Sonya_07_cont ) then
+1008: LD_STRING Sonya_07_cont
+1010: PPUSH
+1011: CALL_OW 28
+1015: IFFALSE 1032
+// Sonya = CreateCharacter ( Sonya_07_cont ) else
+1017: LD_ADDR_VAR 0 2
+1021: PUSH
+1022: LD_STRING Sonya_07_cont
+1024: PPUSH
+1025: CALL_OW 34
+1029: ST_TO_ADDR
+1030: GO 1088
+// if TestCharacters ( Sonya_07_not_sel ) then
+1032: LD_STRING Sonya_07_not_sel
+1034: PPUSH
+1035: CALL_OW 28
+1039: IFFALSE 1056
+// Sonya = CreateCharacter ( Sonya_07_not_sel ) else
+1041: LD_ADDR_VAR 0 2
+1045: PUSH
+1046: LD_STRING Sonya_07_not_sel
+1048: PPUSH
+1049: CALL_OW 34
+1053: ST_TO_ADDR
+1054: GO 1088
+// if TestCharacters ( Sonya_05_cont ) then
+1056: LD_STRING Sonya_05_cont
+1058: PPUSH
+1059: CALL_OW 28
+1063: IFFALSE 1080
+// Sonya = CreateCharacter ( Sonya_05_cont ) else
+1065: LD_ADDR_VAR 0 2
+1069: PUSH
+1070: LD_STRING Sonya_05_cont
+1072: PPUSH
+1073: CALL_OW 34
+1077: ST_TO_ADDR
+1078: GO 1088
+// Sonya = 0 ;
+1080: LD_ADDR_VAR 0 2
+1084: PUSH
+1085: LD_INT 0
+1087: ST_TO_ADDR
+// if TestCharacters ( Ralph_07_cont ) then
+1088: LD_STRING Ralph_07_cont
+1090: PPUSH
+1091: CALL_OW 28
+1095: IFFALSE 1112
+// Ralph = CreateCharacter ( Ralph_07_cont ) else
+1097: LD_ADDR_VAR 0 4
+1101: PUSH
+1102: LD_STRING Ralph_07_cont
+1104: PPUSH
+1105: CALL_OW 34
+1109: ST_TO_ADDR
+1110: GO 1168
+// if TestCharacters ( Ralph_07_not_sel ) then
+1112: LD_STRING Ralph_07_not_sel
+1114: PPUSH
+1115: CALL_OW 28
+1119: IFFALSE 1136
+// Ralph = CreateCharacter ( Ralph_07_not_sel ) else
+1121: LD_ADDR_VAR 0 4
+1125: PUSH
+1126: LD_STRING Ralph_07_not_sel
+1128: PPUSH
+1129: CALL_OW 34
+1133: ST_TO_ADDR
+1134: GO 1168
+// if TestCharacters ( Ralph_05_cont ) then
+1136: LD_STRING Ralph_05_cont
+1138: PPUSH
+1139: CALL_OW 28
+1143: IFFALSE 1160
+// Ralph = CreateCharacter ( Ralph_05_cont ) else
+1145: LD_ADDR_VAR 0 4
+1149: PUSH
+1150: LD_STRING Ralph_05_cont
+1152: PPUSH
+1153: CALL_OW 34
+1157: ST_TO_ADDR
+1158: GO 1168
+// Ralph = 0 ;
+1160: LD_ADDR_VAR 0 4
+1164: PUSH
+1165: LD_INT 0
+1167: ST_TO_ADDR
+// if TestCharacters ( Kowalski_07_cont ) then
+1168: LD_STRING Kowalski_07_cont
+1170: PPUSH
+1171: CALL_OW 28
+1175: IFFALSE 1192
+// Kowalski = CreateCharacter ( Kowalski_07_cont ) else
+1177: LD_ADDR_VAR 0 5
+1181: PUSH
+1182: LD_STRING Kowalski_07_cont
+1184: PPUSH
+1185: CALL_OW 34
+1189: ST_TO_ADDR
+1190: GO 1248
+// if TestCharacters ( Kowalski_07_not_sel ) then
+1192: LD_STRING Kowalski_07_not_sel
+1194: PPUSH
+1195: CALL_OW 28
+1199: IFFALSE 1216
+// Kowalski = CreateCharacter ( Kowalski_07_not_sel ) else
+1201: LD_ADDR_VAR 0 5
+1205: PUSH
+1206: LD_STRING Kowalski_07_not_sel
+1208: PPUSH
+1209: CALL_OW 34
+1213: ST_TO_ADDR
+1214: GO 1248
+// if TestCharacters ( Kowalski_05_cont ) then
+1216: LD_STRING Kowalski_05_cont
+1218: PPUSH
+1219: CALL_OW 28
+1223: IFFALSE 1240
+// Kowalski = CreateCharacter ( Kowalski_05_cont ) else
+1225: LD_ADDR_VAR 0 5
+1229: PUSH
+1230: LD_STRING Kowalski_05_cont
+1232: PPUSH
+1233: CALL_OW 34
+1237: ST_TO_ADDR
+1238: GO 1248
+// Kowalski = 0 ;
+1240: LD_ADDR_VAR 0 5
+1244: PUSH
+1245: LD_INT 0
+1247: ST_TO_ADDR
+// if TestCharacters ( Evelyn_07_cont ) then
+1248: LD_STRING Evelyn_07_cont
+1250: PPUSH
+1251: CALL_OW 28
+1255: IFFALSE 1272
+// Evelyn = CreateCharacter ( Evelyn_07_cont ) else
+1257: LD_ADDR_VAR 0 6
+1261: PUSH
+1262: LD_STRING Evelyn_07_cont
+1264: PPUSH
+1265: CALL_OW 34
+1269: ST_TO_ADDR
+1270: GO 1328
+// if TestCharacters ( Evelyn_07_not_sel ) then
+1272: LD_STRING Evelyn_07_not_sel
+1274: PPUSH
+1275: CALL_OW 28
+1279: IFFALSE 1296
+// Evelyn = CreateCharacter ( Evelyn_07_not_sel ) else
+1281: LD_ADDR_VAR 0 6
+1285: PUSH
+1286: LD_STRING Evelyn_07_not_sel
+1288: PPUSH
+1289: CALL_OW 34
+1293: ST_TO_ADDR
+1294: GO 1328
+// if TestCharacters ( Evelyn_05_cont ) then
+1296: LD_STRING Evelyn_05_cont
+1298: PPUSH
+1299: CALL_OW 28
+1303: IFFALSE 1320
+// Evelyn = CreateCharacter ( Evelyn_05_cont ) else
+1305: LD_ADDR_VAR 0 6
+1309: PUSH
+1310: LD_STRING Evelyn_05_cont
+1312: PPUSH
+1313: CALL_OW 34
+1317: ST_TO_ADDR
+1318: GO 1328
+// Evelyn = 0 ;
+1320: LD_ADDR_VAR 0 6
+1324: PUSH
+1325: LD_INT 0
+1327: ST_TO_ADDR
+// if TestCharacters ( Suze_07_cont ) then
+1328: LD_STRING Suze_07_cont
+1330: PPUSH
+1331: CALL_OW 28
+1335: IFFALSE 1352
+// Suze = CreateCharacter ( Suze_07_cont ) else
+1337: LD_ADDR_VAR 0 7
+1341: PUSH
+1342: LD_STRING Suze_07_cont
+1344: PPUSH
+1345: CALL_OW 34
+1349: ST_TO_ADDR
+1350: GO 1408
+// if TestCharacters ( Suze_07_not_sel ) then
+1352: LD_STRING Suze_07_not_sel
+1354: PPUSH
+1355: CALL_OW 28
+1359: IFFALSE 1376
+// Suze = CreateCharacter ( Suze_07_not_sel ) else
+1361: LD_ADDR_VAR 0 7
+1365: PUSH
+1366: LD_STRING Suze_07_not_sel
+1368: PPUSH
+1369: CALL_OW 34
+1373: ST_TO_ADDR
+1374: GO 1408
+// if TestCharacters ( Suze_05_cont ) then
+1376: LD_STRING Suze_05_cont
+1378: PPUSH
+1379: CALL_OW 28
+1383: IFFALSE 1400
+// Suze = CreateCharacter ( Suze_05_cont ) else
+1385: LD_ADDR_VAR 0 7
+1389: PUSH
+1390: LD_STRING Suze_05_cont
+1392: PPUSH
+1393: CALL_OW 34
+1397: ST_TO_ADDR
+1398: GO 1408
+// Suze = 0 ;
+1400: LD_ADDR_VAR 0 7
+1404: PUSH
+1405: LD_INT 0
+1407: ST_TO_ADDR
+// if TestCharacters ( Olaf_07_cont ) then
+1408: LD_STRING Olaf_07_cont
+1410: PPUSH
+1411: CALL_OW 28
+1415: IFFALSE 1432
+// Olaf = CreateCharacter ( Olaf_07_cont ) else
+1417: LD_ADDR_VAR 0 8
+1421: PUSH
+1422: LD_STRING Olaf_07_cont
+1424: PPUSH
+1425: CALL_OW 34
+1429: ST_TO_ADDR
+1430: GO 1488
+// if TestCharacters ( Olaf_07_not_sel ) then
+1432: LD_STRING Olaf_07_not_sel
+1434: PPUSH
+1435: CALL_OW 28
+1439: IFFALSE 1456
+// Olaf = CreateCharacter ( Olaf_07_not_sel ) else
+1441: LD_ADDR_VAR 0 8
+1445: PUSH
+1446: LD_STRING Olaf_07_not_sel
+1448: PPUSH
+1449: CALL_OW 34
+1453: ST_TO_ADDR
+1454: GO 1488
+// if TestCharacters ( Olaf_05_cont ) then
+1456: LD_STRING Olaf_05_cont
+1458: PPUSH
+1459: CALL_OW 28
+1463: IFFALSE 1480
+// Olaf = CreateCharacter ( Olaf_05_cont ) else
+1465: LD_ADDR_VAR 0 8
+1469: PUSH
+1470: LD_STRING Olaf_05_cont
+1472: PPUSH
+1473: CALL_OW 34
+1477: ST_TO_ADDR
+1478: GO 1488
+// Olaf = 0 ;
+1480: LD_ADDR_VAR 0 8
+1484: PUSH
+1485: LD_INT 0
+1487: ST_TO_ADDR
+// if TestCharacters ( MarkB_07_cont ) then
+1488: LD_STRING MarkB_07_cont
+1490: PPUSH
+1491: CALL_OW 28
+1495: IFFALSE 1512
+// MarkB = CreateCharacter ( MarkB_07_cont ) else
+1497: LD_ADDR_VAR 0 11
+1501: PUSH
+1502: LD_STRING MarkB_07_cont
+1504: PPUSH
+1505: CALL_OW 34
+1509: ST_TO_ADDR
+1510: GO 1520
+// MarkB = 0 ;
+1512: LD_ADDR_VAR 0 11
+1516: PUSH
+1517: LD_INT 0
+1519: ST_TO_ADDR
+// if TestCharacters ( Aviradze_07_cont ) then
+1520: LD_STRING Aviradze_07_cont
+1522: PPUSH
+1523: CALL_OW 28
+1527: IFFALSE 1544
+// Aviradze = CreateCharacter ( Aviradze_07_cont ) else
+1529: LD_ADDR_VAR 0 12
+1533: PUSH
+1534: LD_STRING Aviradze_07_cont
+1536: PPUSH
+1537: CALL_OW 34
+1541: ST_TO_ADDR
+1542: GO 1552
+// Aviradze = 0 ;
+1544: LD_ADDR_VAR 0 12
+1548: PUSH
+1549: LD_INT 0
+1551: ST_TO_ADDR
+// if TestCharacters ( Swansson_07_cont ) then
+1552: LD_STRING Swansson_07_cont
+1554: PPUSH
+1555: CALL_OW 28
+1559: IFFALSE 1576
+// Swansson = CreateCharacter ( Swansson_07_cont ) else
+1561: LD_ADDR_VAR 0 13
+1565: PUSH
+1566: LD_STRING Swansson_07_cont
+1568: PPUSH
+1569: CALL_OW 34
+1573: ST_TO_ADDR
+1574: GO 1584
+// Swansson = 0 ;
+1576: LD_ADDR_VAR 0 13
+1580: PUSH
+1581: LD_INT 0
+1583: ST_TO_ADDR
+// others_list = CreateCharacterSet ( Others_07_not_sel ) diff 0 ;
+1584: LD_ADDR_VAR 0 22
+1588: PUSH
+1589: LD_STRING Others_07_not_sel
+1591: PPUSH
+1592: CALL_OW 31
+1596: PUSH
+1597: LD_INT 0
+1599: DIFF
+1600: ST_TO_ADDR
+// others_list = others_list ^ ( CreateCharacterSet ( Others_07_cont ) diff 0 ) ;
+1601: LD_ADDR_VAR 0 22
+1605: PUSH
+1606: LD_VAR 0 22
+1610: PUSH
+1611: LD_STRING Others_07_cont
+1613: PPUSH
+1614: CALL_OW 31
+1618: PUSH
+1619: LD_INT 0
+1621: DIFF
+1622: ADD
+1623: ST_TO_ADDR
+// units_list = ( [ Sonya , Oswald , Ralph , Kowalski , Evelyn , Suze , Olaf , Kurt , Dwayne , MarkB , Aviradze , Swansson ] diff 0 ) ^ others_list ;
+1624: LD_ADDR_VAR 0 14
+1628: PUSH
+1629: LD_VAR 0 2
+1633: PUSH
+1634: LD_VAR 0 3
+1638: PUSH
+1639: LD_VAR 0 4
+1643: PUSH
+1644: LD_VAR 0 5
+1648: PUSH
+1649: LD_VAR 0 6
+1653: PUSH
+1654: LD_VAR 0 7
+1658: PUSH
+1659: LD_VAR 0 8
+1663: PUSH
+1664: LD_VAR 0 9
+1668: PUSH
+1669: LD_VAR 0 10
+1673: PUSH
+1674: LD_VAR 0 11
+1678: PUSH
+1679: LD_VAR 0 12
+1683: PUSH
+1684: LD_VAR 0 13
+1688: PUSH
+1689: EMPTY
+1690: LIST
+1691: LIST
+1692: LIST
+1693: LIST
+1694: LIST
+1695: LIST
+1696: LIST
+1697: LIST
+1698: LIST
+1699: LIST
+1700: LIST
+1701: LIST
+1702: PUSH
+1703: LD_INT 0
+1705: DIFF
+1706: PUSH
+1707: LD_VAR 0 22
+1711: ADD
+1712: ST_TO_ADDR
+// InitUc ;
+1713: CALL_OW 18
+// InitHc ;
+1717: CALL_OW 19
+// uc_nation = nation_arabian ;
+1721: LD_ADDR_OWVAR 21
+1725: PUSH
+1726: LD_INT 2
+1728: ST_TO_ADDR
+// uc_side = 2 ;
+1729: LD_ADDR_OWVAR 20
+1733: PUSH
+1734: LD_INT 2
+1736: ST_TO_ADDR
+// num = 7 + Rand ( 0 , 2 ) ;
+1737: LD_ADDR_VAR 0 19
+1741: PUSH
+1742: LD_INT 7
+1744: PUSH
+1745: LD_INT 0
+1747: PPUSH
+1748: LD_INT 2
+1750: PPUSH
+1751: CALL_OW 12
+1755: PLUS
+1756: ST_TO_ADDR
+// if 14 - units_list > 0 then
+1757: LD_INT 14
+1759: PUSH
+1760: LD_VAR 0 14
+1764: MINUS
+1765: PUSH
+1766: LD_INT 0
+1768: GREATER
+1769: IFFALSE 1791
+// num = num + ( 14 - units_list ) ;
+1771: LD_ADDR_VAR 0 19
+1775: PUSH
+1776: LD_VAR 0 19
+1780: PUSH
+1781: LD_INT 14
+1783: PUSH
+1784: LD_VAR 0 14
+1788: MINUS
+1789: PLUS
+1790: ST_TO_ADDR
+// for i = 1 to num do
+1791: LD_ADDR_VAR 0 20
+1795: PUSH
+1796: DOUBLE
+1797: LD_INT 1
+1799: DEC
+1800: ST_TO_ADDR
+1801: LD_VAR 0 19
+1805: PUSH
+1806: FOR_TO
+1807: IFFALSE 1901
+// begin PrepareHuman ( false , [ class_soldier , class_engineer , class_mechanic , class_scientistic ] [ Rand ( 1 , 4 ) ] , Rand ( 4 , 5 ) ) ;
+1809: LD_INT 0
+1811: PPUSH
+1812: LD_INT 1
+1814: PUSH
+1815: LD_INT 2
+1817: PUSH
+1818: LD_INT 3
+1820: PUSH
+1821: LD_INT 4
+1823: PUSH
+1824: EMPTY
+1825: LIST
+1826: LIST
+1827: LIST
+1828: LIST
+1829: PUSH
+1830: LD_INT 1
+1832: PPUSH
+1833: LD_INT 4
+1835: PPUSH
+1836: CALL_OW 12
+1840: ARRAY
+1841: PPUSH
+1842: LD_INT 4
+1844: PPUSH
+1845: LD_INT 5
+1847: PPUSH
+1848: CALL_OW 12
+1852: PPUSH
+1853: CALL_OW 380
+// un = CreateHuman ;
+1857: LD_ADDR_VAR 0 15
+1861: PUSH
+1862: CALL_OW 44
+1866: ST_TO_ADDR
+// units_list = units_list ^ un ;
+1867: LD_ADDR_VAR 0 14
+1871: PUSH
+1872: LD_VAR 0 14
+1876: PUSH
+1877: LD_VAR 0 15
+1881: ADD
+1882: ST_TO_ADDR
+// others_list = others_list ^ un ;
+1883: LD_ADDR_VAR 0 22
+1887: PUSH
+1888: LD_VAR 0 22
+1892: PUSH
+1893: LD_VAR 0 15
+1897: ADD
+1898: ST_TO_ADDR
+// end ;
+1899: GO 1806
+1901: POP
+1902: POP
+// num = [ 14 , 13 , 12 ] [ difficulty ] ;
+1903: LD_ADDR_VAR 0 19
+1907: PUSH
+1908: LD_INT 14
+1910: PUSH
+1911: LD_INT 13
+1913: PUSH
+1914: LD_INT 12
+1916: PUSH
+1917: EMPTY
+1918: LIST
+1919: LIST
+1920: LIST
+1921: PUSH
+1922: LD_OWVAR 67
+1926: ARRAY
+1927: ST_TO_ADDR
+// if LoadVariable ( Abdul_doubt_07 , false ) then
+1928: LD_STRING Abdul_doubt_07
+1930: PPUSH
+1931: LD_INT 0
+1933: PPUSH
+1934: CALL_OW 30
+1938: IFFALSE 1954
+// num = num - 1 ;
+1940: LD_ADDR_VAR 0 19
+1944: PUSH
+1945: LD_VAR 0 19
+1949: PUSH
+1950: LD_INT 1
+1952: MINUS
+1953: ST_TO_ADDR
+// if LoadVariable ( Heike_surrendered_08 , false ) then
+1954: LD_STRING Heike_surrendered_08
+1956: PPUSH
+1957: LD_INT 0
+1959: PPUSH
+1960: CALL_OW 30
+1964: IFFALSE 1980
+// num = num - 1 ;
+1966: LD_ADDR_VAR 0 19
+1970: PUSH
+1971: LD_VAR 0 19
+1975: PUSH
+1976: LD_INT 1
+1978: MINUS
+1979: ST_TO_ADDR
+// sel_list = CharacterSelection (  , num , num + 1 , [ sel_change_class , sel_hired , sel_not_changeable , Heike , sel_not_hired , sel_changeable ] ^ units_list , [ [ class_soldier , 3 ] , [ class_engineer , 1 ] , class_mechanic , class_scientistic ] ) ;
+1980: LD_ADDR_VAR 0 21
+1984: PUSH
+1985: LD_STRING 
+1987: PPUSH
+1988: LD_VAR 0 19
+1992: PPUSH
+1993: LD_VAR 0 19
+1997: PUSH
+1998: LD_INT 1
+2000: PLUS
+2001: PPUSH
+2002: LD_INT -5
+2004: PUSH
+2005: LD_INT -1
+2007: PUSH
+2008: LD_INT -4
+2010: PUSH
+2011: LD_EXP 2
+2015: PUSH
+2016: LD_INT -2
+2018: PUSH
+2019: LD_INT -3
+2021: PUSH
+2022: EMPTY
+2023: LIST
+2024: LIST
+2025: LIST
+2026: LIST
+2027: LIST
+2028: LIST
+2029: PUSH
+2030: LD_VAR 0 14
+2034: ADD
+2035: PPUSH
+2036: LD_INT 1
+2038: PUSH
+2039: LD_INT 3
+2041: PUSH
+2042: EMPTY
+2043: LIST
+2044: LIST
+2045: PUSH
+2046: LD_INT 2
+2048: PUSH
+2049: LD_INT 1
+2051: PUSH
+2052: EMPTY
+2053: LIST
+2054: LIST
+2055: PUSH
+2056: LD_INT 3
+2058: PUSH
+2059: LD_INT 4
+2061: PUSH
+2062: EMPTY
+2063: LIST
+2064: LIST
+2065: LIST
+2066: LIST
+2067: PPUSH
+2068: CALL_OW 42
+2072: ST_TO_ADDR
+// SaveCharacters ( Heike , Heike_11_sel ) ;
+2073: LD_EXP 2
+2077: PPUSH
+2078: LD_STRING Heike_11_sel
+2080: PPUSH
+2081: CALL_OW 38
+// un_list = [ Sonya , Oswald , Ralph , Kowalski , Evelyn , Suze , Olaf , Kurt , Dwayne , MarkB , Aviradze , Swansson ] ;
+2085: LD_ADDR_VAR 0 16
+2089: PUSH
+2090: LD_VAR 0 2
+2094: PUSH
+2095: LD_VAR 0 3
+2099: PUSH
+2100: LD_VAR 0 4
+2104: PUSH
+2105: LD_VAR 0 5
+2109: PUSH
+2110: LD_VAR 0 6
+2114: PUSH
+2115: LD_VAR 0 7
+2119: PUSH
+2120: LD_VAR 0 8
+2124: PUSH
+2125: LD_VAR 0 9
+2129: PUSH
+2130: LD_VAR 0 10
+2134: PUSH
+2135: LD_VAR 0 11
+2139: PUSH
+2140: LD_VAR 0 12
+2144: PUSH
+2145: LD_VAR 0 13
+2149: PUSH
+2150: EMPTY
+2151: LIST
+2152: LIST
+2153: LIST
+2154: LIST
+2155: LIST
+2156: LIST
+2157: LIST
+2158: LIST
+2159: LIST
+2160: LIST
+2161: LIST
+2162: LIST
+2163: ST_TO_ADDR
+// name_list = [ Sonya , Oswald , Ralph , Kowalski , Evelyn , Suze , Olaf , Kurt , Dwayne , MarkB , Aviradze , Swansson ] ;
+2164: LD_ADDR_VAR 0 17
+2168: PUSH
+2169: LD_STRING Sonya
+2171: PUSH
+2172: LD_STRING Oswald
+2174: PUSH
+2175: LD_STRING Ralph
+2177: PUSH
+2178: LD_STRING Kowalski
+2180: PUSH
+2181: LD_STRING Evelyn
+2183: PUSH
+2184: LD_STRING Suze
+2186: PUSH
+2187: LD_STRING Olaf
+2189: PUSH
+2190: LD_STRING Kurt
+2192: PUSH
+2193: LD_STRING Dwayne
+2195: PUSH
+2196: LD_STRING MarkB
+2198: PUSH
+2199: LD_STRING Aviradze
+2201: PUSH
+2202: LD_STRING Swansson
+2204: PUSH
+2205: EMPTY
+2206: LIST
+2207: LIST
+2208: LIST
+2209: LIST
+2210: LIST
+2211: LIST
+2212: LIST
+2213: LIST
+2214: LIST
+2215: LIST
+2216: LIST
+2217: LIST
+2218: ST_TO_ADDR
+// for un = 1 to un_list do
+2219: LD_ADDR_VAR 0 15
+2223: PUSH
+2224: DOUBLE
+2225: LD_INT 1
+2227: DEC
+2228: ST_TO_ADDR
+2229: LD_VAR 0 16
+2233: PUSH
+2234: FOR_TO
+2235: IFFALSE 2353
+// if un_list [ un ] in sel_list then
+2237: LD_VAR 0 16
+2241: PUSH
+2242: LD_VAR 0 15
+2246: ARRAY
+2247: PUSH
+2248: LD_VAR 0 21
+2252: IN
+2253: IFFALSE 2287
+// SaveCharacters ( un_list [ un ] , name_list [ un ] & _11_sel ) else
+2255: LD_VAR 0 16
+2259: PUSH
+2260: LD_VAR 0 15
+2264: ARRAY
+2265: PPUSH
+2266: LD_VAR 0 17
+2270: PUSH
+2271: LD_VAR 0 15
+2275: ARRAY
+2276: PUSH
+2277: LD_STRING _11_sel
+2279: STR
+2280: PPUSH
+2281: CALL_OW 38
+2285: GO 2351
+// if un_list [ un ] > 0 then
+2287: LD_VAR 0 16
+2291: PUSH
+2292: LD_VAR 0 15
+2296: ARRAY
+2297: PUSH
+2298: LD_INT 0
+2300: GREATER
+2301: IFFALSE 2351
+// begin SetLastMission ( un_list [ un ] , 10 ) ;
+2303: LD_VAR 0 16
+2307: PUSH
+2308: LD_VAR 0 15
+2312: ARRAY
+2313: PPUSH
+2314: LD_INT 10
+2316: PPUSH
+2317: CALL_OW 245
+// SaveCharacters ( un_list [ un ] , name_list [ un ] & _11_not_sel ) ;
+2321: LD_VAR 0 16
+2325: PUSH
+2326: LD_VAR 0 15
+2330: ARRAY
+2331: PPUSH
+2332: LD_VAR 0 17
+2336: PUSH
+2337: LD_VAR 0 15
+2341: ARRAY
+2342: PUSH
+2343: LD_STRING _11_not_sel
+2345: STR
+2346: PPUSH
+2347: CALL_OW 38
+// end ;
+2351: GO 2234
+2353: POP
+2354: POP
+// SaveCharacters ( sel_list diff ( un_list ^ Heike ) , Others_11_sel ) ;
+2355: LD_VAR 0 21
+2359: PUSH
+2360: LD_VAR 0 16
+2364: PUSH
+2365: LD_EXP 2
+2369: ADD
+2370: DIFF
+2371: PPUSH
+2372: LD_STRING Others_11_sel
+2374: PPUSH
+2375: CALL_OW 38
+// temp_list = others_list diff sel_list ;
+2379: LD_ADDR_VAR 0 18
+2383: PUSH
+2384: LD_VAR 0 22
+2388: PUSH
+2389: LD_VAR 0 21
+2393: DIFF
+2394: ST_TO_ADDR
+// SetLastMission ( temp_list , 10 ) ;
+2395: LD_VAR 0 18
+2399: PPUSH
+2400: LD_INT 10
+2402: PPUSH
+2403: CALL_OW 245
+// SaveCharacters ( temp_list , Others_11_not_sel ) ;
+2407: LD_VAR 0 18
+2411: PPUSH
+2412: LD_STRING Others_11_not_sel
+2414: PPUSH
+2415: CALL_OW 38
+// SaveVariable ( LoadVariable ( Oswald_is_substitute_10 , false ) , Oswald_is_substitute_11_generic ) ;
+2419: LD_STRING Oswald_is_substitute_10
+2421: PPUSH
+2422: LD_INT 0
+2424: PPUSH
+2425: CALL_OW 30
+2429: PPUSH
+2430: LD_STRING Oswald_is_substitute_11_generic
+2432: PPUSH
+2433: CALL_OW 39
+// SaveVariable ( LoadVariable ( Kurt_is_substitute_10 , false ) , Kurt_is_substitute_11_generic ) ;
+2437: LD_STRING Kurt_is_substitute_10
+2439: PPUSH
+2440: LD_INT 0
+2442: PPUSH
+2443: CALL_OW 30
+2447: PPUSH
+2448: LD_STRING Kurt_is_substitute_11_generic
+2450: PPUSH
+2451: CALL_OW 39
+// ChangeMap ( %_cont , %_cont ) ;
+2455: LD_STRING %_cont
+2457: PPUSH
+2458: LD_STRING %_cont
+2460: PPUSH
+2461: CALL_OW 340
+// InGameOff ;
+2465: CALL_OW 9
+// end ;
+2469: LD_VAR 0 1
+2473: RET
+// every 0 0$1 marked 1 do var leader , sol1 , sol2 , veh ; var i , x , y ;
+2474: GO 2476
+2476: DISABLE
+2477: LD_INT 0
+2479: PPUSH
+2480: PPUSH
+2481: PPUSH
+2482: PPUSH
+2483: PPUSH
+2484: PPUSH
+2485: PPUSH
+// begin uc_nation = nation_arabian ;
+2486: LD_ADDR_OWVAR 21
+2490: PUSH
+2491: LD_INT 2
+2493: ST_TO_ADDR
+// uc_side = 2 ;
+2494: LD_ADDR_OWVAR 20
+2498: PUSH
+2499: LD_INT 2
+2501: ST_TO_ADDR
+// vc_weapon = ar_light_gun ;
+2502: LD_ADDR_OWVAR 40
+2506: PUSH
+2507: LD_INT 23
+2509: ST_TO_ADDR
+// vc_chassis = ar_light_trike ;
+2510: LD_ADDR_OWVAR 37
+2514: PUSH
+2515: LD_INT 12
+2517: ST_TO_ADDR
+// vc_engine = engine_solar ;
+2518: LD_ADDR_OWVAR 39
+2522: PUSH
+2523: LD_INT 2
+2525: ST_TO_ADDR
+// vc_control = control_apeman ;
+2526: LD_ADDR_OWVAR 38
+2530: PUSH
+2531: LD_INT 5
+2533: ST_TO_ADDR
+// veh = CreateVehicle ;
+2534: LD_ADDR_VAR 0 4
+2538: PUSH
+2539: CALL_OW 45
+2543: ST_TO_ADDR
+// PlaceUnitXY ( veh , 116 , 22 , false ) ;
+2544: LD_VAR 0 4
+2548: PPUSH
+2549: LD_INT 116
+2551: PPUSH
+2552: LD_INT 22
+2554: PPUSH
+2555: LD_INT 0
+2557: PPUSH
+2558: CALL_OW 48
+// ComMoveXY ( veh , 133 , 38 ) ;
+2562: LD_VAR 0 4
+2566: PPUSH
+2567: LD_INT 133
+2569: PPUSH
+2570: LD_INT 38
+2572: PPUSH
+2573: CALL_OW 111
+// AddComMoveXY ( veh , 141 , 58 ) ;
+2577: LD_VAR 0 4
+2581: PPUSH
+2582: LD_INT 141
+2584: PPUSH
+2585: LD_INT 58
+2587: PPUSH
+2588: CALL_OW 171
+// AddComMoveXY ( veh , 140 , 85 ) ;
+2592: LD_VAR 0 4
+2596: PPUSH
+2597: LD_INT 140
+2599: PPUSH
+2600: LD_INT 85
+2602: PPUSH
+2603: CALL_OW 171
+// repeat wait ( 0 0$1 ) ;
+2607: LD_INT 35
+2609: PPUSH
+2610: CALL_OW 67
+// until GetDistUnitXY ( veh , 140 , 85 ) <= 4 ;
+2614: LD_VAR 0 4
+2618: PPUSH
+2619: LD_INT 140
+2621: PPUSH
+2622: LD_INT 85
+2624: PPUSH
+2625: CALL_OW 297
+2629: PUSH
+2630: LD_INT 4
+2632: LESSEQUAL
+2633: IFFALSE 2607
+// DestroyUnit ( veh ) ;
+2635: LD_VAR 0 4
+2639: PPUSH
+2640: CALL_OW 65
+// end ;
+2644: PPOPN 7
+2646: END

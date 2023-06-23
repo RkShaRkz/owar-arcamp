@@ -1,5 +1,4 @@
-
-Export testing;              
+Export testing, logsenabled;
 
 Export you, russians, nature, you_alt, americans, scout_side, americans_alt;
 
@@ -23,6 +22,9 @@ Export yashin_alive, num_russian_attacks, gensher_spec_research_progress, game_p
 Export cameras_placed, scout_event_over, russians_allowed_to_attack_gensher_time, saved_gensher_people, khattam_choice;
 Export russian_interference_points, camera_engineers_task_map;
 
+// new stuff that we want to reference outside of this module
+Export gensher_bunker_apes,gensher_mortars;
+
 
 Starting
 begin
@@ -30,6 +32,7 @@ begin
      ResetFog;
 
      testing = false;  //Testing mission or real campaign?
+     logsenabled = false; //print debug stuff
 
      ai_bases = [1,2,3];  //1 = American base, 2 = Gensher's base, 3 = Russian base
      ai_soldiers = [[],[],[]];  //Soldiers for computer sides
@@ -94,7 +97,7 @@ begin
      //camera_engineers_task_map = [];  //Index is camera engineer id, value is list of tasks to place a camera in one of the designated areas. CF. module "Events" function "CheckCamerasOnCommand".
      cameras_placed = false;  //Turns true when player has placed a cameras in all marked areas.
      scout_event_over = false;  //Turns true when the event, where Heike sends out a scout to investigate the Russian presence, is over. Russians start attacking hereafter.
-     russians_allowed_to_attack_gensher_time = [20$0,15$0,10$0][difficulty];  //When the Russians may start attacking Gensher's base. Updated when the scout event is over.
+     russians_allowed_to_attack_gensher_time = [30$0,25$0,20$0][difficulty]; //[20$0,15$0,10$0][difficulty];  //When the Russians may start attacking Gensher's base. Updated when the scout event is over.
      saved_gensher_people = [];  //Identifiers of those of Gensher's people who survived
      khattam_choice = 0;  //Answer to the query if Khattam may join the player or not
      russian_interference_points = 0;  //The more points the more annoying the Russians have been. Used for the corresponding medal.
@@ -208,7 +211,8 @@ Function PrepareNature;
           for i in FilterAllUnits([f_side,nature]) do
                DestroyUnit(i);
 
-          spots = [[158,91],[140,107],[37,27],[22,4],[38,10],[50,23],[40,20]];
+//          spots = [[158,91],[140,107],[37,27],[22,4],[38,10],[50,23],[40,20]];
+          spots = [[158,91],[140,107],[37,27],[22,4],[38,10],[50,23],[40,20], [158,110], [159,118], [146,115], [135,100], [155,115]];
 
           InitUc;
           InitHc;
@@ -219,7 +223,11 @@ Function PrepareNature;
           agres = -10 + difficulty * 20;
 
           //Apemen
-          count = [4,3,2][difficulty];
+//          count = [4,3,2][difficulty];
+          // SHARK bumped the apemen count
+//          count = [8,6,4][difficulty];
+          // There's 15 wild apemen on the map, so just f it, let them all stay
+          count = [15,13,10][difficulty];
           hc_class = class_apeman;
           for i = 1 to count do
                begin
@@ -236,12 +244,14 @@ Function PrepareNature;
 
                     num = Rand(1,spots);
                     PlaceUnitXYR(CreateHuman,spots[num][1],spots[num][2],5,false);
-                    spots = Delete(spots,num);
+                    // 50% chance to delete the spot
+                    if Prob(50) then
+                         spots = Delete(spots,num);
                end;
      end;
 
 Function PrepareArabians;
-     var human_list, i, temp_unit, val, k;
+     var human_list, i, temp_unit, val, k, gensher_bunker_apes;
      begin
           InitHc;
           InitUc;
@@ -511,7 +521,25 @@ Function PrepareArabians;
           for i in human_list do
                PlaceUnitArea(i,enter_area,false);
           
-          
+          // SHARK give one more apemen radar
+          vc_engine = engine_solar;
+          vc_chassis = ar_hovercraft;
+          vc_control = control_apeman;
+          vc_weapon = ar_radar;
+          temp_unit = CreateVehicle;
+          SetFuel(temp_unit,Rand(50,70));
+          PlaceUnitArea(temp_unit,enter_area,false);
+          // and one rocketlauncher too
+          vc_engine = engine_solar;
+          vc_chassis = ar_half_tracked;
+          vc_control = control_apeman;
+          vc_weapon = ar_rocket_launcher;
+          temp_unit = CreateVehicle;
+          SetFuel(temp_unit,Rand(50,70));
+          PlaceUnitArea(temp_unit,enter_area,false);
+
+          // OLD CODE
+
           //Gensher's base
           Gensher = NewCharacter('Dietrich');
           SetSide(Gensher,you_alt);
@@ -538,6 +566,13 @@ Function PrepareArabians;
           PlaceHumanInUnit(temp_unit,ar_dep);
           ai_engineers = Replace(ai_engineers,2,[temp_unit]);
 
+          //Mechanics - shark added this
+          original_gensher_people = original_gensher_people ^ mech1;
+          original_gensher_people = original_gensher_people ^ mech2;
+
+          // Healer - shark added this
+          original_gensher_people = original_gensher_people ^ healer;
+
           //Apemen
           InitHc;
           uc_nation = nation_nature;
@@ -549,12 +584,110 @@ Function PrepareArabians;
           temp_unit = CreateHuman;
           PlaceHumanInUnit(temp_unit,ar_bu1);
           human_list = [temp_unit];
+          gensher_bunker_apes = [temp_unit];
 
           hc_sex = Rand(sex_male,sex_female);
           temp_unit = CreateHuman;
           PlaceHumanInUnit(temp_unit,ar_bu2);
           human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
 
+          // populate newly placed turrets - SHARK
+          // adding to list is commented out to avoid them leaving their turrets
+          // and entering the barracks for some stupid reason
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_hill1);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_hill2);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_hill3);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_hill4);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_lbu1);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_lbu2);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_lbu3);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_lbu4);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_rbu1);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_rbu2);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_rbu3);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_rbu4);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_rbu5);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          hc_sex = Rand(sex_male,sex_female);
+          temp_unit = CreateHuman;
+          PlaceHumanInUnit(temp_unit,ar_rbu6);
+          //human_list = human_list ^ temp_unit;
+          gensher_bunker_apes = gensher_bunker_apes ^ temp_unit;
+
+          //tally the mortars the idiotic way
+          gensher_mortars = [mortar1];
+          gensher_mortars = gensher_mortars ^ mortar2;
+          gensher_mortars = gensher_mortars ^ mortar3;
+          gensher_mortars = gensher_mortars ^ mortar4;
+          gensher_mortars = gensher_mortars ^ mortar5;
+          gensher_mortars = gensher_mortars ^ mortar6;
+
+          // carry on with old code
           ai_soldiers = Replace(ai_soldiers,2,human_list ^ Gensher);
 
           //Set building levels

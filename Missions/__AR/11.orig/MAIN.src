@@ -1,0 +1,319 @@
+Export testing;
+Export Heike, Omar;
+
+
+Starting
+begin
+     ResetFog;
+     RandomizeAll;
+
+     testing = false;  //Just testing or playing for real?
+
+     disable(1);
+
+     PlaceUnits;
+     Action;
+end;
+
+Function PlaceUnits;
+     var val;
+     begin
+          InitUc;
+          InitHc;
+          uc_side = 2;
+          uc_nation = nation_arabian;
+
+          for val in FilterAllUnits([[f_side,2],[f_type,unit_building]]) do
+               begin
+                    case GetBType(val) of
+                         b_depot,b_warehouse: begin
+                              PrepareEngineer(false,0);
+                              PlaceHumanInUnit(CreateHuman,val);
+
+                              SetBName(val,'kaaba');
+                         end;
+                         b_workshop,b_factory,b_lab,b_lab_half,b_lab_full,b_armoury,b_barracks,b_breastwork,b_bunker: begin
+                              if val = lab2 then
+                                   continue;
+
+                              case GetBType(val) of
+                                   b_workshop,b_factory: begin
+                                        PrepareMechanic(false,0);
+                                        SetSpecResearch(val,100,false);
+                                   end;
+                                   b_lab,b_lab_half,b_lab_full: begin
+                                        PrepareScientist(false,0);
+                                        SetSpecResearch(val,100,false);
+                                   end;
+                                   b_breastwork,b_bunker: begin
+                                        PrepareSoldier(false,0);
+                                   end;
+                              end;
+
+                              PlaceHumanInUnit(CreateHuman,val);
+                         end;
+                    end;
+               end;
+
+          //Create Heike and Omar and place them near the depot.
+          if testing then
+               begin
+                    preparesoldier(sex_female,0);
+                    hc_name = 'Heike';
+                    Heike = CreateHuman;
+               end
+          else
+               begin
+                    Heike = CreateCharacter('Heike_10');
+                    SetClass(Heike,class_soldier);
+               end;
+
+          Omar = NewCharacter('Omar');
+
+          PlaceUnitXY(Omar,133,59,false);
+          PlaceUnitXY(Heike,135,59,false);
+
+          ComTurnUnit(Heike,Omar);
+          ComTurnUnit(Omar,Heike);
+     end;
+
+Function Action;
+     var Sonya, Oswald, Ralph, Kowalski, Evelyn, Suze, Olaf, Kurt, Dwayne, MarkB, Aviradze, Swansson;
+     var units_list, un, un_list, name_list, temp_list, num, i, sel_list, others_list;
+     begin
+          InGameOn;
+          ExclusiveOff;
+          
+          wait(2);
+          CenterNowOnUnits([arfact00,Heike]);
+          ClearAllFogForSide(2);
+
+          Say(Omar,'D1-Om-1');
+          Say(Heike,'D1-H-1');
+          Say(Omar,'D1-Om-2');
+
+          if LoadVariable('Abdul_doubt_07',false) then
+               Say(Heike,'D1-a-H-2')
+          else
+               Say(Heike,'D1-b-H-2');
+
+          Say(Omar,'D1-Om-3');
+          Say(Heike,'D1-H-3');
+
+          enable(1);
+
+          Say(Omar,'D1-Om-4');
+          Say(Heike,'D1-H-4');
+          Say(Omar,'D1-Om-5');
+          Say(Heike,'D1-H-5');
+
+          if TestCharacters('Gossudarov_10') then
+               Say(Heike,'D1-c-H-1');
+
+          Say(Omar,'D1-Om-6');
+          Say(Heike,'D1-H-6');
+          Say(Omar,'D1-Om-7');
+          Say(Heike,'D1-H-7');
+          Say(Omar,'D1-Om-8');
+          Say(Heike,'D1-H-8');
+          Say(Omar,'D1-Om-9');
+          Say(Heike,'D1-H-9');
+          Say(Omar,'D1-Om-10');
+          Say(Omar,'D1-Om-11');
+          Say(Omar,'D1-Om-12');
+          Say(Omar,'D1-Om-13');
+          Say(Heike,'D1-H-10');
+
+          wait(0$0.2);
+
+          //Load characters
+          if TestCharacters('Dwayne_10') then
+               Dwayne = CreateCharacter('Dwayne_10')
+          else
+               Dwayne = 0;
+
+          if TestCharacters('Kurt_10') then
+               Kurt = CreateCharacter('Kurt_10')
+          else
+               Kurt = 0;
+
+          if TestCharacters('Oswald_10') then
+               Oswald = CreateCharacter('Oswald_10')
+          else
+               Oswald = 0;
+
+          if TestCharacters('Sonya_07_cont') then
+               Sonya = CreateCharacter('Sonya_07_cont')
+          else
+               if TestCharacters('Sonya_07_not_sel') then
+                    Sonya = CreateCharacter('Sonya_07_not_sel')
+               else
+                    if TestCharacters('Sonya_05_cont') then
+                         Sonya = CreateCharacter('Sonya_05_cont')
+                    else
+                         Sonya = 0;
+
+          if TestCharacters('Ralph_07_cont') then
+               Ralph = CreateCharacter('Ralph_07_cont')
+          else
+               if TestCharacters('Ralph_07_not_sel') then
+                    Ralph = CreateCharacter('Ralph_07_not_sel')
+               else
+                    if TestCharacters('Ralph_05_cont') then
+                         Ralph = CreateCharacter('Ralph_05_cont')
+                    else
+                         Ralph = 0;
+          
+          if TestCharacters('Kowalski_07_cont') then
+               Kowalski = CreateCharacter('Kowalski_07_cont')
+          else
+               if TestCharacters('Kowalski_07_not_sel') then
+                    Kowalski = CreateCharacter('Kowalski_07_not_sel')
+               else
+                    if TestCharacters('Kowalski_05_cont') then
+                         Kowalski = CreateCharacter('Kowalski_05_cont')
+                    else
+                         Kowalski = 0;
+
+          if TestCharacters('Evelyn_07_cont') then
+               Evelyn = CreateCharacter('Evelyn_07_cont')
+          else
+               if TestCharacters('Evelyn_07_not_sel') then
+                    Evelyn = CreateCharacter('Evelyn_07_not_sel')
+               else
+                    if TestCharacters('Evelyn_05_cont') then
+                         Evelyn = CreateCharacter('Evelyn_05_cont')
+                    else
+                         Evelyn = 0;
+
+          if TestCharacters('Suze_07_cont') then
+               Suze = CreateCharacter('Suze_07_cont')
+          else
+               if TestCharacters('Suze_07_not_sel') then
+                    Suze = CreateCharacter('Suze_07_not_sel')
+               else
+                    if TestCharacters('Suze_05_cont') then
+                         Suze = CreateCharacter('Suze_05_cont')
+                    else
+                         Suze = 0;
+
+          if TestCharacters('Olaf_07_cont') then
+               Olaf = CreateCharacter('Olaf_07_cont')
+          else
+               if TestCharacters('Olaf_07_not_sel') then
+                    Olaf = CreateCharacter('Olaf_07_not_sel')
+               else
+                    if TestCharacters('Olaf_05_cont') then
+                         Olaf = CreateCharacter('Olaf_05_cont')
+                    else
+                         Olaf = 0;
+
+          if TestCharacters('MarkB_07_cont') then
+               MarkB = CreateCharacter('MarkB_07_cont')
+          else
+               MarkB = 0;
+
+          if TestCharacters('Aviradze_07_cont') then
+               Aviradze = CreateCharacter('Aviradze_07_cont')
+          else
+               Aviradze = 0;
+
+          if TestCharacters('Swansson_07_cont') then
+               Swansson = CreateCharacter('Swansson_07_cont')
+          else
+               Swansson = 0;
+
+          others_list = CreateCharacterSet('Others_07_not_sel') diff 0;
+          others_list = others_list ^ (CreateCharacterSet('Others_07_cont') diff 0);
+          //Some of these characters died in the Russian assault (after mission 08)
+          {for num = 1 to 3 do
+               begin
+                    if others_list = 0 then
+                         break;
+
+                    others_list = Delete(others_list,Rand(1,others_list+0));
+               end;}
+
+          units_list = ([Sonya,Oswald,Ralph,Kowalski,Evelyn,Suze,Olaf,Kurt,Dwayne,MarkB,Aviradze,Swansson] diff 0) ^ others_list;
+
+          //Create extra units
+          InitUc;
+          InitHc;
+          uc_nation = nation_arabian;
+          uc_side = 2;
+
+          num = 7+Rand(0,2);
+          if 14 - units_list > 0 then
+               num = num + (14 - units_list);
+
+          for i = 1 to num do
+               begin
+                    PrepareHuman(false,[class_soldier,class_engineer,class_mechanic,class_scientistic][Rand(1,4)],Rand(4,5));
+                    un = CreateHuman;
+                    units_list = units_list ^ un;
+                    others_list = others_list ^ un;
+               end;
+
+          //Pick units
+//          num = [11,10,9][difficulty];
+          num = [14,13,12][difficulty];
+          if LoadVariable('Abdul_doubt_07',false) then
+               num = num - 1;
+          if LoadVariable('Heike_surrendered_08',false) then
+               num = num - 1;
+
+          sel_list = CharacterSelection('',num,num+1,[sel_change_class,sel_hired,sel_not_changeable,Heike,sel_not_hired,sel_changeable] ^ units_list,[[class_soldier,3],[class_engineer,1],class_mechanic,class_scientistic]);
+
+          //Save units and change map
+          SaveCharacters(Heike,'Heike_11_sel');
+
+          un_list = [Sonya,Oswald,Ralph,Kowalski,Evelyn,Suze,Olaf,Kurt,Dwayne,MarkB,Aviradze,Swansson];
+          name_list = ['Sonya','Oswald','Ralph','Kowalski','Evelyn','Suze','Olaf','Kurt','Dwayne','MarkB','Aviradze','Swansson'];
+          for un = 1 to un_list do
+               if un_list[un] in sel_list then
+                    SaveCharacters(un_list[un],name_list[un] & '_11_sel')
+               else
+                    if un_list[un] > 0 then
+                         begin
+                              SetLastMission(un_list[un],10);  //For correct xp bonus later on
+                              SaveCharacters(un_list[un],name_list[un] & '_11_not_sel');
+                         end;
+
+          SaveCharacters(sel_list diff (un_list ^ Heike),'Others_11_sel');
+          temp_list = others_list diff sel_list;
+          SetLastMission(temp_list,10);  //for correct xp bonus later on
+          SaveCharacters(temp_list,'Others_11_not_sel');
+
+          SaveVariable(LoadVariable('Oswald_is_substitute_10',false),'Oswald_is_substitute_11_generic');
+          SaveVariable(LoadVariable('Kurt_is_substitute_10',false),'Kurt_is_substitute_11_generic');
+
+          ChangeMap('%_cont','%_cont');
+
+          InGameOff;
+     end;
+
+//Little event - a vehicle drives by
+Every 0$1 marked 1 do
+     var leader, sol1, sol2, veh;
+     var i, x, y;
+     begin
+          uc_nation = nation_arabian;
+          uc_side = 2;
+          vc_weapon = ar_light_gun;
+          vc_chassis = ar_light_trike;
+          vc_engine = engine_solar;
+          vc_control = control_apeman;
+
+          veh = CreateVehicle;
+          PlaceUnitXY(veh,116,22,false);
+
+          ComMoveXY(veh,133,38);
+          AddComMoveXY(veh,141,58);
+          AddComMoveXY(veh,140,85);
+
+          repeat
+          wait(0$1);
+          until GetDistUnitXY(veh,140,85) <= 4;
+
+          DestroyUnit(veh);
+     end;
