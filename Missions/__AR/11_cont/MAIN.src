@@ -24,6 +24,7 @@ Export russian_interference_points, camera_engineers_task_map;
 
 // new stuff that we want to reference outside of this module
 Export gensher_bunker_apes,gensher_mortars;
+Export us_reserve_troops, russian_reserve_troops;
 
 
 Starting
@@ -32,7 +33,7 @@ begin
      ResetFog;
 
      testing = false;  //Testing mission or real campaign?
-     logsenabled = false; //print debug stuff
+     logsenabled = true; //print debug stuff
 
      ai_bases = [1,2,3];  //1 = American base, 2 = Gensher's base, 3 = Russian base
      ai_soldiers = [[],[],[]];  //Soldiers for computer sides
@@ -102,6 +103,8 @@ begin
      khattam_choice = 0;  //Answer to the query if Khattam may join the player or not
      russian_interference_points = 0;  //The more points the more annoying the Russians have been. Used for the corresponding medal.
 
+     us_reserve_troops = [20, 30, 60][difficulty]; //maximum number of people to spawn for Americans
+     russian_reserve_troops = [20, 30, 60][difficulty]; //maximum number of people to spawn for Russians
 
      PrepareSides;
      PrepareNature;
@@ -924,6 +927,7 @@ Function PrepareComputerSides;
                          russians: uc_nation = nation_russian;
                     end;
 
+                    // [SHARK] maaybe limit this as well, but make sure to account for all sides
 
                     //Soldiers - at least one for each defensive building (remember armouries)
                     //Special units (bazoookers, snipers) go to armouries as first priority.
@@ -1023,6 +1027,43 @@ Export Function CreateUnitsWithClass(num_units,un_class,side);
                     result = result ^ CreateHuman;
                end;
      end;
+Export Function CreateUnitsWithClassLimited(num_units,un_class,side,limit);
+     var i, overskill, count;
+     begin
+          result = [];
+
+          InitUc;
+          InitHc;
+
+          if limit <= 0 then
+             exit;
+
+          if limit < num_units then
+              count = limit
+          else
+              count = num_units;
+
+          case side of
+               americans: begin
+                    uc_nation = nation_american;
+               end;
+               russians: begin
+                    uc_nation = nation_russian;
+               end;
+          end;
+          uc_side = side;
+
+          overskill = difficulty + 4;
+
+          for i = 1 to count do
+               begin
+                    if Rand(1,3) = 1 then
+                         PrepareHuman(false,un_class,-overskill)
+                    else PrepareHuman(false,un_class,overskill);
+
+                    result = result ^ CreateHuman;
+               end;
+     end;
 Export Function CreateApemenWithClass(num_units,un_class,side);
      var i;
      begin
@@ -1053,6 +1094,10 @@ Export Function ResetHumanAttackDelay(base);
      begin
           ai_human_attack_delay = Replace(ai_human_attack_delay,base, Rand(6$30,8$30) - 0$45 * difficulty );
      end;
+Export Function sizeof(list);
+       begin
+            result = list + 0;
+       end;
 
 
 Function Action;
