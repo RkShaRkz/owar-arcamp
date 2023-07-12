@@ -28,7 +28,7 @@ Export Function EndMission;
           AddMedal('HiddenCamera',val);
 
           //Russian interferrence
-          if russian_interference_points <= [11,8,5][difficulty] then
+          if russian_interference_points <= gensher_interference_threshold then
                val = 1
           else
                val = -1;

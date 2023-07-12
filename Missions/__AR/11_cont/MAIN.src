@@ -25,6 +25,7 @@ Export russian_interference_points, camera_engineers_task_map;
 // new stuff that we want to reference outside of this module
 Export gensher_bunker_apes,gensher_mortars;
 Export us_reserve_troops, russian_reserve_troops;
+Export gensher_interference_threshold;
 
 
 Starting
@@ -105,6 +106,18 @@ begin
 
      us_reserve_troops = [20, 30, 60][difficulty]; //maximum number of people to spawn for Americans
      russian_reserve_troops = [20, 30, 60][difficulty]; //maximum number of people to spawn for Russians
+     // interference has to be bumped up
+     //
+     //- Making a human need healing (1 point)
+     //- Bringing a human to red life (1 point)
+     //- Killing a human (3 points) (happens in event "UnitDestroyed")
+     //- Bringing a building to yellow life (1 point)
+     //- Making a building burn (1 point)
+     //- Destroying a building (2 points) (happens in event "UnitDestroyed")
+     //
+     // while earlier losing 2 people means there is no medal
+     // now there's more people and buildings to lose too.
+     gensher_interference_threshold = [20,15,10][difficulty]; // [11,8,5][difficulty]; //maximum number of interference for medal
 
      PrepareSides;
      PrepareNature;
