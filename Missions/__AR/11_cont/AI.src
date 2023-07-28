@@ -2445,10 +2445,11 @@ Export Function PlayerAtEasternBorder;
 
 
 //"Ordinary" Russian attackers.
-//Every 0$1+0$0.3 do
-Every 0$2+0$0.6 do
+Every 0$1+0$0.3 do
+//Every 0$2+0$0.6 do
      var i, temp_list, human_list, num_sol, num_baz, num_sci, temp_list_2, temp_list_3, k;
      var base, side, attack_strat_history, first_time_attack_gensher;
+     var spawnedSci, spawnedSol, spawnedBaz;
      begin
           base = 3;
           side = russians;
@@ -2496,7 +2497,6 @@ Every 0$2+0$0.6 do
                end;
           ai_vehicles_attack = Replace(ai_vehicles_attack,base,temp_list);
 
-
           //The humans for the attack arrive
           human_list = [];
           num_sci = difficulty+Rand(0,1);
@@ -2534,13 +2534,49 @@ Every 0$2+0$0.6 do
                     num_sol = Rand(1,2);
                end;
 
-          temp_list = CreateUnitsWithClass(num_sci,class_scientistic,side);
-          human_list = human_list ^ temp_list;
-          ai_attacking_scientists = Replace(ai_attacking_scientists,base,temp_list);
+          // if reservesCount > 0 then
+          //      .... svi CreateUnitsWithClass
+          //      reservesCount = reservesCount - temp_list (the list will decay into it's size)
+          // end
 
-          temp_list = CreateUnitsWithClass(num_sol,class_soldier,side) ^ CreateUnitsWithClass(num_baz,class_bazooker,side);
-          human_list = human_list ^ temp_list;
-          ai_attacking_soldiers = Replace(ai_attacking_soldiers,base,temp_list);
+          if russian_reserve_troops > 0 then
+             begin
+                  if logsenabled then
+                     display_strings = ['Spawning russian scrientists! '];
+
+                  // list of scientists
+                  temp_list = CreateUnitsWithClassLimited(num_sci,class_scientistic,side,russian_reserve_troops);
+                  russian_reserve_troops = russian_reserve_troops - sizeof(temp_list);
+
+                  human_list = human_list ^ temp_list;
+                  ai_attacking_scientists = Replace(ai_attacking_scientists,base,temp_list);
+
+                  if logsenabled then
+                     display_strings = ['Remaining russian reserves ', russian_reserve_troops];
+             end;
+             
+          if russian_reserve_troops > 0 then
+             begin
+                  if logsenabled then
+                     display_strings = ['Spawning russian soldiers! '];
+
+//                  temp_list = CreateUnitsWithClass(num_sol,class_soldier,side) ^ CreateUnitsWithClass(num_baz,class_bazooker,side);
+                  // list of soldiers
+                  temp_list = CreateUnitsWithClassLimited(num_sol,class_soldier,side,russian_reserve_troops);
+                  russian_reserve_troops = russian_reserve_troops - sizeof(temp_list);
+
+                  // list of bazookers
+                  temp_list_2 = CreateUnitsWithClassLimited(num_baz,class_bazooker,side,russian_reserve_troops);
+                  russian_reserve_troops = russian_reserve_troops - sizeof(temp_list_2);
+
+                  // old code, concat lists and replace
+                  temp_list = temp_list ^ temp_list_2;
+                  human_list = human_list ^ temp_list;
+                  ai_attacking_soldiers = Replace(ai_attacking_soldiers,base,temp_list);
+
+                  if logsenabled then
+                     display_strings = ['Remaining russian reserves ', russian_reserve_troops];
+             end;
 
           for i in human_list do
                PlaceUnitArea(i,russian_reinforcements_area,false);
@@ -2724,20 +2760,33 @@ Every 0$1+0$0.2 do
           if BaseUnderAttack(base,-1) then
                continue;
 
+          // [SHARK] these should count against reservesCount as well! limit them as well.
+
           //The bazookers to attack arrive
-          special_russian_attackers = CreateUnitsWithClass(difficulty + yashin_alive, class_bazooker, side);
+          if russian_reserve_troops > 0 then
+             begin
+                  if logsenabled then
+                     display_strings = ['Spawning russian special troops that attack Gensher! '];
 
-          temp_list = ai_attacking_unit_hex_index[base];
-          for i in special_russian_attackers do
-               begin
-                    PlaceUnitArea(i,russian_reinforcements_area,false);
+                  special_russian_attackers = CreateUnitsWithClassLimited(difficulty + yashin_alive, class_bazooker, side, russian_reserve_troops);
+                  russian_reserve_troops = russian_reserve_troops - sizeof(special_russian_attackers);
 
-                    temp_list = Replace(temp_list,i,1);
-               end;
-          ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list);
+                  if logsenabled then
+                     display_strings = ['Remaining russian reserves ! ', russian_reserve_troops];
 
-          //Reset human attack delay
-          ResetHumanAttackDelay(base);
+
+                  temp_list = ai_attacking_unit_hex_index[base];
+                  for i in special_russian_attackers do
+                      begin
+                           PlaceUnitArea(i,russian_reinforcements_area,false);
+
+                           temp_list = Replace(temp_list,i,1);
+                      end;
+                  ai_attacking_unit_hex_index = Replace(ai_attacking_unit_hex_index,base,temp_list);
+
+                  //Reset human attack delay
+                  ResetHumanAttackDelay(base);
+             end;
 
           until false;
      end;
